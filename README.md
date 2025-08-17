@@ -35,3 +35,47 @@ cargo build --release
 # Verify byte-for-byte round trip
 sha256sum ./sample.wav ./roundtrip.wav
 # hashes should match
+````
+
+**Heads-up:** A matching hash doesn’t “prove” encryption occurred — it proves the **encrypt→decrypt** pipeline is lossless. The code actually performs AES-GCM per chunk and immediately verifies the tag before writing plaintext out.
+
+---
+
+## What’s here (Phase 1)
+
+* `src/main.rs` — minimal CLI:
+
+  * chunked file read
+  * per-chunk AES-256-GCM with AAD
+  * immediate decrypt & verification
+* `Cargo.toml` — `aes-gcm`, `anyhow`, `clap`
+
+### Next small steps (in order)
+
+* [ ] Replace random per-chunk nonces with `random_prefix || counter` (unique per key/session)
+* [ ] Add a small `Envelope { v, seq, nonce, aad, ct }` (bincode/serde)
+* [ ] Split into producer/consumer tasks using `tokio::mpsc` (no Kafka yet)
+* [ ] Log `(seq, sizes, elapsed_ms)` for basic observability
+
+---
+
+## License
+
+This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**.
+See [`LICENSE`](./LICENSE) for details.
+
+**Disclaimer:** This project is developed independently, on personal time and equipment, and is **not affiliated with or endorsed by my employer**.
+
+---
+
+## Why this project?
+
+Most people learning Rust start with CRUD web apps. I’m taking a different route that
+aligns with my background in security/PKI and edge systems:
+
+* **Privacy by design**: encrypt at the edge, not just TLS in transit
+* **Rust at the edge**: safety + performance for streaming workloads
+* **Learning in public**: small, honest milestones → real, reviewable code
+
+If you’re into Rust, IoT, ML at the edge, or security and have ideas or
+suggestions, I’d love your feedback.
