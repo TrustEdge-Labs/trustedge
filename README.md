@@ -2,10 +2,10 @@
 
 > Not another CRUD app. Learning Rust through **Trustable Edge AI** — privacy-preserving edge pipelines.
 
-This repo is my public learning journey in Rust. Phase 1 is a tiny demo that
+This repo is my public learning journey in Rust. The first step was initial environment setup and testing which led to this tiny demo that
 reads an audio file in chunks, **encrypts each chunk with AES-256-GCM**, then
 **decrypts and verifies** it locally. No networking yet — just the crypto &
-streaming skeleton that future phases will build on.
+streaming skeleton that future work and phases will build on. More to come!
 
 - Language: Rust (stable)
 - Crypto: `aes-gcm` (AEAD), 256-bit keys, 96-bit nonces
