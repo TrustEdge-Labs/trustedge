@@ -2,7 +2,21 @@
 
 > Not another CRUD app. Learning Rust through **Trustable Edge AI** — privacy-preserving edge pipelines.
 
-This repo is my public learning journey in Rust. The first step was initial environment setup and testing which led to this tiny demo that
+---
+
+## Why this project?
+
+Most people learning Rust start with CRUD web apps. I’m taking a different route that
+aligns with my background in product development, security/PKI and edge systems:
+
+* **Privacy by design**: encrypt at the edge, not just TLS in transit
+* **Rust at the edge**: safety + performance for streaming workloads
+* **Learning in public**: small, honest milestones → real, reviewable code
+
+If you’re into Rust, IoT, ML at the edge, or security and have ideas or
+suggestions, I’d love your feedback.
+
+TL;DR: this repo is my public learning journey in Rust. The first step was initial Rust environment setup on my Linux laptop. Then testing which led to this tiny demo that
 reads an audio file in chunks, **encrypts each chunk with AES-256-GCM**, then
 **decrypts and verifies** it locally. No networking yet — just the crypto &
 streaming skeleton that future work and phases will build on. More to come!
@@ -59,26 +73,9 @@ sha256sum ./sample.wav ./roundtrip.wav
 
 ---
 
-## Why this project?
-
-Most people learning Rust start with CRUD web apps. I’m taking a different route that
-aligns with my background in security/PKI and edge systems:
-
-* **Privacy by design**: encrypt at the edge, not just TLS in transit
-* **Rust at the edge**: safety + performance for streaming workloads
-* **Learning in public**: small, honest milestones → real, reviewable code
-
-If you’re into Rust, IoT, ML at the edge, or security and have ideas or
-suggestions, I’d love your feedback.
-
----
-
 ## License
 
 This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**.
 See [`LICENSE`](./LICENSE) for details.
 
 **Disclaimer:** This project is developed independently, on personal time and equipment, and is **not affiliated with or endorsed by my employer**.
-
----
-
