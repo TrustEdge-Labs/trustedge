@@ -59,15 +59,6 @@ sha256sum ./sample.wav ./roundtrip.wav
 
 ---
 
-## License
-
-This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**.
-See [`LICENSE`](./LICENSE) for details.
-
-**Disclaimer:** This project is developed independently, on personal time and equipment, and is **not affiliated with or endorsed by my employer**.
-
----
-
 ## Why this project?
 
 Most people learning Rust start with CRUD web apps. I’m taking a different route that
@@ -79,3 +70,15 @@ aligns with my background in security/PKI and edge systems:
 
 If you’re into Rust, IoT, ML at the edge, or security and have ideas or
 suggestions, I’d love your feedback.
+
+---
+
+## License
+
+This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**.
+See [`LICENSE`](./LICENSE) for details.
+
+**Disclaimer:** This project is developed independently, on personal time and equipment, and is **not affiliated with or endorsed by my employer**.
+
+---
+
