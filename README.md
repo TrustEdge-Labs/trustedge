@@ -7,7 +7,7 @@
 ## Why this project?
 
 Most people learning Rust start with CRUD web apps. I’m taking a different route that
-aligns with my background in product development, security/PKI and edge systems:
+aligns with my background in IoT product development, security/PKI and edge systems:
 
 * **Privacy by design**: encrypt at the edge, not just TLS in transit
 * **Rust at the edge**: safety + performance for streaming workloads
