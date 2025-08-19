@@ -62,8 +62,22 @@ sha256sum ./sample.wav ./roundtrip.wav
   * chunked file read
   * per-chunk AES-256-GCM with AAD
   * immediate decrypt & verification
-* `Cargo.toml` — `aes-gcm`, `anyhow`, `clap`
+* `Cargo.toml` — `aes-gcm`, `anyhow`, `clap`, `blake3`, `zeroize`
 
+### How it works
+
+- Reads the input file in user-defined chunks.
+- For each chunk:
+  - Constructs a unique nonce: 4-byte random prefix + 8-byte counter.
+  - Builds AAD (Additional Authenticated Data): includes a BLAKE3 hash of the file header, chunk sequence, and nonce.
+  - Encrypts the chunk with AES-256-GCM and the AAD.
+  - Immediately decrypts and verifies the chunk.
+  - Writes the verified plaintext to the output file.
+- For round-trip testing, the output file does **not** include a header, so its hash matches the input. In future versions, a header will be written for real encrypted file formats.
+
+### What is AAD?
+
+AAD (Additional Authenticated Data) is extra data that is authenticated (integrity-checked) but not encrypted. In this project, AAD binds each chunk to the file/session context and prevents tampering.
 ### Next small steps (in order)
 
 * [ ] Replace random per-chunk nonces with `random_prefix || counter` (unique per key/session)
