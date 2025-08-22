@@ -102,9 +102,6 @@ fn build_aad(header_hash: &[u8; 32], seq: u64, nonce: &[u8; 12], manifest_hash: 
     aad
 }
 
-// use it for both encrypt and decrypt
-// let aad = build_aad(header_hash.as_bytes(), seq, &nonce_bytes, mhash.as_bytes());
-
 fn main() -> Result<()> {
     let args = Args::parse();
 
