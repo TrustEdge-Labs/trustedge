@@ -60,8 +60,9 @@ sha256sum ./sample.wav ./roundtrip.wav
 * `src/main.rs` — minimal CLI:
 
   * chunked file read
-  * per-chunk AES-256-GCM with AAD
-  * immediate decrypt & verification
+  * per-chunk AES-256-GCM with robust AAD
+  * signed manifest per chunk (Ed25519, bincode-encoded)
+  * immediate decrypt, signature verify, and integrity check
 * `Cargo.toml` — `aes-gcm`, `anyhow`, `clap`, `blake3`, `zeroize`
 
 ### How it works
@@ -69,21 +70,32 @@ sha256sum ./sample.wav ./roundtrip.wav
 - Reads the input file in user-defined chunks.
 - For each chunk:
   - Constructs a unique nonce: 4-byte random prefix + 8-byte counter.
-  - Builds AAD (Additional Authenticated Data): includes a BLAKE3 hash of the file header, chunk sequence, and nonce.
+  - Builds AAD (Additional Authenticated Data) using a helper function: includes a BLAKE3 hash of the file header, chunk sequence, nonce, and a hash of the signed manifest.
+  - For each chunk, creates a signed manifest (Ed25519 signature and public key stored as bytes) with provenance and integrity info.
   - Encrypts the chunk with AES-256-GCM and the AAD.
-  - Immediately decrypts and verifies the chunk.
+  - Immediately verifies the manifest signature, re-derives AAD, decrypts, and checks plaintext integrity.
   - Writes the verified plaintext to the output file.
 - For round-trip testing, the output file does **not** include a header, so its hash matches the input. In future versions, a header will be written for real encrypted file formats.
 
 ### What is AAD?
 
-AAD (Additional Authenticated Data) is extra data that is authenticated (integrity-checked) but not encrypted. In this project, AAD binds each chunk to the file/session context and prevents tampering.
+AAD (Additional Authenticated Data) is extra data that is authenticated (integrity-checked) but not encrypted. In this project, AAD binds each chunk to the file/session context and the signed manifest, preventing tampering and replay.
+
+### What is a manifest?
+
+Each chunk includes a signed manifest (bincode-encoded struct) containing:
+- Manifest version, timestamp, sequence number
+- Hash of the file header and plaintext chunk
+- AI/model provenance fields (placeholders)
+- Ed25519 signature and public key (as bytes)
+This allows for strong provenance, integrity, and future extensibility.
 ### Next small steps (in order)
 
-* [ ] Replace random per-chunk nonces with `random_prefix || counter` (unique per key/session)
-* [ ] Add a small `Envelope { v, seq, nonce, aad, ct }` (bincode/serde)
-* [ ] Split into producer/consumer tasks using `tokio::mpsc` (no Kafka yet)
-* [ ] Log `(seq, sizes, elapsed_ms)` for basic observability
+* [ ] Write header and manifest+ct to output for a real encrypted file format
+* [ ] Add a decrypt/verify mode to the CLI
+* [ ] Document the file format (header, manifest, chunk) in the README
+* [ ] Add tests for serialization, AAD, and round-trip
+* [ ] (Optional) Add logging for chunk/manifest info
 
 ---
 
