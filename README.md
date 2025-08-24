@@ -13,8 +13,11 @@ aligns with my background in IoT product development, security/PKI and edge syst
 * **Rust at the edge**: safety + performance for streaming workloads
 * **Learning in public**: small, honest milestones → real, reviewable code
 
+
 If you’re into Rust, IoT, ML at the edge, or security and have ideas or
 suggestions, I’d love your feedback.
+
+See the included threat model ([`THREAT_MODEL.md`](./THREAT_MODEL.md)) for a detailed breakdown of security goals, risks, and mitigations.
 
 TL;DR: this repo is my public learning journey in Rust. The first step was initial Rust environment setup on my Linux laptop. Then testing which led to this tiny demo that
 reads an audio file in chunks, **encrypts each chunk with AES-256-GCM**, then
@@ -134,6 +137,7 @@ All fields are bincode-encoded for compactness and speed.
 - `--key-out`: Save the randomly generated key to a file (encrypt mode)
 - If neither is provided, a random key is generated and printed to stderr (demo only)
 
+
 ### Next steps
 
 * [x] Write header and manifest+ct to output for a real encrypted file format
@@ -141,6 +145,19 @@ All fields are bincode-encoded for compactness and speed.
 * [x] Document the file format (header, manifest, chunk) in the README
 * [ ] Add more tests for serialization, AAD, and round-trip
 * [ ] (Optional) Add logging for chunk/manifest info
+
+---
+
+## Security and Threat Model
+
+For a detailed analysis of security goals, threat actors, attack vectors, mitigations, and future roadmap, see [`THREAT_MODEL.md`](./THREAT_MODEL.md).
+
+- Covers network, application, cryptographic, side-channel, and physical threats
+- Describes current and planned mitigations
+- Outlines security requirements and risk assessment
+- Documents ongoing and future security work
+
+**If you are reviewing, deploying, or contributing to TrustEdge, please read the threat model for context on security assumptions and limitations.**
 
 ---
 
