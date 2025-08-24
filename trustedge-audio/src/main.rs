@@ -1,4 +1,3 @@
-
 //
 // Copyright (c) 2025 John Turner
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -20,6 +19,7 @@ use rand_core::RngCore;
 use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::{Read, Write};
+use std::io::{BufReader, BufWriter};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use zeroize::Zeroize;
@@ -29,6 +29,11 @@ const ALG_AES_256_GCM: u8 = 1;
 
 // File header struct for AAD (58 bytes)
 const HEADER_LEN: usize = 58;
+
+const AAD_LEN: usize = 32    /* header_hash */ 
+                        + 8  /* seq */ 
+                        + 12 /* nonce */ 
+                        + 32 /* manifest_hash */;
 
 /// Simple local demo: reads an input file in chunks, encrypts each chunk with AES-256-GCM,
 /// then immediately decrypts and verifies, then writes a copy of the plaintext to --out
@@ -93,8 +98,8 @@ struct SignedManifest {
 }
 
 // helper function to build AAD
-fn build_aad(header_hash: &[u8; 32], seq: u64, nonce: &[u8; 12], manifest_hash: &[u8; 32]) -> [u8; 84] {
-    let mut aad = [0u8; 84];
+fn build_aad(header_hash: &[u8; 32], seq: u64, nonce: &[u8; 12], manifest_hash: &[u8; 32]) -> [u8; AAD_LEN] {
+    let mut aad = [0u8; AAD_LEN];
     aad[..32].copy_from_slice(header_hash);
     aad[32..40].copy_from_slice(&seq.to_be_bytes());
     aad[40..52].copy_from_slice(nonce);
@@ -120,8 +125,9 @@ fn main() -> Result<()> {
     OsRng.fill_bytes(&mut key_bytes);
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
 
-    let mut fin = File::open(&args.input).context("open input")?;
-    let mut fout = File::create(&args.out).context("create output")?;
+    // use buffers for less syscalls
+    let mut fin  = BufReader::new(File::open(&args.input).context("open input")?);
+    let mut fout = BufWriter::new(File::create(&args.out).context("create output")?);
 
     let mut buf = vec![0u8; args.chunk];
     let mut total_in = 0usize;
@@ -231,10 +237,17 @@ fn main() -> Result<()> {
         // before decrypting, verify the signed manifest (origin & integrity)
         let m2: Manifest = bincode::deserialize(&sm.manifest).context("manifest decode")?;
 
-        // using try_into.unwrap here, not for production, need better err handling TBD
-        VerifyingKey::from_bytes(&sm.pubkey.try_into().unwrap())
-            .context("bad pubkey")?
-            .verify(&sm.manifest, &Signature::from_bytes(&sm.sig.try_into().unwrap()))
+        // check pubkey and signature lengths
+        let pubkey_arr: [u8; 32] = sm.pubkey.as_slice()
+            .try_into()
+            .context("pubkey length != 32")?;
+        let sig_arr: [u8; 64] = sm.sig.as_slice()
+            .try_into()
+            .context("signature length != 64")?;
+
+        // verify the manifest signature
+        let vk = VerifyingKey::from_bytes(&pubkey_arr).context("bad pubkey")?;
+        vk.verify(&sm.manifest, &Signature::from_bytes(&sig_arr))
             .context("manifest signature verify failed")?;
 
         // redo AAD from the received manifest bytes to validate GCM tag check
