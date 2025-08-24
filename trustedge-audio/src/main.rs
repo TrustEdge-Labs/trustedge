@@ -110,7 +110,7 @@ struct Manifest {
 
 // note: serde only auto-derives for arrays up to [u8; 32] so try using Vec<u8> for both fields
 #[derive(Serialize, Deserialize)]
-struct SignedManifest {
+pub struct SignedManifest {
     manifest: Vec<u8>,    // bincode(manifest)
     sig: Vec<u8>,         // ed25519 signature over manifest bytes
     pubkey: Vec<u8>,      // Ed25519 public key (or a key_id)
@@ -118,7 +118,7 @@ struct SignedManifest {
 
 // set up a StreamHeader to be used once
 #[derive(serde::Serialize, serde::Deserialize)]
-struct StreamHeader {
+pub struct StreamHeader {
     v: u8,                          // stream format version
     header: Vec<u8>,                // 58-byte header bytes, serde won't allow HEADER_LEN
     header_hash: [u8; 32],          // BLAKE3(header)
@@ -126,7 +126,7 @@ struct StreamHeader {
 
 // set up a Record to be used per chunk
 #[derive(serde::Serialize, serde::Deserialize)]
-struct Record {
+pub struct Record {
     seq: u64,
     nonce: [u8; NONCE_LEN],
     sm: SignedManifest,             // Signed manifest (bytes + sig + pubkey)
