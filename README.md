@@ -27,6 +27,7 @@ streaming skeleton that future work and phases will build on. More to come!
 
 ---
 
+
 ## Quick start
 
 ```bash
@@ -35,12 +36,25 @@ streaming skeleton that future work and phases will build on. More to come!
 
 # Clone
 git clone git@github.com:johnzilla/trustedge.git
-cd trustedge/trustedge-audio   # if this demo lives in a subcrate; else just `cd trustedge`
+cd trustedge/trustedge-audio
 
 # Build
 cargo build --release
 
-# Run (any audio file is fine; it's treated as opaque bytes)
+# Encrypt and write envelope
+./target/release/trustedge-audio \
+  -i ./sample.wav \
+  --envelope ./sample.trst \
+  --key-out ./aeskey.hex
+
+# Decrypt envelope to plaintext
+./target/release/trustedge-audio \
+  --decrypt \
+  -i ./sample.trst \
+  -o ./roundtrip.wav \
+  --key-hex $(cat ./aeskey.hex)
+
+# Or, for a simple round-trip (no envelope):
 ./target/release/trustedge-audio \
   -i ./sample.wav \
   -o ./roundtrip.wav \
@@ -49,37 +63,54 @@ cargo build --release
 # Verify byte-for-byte round trip
 sha256sum ./sample.wav ./roundtrip.wav
 # hashes should match
-````
+```
+
 
 **Heads-up:** A matching hash doesn’t “prove” encryption occurred — it proves the **encrypt→decrypt** pipeline is lossless. The code actually performs AES-GCM per chunk and immediately verifies the tag before writing plaintext out.
 
 ---
 
-## What’s here (Phase 1)
 
-* `src/main.rs` — minimal CLI:
+## What’s here
 
-  * chunked file read
-  * per-chunk AES-256-GCM with robust AAD
-  * signed manifest per chunk (Ed25519, bincode-encoded)
-  * immediate decrypt, signature verify, and integrity check
-* `Cargo.toml` — `aes-gcm`, `anyhow`, `clap`, `blake3`, `zeroize`
+* `src/main.rs` — CLI tool:
+  * Chunked file read
+  * Per-chunk AES-256-GCM with robust AAD
+  * Signed manifest per chunk (Ed25519, bincode-encoded)
+  * Envelope output: header + records (for real encrypted file format)
+  * Decrypt/verify mode for envelope files
+  * Key management: hex input/output, random key generation
+* `Cargo.toml` — all crypto and serialization dependencies
+
+### CLI options
+
+| Flag           | Description |
+|----------------|-------------|
+| `-i, --input`  | Input file (audio or any bytes) |
+| `-o, --out`    | Output file (decrypted/plaintext) |
+| `--chunk`      | Chunk size in bytes (default: 4096) |
+| `--envelope`   | Write envelope file (.trst) with header + records |
+| `--no-plaintext` | Skip writing round-tripped plaintext |
+| `--decrypt`    | Decrypt envelope to plaintext |
+| `--key-hex`    | 64-char hex AES-256 key (for encrypt/decrypt) |
+| `--key-out`    | Save generated key to file (encrypt mode) |
 
 ### How it works
 
 - Reads the input file in user-defined chunks.
 - For each chunk:
   - Constructs a unique nonce: 4-byte random prefix + 8-byte counter.
-  - Builds AAD (Additional Authenticated Data) using a helper function: includes a BLAKE3 hash of the file header, chunk sequence, nonce, and a hash of the signed manifest.
-  - For each chunk, creates a signed manifest (Ed25519 signature and public key stored as bytes) with provenance and integrity info.
+  - Builds AAD (Additional Authenticated Data): `[header_hash][seq][nonce][manifest_hash]`.
+  - Creates a signed manifest (Ed25519 signature and public key as bytes) with provenance and integrity info.
   - Encrypts the chunk with AES-256-GCM and the AAD.
   - Immediately verifies the manifest signature, re-derives AAD, decrypts, and checks plaintext integrity.
-  - Writes the verified plaintext to the output file.
-- For round-trip testing, the output file does **not** include a header, so its hash matches the input. In future versions, a header will be written for real encrypted file formats.
+  - Writes the verified plaintext to the output file (unless `--no-plaintext`).
+  - Optionally writes each record to an envelope file (`--envelope`).
+- For round-trip testing, the output file does **not** include a header, so its hash matches the input. Envelope files contain all metadata for real-world use.
 
 ### What is AAD?
 
-AAD (Additional Authenticated Data) is extra data that is authenticated (integrity-checked) but not encrypted. In this project, AAD binds each chunk to the file/session context and the signed manifest, preventing tampering and replay.
+AAD (Additional Authenticated Data) is extra data that is authenticated (integrity-checked) but not encrypted. Here, AAD binds each chunk to the file/session context and the signed manifest, preventing tampering and replay. Layout: `[header_hash][seq][nonce][manifest_hash]`.
 
 ### What is a manifest?
 
@@ -89,12 +120,26 @@ Each chunk includes a signed manifest (bincode-encoded struct) containing:
 - AI/model provenance fields (placeholders)
 - Ed25519 signature and public key (as bytes)
 This allows for strong provenance, integrity, and future extensibility.
-### Next small steps (in order)
 
-* [ ] Write header and manifest+ct to output for a real encrypted file format
-* [ ] Add a decrypt/verify mode to the CLI
-* [ ] Document the file format (header, manifest, chunk) in the README
-* [ ] Add tests for serialization, AAD, and round-trip
+### Envelope file format
+
+The `.trst` envelope file is a binary format containing:
+- **StreamHeader**: version, header bytes (58 bytes), header hash (BLAKE3)
+- **Record(s)**: sequence number, nonce, signed manifest (with Ed25519 signature), ciphertext (AES-GCM)
+All fields are bincode-encoded for compactness and speed.
+
+### Key management
+
+- `--key-hex`: Use a user-supplied 64-char hex key for AES-256 (encrypt/decrypt)
+- `--key-out`: Save the randomly generated key to a file (encrypt mode)
+- If neither is provided, a random key is generated and printed to stderr (demo only)
+
+### Next steps
+
+* [x] Write header and manifest+ct to output for a real encrypted file format
+* [x] Add a decrypt/verify mode to the CLI
+* [x] Document the file format (header, manifest, chunk) in the README
+* [ ] Add more tests for serialization, AAD, and round-trip
 * [ ] (Optional) Add logging for chunk/manifest info
 
 ---
