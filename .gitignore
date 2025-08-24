@@ -1,4 +1,7 @@
 target/
 **/*.swp
 .DS_Store
+output/
+*.bin
+*.meta.json
 
