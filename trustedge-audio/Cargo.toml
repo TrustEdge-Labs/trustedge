@@ -7,18 +7,41 @@
 #
 [package]
 name = "trustedge-audio"
-version = "0.1.2"
-edition = "2024"
+version = "0.1.4"
+edition = "2021"
+
+[lib]
+name = "trustedge_audio"
+path = "src/lib.rs"
+
+[[bin]]
+name = "trustedge-audio"
+path = "src/main.rs"
+
+[[bin]]
+name = "trustedge-server"
+path = "src/bin/trustedge-server.rs"
+
+[[bin]]
+name = "trustedge-client" 
+path = "src/bin/trustedge-client.rs"
 
 [dependencies]
 aead = "0.5"
+aes-gcm = "0.10.3"
 anyhow = "1.0"
+bincode = "1.3"
 blake3 = "1.5"
+chrono = { version = "0.4", features = ["serde"] }  # For timestamps
 clap = { version = "4.5", features = ["derive"] }
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 hex = "0.4"
 rand_core = "0.6"
 serde = { version = "1.0", features = ["derive"] }
-bincode = "1.3"
+serde_json = "1.0"  # For metadata saving
 zeroize = "1.7"
-aes-gcm = "0.10.3"
+
+#  network dependencies
+quinn = "0.10"
+rustls = "0.21"
+tokio = { version = "1.0", features = ["full"] }
