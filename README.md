@@ -132,6 +132,7 @@ See [`PROTOCOL.md`](./PROTOCOL.md) for protocol details.
 
 * [`PROTOCOL.md`](./PROTOCOL.md) — Wire format and network protocol for chunk transfer
 * [`THREAT_MODEL.md`](./THREAT_MODEL.md) — Security goals, threat analysis, mitigations
+* [`ROADMAP.md`](./ROADMAP.md) — Project direction, milestones, and planned features
 * `src/main.rs` — CLI tool: chunked file read, per-chunk AES-256-GCM, signed manifest, envelope output, decrypt/verify mode, key management
 * `Cargo.toml` — all crypto and serialization dependencies
 
@@ -230,6 +231,8 @@ The protocol is versioned (see StreamHeader and file preamble). Future changes w
 ## Security and Threat Model
 
 For a detailed analysis of security goals, threat actors, attack vectors, mitigations, and future roadmap, see [`THREAT_MODEL.md`](./THREAT_MODEL.md).
+
+For project direction, milestones, and planned features, see [`ROADMAP.md`](./ROADMAP.md).
 
 - Covers network, application, cryptographic, side-channel, and physical threats
 - Describes current and planned mitigations
