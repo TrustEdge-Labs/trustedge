@@ -57,15 +57,17 @@ struct SignedManifest {
 }
 ```
 
+
 ### 2.2. Fields and AAD recipe
 
-AAD = BLAKE3(header) || seq_be(8) || nonce(12) || BLAKE3(manifest_bytes)
+- **AAD** = BLAKE3(header) || seq_be(8) || nonce(12) || BLAKE3(manifest_bytes)
+- **Nonce** = nonce_prefix(4) || seq_be(8) (unique per key/session)
+- **Record** = seq, nonce, signed_manifest { manifest_bytes, ed25519_sig, pubkey }, ct
 
-Nonce = nonce_prefix(4) || seq_be(8) (unique per key/session).
-
-Record = seq, nonce, signed_manifest { manifest_bytes, ed25519_sig, pubkey }, ct.
+**Integrity check:** Each record's nonce prefix must match the stream header's nonce prefix. This is enforced during decryption and helps prevent record tampering or mixing between streams.
 
 ---
+
 
 ## 3. Protocol Flow
 
@@ -75,20 +77,28 @@ Record = seq, nonce, signed_manifest { manifest_bytes, ed25519_sig, pubkey }, ct
    - Client sends a sequence of length-prefixed `NetworkChunk` messages.
    - Server receives, validates, and (optionally) decrypts each chunk.
 3. **Validation:**
-   - Server checks manifest signature, nonce, sequence, and timestamp.
-   - Decrypts chunk using provided nonce and key.
+   - Server checks manifest signature, nonce, sequence, timestamp, and that the record's nonce prefix matches the stream header's prefix.
+   - Decrypts chunk using provided nonce and key (see Key Selection below).
    - Verifies plaintext hash matches manifest.
+   - If any validation fails (e.g., signature, nonce prefix, hash), the record is rejected and an error is reported/logged.
 4. **Acknowledgment (Future):**
    - Protocol may be extended to include ACKs, error reporting, or flow control.
 
 ---
 
+
 ## 4. Security Considerations
 
 - **Confidentiality:** AES-256-GCM per chunk
-- **Integrity:** Ed25519 signatures on manifests, AES-GCM tags
+- **Integrity:** Ed25519 signatures on manifests, AES-GCM tags, and nonce prefix integrity
 - **Replay Protection:** Sequence numbers and timestamps
 - **Extensibility:** Protocol is versioned and designed for future upgrades (e.g., QUIC, mutual TLS, chunk reordering, error handling)
+
+### Key Selection
+
+- The decryption key must be provided via `--key-hex` (64-char hex) or derived from the keyring using `--use-keyring` and `--salt-hex` (32 hex chars, 16 bytes).
+- In decrypt mode, one of these must be provided; random key is not allowed.
+- In encrypt mode, if neither is provided, a random key is generated and optionally saved with `--key-out`.
 
 ---
 
