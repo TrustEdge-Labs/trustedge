@@ -4,7 +4,7 @@
 
 ---
 
-## Outcomes (What we’ll ship)
+## Outcomes (To Be Shipped)
 
 1. **TrustEdge SDK (Rust crate + FFI-ready)**
 
