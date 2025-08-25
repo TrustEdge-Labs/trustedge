@@ -1,0 +1,234 @@
+diff --git a/src/main.rs b/src/main.rs
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -39,6 +39,10 @@ const AAD_LEN: usize = 32    /* header_hash */ 
+                         + NONCE_LEN /* nonce */ 
+                         + 32 /* manifest_hash */;
+ 
++// simple preamble so readers can fail fast and support future format bumps
++const MAGIC: &[u8; 4] = b"TRST";
++const VERSION: u8 = 1;
++
+ /// Simple local demo: reads an input file in chunks, encrypts each chunk with AES-256-GCM,
+ /// then immediately decrypts and verifies, then writes a copy of the plaintext to --out
+ /// to show round-trip integrity.
+@@ -216,7 +220,7 @@ fn build_aad(header_hash: &[u8; 32], seq: u64, nonce: &[u8; NONCE_LEN], manife
+ // helper function to decrypt the envelope
+ fn decrypt_envelope(args: &Args) -> Result<()> {
+-    // Require key for decrypt
++    // Select/derive AES key for decrypt
+-    let key_hex = select_aes_key(args, &KeyManager::new(), Mode::Decrypt)?;
+-
+-    let key_bytes = if args.use_keyring {
++    let mut key_bytes = if args.use_keyring {
+         let key_manager = KeyManager::new();
+         let salt_hex = args.salt_hex.as_ref()
+             .ok_or_else(|| anyhow!("--salt-hex required when using keyring for decrypt"))?;
+@@ -238,9 +242,17 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
+     let mut r = BufReader::new(File::open(input).context("open envelope")?);
+     let mut w = BufWriter::new(File::create(out).context("create output")?);
+ 
+-    // Read stream header - check length and nonce prefix
++    // Read preamble and stream header
++    use std::io::Read as _;
++    let mut magic = [0u8; 4];
++    r.read_exact(&mut magic).context("read magic")?;
++    anyhow::ensure!(&magic == MAGIC, "bad magic");
++    let mut ver = [0u8; 1];
++    r.read_exact(&mut ver).context("read version")?;
++    anyhow::ensure!(ver[0] == VERSION, "unsupported version");
++    // Read stream header - check length and nonce prefix
+     let sh: StreamHeader = deserialize_from(&mut r).context("read stream header")?;
+     anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
+     let stream_nonce_prefix: [u8; 4] = sh.header[50..54].try_into().unwrap();
+@@ -252,6 +264,7 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
+ 
+     // Consume records until EOF
+     let mut total_out = 0usize;
++    let mut expected_seq: u64 = 1;
+     loop {
+         // Try to read next record
+         let rec: Record = match deserialize_from(&mut r) {
+@@ -266,6 +279,9 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
+ 
+         // Ensure the record's nonce prefix matches the stream header's prefix
+         anyhow::ensure!(rec.nonce[..4] == stream_nonce_prefix,"record nonce prefix != stream header nonce_prefix");
++        // Ensure monotonic, contiguous sequence numbers
++        anyhow::ensure!(rec.seq == expected_seq, "non-contiguous sequence: got {}, expected {}", rec.seq, expected_seq);
++        expected_seq = expected_seq.checked_add(1).ok_or_else(|| anyhow!("seq overflow"))?;
+ 
+         // Verify the signed manifest
+         let pubkey_arr: [u8; 32] = rec.sm.pubkey.as_slice().try_into().context("pubkey length != 32")?;
+@@ -299,6 +315,8 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
+     w.flush().context("flush plaintext")?;
+ 
+     // status and exit
++    // clear key material
++    key_bytes.zeroize();
+     eprintln!("Decrypt complete. Wrote {} bytes.", total_out);
+     Ok(())
+ }
+@@ -309,9 +327,13 @@ fn write_stream_header<W: std::io::Write>(
+     header_bytes: &[u8; HEADER_LEN],
+     header_hash: &[u8; 32],
+ ) -> anyhow::Result<()> {
++    // write preamble
++    use std::io::Write as _;
++    w.write_all(MAGIC).context("write magic")?;
++    w.write_all(&[VERSION]).context("write version")?;
+     let sh = StreamHeader {
+         v: 1,
+         header: header_bytes.to_vec(),   // Vec<u8> so Serde is happy
+         header_hash: *header_hash,       // copy into [u8; 32]
+     };
+     serialize_into(w, &sh).context("write stream header")?;
+     Ok(())
+ }
+@@ -430,12 +452,16 @@ fn main() -> Result<()> {
+         // Build AAD: [header_hash][seq][nonce][manifest_hash]
+         let aad = build_aad(header_hash.as_bytes(), seq, &nonce_bytes, mhash.as_bytes());
+ 
+         // encrypt a chunk
+         let ct = cipher
+             .encrypt(nonce, Payload { msg: &buf[..n], aad: &aad })
+             .map_err(|_| anyhow!("AES-GCM encrypt failed"))?;
+ 
+-        // quick bad payload check
+-        let mut ct_bad = ct.clone();
+-        ct_bad[0] ^= 0x01;
+-        let should_err = cipher.decrypt(nonce, Payload { msg: &ct_bad, aad: &aad });
+-        debug_assert!(should_err.is_err(), "tamper test should fail");
++        // quick bad payload check (debug builds only)
++        #[cfg(debug_assertions)]
++        {
++            if !ct.is_empty() {
++                let mut ct_bad = ct.clone();
++                ct_bad[0] ^= 0x01;
++                debug_assert!(cipher.decrypt(nonce, Payload { msg: &ct_bad, aad: &aad }).is_err(), "tamper test should fail");
++            }
++        }
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+
