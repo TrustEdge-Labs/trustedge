@@ -58,23 +58,42 @@ cd trustedge/trustedge-audio
 # Build
 cargo build --release
 
-# Encrypt and write envelope
+
+# Encrypt and write envelope (with hex key)
 ./target/release/trustedge-audio \
-  -i ./sample.wav \
+  --input ./sample.wav \
   --envelope ./sample.trst \
   --key-out ./aeskey.hex
 
-# Decrypt envelope to plaintext
+# Decrypt envelope to plaintext (with hex key)
 ./target/release/trustedge-audio \
   --decrypt \
-  -i ./sample.trst \
-  -o ./roundtrip.wav \
+  --input ./sample.trst \
+  --out ./roundtrip.wav \
   --key-hex $(cat ./aeskey.hex)
+
+# Set a passphrase in the system keyring (run once)
+./target/release/trustedge-audio --set-passphrase "my secret passphrase"
+
+# Encrypt using keyring-derived key
+./target/release/trustedge-audio \
+  --input ./sample.wav \
+  --envelope ./sample.trst \
+  --use-keyring \
+  --salt-hex <32-hex-chars>
+
+# Decrypt using keyring-derived key
+./target/release/trustedge-audio \
+  --decrypt \
+  --input ./sample.trst \
+  --out ./roundtrip.wav \
+  --use-keyring \
+  --salt-hex <32-hex-chars>
 
 # Or, for a simple round-trip (no envelope):
 ./target/release/trustedge-audio \
-  -i ./sample.wav \
-  -o ./roundtrip.wav \
+  --input ./sample.wav \
+  --out ./roundtrip.wav \
   --chunk 8192
 
 
@@ -123,16 +142,19 @@ See [`PROTOCOL.md`](./PROTOCOL.md) for protocol details.
 
 ### CLI options
 
-| Flag             | Description                                                      | Mode(s)           |
-|------------------|------------------------------------------------------------------|-------------------|
-| `-i, --input`    | Input file (audio or any bytes)                                  | Both              |
-| `-o, --out`      | Output file (decrypted/plaintext)                                | Both              |
-| `--chunk`        | Chunk size in bytes (default: 4096)                              | Both              |
-| `--envelope`     | Write envelope file (.trst) with header + records                | Envelope          |
-| `--no-plaintext` | Skip writing round-tripped plaintext                             | Both              |
-| `--decrypt`      | Decrypt envelope to plaintext                                    | Envelope/Decrypt  |
-| `--key-hex`      | 64-char hex AES-256 key (for encrypt/decrypt)                    | Both              |
-| `--key-out`      | Save generated key to file (encrypt mode)                        | Envelope/Encrypt  |
+| Flag               | Description                                                      | Mode(s)           |
+|--------------------|------------------------------------------------------------------|-------------------|
+| `--input`          | Input file (audio or any bytes)                                  | Both              |
+| `--out`            | Output file (decrypted/plaintext)                                | Both              |
+| `--chunk`          | Chunk size in bytes (default: 4096)                              | Both              |
+| `--envelope`       | Write envelope file (.trst) with header + records                | Envelope          |
+| `--no-plaintext`   | Skip writing round-tripped plaintext                             | Both              |
+| `--decrypt`        | Decrypt envelope to plaintext                                    | Envelope/Decrypt  |
+| `--key-hex`        | 64-char hex AES-256 key (for encrypt/decrypt)                    | Both              |
+| `--key-out`        | Save generated key to file (encrypt mode)                        | Envelope/Encrypt  |
+| `--set-passphrase` | Store a passphrase in the system keyring (run once)              | Key management    |
+| `--use-keyring`    | Use keyring passphrase for key derivation (PBKDF2)               | Both              |
+| `--salt-hex`       | 32-char hex salt for PBKDF2 key derivation (with keyring)        | Both              |
 
 ### How it works
 
@@ -167,11 +189,18 @@ The `.trst` envelope file is a binary format containing:
 - **Record(s)**: sequence number, nonce, signed manifest (with Ed25519 signature), ciphertext (AES-GCM)
 All fields are bincode-encoded for compactness and speed.
 
+
 ### Key management
 
 - `--key-hex`: Use a user-supplied 64-char hex key for AES-256 (encrypt/decrypt)
 - `--key-out`: Save the randomly generated key to a file (encrypt mode)
-- If neither is provided, a random key is generated and printed to stderr (demo only)
+- `--set-passphrase`: Store a passphrase in the system keyring (run once)
+- `--use-keyring`: Use the keyring passphrase for key derivation (PBKDF2)
+- `--salt-hex`: 32-char hex salt for PBKDF2 key derivation (required with `--use-keyring`)
+- If neither `--key-hex` nor `--use-keyring` is provided, a random key is generated and printed to stderr (demo only)
+- `--key-hex` and `--use-keyring` are mutually exclusive
+- PBKDF2 uses SHA-256, 100,000 iterations, and a 16-byte salt
+
 
 
 ### Next steps
@@ -179,6 +208,7 @@ All fields are bincode-encoded for compactness and speed.
 * [x] Write header and manifest+ct to output for a real encrypted file format
 * [x] Add a decrypt/verify mode to the CLI
 * [x] Document the file format (header, manifest, chunk) in the README
+* [x] Add passphrase/keyring-based key management and PBKDF2 support
 * [ ] Add more tests for serialization, AAD, and round-trip
 * [ ] (Optional) Add logging for chunk/manifest info
 
