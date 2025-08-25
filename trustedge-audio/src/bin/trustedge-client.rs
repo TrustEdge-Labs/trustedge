@@ -1,32 +1,56 @@
-//
 // Copyright (c) 2025 John Turner
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
 // Project: trustedge — Privacy and trust at the edge.
 //
-use tokio::net::TcpStream;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use anyhow::{Result, Context};
-use trustedge_audio::NetworkChunk;
-use clap::Parser;
-use std::path::PathBuf;
 
-// Import the cryptography stuff from main.rs
+use anyhow::{Context, Result};
+use clap::Parser;
+use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
+
+// From lib.rs
+use trustedge_audio::{KeyManager, NetworkChunk, NONCE_LEN};
+
+// --- Crypto ---
 use aes_gcm::{
     aead::{Aead, KeyInit, OsRng, Payload},
     Aes256Gcm, Key, Nonce,
 };
-use ed25519_dalek::{SigningKey, VerifyingKey, Signature, Signer};
+use ed25519_dalek::{Signature, Signer, SigningKey};
 use rand_core::RngCore;
-use serde::{Serialize, Deserialize};
 
-use trustedge_audio::NONCE_LEN;
-use trustedge_audio::KeyManager;
+// AAD length = 32 (header_hash) + 8 (seq) + NONCE_LEN + 32 (manifest_hash)
+const AAD_LEN: usize = 32 + 8 + NONCE_LEN + 32;
 
-// structures from main.rs
-const AAD_LEN: usize = 84;
+// Minimal header (same layout as main/server header)
+const HEADER_LEN: usize = 58;
+#[derive(Clone, Copy, Debug)]
+struct FileHeader {
+    version: u8,
+    alg: u8,
+    key_id: [u8; 16],
+    device_id_hash: [u8; 32],
+    nonce_prefix: [u8; 4],
+    chunk_size: u32, // big-endian on wire
+}
+impl FileHeader {
+    fn to_bytes(&self) -> [u8; HEADER_LEN] {
+        let mut out = [0u8; HEADER_LEN];
+        out[0] = self.version;
+        out[1] = self.alg;
+        out[2..18].copy_from_slice(&self.key_id);
+        out[18..50].copy_from_slice(&self.device_id_hash);
+        out[50..54].copy_from_slice(&self.nonce_prefix);
+        out[54..58].copy_from_slice(&self.chunk_size.to_be_bytes());
+        out
+    }
+}
 
+// Manifest + SignedManifest match server
 #[derive(Serialize, Deserialize)]
 struct Manifest {
     v: u8,
@@ -51,35 +75,35 @@ struct Args {
     /// Server address to connect to
     #[arg(short, long, default_value = "127.0.0.1:8080")]
     server: std::net::SocketAddr,
-    
+
     /// File to send (will be processed into chunks)
     #[arg(short, long)]
     file: Option<PathBuf>,
-    
-    /// Send test chunks instead of a real file
+
+    /// Send synthetic encrypted chunks instead of a real file
     #[arg(long)]
     test_chunks: Option<u64>,
-    
+
     /// Chunk size for file processing
     #[arg(long, default_value_t = 4096)]
     chunk_size: usize,
-    
-    /// AES-256 key as hex (64 chars) - if not provided, generates random
+
+    /// AES-256 key as hex (64 chars) - if not provided, generate or use keyring
     #[arg(long)]
     key_hex: Option<String>,
-    
+
     /// Set passphrase in system keyring (run once to configure)
     #[arg(long)]
     set_passphrase: Option<String>,
 
-    /// Salt for key derivation (hex string)
+    /// Salt for key derivation (hex, 32 chars -> 16 bytes)
     #[arg(long)]
     salt_hex: Option<String>,
 
     /// Use keyring passphrase instead of --key-hex
     #[arg(long)]
     use_keyring: bool,
-    
+
     /// Verbose logging
     #[arg(short, long)]
     verbose: bool,
@@ -88,50 +112,26 @@ struct Args {
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
-    
+
     let key_manager = KeyManager::new();
-    
-    // Handle setting passphrase
-    if let Some(passphrase) = args.set_passphrase {
-        key_manager.store_passphrase(&passphrase)?;
+
+    if let Some(passphrase) = args.set_passphrase.as_ref() {
+        key_manager.store_passphrase(passphrase)?;
         println!("Passphrase stored in system keyring");
         return Ok(());
     }
-    
-    println!("Connecting to TrustEdge server at {}", args.server);
-    
-    let mut stream = TcpStream::connect(args.server).await
-        .with_context(|| format!("Failed to connect to {}", args.server))?;
-    
-    println!("Connected successfully!");
-    
-    // Determine encryption key
-    if let Some(num_chunks) = args.test_chunks {
-        send_test_chunks(&mut stream, num_chunks, args.verbose).await?;
-    } else if let Some(ref file_path) = args.file {
-        send_encrypted_file(&mut stream, file_path, &args, &key_manager).await?;
-    } else {
-        return Err(anyhow::anyhow!("Must specify either --file or --test-chunks"));
-    }
-    
-    println!("All chunks sent successfully!");
-    Ok(())
-}
 
-async fn send_encrypted_file(
-    stream: &mut TcpStream, 
-    file_path: &PathBuf,
-    args: &Args,
-    key_manager: &KeyManager
-) -> Result<()> {
-    println!("Encrypting and sending file: {:?}", file_path);
-    
-    // Set up encryption (copied from main.rs)
-    let signing = SigningKey::generate(&mut OsRng);
-    
-    // Key setup - replace the existing key handling with:
+    println!("Connecting to TrustEdge server at {}", args.server);
+    let mut stream = TcpStream::connect(args.server)
+        .await
+        .with_context(|| format!("Failed to connect to {}", args.server))?;
+    println!("Connected successfully!");
+
+    // Determine AES key
     let key_bytes = if args.use_keyring {
-        let salt_hex = args.salt_hex.as_ref()
+        let salt_hex = args
+            .salt_hex
+            .as_ref()
             .ok_or_else(|| anyhow::anyhow!("--salt-hex required when using keyring"))?;
         let salt_bytes = hex::decode(salt_hex)?;
         if salt_bytes.len() != 16 {
@@ -149,117 +149,241 @@ async fn send_encrypted_file(
         println!("Generated AES-256 key: {}", hex::encode(kb));
         kb
     };
-    
-    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
-    
-    // Create dummy header hash for now - IRL use FileHeader
-    let mut header_hash = [0u8; 32];
-    let mut hasher = blake3::Hasher::new();
-    hasher.update(b"dummy-file-header");
-    header_hash.copy_from_slice(hasher.finalize().as_bytes());
-    
-    // Read and encrypt file
-    use tokio::io::AsyncReadExt as _;
-    let mut file = tokio::fs::File::open(file_path).await
+
+    // Choose mode
+    if let Some(n) = args.test_chunks {
+        send_encrypted_test_chunks(&mut stream, n, args.chunk_size, &key_bytes, args.verbose)
+            .await?;
+    } else if let Some(ref file_path) = args.file {
+        send_encrypted_file(&mut stream, file_path, &key_bytes, args.chunk_size, args.verbose)
+            .await?;
+    } else {
+        return Err(anyhow::anyhow!(
+            "Must specify either --file or --test-chunks"
+        ));
+    }
+
+    println!("All chunks sent successfully!");
+    Ok(())
+}
+
+async fn send_encrypted_file(
+    stream: &mut TcpStream,
+    file_path: &PathBuf,
+    key_bytes: &[u8; 32],
+    chunk_size: usize,
+    verbose: bool,
+) -> Result<()> {
+    println!("Encrypting and sending file: {:?}", file_path);
+
+    let signing = SigningKey::generate(&mut OsRng);
+    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
+
+    // Build a real header (mirrors main.rs)
+    let (header_hash, nonce_prefix) = build_session_header(chunk_size)?;
+
+    let mut file = tokio::fs::File::open(file_path)
+        .await
         .with_context(|| format!("Failed to open file: {:?}", file_path))?;
-    
-    let mut buffer = vec![0u8; args.chunk_size];
+
+    let mut buffer = vec![0u8; chunk_size];
     let mut sequence = 0u64;
     let mut total_bytes_sent = 0usize;
-    
-    // Nonce setup - use random prefix for real security
-    let mut nonce_prefix = [0u8; 4];
-    OsRng.fill_bytes(&mut nonce_prefix);  // Back to random for proper security
-    
+
     loop {
-        let bytes_read = file.read(&mut buffer).await
-            .context("Failed to read from file")?;
-            
+        let bytes_read = file.read(&mut buffer).await.context("file read")?;
         if bytes_read == 0 {
-            break; // End of file
+            break;
         }
-        
         sequence += 1;
-        
-        // Create nonce
-        let mut nonce_bytes = [0u8; NONCE_LEN];
-        nonce_bytes[..4].copy_from_slice(&nonce_prefix);
-        nonce_bytes[4..].copy_from_slice(&sequence.to_be_bytes());
+
+        // Nonce = prefix || counter(seq)
+        let nonce_bytes = make_nonce(nonce_prefix, sequence);
         let nonce = Nonce::from_slice(&nonce_bytes);
-        
-        // Hash plaintext
+
+        // Build manifest
         let pt_hash = blake3::hash(&buffer[..bytes_read]);
-        
-        // Create manifest
         let manifest = Manifest {
             v: 1,
-            ts_ms: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_millis() as u64,
+            ts_ms: now_ms(),
             seq: sequence,
             header_hash,
             pt_hash: *pt_hash.as_bytes(),
             ai_used: false,
             model_ids: vec![],
         };
-        
-        // Sign manifest
+
+        // Sign & wrap
         let m_bytes = bincode::serialize(&manifest)?;
         let sig: Signature = signing.sign(&m_bytes);
-        
-        let signed_manifest = SignedManifest {
+        let sm = SignedManifest {
             manifest: m_bytes.clone(),
             sig: sig.to_bytes().to_vec(),
             pubkey: signing.verifying_key().to_bytes().to_vec(),
         };
-        
-        // Create AAD
-        let manifest_hash = blake3::hash(&m_bytes);
-        let aad = build_aad(&header_hash, sequence, &nonce_bytes, manifest_hash.as_bytes());
-        
-        // Encrypt chunk
+
+        // AAD
+        let aad = build_aad(&header_hash, sequence, &nonce_bytes, blake3::hash(&m_bytes).as_bytes());
+
+        // Encrypt
         let ciphertext = cipher
             .encrypt(nonce, Payload { msg: &buffer[..bytes_read], aad: &aad })
             .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
-        
-        // Create NetworkChunk with the nonce
-        let network_chunk = NetworkChunk::new_with_nonce(
+
+        // Frame
+        let chunk = NetworkChunk::new_with_nonce(
             sequence,
             ciphertext,
-            bincode::serialize(&signed_manifest)?,
-            nonce_bytes,  // Include the actual nonce used
+            bincode::serialize(&sm)?,
+            nonce_bytes,
         );
-        
-        // Send to server
-        send_chunk(stream, &network_chunk, args.verbose).await
-            .with_context(|| format!("Failed to send encrypted chunk {}", sequence))?;
-        
-        // Read acknowledgment
-        let ack = read_ack(stream).await
-            .with_context(|| format!("Failed to read ACK for chunk {}", sequence))?;
-        
+
+        send_chunk(stream, &chunk, verbose).await?;
+        let ack = read_ack(stream).await?;
         total_bytes_sent += bytes_read;
-        
-        if args.verbose {
-            println!("✅ Encrypted chunk {} sent ({} bytes plaintext -> {} bytes encrypted), ACK: {}", 
-                     sequence, bytes_read, network_chunk.data.len(), ack);
+
+        if verbose {
+            println!(
+                "✅ Encrypted chunk {} sent ({} pt bytes → {} ct bytes), ACK: {}",
+                sequence,
+                bytes_read,
+                chunk.data.len(),
+                ack
+            );
         } else {
             print!("🔐");
             use std::io::Write;
-            std::io::stdout().flush().unwrap();
+            std::io::stdout().flush().ok();
         }
     }
-    
-    if !args.verbose {
-        println!(); // New line after progress
+
+    if !verbose {
+        println!();
     }
-    
-    println!("📊 Encrypted file transfer complete: {} chunks, {} bytes total", sequence, total_bytes_sent);
+    println!(
+        "📊 Encrypted file transfer complete: {} chunks, {} bytes total",
+        sequence, total_bytes_sent
+    );
     Ok(())
 }
 
-// Helper functions copied from main.rs
+async fn send_encrypted_test_chunks(
+    stream: &mut TcpStream,
+    num_chunks: u64,
+    chunk_size: usize,
+    key_bytes: &[u8; 32],
+    verbose: bool,
+) -> Result<()> {
+    println!("📦 Sending {} encrypted test chunks…", num_chunks);
+
+    let signing = SigningKey::generate(&mut OsRng);
+    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
+
+    // Real header (so server can lock invariants)
+    let (header_hash, nonce_prefix) = build_session_header(chunk_size)?;
+
+    for seq in 1..=num_chunks {
+        // Synthesize plaintext of up to chunk_size bytes
+        let mut pt = format!("This is encrypted test chunk #{seq}. ").into_bytes();
+        while pt.len() < chunk_size.min(2048) {
+            pt.extend_from_slice(b"padding...");
+        }
+
+        let nonce_bytes = make_nonce(nonce_prefix, seq);
+        let nonce = Nonce::from_slice(&nonce_bytes);
+
+        let pt_hash = blake3::hash(&pt);
+        let manifest = Manifest {
+            v: 1,
+            ts_ms: now_ms(),
+            seq,
+            header_hash,
+            pt_hash: *pt_hash.as_bytes(),
+            ai_used: false,
+            model_ids: vec![],
+        };
+
+        let m_bytes = bincode::serialize(&manifest)?;
+        let sig: Signature = signing.sign(&m_bytes);
+        let sm = SignedManifest {
+            manifest: m_bytes.clone(),
+            sig: sig.to_bytes().to_vec(),
+            pubkey: signing.verifying_key().to_bytes().to_vec(),
+        };
+
+        let aad = build_aad(&header_hash, seq, &nonce_bytes, blake3::hash(&m_bytes).as_bytes());
+        let ciphertext = cipher
+            .encrypt(nonce, Payload { msg: &pt, aad: &aad })
+            .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
+
+        let chunk =
+            NetworkChunk::new_with_nonce(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
+
+        send_chunk(stream, &chunk, verbose).await?;
+        let ack = read_ack(stream).await?;
+
+        if verbose {
+            println!("✅ Test chunk {} acknowledged: {}", seq, ack);
+        } else {
+            print!("🔐");
+            use std::io::Write;
+            std::io::stdout().flush().ok();
+        }
+    }
+
+    if !verbose {
+        println!();
+    }
+    Ok(())
+}
+
+// --- Small helpers -----------------------------------------------------------
+
+fn now_ms() -> u64 {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as u64
+}
+
+fn make_nonce(prefix: [u8; 4], seq: u64) -> [u8; NONCE_LEN] {
+    let mut nonce_bytes = [0u8; NONCE_LEN];
+    nonce_bytes[..4].copy_from_slice(&prefix);
+    nonce_bytes[4..].copy_from_slice(&seq.to_be_bytes());
+    nonce_bytes
+}
+
+fn build_session_header(chunk_size: usize) -> Result<([u8; 32], [u8; 4])> {
+    // Random fields per session
+    let mut nonce_prefix = [0u8; 4];
+    OsRng.fill_bytes(&mut nonce_prefix);
+    let mut key_id = [0u8; 16];
+    OsRng.fill_bytes(&mut key_id);
+
+    // Device hash from env (like main.rs), but tolerate absence
+    let device_id = std::env::var("TRUSTEDGE_DEVICE_ID").unwrap_or_else(|_| "trustedge-abc123".into());
+    let salt = std::env::var("TRUSTEDGE_SALT").unwrap_or_else(|_| "trustedge-demo-salt".into());
+    let mut device_id_hash = [0u8; 32];
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(device_id.as_bytes());
+    hasher.update(salt.as_bytes());
+    device_id_hash.copy_from_slice(hasher.finalize().as_bytes());
+
+    let header = FileHeader {
+        version: 1,
+        alg: 1, // ALG_AES_256_GCM
+        key_id,
+        device_id_hash,
+        nonce_prefix,
+        chunk_size: chunk_size as u32,
+    };
+    let header_bytes = header.to_bytes();
+    let header_hash = blake3::hash(&header_bytes);
+
+    Ok((*header_hash.as_bytes(), nonce_prefix))
+}
+
 fn parse_key_hex(s: &str) -> Result<[u8; 32]> {
     let bytes = hex::decode(s).context("key_hex: not valid hex")?;
     anyhow::ensure!(bytes.len() == 32, "key_hex must be 32 bytes (64 hex chars)");
@@ -268,73 +392,56 @@ fn parse_key_hex(s: &str) -> Result<[u8; 32]> {
     Ok(out)
 }
 
-fn build_aad(header_hash: &[u8; 32], seq: u64, nonce: &[u8; NONCE_LEN], manifest_hash: &[u8; 32]) -> [u8; AAD_LEN] {
+fn build_aad(
+    header_hash: &[u8; 32],
+    seq: u64,
+    nonce: &[u8; NONCE_LEN],
+    manifest_hash: &[u8; 32],
+) -> [u8; AAD_LEN] {
     let mut aad = [0u8; AAD_LEN];
     let mut off = 0;
-    aad[off..off+32].copy_from_slice(header_hash); off += 32;
-    aad[off..off+8].copy_from_slice(&seq.to_be_bytes()); off += 8;
-    aad[off..off+NONCE_LEN].copy_from_slice(nonce); off += NONCE_LEN;
-    aad[off..off+32].copy_from_slice(manifest_hash);
+    aad[off..off + 32].copy_from_slice(header_hash);
+    off += 32;
+    aad[off..off + 8].copy_from_slice(&seq.to_be_bytes());
+    off += 8;
+    aad[off..off + NONCE_LEN].copy_from_slice(nonce);
+    off += NONCE_LEN;
+    aad[off..off + 32].copy_from_slice(manifest_hash);
     aad
 }
 
-// test_chunks and helper functions
-async fn send_test_chunks(stream: &mut TcpStream, num_chunks: u64, verbose: bool) -> Result<()> {
-    println!("📦 Sending {} test chunks to TrustEdge server...", num_chunks);
-    
-    for i in 1..=num_chunks {
-        let test_data = format!("This is test chunk number {}", i).repeat(10);
-        let test_manifest = format!("Test manifest for chunk {}", i);
-        
-        let mut test_nonce = [0u8; NONCE_LEN];
-        rand_core::RngCore::fill_bytes(&mut rand_core::OsRng, &mut test_nonce);
-
-        let chunk = NetworkChunk::new_with_nonce(i, test_data.into_bytes(), test_manifest.into_bytes(), test_nonce);
-        chunk.validate().context("Test chunk validation failed")?;
-        
-        send_chunk(stream, &chunk, verbose).await
-            .with_context(|| format!("Failed to send test chunk {}", i))?;
-        
-        let ack = read_ack(stream).await
-            .with_context(|| format!("Failed to read ACK for chunk {}", i))?;
-            
-        if verbose {
-            println!("✅ Chunk {} acknowledged: {}", i, ack);
-        }
-    }
-    
-    Ok(())
-}
-
 async fn send_chunk(stream: &mut TcpStream, chunk: &NetworkChunk, verbose: bool) -> Result<()> {
-    let serialized = bincode::serialize(chunk)
-        .context("Failed to serialize NetworkChunk")?;
-    
+    let serialized = bincode::serialize(chunk).context("serialize NetworkChunk")?;
     let length = serialized.len() as u32;
-    
+
     if verbose {
         println!("📤 Sending chunk seq={}, {} bytes", chunk.sequence, length);
     }
-    
-    stream.write_all(&length.to_le_bytes()).await
-        .context("Failed to write chunk length")?;
-    stream.write_all(&serialized).await
-        .context("Failed to write chunk data")?;
-    
+
+    stream
+        .write_all(&length.to_le_bytes())
+        .await
+        .context("write chunk length")?;
+    stream
+        .write_all(&serialized)
+        .await
+        .context("write chunk data")?;
     Ok(())
 }
 
 async fn read_ack(stream: &mut TcpStream) -> Result<String> {
     let mut len_bytes = [0u8; 4];
-    stream.read_exact(&mut len_bytes).await
-        .context("Failed to read ACK length")?;
-        
+    stream
+        .read_exact(&mut len_bytes)
+        .await
+        .context("read ACK length")?;
     let length = u32::from_le_bytes(len_bytes) as usize;
-    
+
     let mut ack_bytes = vec![0; length];
-    stream.read_exact(&mut ack_bytes).await
-        .context("Failed to read ACK data")?;
-    
-    String::from_utf8(ack_bytes)
-        .context("ACK is not valid UTF-8")
+    stream
+        .read_exact(&mut ack_bytes)
+        .await
+        .context("read ACK data")?;
+
+    String::from_utf8(ack_bytes).context("ACK is not valid UTF-8")
 }
