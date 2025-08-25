@@ -10,6 +10,8 @@ Project: trustedge — Privacy and trust at the edge.
 **Date**: August 2025  
 **Scope**: Edge AI privacy-preserving data processing system
 
+> **Related Documentation**: For vulnerability reporting and security policies, see [`SECURITY.md`](./SECURITY.md)
+
 ## Overview
 
 TrustEdge is designed to provide privacy-preserving data processing at the edge, with a focus on AI workloads. This threat model identifies security threats, attack vectors, and the defenses implemented or planned to mitigate them.

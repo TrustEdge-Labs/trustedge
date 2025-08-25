@@ -8,6 +8,8 @@ Project: trustedge — Privacy and trust at the edge.
 
 > **North Star:** Trusted data from the edge. Capture bytes (audio/video/sensor), encrypt at the edge, attach verifiable provenance, and move them through untrusted pipes. Anyone downstream can **route** and **verify**; nobody can **forge** or **peek**.
 
+> **Security**: For security policies and vulnerability reporting, see [`SECURITY.md`](./SECURITY.md)
+
 ---
 
 ## Outcomes (To Be Shipped)
@@ -166,6 +168,30 @@ Project: trustedge — Privacy and trust at the edge.
 
 ---
 
+## Milestone M6 — **Security Review & Hardening**
+
+**Goal:** Comprehensive security audit and hardening before v1.0 release.
+
+**Scope**
+
+* [ ] External cryptographic audit of implementation
+* [ ] Side-channel attack analysis and mitigations
+* [ ] Fuzzing campaign for all deserializers and network code
+* [ ] Security testing of key management and nonce handling
+* [ ] Review dependency supply chain and implement security monitoring
+* [ ] Documentation review for security implications
+* [ ] Penetration testing of network protocol components
+* [ ] Performance impact analysis of security features
+
+**Acceptance**
+
+* Clean external security audit report
+* Fuzzing runs 24h+ without crashes on all parsers
+* Security test suite covers all critical paths
+* Security documentation complete and reviewed
+
+---
+
 ## Longer-Term
 
 * **Interoperability:** Optional CBOR/COSE envelope variant; map manifest to C2PA claims where practical.
@@ -189,6 +215,8 @@ Project: trustedge — Privacy and trust at the edge.
 * **Spec drift** → Single source of truth in `trustedge_audio` crate; doc + vectors.
 * **Key loss** → Documented key derivation and rotation; warn loud in CLIs.
 * **DoS via malformed input** → Length checks, fuzzing, non-allocating decode paths where possible.
+
+> **See Also**: [`THREAT_MODEL.md`](./THREAT_MODEL.md) for comprehensive threat analysis and [`SECURITY.md`](./SECURITY.md) for security policies.
 
 ---
 

@@ -9,14 +9,11 @@ Project: trustedge — Privacy and trust at the edge.
 **Version:** 0.1 (Draft)
 **Date:** August 24, 2025
 
+> **Related Documentation**: For security policies and vulnerability reporting, see [`SECURITY.md`](./SECURITY.md)
+
 ## Overview
 
-Th3. **Validation:**
-   - Server checks manifest signature, nonce, sequence, timestamp, and that:
-     - The record's nonce prefix matches the stream header's prefix
-     - The nonce counter matches the record's sequence number
-     - The manifest's `seq` matches the record's sequence number
-     - The manifest's `key_id` matches the session's expected key identifiercument describes the wire format and protocol for chunk transfer between TrustEdge clients and servers. The protocol is designed for privacy-preserving, authenticated, and integrity-checked streaming of data (e.g., audio) at the edge.
+This document describes the wire format and protocol for chunk transfer between TrustEdge clients and servers. The protocol is designed for privacy-preserving, authenticated, and integrity-checked streaming of data (e.g., audio) at the edge.
 
 ---
 
