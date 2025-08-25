@@ -130,6 +130,7 @@ See [`PROTOCOL.md`](./PROTOCOL.md) for protocol details.
 
 ### Documentation
 
+* [`FORMAT.md`](./FORMAT.md) — Complete binary format specification (structures, byte orders, validation)
 * [`PROTOCOL.md`](./PROTOCOL.md) — Wire format and network protocol for chunk transfer
 * [`THREAT_MODEL.md`](./THREAT_MODEL.md) — Security goals, threat analysis, mitigations
 * [`ROADMAP.md`](./ROADMAP.md) — Project direction, milestones, and planned features
