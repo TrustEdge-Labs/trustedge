@@ -136,9 +136,10 @@ See [`PROTOCOL.md`](./PROTOCOL.md) for protocol details.
 
 ### Documentation
 
-* [`FORMAT.md`](./FORMAT.md) — Complete binary format specification (structures, byte orders, validation)
+* [`FORMAT.md`](./FORMAT.md) — Binary format specification: structures, byte orders, and invariants
 * [`PROTOCOL.md`](./PROTOCOL.md) — Wire format and network protocol for chunk transfer
 * [`THREAT_MODEL.md`](./THREAT_MODEL.md) — Security goals, threat analysis, mitigations
+* [`SECURITY.md`](./SECURITY.md) — Security policy, vulnerability reporting, and best practices
 * [`ROADMAP.md`](./ROADMAP.md) — Project direction, milestones, and planned features
 * `src/format.rs` — Centralized format definitions: types, constants, and helpers
 * `src/main.rs` — CLI tool: chunked file read, per-chunk AES-256-GCM, signed manifest, envelope output, decrypt/verify mode, key management

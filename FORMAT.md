@@ -10,6 +10,8 @@ Project: trustedge — Privacy and trust at the edge.
 **Date:** August 25, 2025  
 **Status:** Draft
 
+> **Related Documentation**: For security considerations and vulnerability reporting, see [`SECURITY.md`](./SECURITY.md)
+
 ## Overview
 
 This document defines the binary format for TrustEdge `.trst` envelope files. The format provides authenticated encryption with provenance for chunked data streams, designed for privacy-preserving edge computing.
