@@ -36,9 +36,12 @@ chrono = { version = "0.4", features = ["serde"] }  # For timestamps
 clap = { version = "4.5", features = ["derive"] }
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 hex = "0.4"
+keyring = "2.0"
+pbkdf2 = "0.12"
 rand_core = "0.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"  # For metadata saving
+sha2 = "0.10"
 zeroize = "1.7"
 
 #  network dependencies

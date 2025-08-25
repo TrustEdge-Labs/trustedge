@@ -12,7 +12,7 @@
 //! Core library for privacy-preserving edge data processing
 
 use serde::{Serialize, Deserialize};
-
+use keyring::Entry;
 
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
 pub const NONCE_LEN: usize = 12;
@@ -89,5 +89,43 @@ impl NetworkChunk {
         }
 
         Ok(())
+    }
+}
+
+// use the system keyring for keys
+pub struct KeyManager {
+    service_name: &'static str,
+    username: &'static str,
+}
+
+impl KeyManager {
+    pub fn new() -> Self {
+        Self {
+            service_name: "trustedge",
+            username: "encryption_key",
+        }
+    }
+    
+    pub fn store_passphrase(&self, passphrase: &str) -> Result<(), anyhow::Error> {
+        let entry = Entry::new(self.service_name, self.username)?;
+        entry.set_password(passphrase)?;
+        Ok(())
+    }
+    
+    pub fn get_passphrase(&self) -> Result<String, anyhow::Error> {
+        let entry = Entry::new(self.service_name, self.username)?;
+        let passphrase = entry.get_password()?;
+        Ok(passphrase)
+    }
+    
+    pub fn derive_key(&self, salt: &[u8; 16]) -> Result<[u8; 32], anyhow::Error> {
+        let passphrase = self.get_passphrase()?;
+        
+        use pbkdf2::pbkdf2_hmac;
+        use sha2::Sha256;
+        
+        let mut key = [0u8; 32];
+        pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), salt, 100_000, &mut key);
+        Ok(key)
     }
 }
