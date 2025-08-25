@@ -13,7 +13,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
 // network payload type from lib.rs
-use trustedge_audio::{KeyManager, NetworkChunk};
+use trustedge_audio::{KeyManager, NetworkChunk, NONCE_LEN, Manifest, SignedManifest, build_aad};
 
 // ---- Crypto bits ------------------------------------------------------------
 
@@ -22,8 +22,6 @@ use aes_gcm::{
     Aes256Gcm, Key, Nonce,
 };
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
-
-use trustedge_audio::{NONCE_LEN, Manifest, SignedManifest, build_aad};
 
 // ---- CLI --------------------------------------------------------------------
 
@@ -67,6 +65,7 @@ struct Args {
 
 struct ProcessingSession {
     connection_id: u64,
+    #[allow(dead_code)]
     chunks: HashMap<u64, (Vec<u8>, SignedManifest)>, // available if you later buffer
     cipher: Option<Aes256Gcm>,
     output_file: Option<tokio::fs::File>,

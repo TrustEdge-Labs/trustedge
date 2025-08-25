@@ -133,7 +133,9 @@ See [`PROTOCOL.md`](./PROTOCOL.md) for protocol details.
 * [`PROTOCOL.md`](./PROTOCOL.md) — Wire format and network protocol for chunk transfer
 * [`THREAT_MODEL.md`](./THREAT_MODEL.md) — Security goals, threat analysis, mitigations
 * [`ROADMAP.md`](./ROADMAP.md) — Project direction, milestones, and planned features
+* `src/format.rs` — Centralized format definitions: types, constants, and helpers
 * `src/main.rs` — CLI tool: chunked file read, per-chunk AES-256-GCM, signed manifest, envelope output, decrypt/verify mode, key management
+* `src/lib.rs` — Core library with network types and key management
 * `Cargo.toml` — all crypto and serialization dependencies
 
 ### CLI options
@@ -174,9 +176,10 @@ AAD (Additional Authenticated Data) is extra data that is authenticated (integri
 Each chunk includes a signed manifest (bincode-encoded struct) containing:
 - Manifest version, timestamp, sequence number
 - Hash of the file header and plaintext chunk
+- Key ID for key identification and rotation support
 - AI/model provenance fields (placeholders)
 - Ed25519 signature and public key (as bytes)
-This allows for strong provenance, integrity, and future extensibility.
+This allows for strong provenance, integrity, key management, and future extensibility.
 
 
 ### Envelope file format and integrity
@@ -208,7 +211,7 @@ These invariants are strictly enforced during decryption and help prevent record
 - **PBKDF2 parameters:** SHA-256, 100,000 iterations, 16-byte (32 hex char) salt.
 ### Error handling
 
-If any validation fails during decryption (e.g., manifest signature, nonce prefix, nonce counter, manifest sequence, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered, out-of-sequence, or replayed records cannot be decrypted or accepted.
+If any validation fails during decryption (e.g., manifest signature, nonce prefix, nonce counter, manifest sequence, key ID mismatch, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered, out-of-sequence, replayed, or incorrectly keyed records cannot be decrypted or accepted.
 
 ---
 

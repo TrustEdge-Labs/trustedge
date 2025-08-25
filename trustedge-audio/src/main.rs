@@ -23,17 +23,14 @@ use zeroize::Zeroize;
 
 use trustedge_audio::{
     // constants
-    NONCE_LEN, MAGIC, VERSION,
+    NONCE_LEN, MAGIC, VERSION, HEADER_LEN, ALG_AES_256_GCM,
     // types
-    Manifest, SignedManifest, StreamHeader, Record,
+    Manifest, SignedManifest, StreamHeader, Record, FileHeader,
     // helpers
     build_aad, write_stream_header,
 };
 
 // --- constants --------------------------------------------------------------
-
-const ALG_AES_256_GCM: u8 = 1;
-const HEADER_LEN: usize = 58;
 
 // --- CLI --------------------------------------------------------------------
 
@@ -83,31 +80,6 @@ struct Args {
     /// Use key derived from keyring passphrase + salt instead of --key-hex
     #[arg(long)]
     use_keyring: bool,
-}
-
-// --- wire types -------------------------------------------------------------
-
-#[derive(Clone, Copy, Debug)]
-struct FileHeader {
-    version: u8,              // 1
-    alg: u8,                  // 1
-    key_id: [u8; 16],         // 16
-    device_id_hash: [u8; 32], // 32
-    nonce_prefix: [u8; 4],    // 4
-    chunk_size: u32,          // 4 (BE)
-}
-
-impl FileHeader {
-    fn to_bytes(&self) -> [u8; HEADER_LEN] {
-        let mut out = [0u8; HEADER_LEN];
-        out[0] = self.version;
-        out[1] = self.alg;
-        out[2..18].copy_from_slice(&self.key_id);
-        out[18..50].copy_from_slice(&self.device_id_hash);
-        out[50..54].copy_from_slice(&self.nonce_prefix);
-        out[54..58].copy_from_slice(&self.chunk_size.to_be_bytes());
-        out
-    }
 }
 
 // --- helpers ---------------------------------------------------------------
@@ -390,6 +362,7 @@ fn main() -> Result<()> {
             seq,
             header_hash: *header_hash.as_bytes(),
             pt_hash: *pt_hash.as_bytes(),
+            key_id: header.key_id,
             ai_used: false,
             model_ids: vec![],
         };

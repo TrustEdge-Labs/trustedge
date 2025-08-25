@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
-use trustedge_audio::{KeyManager, NetworkChunk, NONCE_LEN, Manifest, SignedManifest, build_aad};
+use trustedge_audio::{KeyManager, NetworkChunk, NONCE_LEN, ALG_AES_256_GCM, Manifest, SignedManifest, FileHeader, build_aad};
 
 // --- Cryptograph ---
 use aes_gcm::{
@@ -20,31 +20,6 @@ use aes_gcm::{
 };
 use ed25519_dalek::{Signature, Signer, SigningKey};
 use rand_core::RngCore;
-
-// Minimal header (same layout as main/server header)
-const HEADER_LEN: usize = 58;
-#[derive(Clone, Copy, Debug)]
-struct FileHeader {
-    version: u8,
-    alg: u8,
-    key_id: [u8; 16],
-    device_id_hash: [u8; 32],
-    nonce_prefix: [u8; 4],
-    chunk_size: u32, // big-endian on wire
-}
-
-impl FileHeader {
-    fn to_bytes(&self) -> [u8; HEADER_LEN] {
-        let mut out = [0u8; HEADER_LEN];
-        out[0] = self.version;
-        out[1] = self.alg;
-        out[2..18].copy_from_slice(&self.key_id);
-        out[18..50].copy_from_slice(&self.device_id_hash);
-        out[50..54].copy_from_slice(&self.nonce_prefix);
-        out[54..58].copy_from_slice(&self.chunk_size.to_be_bytes());
-        out
-    }
-}
 
 #[derive(Parser, Debug)]
 #[command(name = "trustedge-client", version, about = "TrustEdge network client")]
@@ -157,7 +132,7 @@ async fn send_encrypted_file(
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
 
     // Build a real header (mirrors main.rs)
-    let (header_hash, nonce_prefix) = build_session_header(chunk_size)?;
+    let (header_hash, nonce_prefix, key_id) = build_session_header(chunk_size)?;
 
     let mut file = tokio::fs::File::open(file_path)
         .await
@@ -186,6 +161,7 @@ async fn send_encrypted_file(
             seq: sequence,
             header_hash,
             pt_hash: *pt_hash.as_bytes(),
+            key_id,
             ai_used: false,
             model_ids: vec![],
         };
@@ -257,7 +233,7 @@ async fn send_encrypted_test_chunks(
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
 
     // Real header (so server can lock invariants)
-    let (header_hash, nonce_prefix) = build_session_header(chunk_size)?;
+    let (header_hash, nonce_prefix, key_id) = build_session_header(chunk_size)?;
 
     for seq in 1..=num_chunks {
         // Synthesize plaintext of up to chunk_size bytes
@@ -276,6 +252,7 @@ async fn send_encrypted_test_chunks(
             seq,
             header_hash,
             pt_hash: *pt_hash.as_bytes(),
+            key_id,
             ai_used: false,
             model_ids: vec![],
         };
@@ -331,7 +308,7 @@ fn make_nonce(prefix: [u8; 4], seq: u64) -> [u8; NONCE_LEN] {
     nonce_bytes
 }
 
-fn build_session_header(chunk_size: usize) -> Result<([u8; 32], [u8; 4])> {
+fn build_session_header(chunk_size: usize) -> Result<([u8; 32], [u8; 4], [u8; 16])> {
     // Random fields per session
     let mut nonce_prefix = [0u8; 4];
     OsRng.fill_bytes(&mut nonce_prefix);
@@ -349,7 +326,7 @@ fn build_session_header(chunk_size: usize) -> Result<([u8; 32], [u8; 4])> {
 
     let header = FileHeader {
         version: 1,
-        alg: 1, // ALG_AES_256_GCM
+        alg: ALG_AES_256_GCM,
         key_id,
         device_id_hash,
         nonce_prefix,
@@ -358,7 +335,7 @@ fn build_session_header(chunk_size: usize) -> Result<([u8; 32], [u8; 4])> {
     let header_bytes = header.to_bytes();
     let header_hash = blake3::hash(&header_bytes);
 
-    Ok((*header_hash.as_bytes(), nonce_prefix))
+    Ok((*header_hash.as_bytes(), nonce_prefix, key_id))
 }
 
 fn parse_key_hex(s: &str) -> Result<[u8; 32]> {

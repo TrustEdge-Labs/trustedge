@@ -5,7 +5,12 @@
 
 ## Overview
 
-This document describes the wire format and protocol for chunk transfer between TrustEdge clients and servers. The protocol is designed for privacy-preserving, authenticated, and integrity-checked streaming of data (e.g., audio) at the edge.
+Th3. **Validation:**
+   - Server checks manifest signature, nonce, sequence, timestamp, and that:
+     - The record's nonce prefix matches the stream header's prefix
+     - The nonce counter matches the record's sequence number
+     - The manifest's `seq` matches the record's sequence number
+     - The manifest's `key_id` matches the session's expected key identifiercument describes the wire format and protocol for chunk transfer between TrustEdge clients and servers. The protocol is designed for privacy-preserving, authenticated, and integrity-checked streaming of data (e.g., audio) at the edge.
 
 ---
 
@@ -61,6 +66,7 @@ struct Manifest {
     seq: u64,                // Chunk sequence
     header_hash: [u8; 32],   // BLAKE3 hash of file/session header
     pt_hash: [u8; 32],       // BLAKE3 hash of plaintext chunk
+    key_id: [u8; 16],        // Key identifier for rotation support
     ai_used: bool,           // Placeholder for AI usage
     model_ids: Vec<String>,  // Placeholder for model IDs
 }
@@ -69,6 +75,15 @@ struct SignedManifest {
     manifest: Vec<u8>,       // bincode(Manifest)
     sig: Vec<u8>,            // Ed25519 signature
     pubkey: Vec<u8>,         // Ed25519 public key
+}
+
+struct FileHeader {
+    version: u8,             // File format version
+    alg: u8,                 // Algorithm identifier (1 = AES-256-GCM)
+    key_id: [u8; 16],        // Key identifier (matches manifest.key_id)
+    device_id_hash: [u8; 32], // BLAKE3 hash of device ID + salt
+    nonce_prefix: [u8; 4],   // Random nonce prefix for session
+    chunk_size: u32,         // Chunk size in bytes (big-endian)
 }
 ```
 
@@ -148,11 +163,12 @@ struct SignedManifest {
 
 ## 7. Error Handling
 
-If any validation fails during decryption (e.g., manifest signature, nonce prefix, nonce counter, manifest sequence, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered, out-of-sequence, or replayed records cannot be decrypted or accepted.
+If any validation fails during decryption (e.g., manifest signature, nonce prefix, nonce counter, manifest sequence, key ID mismatch, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered, out-of-sequence, replayed, or incorrectly keyed records cannot be decrypted or accepted.
 
 ---
 
 **See also:**
+- `src/format.rs` — Centralized format definitions and constants
 - `src/lib.rs` for struct definitions
 - `src/main.rs` for CLI and envelope logic
 - `trustedge-client` and `trustedge-server` for protocol usage

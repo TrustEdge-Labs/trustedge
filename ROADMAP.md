@@ -63,6 +63,8 @@
 * [x] Reference client/server with ACKs
 * [x] Keyring-derived key support
 * [x] Shared types/helpers centralized in the lib crate
+* [x] Format types consolidated in `src/format.rs`
+* [x] Key ID field added to manifest for rotation support
 
 ---
 
@@ -72,7 +74,8 @@
 
 **Scope**
 
-* [ ] Finalize manifest fields (add `key_id`; keep `model_ids`, `ai_used`; reserve `device_attest`).
+* [x] Finalize manifest fields (add `key_id`; keep `model_ids`, `ai_used`; reserve `device_attest`).
+* [x] Consolidate format types in centralized `format.rs` module.
 * [ ] Confirm invariants: contiguous `seq`, fixed `nonce_prefix`, `header_hash` match, AAD layout.
 * [ ] File framing: keep preamble + bincode framing; document record boundaries & EOF handling.
 * [ ] Spec doc (`FORMAT.md`): structures, byte orders, invariants, failure modes.
@@ -215,6 +218,8 @@ trustedge-client --server 127.0.0.1:8080 --file input.wav --use-keyring --salt-h
 * **Preamble:** `MAGIC="TRST"`, `VERSION=1`
 * **Envelope:** `StreamHeader { v, header (58), header_hash (32) }` then repeated
   `Record { seq, nonce, sm, ct }`
+* **Manifest:** Includes `key_id` field for key rotation support
+* **FileHeader:** 58 bytes with `key_id`, `device_id_hash`, `nonce_prefix`, and other metadata
 
 ---
 
