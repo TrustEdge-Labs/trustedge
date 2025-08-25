@@ -126,21 +126,21 @@ async fn main() -> Result<()> {
         .await
         .with_context(|| format!("Failed to bind to {}", args.listen))?;
 
-    println!("🚀 TrustEdge server listening on {}", args.listen);
+    println!("[SRV] TrustEdge server listening on {}", args.listen);
     println!(
-        "📁 Output directory: {:?}",
+        "[DIR] Output directory: {:?}",
         args.output_dir
             .as_deref()
             .unwrap_or(std::path::Path::new("(none)"))
     );
-    println!("🔐 Decryption: {}", if args.decrypt { "ENABLED" } else { "disabled" });
+    println!("[SEC] Decryption: {}", if args.decrypt { "ENABLED" } else { "disabled" });
 
     let mut connection_id = 0u64;
 
     loop {
         let (stream, peer_addr) = listener.accept().await?;
         connection_id += 1;
-        println!("🔗 New connection #{} from {}", connection_id, peer_addr);
+    println!("[CONN] New connection #{} from {}", connection_id, peer_addr);
 
         let session = ProcessingSession {
             connection_id,
@@ -158,9 +158,9 @@ async fn main() -> Result<()> {
 
         tokio::spawn(async move {
             if let Err(e) = handle_connection(stream, session, output_dir, decrypt, verbose).await {
-                eprintln!("❌ Connection #{} error: {:#}", connection_id, e);
+                eprintln!("[ERR] Connection #{} error: {:#}", connection_id, e);
             } else {
-                println!("✅ Connection #{} completed", connection_id);
+                println!("[OK] Connection #{} completed", connection_id);
             }
         });
     }
@@ -192,7 +192,7 @@ async fn handle_connection(
                     .with_context(|| format!("Failed to create output file: {:?}", filepath))?,
             );
             println!(
-                "📝 Connection #{}: Writing decrypted data to {:?}",
+                "[WRITE] Connection #{}: Writing decrypted data to {:?}",
                 session.connection_id, filepath
             );
         }
@@ -211,7 +211,7 @@ async fn handle_connection(
 
         if verbose {
             println!(
-                "📦 Connection #{}: Reading frame of {} bytes",
+                "[READ] Connection #{}: Reading frame of {} bytes",
                 session.connection_id, length
             );
         }
@@ -335,7 +335,7 @@ async fn process_and_decrypt_chunk(
         session.stream_nonce_prefix = Some(prefix);
         if verbose {
             println!(
-                "🔒 Conn #{}: locked header_hash and nonce_prefix",
+                "[LOCKED] Conn #{}: locked header_hash and nonce_prefix",
                 session.connection_id
             );
         }
@@ -369,7 +369,7 @@ async fn process_and_decrypt_chunk(
 
     if verbose {
         println!(
-            "🔓 Conn #{}: decrypted seq {} ({} bytes)",
+            "[UNLOCKED] Conn #{}: decrypted seq {} ({} bytes)",
             session.connection_id,
             chunk.sequence,
             pt.len()
