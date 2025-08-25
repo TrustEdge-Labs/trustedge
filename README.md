@@ -13,6 +13,17 @@ aligns with my background in IoT product development, security/PKI and edge syst
 * **Rust at the edge**: safety + performance for streaming workloads
 * **Learning in public**: small, honest milestones → real, reviewable code
 
+**TrustEdge** is a Rust prototype for privacy-preserving, provenance-aware edge audio.
+
+- **Private by default:** audio chunks are encrypted with AES-256-GCM before leaving the device.
+- **Provenance by design:** each chunk carries a signed manifest (C2PA-inspired) whose hash is bound into AEAD AAD; tampering breaks decryption.
+- **Streaming-friendly:** fixed nonce discipline (prefix||counter) and per-chunk records.
+
+**Non-goals (for now):**
+
+- No key management (KMS/TPM) or device identity lifecycle.
+- Not C2PA compliant yet (just “C2PA-inspired”).
+- Not production crypto config (demo keys; no rotation or revocation).
 
 If you’re into Rust, IoT, ML at the edge, or security and have ideas or
 suggestions, I’d love your feedback.
@@ -66,10 +77,35 @@ cargo build --release
   -o ./roundtrip.wav \
   --chunk 8192
 
+
 # Verify byte-for-byte round trip
 sha256sum ./sample.wav ./roundtrip.wav
 # hashes should match
 ```
+
+---
+
+## Network Mode Example
+
+If you have the networked client/server binaries (`trustedge-client` and `trustedge-server`), you can transfer encrypted audio chunks over the network:
+
+### 1. Start the server
+
+```bash
+./target/release/trustedge-server --listen 127.0.0.1:8080 --output_dir ./received_chunks --key-hex <64-char-hex-key> --decrypt
+```
+
+### 2. Run the client
+
+```bash
+./target/release/trustedge-client --server 127.0.0.1:8080 --file ./sample.wav --key-hex <64-char-hex-key>
+```
+
+* The client reads and encrypts the file in chunks, sending each chunk with a signed manifest and nonce.
+* The server receives, validates, and (if `--decrypt` is set) decrypts and saves the plaintext.
+* Use the same key for both client and server for successful decryption.
+
+See [`PROTOCOL.md`](./PROTOCOL.md) for protocol details.
 
 
 **Heads-up:** A matching hash doesn’t “prove” encryption occurred — it proves the **encrypt→decrypt** pipeline is lossless. The code actually performs AES-GCM per chunk and immediately verifies the tag before writing plaintext out.
@@ -87,16 +123,16 @@ sha256sum ./sample.wav ./roundtrip.wav
 
 ### CLI options
 
-| Flag           | Description |
-|----------------|-------------|
-| `-i, --input`  | Input file (audio or any bytes) |
-| `-o, --out`    | Output file (decrypted/plaintext) |
-| `--chunk`      | Chunk size in bytes (default: 4096) |
-| `--envelope`   | Write envelope file (.trst) with header + records |
-| `--no-plaintext` | Skip writing round-tripped plaintext |
-| `--decrypt`    | Decrypt envelope to plaintext |
-| `--key-hex`    | 64-char hex AES-256 key (for encrypt/decrypt) |
-| `--key-out`    | Save generated key to file (encrypt mode) |
+| Flag             | Description                                                      | Mode(s)           |
+|------------------|------------------------------------------------------------------|-------------------|
+| `-i, --input`    | Input file (audio or any bytes)                                  | Both              |
+| `-o, --out`      | Output file (decrypted/plaintext)                                | Both              |
+| `--chunk`        | Chunk size in bytes (default: 4096)                              | Both              |
+| `--envelope`     | Write envelope file (.trst) with header + records                | Envelope          |
+| `--no-plaintext` | Skip writing round-tripped plaintext                             | Both              |
+| `--decrypt`      | Decrypt envelope to plaintext                                    | Envelope/Decrypt  |
+| `--key-hex`      | 64-char hex AES-256 key (for encrypt/decrypt)                    | Both              |
+| `--key-out`      | Save generated key to file (encrypt mode)                        | Envelope/Encrypt  |
 
 ### How it works
 

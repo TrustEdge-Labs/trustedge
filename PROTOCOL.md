@@ -57,6 +57,14 @@ struct SignedManifest {
 }
 ```
 
+### 2.2. Fields and AAD recipe
+
+AAD = BLAKE3(header) || seq_be(8) || nonce(12) || BLAKE3(manifest_bytes)
+
+Nonce = nonce_prefix(4) || seq_be(8) (unique per key/session).
+
+Record = seq, nonce, signed_manifest { manifest_bytes, ed25519_sig, pubkey }, ct.
+
 ---
 
 ## 3. Protocol Flow
