@@ -17,6 +17,8 @@ use keyring::Entry;
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
 pub const NONCE_LEN: usize = 12;
 
+pub mod format;
+pub use format::*;
 
 /// Represents a chunk of data sent over the network, including encrypted data,
 /// a signed manifest, the nonce used for encryption, and a timestamp.
@@ -33,7 +35,6 @@ pub struct NetworkChunk {
     /// The timestamp (seconds since UNIX epoch) when the chunk was created.
     pub timestamp: u64,
 }
-
 
 impl NetworkChunk {
     /// Creates a new `NetworkChunk` with the given sequence number, encrypted data, and manifest.

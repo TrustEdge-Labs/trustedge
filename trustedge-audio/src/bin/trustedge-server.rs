@@ -7,7 +7,6 @@
 
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -24,26 +23,7 @@ use aes_gcm::{
 };
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 
-const NONCE_LEN: usize = 12; // 96-bit GCM nonce
-const AAD_LEN: usize = 84;   // 32 hdr_hash + 8 seq + 12 nonce + 32 manifest_hash
-
-#[derive(Serialize, Deserialize)]
-struct Manifest {
-    v: u8,
-    ts_ms: u64,
-    seq: u64,
-    header_hash: [u8; 32],
-    pt_hash: [u8; 32],
-    ai_used: bool,
-    model_ids: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SignedManifest {
-    manifest: Vec<u8>,
-    sig: Vec<u8>,
-    pubkey: Vec<u8>,
-}
+use trustedge_audio::{NONCE_LEN, Manifest, SignedManifest, build_aad};
 
 // ---- CLI --------------------------------------------------------------------
 
@@ -413,24 +393,6 @@ fn parse_key_hex(s: &str) -> Result<[u8; 32]> {
     let mut out = [0u8; 32];
     out.copy_from_slice(&bytes);
     Ok(out)
-}
-
-fn build_aad(
-    header_hash: &[u8; 32],
-    seq: u64,
-    nonce: &[u8; NONCE_LEN],
-    manifest_hash: &[u8; 32],
-) -> [u8; AAD_LEN] {
-    let mut aad = [0u8; AAD_LEN];
-    let mut off = 0;
-    aad[off..off + 32].copy_from_slice(header_hash);
-    off += 32;
-    aad[off..off + 8].copy_from_slice(&seq.to_be_bytes());
-    off += 8;
-    aad[off..off + NONCE_LEN].copy_from_slice(nonce);
-    off += NONCE_LEN;
-    aad[off..off + 32].copy_from_slice(manifest_hash);
-    aad
 }
 
 async fn save_chunk_to_disk(
