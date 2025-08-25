@@ -7,24 +7,19 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
-// From lib.rs
-use trustedge_audio::{KeyManager, NetworkChunk, NONCE_LEN};
+use trustedge_audio::{KeyManager, NetworkChunk, NONCE_LEN, Manifest, SignedManifest, build_aad};
 
-// --- Crypto ---
+// --- Cryptograph ---
 use aes_gcm::{
     aead::{Aead, KeyInit, OsRng, Payload},
     Aes256Gcm, Key, Nonce,
 };
 use ed25519_dalek::{Signature, Signer, SigningKey};
 use rand_core::RngCore;
-
-// AAD length = 32 (header_hash) + 8 (seq) + NONCE_LEN + 32 (manifest_hash)
-const AAD_LEN: usize = 32 + 8 + NONCE_LEN + 32;
 
 // Minimal header (same layout as main/server header)
 const HEADER_LEN: usize = 58;
@@ -37,6 +32,7 @@ struct FileHeader {
     nonce_prefix: [u8; 4],
     chunk_size: u32, // big-endian on wire
 }
+
 impl FileHeader {
     fn to_bytes(&self) -> [u8; HEADER_LEN] {
         let mut out = [0u8; HEADER_LEN];
@@ -48,25 +44,6 @@ impl FileHeader {
         out[54..58].copy_from_slice(&self.chunk_size.to_be_bytes());
         out
     }
-}
-
-// Manifest + SignedManifest match server
-#[derive(Serialize, Deserialize)]
-struct Manifest {
-    v: u8,
-    ts_ms: u64,
-    seq: u64,
-    header_hash: [u8; 32],
-    pt_hash: [u8; 32],
-    ai_used: bool,
-    model_ids: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SignedManifest {
-    manifest: Vec<u8>,
-    sig: Vec<u8>,
-    pubkey: Vec<u8>,
 }
 
 #[derive(Parser, Debug)]
@@ -390,24 +367,6 @@ fn parse_key_hex(s: &str) -> Result<[u8; 32]> {
     let mut out = [0u8; 32];
     out.copy_from_slice(&bytes);
     Ok(out)
-}
-
-fn build_aad(
-    header_hash: &[u8; 32],
-    seq: u64,
-    nonce: &[u8; NONCE_LEN],
-    manifest_hash: &[u8; 32],
-) -> [u8; AAD_LEN] {
-    let mut aad = [0u8; AAD_LEN];
-    let mut off = 0;
-    aad[off..off + 32].copy_from_slice(header_hash);
-    off += 32;
-    aad[off..off + 8].copy_from_slice(&seq.to_be_bytes());
-    off += 8;
-    aad[off..off + NONCE_LEN].copy_from_slice(nonce);
-    off += NONCE_LEN;
-    aad[off..off + 32].copy_from_slice(manifest_hash);
-    aad
 }
 
 async fn send_chunk(stream: &mut TcpStream, chunk: &NetworkChunk, verbose: bool) -> Result<()> {

@@ -14,7 +14,6 @@ use clap::Parser;
 use ed25519_dalek::{Signer, SigningKey, Signature, Verifier, VerifyingKey};
 use hex;
 use rand_core::RngCore;
-use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
@@ -22,19 +21,19 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use trustedge_audio::KeyManager;
 use zeroize::Zeroize;
 
+use trustedge_audio::{
+    // constants
+    NONCE_LEN, MAGIC, VERSION,
+    // types
+    Manifest, SignedManifest, StreamHeader, Record,
+    // helpers
+    build_aad, write_stream_header,
+};
+
 // --- constants --------------------------------------------------------------
 
 const ALG_AES_256_GCM: u8 = 1;
 const HEADER_LEN: usize = 58;
-const NONCE_LEN: usize = 12; // AES-GCM 96-bit nonce
-const AAD_LEN: usize = 32 /* header_hash */
-    + 8 /* seq */
-    + NONCE_LEN /* nonce */
-    + 32 /* manifest_hash */;
-
-// stream preamble so decoders can fast-fail and version-gate
-const MAGIC: &[u8; 4] = b"TRST";
-const VERSION: u8 = 1;
 
 // --- CLI --------------------------------------------------------------------
 
@@ -111,40 +110,6 @@ impl FileHeader {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-struct Manifest {
-    v: u8,                 // manifest version
-    ts_ms: u64,            // capture/encode time
-    seq: u64,              // chunk sequence
-    header_hash: [u8; 32], // binds to stream header
-    pt_hash: [u8; 32],     // BLAKE3(plaintext chunk)
-    ai_used: bool,         // placeholder
-    model_ids: Vec<String>,
-}
-
-// serde doesn't auto derive for [u8;64]/[u8;32] without features, so keep Vec<u8>
-#[derive(Serialize, Deserialize)]
-pub struct SignedManifest {
-    manifest: Vec<u8>, // bincode(manifest)
-    sig: Vec<u8>,      // Ed25519 signature (64 bytes)
-    pubkey: Vec<u8>,   // Ed25519 public key (32 bytes)
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct StreamHeader {
-    v: u8,                 // stream format version
-    header: Vec<u8>,       // 58 bytes (use Vec for serde)
-    header_hash: [u8; 32], // BLAKE3(header)
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Record {
-    seq: u64,
-    nonce: [u8; NONCE_LEN],
-    sm: SignedManifest,
-    ct: Vec<u8>, // AES-GCM ciphertext (+tag)
-}
-
 // --- helpers ---------------------------------------------------------------
 
 enum Mode {
@@ -190,42 +155,6 @@ fn select_aes_key(args: &Args, km: &KeyManager, mode: Mode) -> Result<[u8; 32]> 
             Ok(kb)
         }
     }
-}
-
-fn build_aad(
-    header_hash: &[u8; 32],
-    seq: u64,
-    nonce: &[u8; NONCE_LEN],
-    manifest_hash: &[u8; 32],
-) -> [u8; AAD_LEN] {
-    let mut aad = [0u8; AAD_LEN];
-    let mut off = 0;
-    aad[off..off + 32].copy_from_slice(header_hash);
-    off += 32;
-    aad[off..off + 8].copy_from_slice(&seq.to_be_bytes());
-    off += 8;
-    aad[off..off + NONCE_LEN].copy_from_slice(nonce);
-    off += NONCE_LEN;
-    aad[off..off + 32].copy_from_slice(manifest_hash);
-    aad
-}
-
-fn write_stream_header<W: std::io::Write>(
-    w: &mut W,
-    header_bytes: &[u8; HEADER_LEN],
-    header_hash: &[u8; 32],
-) -> Result<()> {
-    // preamble
-    w.write_all(MAGIC).context("write magic")?;
-    w.write_all(&[VERSION]).context("write version")?;
-
-    let sh = StreamHeader {
-        v: VERSION,
-        header: header_bytes.to_vec(),
-        header_hash: *header_hash,
-    };
-    serialize_into(w, &sh).context("write stream header")?;
-    Ok(())
 }
 
 // --- decrypt path ----------------------------------------------------------
@@ -287,6 +216,14 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             rec.nonce[..4] == stream_nonce_prefix,
             "record nonce prefix != stream header nonce_prefix"
         );
+
+        // ensure nonce counter == seq
+        let seq_bytes = rec.seq.to_be_bytes();
+        anyhow::ensure!(
+            rec.nonce[4..] == seq_bytes,
+            "record nonce counter != record seq"
+        );
+
         anyhow::ensure!(
             rec.seq == expected_seq,
             "non-contiguous sequence: got {}, expected {}",
@@ -313,6 +250,12 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
         anyhow::ensure!(
             m.header_hash == sh.header_hash,
             "manifest.header_hash != stream header_hash"
+        );
+
+        // ensure manifest seq matches record seq
+        anyhow::ensure!(
+            m.seq == rec.seq,
+            "manifest.seq != record.seq"
         );
 
         // decrypt
@@ -407,8 +350,14 @@ fn main() -> Result<()> {
     } else {
         None
     };
+
     if let Some(w) = env_out.as_mut() {
-        write_stream_header(w, &header_bytes, header_hash.as_bytes())?;
+        let sh = StreamHeader {
+            v: VERSION,
+            header: header_bytes.to_vec(),
+            header_hash: *header_hash.as_bytes(),
+        };
+        write_stream_header(w, &sh)?;
     }
 
     // loop
