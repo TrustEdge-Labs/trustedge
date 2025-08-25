@@ -13,26 +13,36 @@
 
 use serde::{Serialize, Deserialize};
 
-// set up nonce length
+
+/// The length of the nonce used for AES-GCM encryption (12 bytes).
 pub const NONCE_LEN: usize = 12;
 
+
+/// Represents a chunk of data sent over the network, including encrypted data,
+/// a signed manifest, the nonce used for encryption, and a timestamp.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NetworkChunk {
+    /// The sequence number of the chunk in the stream.
     pub sequence: u64,
-    pub data: Vec<u8>,  
-    pub manifest: Vec<u8>, 
-    pub nonce: [u8; NONCE_LEN],  // Include the actual nonce used for encryption
-    pub timestamp: u64,  
+    /// The encrypted data payload for this chunk.
+    pub data: Vec<u8>,
+    /// The serialized, signed manifest (bincode-encoded).
+    pub manifest: Vec<u8>,
+    /// The nonce used for AES-GCM encryption.
+    pub nonce: [u8; NONCE_LEN],
+    /// The timestamp (seconds since UNIX epoch) when the chunk was created.
+    pub timestamp: u64,
 }
 
+
 impl NetworkChunk {
-    // Create a new NetworkChunk
+    /// Creates a new `NetworkChunk` with the given sequence number, encrypted data, and manifest.
+    /// The nonce is set to zero and should be set explicitly after creation.
     pub fn new(seq: u64, encrypted_data: Vec<u8>, manifest_bytes: Vec<u8>) -> Self {
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs();
-            
         Self {
             sequence: seq,
             data: encrypted_data,
@@ -41,14 +51,13 @@ impl NetworkChunk {
             timestamp,
         }
     }
-    
-    // Create a new NetworkChunk with explicit nonce
+
+    /// Creates a new `NetworkChunk` with the given sequence number, encrypted data, manifest, and explicit nonce.
     pub fn new_with_nonce(seq: u64, encrypted_data: Vec<u8>, manifest_bytes: Vec<u8>, nonce: [u8; NONCE_LEN]) -> Self {
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs();
-            
         Self {
             sequence: seq,
             data: encrypted_data,
@@ -57,8 +66,11 @@ impl NetworkChunk {
             timestamp,
         }
     }
-    
-    // Simple validation of the network chunk
+
+    /// Validates the `NetworkChunk`.
+    ///
+    /// Checks that the data and manifest are not empty, and that the timestamp is not more than 5 minutes in the future.
+    /// Returns `Ok(())` if valid, or an error otherwise.
     pub fn validate(&self) -> Result<(), anyhow::Error> {
         if self.data.is_empty() {
             return Err(anyhow::anyhow!("Chunk data is empty"));
@@ -66,16 +78,16 @@ impl NetworkChunk {
         if self.manifest.is_empty() {
             return Err(anyhow::anyhow!("Manifest is empty"));
         }
-        
+
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map_err(|e| anyhow::anyhow!("Time error: {}", e))?
             .as_secs();
-            
+
         if self.timestamp > now + 300 { // Not more than 5 minutes in future
             return Err(anyhow::anyhow!("Chunk timestamp is too far in the future"));
         }
-        
+
         Ok(())
     }
 }
