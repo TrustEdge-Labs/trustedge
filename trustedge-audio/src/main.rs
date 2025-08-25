@@ -224,6 +224,21 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     Ok(())
 }
 
+// streaming header helper function
+fn write_stream_header<W: std::io::Write>(
+    w: &mut W,
+    header_bytes: &[u8; HEADER_LEN],
+    header_hash: &[u8; 32],
+) -> anyhow::Result<()> {
+    let sh = StreamHeader {
+        v: 1,
+        header: header_bytes.to_vec(),   // Vec<u8> so Serde is happy
+        header_hash: *header_hash,       // copy into [u8; 32]
+    };
+    serialize_into(w, &sh).context("write stream header")?;
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let args = Args::parse();
 
@@ -310,12 +325,7 @@ fn main() -> Result<()> {
 
     // if writing an envelope, then write a StreamHeader once
     if let Some(w) = env_out.as_mut() {
-        let sh = StreamHeader {
-                    v: 1,
-                    header: header_bytes.to_vec(),
-                    header_hash: *header_hash.as_bytes(),
-        };
-        serialize_into(w, &sh).context("write stream header")?;
+        write_stream_header(w, &header_bytes, header_hash.as_bytes())?;
     }
 
     // Initialize sequence number and nonce
