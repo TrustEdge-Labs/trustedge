@@ -17,7 +17,10 @@ aligns with my background in IoT product development, security/PKI and edge syst
 If you’re into Rust, IoT, ML at the edge, or security and have ideas or
 suggestions, I’d love your feedback.
 
+
 See the included threat model ([`THREAT_MODEL.md`](./THREAT_MODEL.md)) for a detailed breakdown of security goals, risks, and mitigations.
+
+For details on the wire format and network protocol, see [`PROTOCOL.md`](./PROTOCOL.md).
 
 TL;DR: this repo is my public learning journey in Rust. The first step was initial Rust environment setup on my Linux laptop. Then testing which led to this tiny demo that
 reads an audio file in chunks, **encrypts each chunk with AES-256-GCM**, then
@@ -74,15 +77,12 @@ sha256sum ./sample.wav ./roundtrip.wav
 ---
 
 
-## What’s here
 
-* `src/main.rs` — CLI tool:
-  * Chunked file read
-  * Per-chunk AES-256-GCM with robust AAD
-  * Signed manifest per chunk (Ed25519, bincode-encoded)
-  * Envelope output: header + records (for real encrypted file format)
-  * Decrypt/verify mode for envelope files
-  * Key management: hex input/output, random key generation
+### Documentation
+
+* [`PROTOCOL.md`](./PROTOCOL.md) — Wire format and network protocol for chunk transfer
+* [`THREAT_MODEL.md`](./THREAT_MODEL.md) — Security goals, threat analysis, mitigations
+* `src/main.rs` — CLI tool: chunked file read, per-chunk AES-256-GCM, signed manifest, envelope output, decrypt/verify mode, key management
 * `Cargo.toml` — all crypto and serialization dependencies
 
 ### CLI options
