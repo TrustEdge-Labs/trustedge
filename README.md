@@ -33,11 +33,6 @@ See the included threat model ([`THREAT_MODEL.md`](./THREAT_MODEL.md)) for a det
 
 For details on the wire format and network protocol, see [`PROTOCOL.md`](./PROTOCOL.md).
 
-TL;DR: this repo is my public learning journey in Rust. The first step was initial Rust environment setup on my Linux laptop. Then testing which led to this tiny demo that
-reads an audio file in chunks, **encrypts each chunk with AES-256-GCM**, then
-**decrypts and verifies** it locally. No networking yet — just the crypto &
-streaming skeleton that future work and phases will build on. More to come!
-
 - Language: Rust (stable)
 - Crypto: `aes-gcm` (AEAD), 256-bit keys, 96-bit nonces
 - Goal of Phase 1: a clean, verifiable round-trip on real audio bytes
