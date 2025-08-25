@@ -17,6 +17,7 @@ use keyring::Entry;
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
 pub const NONCE_LEN: usize = 12;
 
+
 pub mod format;
 pub use format::*;
 

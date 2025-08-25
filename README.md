@@ -183,12 +183,15 @@ This allows for strong provenance, integrity, and future extensibility.
 The `.trst` envelope file is a binary format containing:
 
 - **StreamHeader**: version, header bytes (58 bytes), header hash (BLAKE3)
-- **Record(s)**: sequence number, nonce, signed manifest (with Ed25519 signature), ciphertext (AES-GCM)
+- **Record(s)**: sequence number, nonce (12 bytes: 4-byte prefix + 8-byte counter), signed manifest (with Ed25519 signature), ciphertext (AES-GCM)
 
 All fields are bincode-encoded for compactness and speed.
 
-**Nonce Prefix Integrity:**
-Each record's nonce prefix (first 4 bytes of the 12-byte nonce) must match the stream header's nonce prefix. This is strictly enforced during decryption and helps prevent record tampering or mixing between streams. If any validation fails (e.g., signature, nonce prefix, hash), the record is rejected and an error is reported.
+**Envelope Integrity Invariants:**
+- Each record's nonce prefix (first 4 bytes) must match the stream header's nonce prefix.
+- The nonce counter (last 8 bytes) must equal the record's sequence number.
+- The manifest's `seq` field must match the record's `seq` field.
+These invariants are strictly enforced during decryption and help prevent record tampering, replay, or mixing between streams. If any validation fails (e.g., signature, nonce prefix, nonce counter, manifest sequence, hash), the record is rejected and an error is reported.
 
 
 
@@ -204,7 +207,7 @@ Each record's nonce prefix (first 4 bytes of the 12-byte nonce) must match the s
 - **PBKDF2 parameters:** SHA-256, 100,000 iterations, 16-byte (32 hex char) salt.
 ### Error handling
 
-If any validation fails during decryption (e.g., manifest signature, nonce prefix, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered or out-of-sequence records cannot be decrypted or accepted.
+If any validation fails during decryption (e.g., manifest signature, nonce prefix, nonce counter, manifest sequence, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered, out-of-sequence, or replayed records cannot be decrypted or accepted.
 
 ---
 
