@@ -35,6 +35,18 @@ struct NetworkChunk {
 - **Encoding:** bincode
 - **Length Prefix:** Each chunk is sent as `[u32 length][bincode(NetworkChunk)]`
 
+### 2.1.1. Envelope File Format
+
+The `.trst` envelope file is a binary format containing:
+
+- **StreamHeader**: version, header bytes (58 bytes), header hash (BLAKE3)
+- **Record(s)**: sequence number, nonce, signed manifest (with Ed25519 signature), ciphertext (AES-GCM)
+
+All fields are bincode-encoded for compactness and speed.
+
+**Nonce Prefix Integrity:**
+Each record's nonce prefix (first 4 bytes of the 12-byte nonce) must match the stream header's nonce prefix. This is strictly enforced during decryption and helps prevent record tampering or mixing between streams. If any validation fails (e.g., signature, nonce prefix, hash), the record is rejected and an error is reported.
+
 ### 2.2. Manifest
 
 The manifest is a bincode-encoded struct, signed with Ed25519:
@@ -64,7 +76,7 @@ struct SignedManifest {
 - **Nonce** = nonce_prefix(4) || seq_be(8) (unique per key/session)
 - **Record** = seq, nonce, signed_manifest { manifest_bytes, ed25519_sig, pubkey }, ct
 
-**Integrity check:** Each record's nonce prefix must match the stream header's nonce prefix. This is enforced during decryption and helps prevent record tampering or mixing between streams.
+**Integrity check:** See above: nonce prefix integrity is enforced for every record.
 
 ---
 
@@ -100,6 +112,13 @@ struct SignedManifest {
 - In decrypt mode, one of these must be provided; random key is not allowed.
 - In encrypt mode, if neither is provided, a random key is generated and optionally saved with `--key-out`.
 
+**Mutual Exclusivity:** `--key-hex` and `--use-keyring` are mutually exclusive. Only one may be used at a time.
+
+**PBKDF2 Parameters:**
+- PBKDF2 with SHA-256
+- 100,000 iterations
+- 16-byte (32 hex char) salt (required with `--use-keyring`)
+
 ---
 
 ## 5. Example Message (Hex Dump)
@@ -121,7 +140,19 @@ struct SignedManifest {
 
 ---
 
+## 7. Error Handling
+
+If any validation fails during decryption (e.g., manifest signature, nonce prefix, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered or out-of-sequence records cannot be decrypted or accepted.
+
+---
+
 **See also:**
 - `src/lib.rs` for struct definitions
+- `src/main.rs` for CLI and envelope logic
 - `trustedge-client` and `trustedge-server` for protocol usage
 - `THREAT_MODEL.md` for security rationale
+
+---
+
+**Protocol Versioning:**
+The protocol is versioned (see StreamHeader and file preamble). Future changes will increment the version and document compatibility requirements.
