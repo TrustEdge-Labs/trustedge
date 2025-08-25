@@ -1,3 +1,9 @@
+<!--
+Copyright (c) 2025 John Turner
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+-->
+
 # TrustEdge Format Specification v1.0
 
 **Version:** 1.0  
@@ -291,3 +297,15 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 - `src/format.rs` - Reference implementation
 - `PROTOCOL.md` - Network protocol specification
 - `THREAT_MODEL.md` - Security analysis
+
+---
+
+## Legal & Attribution
+
+**Copyright** © 2025 John Turner. All rights reserved.
+
+**License**: This specification is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](https://mozilla.org/MPL/2.0/).
+
+**Project**: [TrustEdge](https://github.com/johnzilla/trustedge) — Privacy and trust at the edge.
+
+**Standards Compliance**: This format specification implements [BLAKE3](https://github.com/BLAKE3-team/BLAKE3-specs), [Ed25519 RFC 8032](https://tools.ietf.org/html/rfc8032), [AES-GCM NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final), and [Bincode](https://docs.rs/bincode/) serialization.
