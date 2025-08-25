@@ -221,14 +221,14 @@ async fn send_encrypted_file(
 
         if verbose {
             println!(
-                "✅ Encrypted chunk {} sent ({} pt bytes → {} ct bytes), ACK: {}",
+                "[OK] Encrypted chunk {} sent ({} pt bytes -> {} ct bytes), ACK: {}",
                 sequence,
                 bytes_read,
                 chunk.data.len(),
                 ack
             );
         } else {
-            print!("🔐");
+            print!("[SEC]");
             use std::io::Write;
             std::io::stdout().flush().ok();
         }
@@ -238,7 +238,7 @@ async fn send_encrypted_file(
         println!();
     }
     println!(
-        "📊 Encrypted file transfer complete: {} chunks, {} bytes total",
+        "[DONE] Encrypted file transfer complete: {} chunks, {} bytes total",
         sequence, total_bytes_sent
     );
     Ok(())
@@ -251,7 +251,7 @@ async fn send_encrypted_test_chunks(
     key_bytes: &[u8; 32],
     verbose: bool,
 ) -> Result<()> {
-    println!("📦 Sending {} encrypted test chunks…", num_chunks);
+    println!("[SEND] Sending {} encrypted test chunks...", num_chunks);
 
     let signing = SigningKey::generate(&mut OsRng);
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
@@ -300,9 +300,9 @@ async fn send_encrypted_test_chunks(
         let ack = read_ack(stream).await?;
 
         if verbose {
-            println!("✅ Test chunk {} acknowledged: {}", seq, ack);
+            println!("[OK] Test chunk {} acknowledged: {}", seq, ack);
         } else {
-            print!("🔐");
+            print!("[SEC]");
             use std::io::Write;
             std::io::stdout().flush().ok();
         }
@@ -374,7 +374,7 @@ async fn send_chunk(stream: &mut TcpStream, chunk: &NetworkChunk, verbose: bool)
     let length = serialized.len() as u32;
 
     if verbose {
-        println!("📤 Sending chunk seq={}, {} bytes", chunk.sequence, length);
+        println!("[SEND] Sending chunk seq={}, {} bytes", chunk.sequence, length);
     }
 
     stream
