@@ -22,9 +22,9 @@ use rand_core::RngCore;
 use serde::{Serialize, Deserialize};
 
 use trustedge_audio::NONCE_LEN;
+use trustedge_audio::KeyManager;
 
 // structures from main.rs
-// const NONCE_LEN: usize = 12;
 const AAD_LEN: usize = 84;
 
 #[derive(Serialize, Deserialize)]
@@ -52,7 +52,7 @@ struct Args {
     #[arg(short, long, default_value = "127.0.0.1:8080")]
     server: std::net::SocketAddr,
     
-    /// File to encrypt and send
+    /// File to send (will be processed into chunks)
     #[arg(short, long)]
     file: Option<PathBuf>,
     
@@ -68,6 +68,18 @@ struct Args {
     #[arg(long)]
     key_hex: Option<String>,
     
+    /// Set passphrase in system keyring (run once to configure)
+    #[arg(long)]
+    set_passphrase: Option<String>,
+
+    /// Salt for key derivation (hex string)
+    #[arg(long)]
+    salt_hex: Option<String>,
+
+    /// Use keyring passphrase instead of --key-hex
+    #[arg(long)]
+    use_keyring: bool,
+    
     /// Verbose logging
     #[arg(short, long)]
     verbose: bool,
@@ -77,43 +89,64 @@ struct Args {
 async fn main() -> Result<()> {
     let args = Args::parse();
     
-    println!("🔗 Connecting to TrustEdge server at {}", args.server);
+    let key_manager = KeyManager::new();
+    
+    // Handle setting passphrase
+    if let Some(passphrase) = args.set_passphrase {
+        key_manager.store_passphrase(&passphrase)?;
+        println!("Passphrase stored in system keyring");
+        return Ok(());
+    }
+    
+    println!("Connecting to TrustEdge server at {}", args.server);
     
     let mut stream = TcpStream::connect(args.server).await
         .with_context(|| format!("Failed to connect to {}", args.server))?;
     
-    println!("✅ Connected successfully!");
+    println!("Connected successfully!");
     
+    // Determine encryption key
     if let Some(num_chunks) = args.test_chunks {
         send_test_chunks(&mut stream, num_chunks, args.verbose).await?;
     } else if let Some(ref file_path) = args.file {
-        send_encrypted_file(&mut stream, &file_path, &args).await?;
+        send_encrypted_file(&mut stream, file_path, &args, &key_manager).await?;
     } else {
         return Err(anyhow::anyhow!("Must specify either --file or --test-chunks"));
     }
     
-    println!("🎉 All chunks sent successfully!");
+    println!("All chunks sent successfully!");
     Ok(())
 }
 
 async fn send_encrypted_file(
     stream: &mut TcpStream, 
     file_path: &PathBuf,
-    args: &Args
+    args: &Args,
+    key_manager: &KeyManager
 ) -> Result<()> {
-    println!("🔐 Encrypting and sending file: {:?}", file_path);
+    println!("Encrypting and sending file: {:?}", file_path);
     
     // Set up encryption (copied from main.rs)
     let signing = SigningKey::generate(&mut OsRng);
-    let _verify: VerifyingKey = signing.verifying_key();
     
-    // Key setup
-    let key_bytes = if let Some(ref kh) = args.key_hex {
+    // Key setup - replace the existing key handling with:
+    let key_bytes = if args.use_keyring {
+        let salt_hex = args.salt_hex.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("--salt-hex required when using keyring"))?;
+        let salt_bytes = hex::decode(salt_hex)?;
+        if salt_bytes.len() != 16 {
+            return Err(anyhow::anyhow!("Salt must be 16 bytes (32 hex chars)"));
+        }
+        let mut salt = [0u8; 16];
+        salt.copy_from_slice(&salt_bytes);
+        println!("Using keyring passphrase with provided salt");
+        key_manager.derive_key(&salt)?
+    } else if let Some(ref kh) = args.key_hex {
         parse_key_hex(kh)?
     } else {
         let mut kb = [0u8; 32];
         OsRng.fill_bytes(&mut kb);
-        println!("🔑 Generated AES-256 key: {}", hex::encode(kb));
+        println!("Generated AES-256 key: {}", hex::encode(kb));
         kb
     };
     

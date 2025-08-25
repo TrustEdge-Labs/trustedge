@@ -22,6 +22,8 @@ use aes_gcm::{
 use ed25519_dalek::{VerifyingKey, Signature, Verifier};
 use serde::{Serialize, Deserialize};
 
+use trustedge_audio::KeyManager;
+
 // Copy structures from client
 const NONCE_LEN: usize = 12;
 const AAD_LEN: usize = 84;
@@ -59,6 +61,18 @@ struct Args {
     #[arg(long)]
     key_hex: Option<String>,
     
+    /// Set passphrase in system keyring (run once to configure)
+    #[arg(long)]
+    set_passphrase: Option<String>,
+
+    /// Salt for key derivation (hex string)
+    #[arg(long)]
+    salt_hex: Option<String>,
+
+    /// Use keyring passphrase instead of --key-hex
+    #[arg(long)]
+    use_keyring: bool,
+    
     /// Decrypt received chunks and save plaintext
     #[arg(long)]
     decrypt: bool,
@@ -79,16 +93,38 @@ struct ProcessingSession {
 async fn main() -> Result<()> {
     let args = Args::parse();
     
+    let key_manager = KeyManager::new();
+    
+    // Handle setting passphrase
+    if let Some(passphrase) = args.set_passphrase {
+        key_manager.store_passphrase(&passphrase)?;
+        println!("Passphrase stored in system keyring");
+        return Ok(());
+    }
+    
     // Validate key if decryption is enabled
     let cipher = if args.decrypt {
-        let key_hex = args.key_hex.as_ref()
-            .ok_or_else(|| anyhow::anyhow!("--key-hex is required when --decrypt is enabled"))?;
-        let key_bytes = parse_key_hex(key_hex)?;
+        let key_bytes = if args.use_keyring {
+            let salt_hex = args.salt_hex.as_ref()
+                .ok_or_else(|| anyhow::anyhow!("--salt-hex required when using keyring"))?;
+            let salt_bytes = hex::decode(salt_hex)?;
+            if salt_bytes.len() != 16 {
+                return Err(anyhow::anyhow!("Salt must be 16 bytes (32 hex chars)"));
+            }
+            let mut salt = [0u8; 16];
+            salt.copy_from_slice(&salt_bytes);
+            println!("Using keyring passphrase with provided salt");
+            key_manager.derive_key(&salt)?
+        } else if let Some(ref key_hex) = args.key_hex {
+            parse_key_hex(key_hex)?
+        } else {
+            return Err(anyhow::anyhow!("Either --key-hex or --use-keyring is required for decryption"));
+        };
         Some(Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes)))
     } else {
         None
     };
-    
+        
     // Create output directory if specified
     if let Some(ref dir) = args.output_dir {
         std::fs::create_dir_all(dir)

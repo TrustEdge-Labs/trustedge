@@ -23,6 +23,7 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
+use trustedge_audio::KeyManager;
 use zeroize::Zeroize;
 
 // algorithm ID
@@ -47,10 +48,10 @@ const AAD_LEN: usize = 32    /* header_hash */
 struct Args {
     /// Input file (e.g., raw/wav/mp3 — treated as opaque bytes)
     #[arg(short, long)]
-    input: PathBuf,
+    input: Option<PathBuf>,
     /// Output round-tripped file (decrypted copy)
     #[arg(short, long)]
-    out: PathBuf,
+    out: Option<PathBuf>,
     /// Chunk size in bytes
     #[arg(long, default_value_t = 4096)]
     chunk: usize,
@@ -68,7 +69,19 @@ struct Args {
     key_hex: Option<String>,       
     // optional: where to dump generated key during encrypt
     #[arg(long)]
-    key_out: Option<PathBuf>,                  
+    key_out: Option<PathBuf>,  
+
+    /// Set passphrase in system keyring (run once to configure)
+    #[arg(long)]
+    set_passphrase: Option<String>,
+
+    /// Salt for key derivation (hex string)
+    #[arg(long)]
+    salt_hex: Option<String>,
+
+    /// Use keyring passphrase instead of --key-hex
+    #[arg(long)]
+    use_keyring: bool,                
 }
 
 // set up the file header
@@ -159,10 +172,14 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     let key_hex = args.key_hex.as_ref().ok_or_else(|| anyhow!("--key-hex is required in --decrypt mode"))?;
     let key_bytes = parse_key_hex(key_hex)?;
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
-
+  
     // Open envelope and output
-    let mut r = BufReader::new(File::open(&args.input).context("open envelope")?);
-    let mut w = BufWriter::new(File::create(&args.out).context("create output")?);
+    let input = args.input.as_ref().ok_or_else(|| anyhow::anyhow!("--input is required for decrypt mode"))?;
+    let out = args.out.as_ref().ok_or_else(|| anyhow::anyhow!("--out is required for decrypt mode"))?;
+
+    // Use the passed parameters directly
+    let mut r = BufReader::new(File::open(input).context("open envelope")?);
+    let mut w = BufWriter::new(File::create(out).context("create output")?);
 
     // Read stream header
     let sh: StreamHeader = deserialize_from(&mut r).context("read stream header")?;
@@ -251,13 +268,42 @@ fn main() -> Result<()> {
     anyhow::ensure!(args.chunk > 0, "chunk must be > 0");
     anyhow::ensure!(args.chunk as u64 <= u32::MAX as u64, "chunk too large");
 
-    // NO PRODUCTION
-    // DEMO ONLY: key for manifest signing
+    // set up keys
     let signing = SigningKey::generate(&mut OsRng);
     let verify: VerifyingKey = signing.verifying_key();
 
-    // NO PRODUCTION
-    // DEMO ONLY: random 256-bit key per run. (Later: load from KMS/TPM or .env)
+    let key_manager = KeyManager::new();
+    
+    // Handle setting passphrase
+    if let Some(passphrase) = args.set_passphrase {
+        key_manager.store_passphrase(&passphrase)?;
+        println!("Passphrase stored in system keyring");
+        return Ok(());
+    }
+    
+    // check for input and output args
+    let input = args.input.as_ref().ok_or_else(|| anyhow::anyhow!("--input is required"))?;
+    let out = args.out.as_ref().ok_or_else(|| anyhow::anyhow!("--out is required"))?;
+
+    // Determine encryption key
+    let key_bytes = if args.use_keyring {
+        let salt_hex = args.salt_hex.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("--salt-hex required when using keyring"))?;
+        let salt_bytes = hex::decode(salt_hex)?;
+        if salt_bytes.len() != 16 {
+            return Err(anyhow::anyhow!("Salt must be 16 bytes (32 hex chars)"));
+        }
+        let mut salt = [0u8; 16];
+        salt.copy_from_slice(&salt_bytes);
+        key_manager.derive_key(&salt)?
+    } else if let Some(ref kh) = args.key_hex {
+        parse_key_hex(kh)?
+    } else {
+        // Your existing random key generation
+        let mut kb = [0u8; 32];
+        OsRng.fill_bytes(&mut kb);
+        kb
+    };   
 
     // key selection for ENCRYPT mode
     let mut key_bytes = if let Some(ref kh) = args.key_hex {
@@ -276,8 +322,8 @@ fn main() -> Result<()> {
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
 
     // use buffers for less syscalls
-    let mut fin  = BufReader::new(File::open(&args.input).context("open input")?);
-    let mut fout = BufWriter::new(File::create(&args.out).context("create output")?);
+    let mut fin  = BufReader::new(File::open(&input).context("open input")?);
+    let mut fout = BufWriter::new(File::create(&out).context("create output")?);
 
     let mut buf = vec![0u8; args.chunk];
     let mut total_in = 0usize;
