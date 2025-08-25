@@ -146,6 +146,39 @@ pub struct Record {
     ct: Vec<u8>,                    // AES-GCM ciphertext (+tag)
 }
 
+// key selection helper function
+enum Mode { Encrypt, Decrypt }
+
+fn select_aes_key(args: &Args, km: &KeyManager, mode: Mode) -> Result<[u8; 32]> {
+    if args.use_keyring {
+        let salt_hex = args.salt_hex.as_ref()
+            .ok_or_else(|| anyhow::anyhow!("--salt-hex required with --use-keyring"))?;
+        let salt_bytes = hex::decode(salt_hex).context("salt_hex decode")?;
+        anyhow::ensure!(salt_bytes.len() == 16, "salt must be 16 bytes (32 hex chars)");
+        let mut salt = [0u8; 16];
+        salt.copy_from_slice(&salt_bytes);
+        return km.derive_key(&salt);
+    }
+
+    if let Some(kh) = &args.key_hex {
+        return parse_key_hex(kh);
+    }
+
+    match mode {
+        Mode::Decrypt => anyhow::bail!("provide --use-keyring or --key-hex in --decrypt mode"),
+        Mode::Encrypt => {
+            let mut kb = [0u8; 32];
+            rand_core::OsRng.fill_bytes(&mut kb);
+            if let Some(p) = &args.key_out {
+                std::fs::write(p, hex::encode(kb)).context("write key_out")?;
+            } else {
+                eprintln!("NOTE (demo): AES-256 key (hex) = {}", hex::encode(kb));
+            }
+            Ok(kb)
+        }
+    }
+}
+
 // helper function to parse and validate a basic hex-encoded key
 fn parse_key_hex(s: &str) -> Result<[u8; 32]> {
     let bytes = hex::decode(s).context("key_hex: not valid hex")?;
@@ -169,8 +202,25 @@ fn build_aad(header_hash: &[u8; 32], seq: u64, nonce: &[u8; NONCE_LEN], manifest
 // helper function to decrypt the envelope
 fn decrypt_envelope(args: &Args) -> Result<()> {
     // Require key for decrypt
-    let key_hex = args.key_hex.as_ref().ok_or_else(|| anyhow!("--key-hex is required in --decrypt mode"))?;
-    let key_bytes = parse_key_hex(key_hex)?;
+    let key_hex = select_aes_key(args, &KeyManager::new(), Mode::Decrypt)?;
+
+    let key_bytes = if args.use_keyring {
+        let key_manager = KeyManager::new();
+        let salt_hex = args.salt_hex.as_ref()
+            .ok_or_else(|| anyhow!("--salt-hex required when using keyring for decrypt"))?;
+        let salt_bytes = hex::decode(salt_hex)?;
+        if salt_bytes.len() != 16 {
+            return Err(anyhow!("Salt must be 16 bytes (32 hex chars)"));
+        }
+        let mut salt = [0u8; 16];
+        salt.copy_from_slice(&salt_bytes);
+        key_manager.derive_key(&salt)?
+    } else {
+        let key_hex = args.key_hex.as_ref()
+            .ok_or_else(|| anyhow!("--key-hex is required in --decrypt mode when not using keyring"))?;
+        parse_key_hex(key_hex)?
+    };
+    
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
   
     // Open envelope and output
@@ -181,8 +231,10 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     let mut r = BufReader::new(File::open(input).context("open envelope")?);
     let mut w = BufWriter::new(File::create(out).context("create output")?);
 
-    // Read stream header
+    // Read stream header - check length and nonce prefix
     let sh: StreamHeader = deserialize_from(&mut r).context("read stream header")?;
+    anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
+    let stream_nonce_prefix: [u8; 4] = sh.header[50..54].try_into().unwrap();
 
     // Trust but verify: recompute header_hash
     let hh = blake3::hash(&sh.header);
@@ -195,15 +247,15 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
         let rec: Record = match deserialize_from(&mut r) {
             Ok(x) => x,
             Err(err) => {
-                // bincode EOF handling
                 if let bincode::ErrorKind::Io(ref e) = *err {
-                    if e.kind() == std::io::ErrorKind::UnexpectedEof {
-                        break;
-                    }
+                    if e.kind() == std::io::ErrorKind::UnexpectedEof { break; }
                 }
                 return Err(err).context("read record");
             }
         };
+
+        // Ensure the record's nonce prefix matches the stream header's prefix
+        anyhow::ensure!(rec.nonce[..4] == stream_nonce_prefix,"record nonce prefix != stream header nonce_prefix");
 
         // Verify the signed manifest
         let pubkey_arr: [u8; 32] = rec.sm.pubkey.as_slice().try_into().context("pubkey length != 32")?;
@@ -306,18 +358,7 @@ fn main() -> Result<()> {
     };   
 
     // key selection for ENCRYPT mode
-    let mut key_bytes = if let Some(ref kh) = args.key_hex {
-        parse_key_hex(kh)?
-    } else {
-        let mut kb = [0u8; 32];
-        OsRng.fill_bytes(&mut kb);
-        if let Some(ref p) = args.key_out {
-            std::fs::write(p, hex::encode(kb)).context("write key_out")?;
-        } else {
-            eprintln!("NOTE (demo): AES-256 key (hex) = {}", hex::encode(kb));
-        }
-        kb
-    };
+    let mut key_bytes = select_aes_key(&args, &key_manager, Mode::Encrypt)?;
 
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
 
