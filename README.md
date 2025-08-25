@@ -177,24 +177,28 @@ Each chunk includes a signed manifest (bincode-encoded struct) containing:
 - Ed25519 signature and public key (as bytes)
 This allows for strong provenance, integrity, and future extensibility.
 
-### Envelope file format
+
+### Envelope file format and integrity
 
 The `.trst` envelope file is a binary format containing:
 - **StreamHeader**: version, header bytes (58 bytes), header hash (BLAKE3)
 - **Record(s)**: sequence number, nonce, signed manifest (with Ed25519 signature), ciphertext (AES-GCM)
 All fields are bincode-encoded for compactness and speed.
 
+**Integrity check:** Each record's nonce prefix must match the stream header's nonce prefix. This is enforced during decryption and helps prevent record tampering or mixing between streams. If any validation fails (e.g., signature, nonce prefix, hash), the record is rejected and an error is reported.
+
+
 
 ### Key management
 
-- `--key-hex`: Use a user-supplied 64-char hex key for AES-256 (encrypt/decrypt)
-- `--key-out`: Save the randomly generated key to a file (encrypt mode)
-- `--set-passphrase`: Store a passphrase in the system keyring (run once)
-- `--use-keyring`: Use the keyring passphrase for key derivation (PBKDF2)
-- `--salt-hex`: 32-char hex salt for PBKDF2 key derivation (required with `--use-keyring`)
-- If neither `--key-hex` nor `--use-keyring` is provided, a random key is generated and printed to stderr (demo only)
-- `--key-hex` and `--use-keyring` are mutually exclusive
-- PBKDF2 uses SHA-256, 100,000 iterations, and a 16-byte salt
+- `--key-hex`: Use a user-supplied 64-char hex key for AES-256 (encrypt/decrypt). Mutually exclusive with `--use-keyring`.
+- `--key-out`: Save the randomly generated key to a file (encrypt mode).
+- `--set-passphrase`: Store a passphrase in the system keyring (run once).
+- `--use-keyring`: Use the keyring passphrase for key derivation (PBKDF2). Mutually exclusive with `--key-hex`.
+- `--salt-hex`: 32-char hex salt for PBKDF2 key derivation (required with `--use-keyring`, must be 16 bytes).
+- In decrypt mode, you must provide either `--key-hex` or `--use-keyring` (random key is not allowed).
+- In encrypt mode, if neither is provided, a random key is generated and optionally saved with `--key-out`.
+- PBKDF2 uses SHA-256, 100,000 iterations, and a 16-byte salt.
 
 
 
