@@ -3,11 +3,11 @@ Copyright (c) 2025 John Turner / MPL-2.0
 SPDX-License-Identifier: MPL-2.0
 -->
 
-# Trustedge Security Policy
+# TrustEdge Security Policy
 
 ## Supported Versions
 
-Trustedge is currently in active development. Security updates are provided for:
+TrustEdge is currently in active development. Security updates are provided for:
 
 | Version | Status | Support Level |
 | ------- | ------ | ------------- |
@@ -15,13 +15,13 @@ Trustedge is currently in active development. Security updates are provided for:
 | v0.1.x | ⏳ Pre-release | Best effort |
 | < v0.1 | ❌ Unsupported | No security support |
 
-**Note**: As Trustedge is pre-1.0, breaking changes may be introduced to address security issues.
+**Note**: As TrustEdge is pre-1.0, breaking changes may be introduced to address security issues.
 
 ## Security Considerations
 
 ### Cryptographic Implementation
 
-Trustedge implements privacy-preserving audio encryption with the following security properties:
+TrustEdge implements privacy-preserving audio encryption with the following security properties:
 
 - **Encryption**: AES-256-GCM authenticated encryption
 - **Key Derivation**: PBKDF2 with configurable iterations
@@ -98,7 +98,7 @@ Please provide the following information:
    - Consider VPN or other transport security
 
 3. **System Security**:
-   - Keep Trustedge updated
+   - Keep TrustEdge updated
    - Use on systems with full disk encryption
    - Monitor for unusual network activity
    - Regular security audits of infrastructure
@@ -123,7 +123,7 @@ Please provide the following information:
 
 ## Compliance and Standards
 
-Trustedge aims to align with:
+TrustEdge aims to align with:
 
 - **NIST Cryptographic Standards**: AES, SHA-3 family (BLAKE3)
 - **RFC Standards**: Ed25519 (RFC 8032), relevant IETF standards
@@ -144,7 +144,7 @@ Trustedge aims to align with:
 
 ---
 
-*This document is part of the Trustedge project documentation.*
+*This document is part of the TrustEdge project documentation.*
 
 *Copyright (c) 2025 John Turner. Licensed under the Mozilla Public License 2.0 (MPL-2.0).*
 *See LICENSE file for full license terms.*
