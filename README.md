@@ -1,3 +1,9 @@
+<!--
+Copyright (c) 2025 John Turner
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+-->
+
 # TrustEdge — Trustable Edge AI (Rust)
 
 > Not another CRUD app. Learning Rust through **Trustable Edge AI** — privacy-preserving edge pipelines.
@@ -253,3 +259,15 @@ This project is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**.
 See [`LICENSE`](./LICENSE) for details.
 
 **Disclaimer:** This project is developed independently, on personal time and equipment, and is **not affiliated with or endorsed by my employer**.
+
+---
+
+## Legal & Attribution
+
+**Copyright** © 2025 John Turner. All rights reserved.
+
+**License**: This documentation is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](https://mozilla.org/MPL/2.0/).
+
+**Project**: [TrustEdge](https://github.com/johnzilla/trustedge) — Privacy and trust at the edge.
+
+**Third-party Dependencies**: See [`Cargo.toml`](./trustedge-audio/Cargo.toml) for complete dependency information and licenses.

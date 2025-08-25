@@ -1,3 +1,9 @@
+<!--
+Copyright (c) 2025 John Turner
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+-->
+
 # TrustEdge Roadmap
 
 > **North Star:** Trusted data from the edge. Capture bytes (audio/video/sensor), encrypt at the edge, attach verifiable provenance, and move them through untrusted pipes. Anyone downstream can **route** and **verify**; nobody can **forge** or **peek**.
@@ -229,3 +235,15 @@ trustedge-client --server 127.0.0.1:8080 --file input.wav --use-keyring --salt-h
 * Tamper and misuse cases are reliably detected (and documented).
 * Transport/storage backends are interchangeable without changing guarantees.
 * Low-friction adoption: simple SDK, clear examples, deterministic tests.
+
+---
+
+## Legal & Attribution
+
+**Copyright** © 2025 John Turner. All rights reserved.
+
+**License**: This roadmap is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](https://mozilla.org/MPL/2.0/).
+
+**Project**: [TrustEdge](https://github.com/johnzilla/trustedge) — Privacy and trust at the edge.
+
+**Contributing**: See project repository for contribution guidelines and milestone tracking.

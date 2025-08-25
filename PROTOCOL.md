@@ -1,3 +1,9 @@
+<!--
+Copyright (c) 2025 John Turner
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+-->
+
 # TrustEdge Protocol Specification
 
 **Version:** 0.1 (Draft)
@@ -178,3 +184,15 @@ If any validation fails during decryption (e.g., manifest signature, nonce prefi
 
 **Protocol Versioning:**
 The protocol is versioned (see StreamHeader and file preamble). Future changes will increment the version and document compatibility requirements.
+
+---
+
+## Legal & Attribution
+
+**Copyright** © 2025 John Turner. All rights reserved.
+
+**License**: This specification is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](https://mozilla.org/MPL/2.0/).
+
+**Project**: [TrustEdge](https://github.com/johnzilla/trustedge) — Privacy and trust at the edge.
+
+**Standards**: This specification references [BLAKE3](https://github.com/BLAKE3-team/BLAKE3-specs), [Ed25519 RFC 8032](https://tools.ietf.org/html/rfc8032), and [AES-GCM NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final).
