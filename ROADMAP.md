@@ -76,9 +76,9 @@
 
 * [x] Finalize manifest fields (add `key_id`; keep `model_ids`, `ai_used`; reserve `device_attest`).
 * [x] Consolidate format types in centralized `format.rs` module.
+* [x] Spec doc (`FORMAT.md`): structures, byte orders, invariants, failure modes.
 * [ ] Confirm invariants: contiguous `seq`, fixed `nonce_prefix`, `header_hash` match, AAD layout.
 * [ ] File framing: keep preamble + bincode framing; document record boundaries & EOF handling.
-* [ ] Spec doc (`FORMAT.md`): structures, byte orders, invariants, failure modes.
 * [ ] Test vectors: tiny `.trst` with 1–3 records + known keys; publish expected hashes/tags.
 
 **Acceptance**
