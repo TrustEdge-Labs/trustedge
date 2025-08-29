@@ -194,6 +194,24 @@ See [`PROTOCOL.md`](./PROTOCOL.md) for complete protocol specification.
 | `--use-keyring`    | Use keyring passphrase for key derivation (PBKDF2)               | Encrypt/Decrypt   |
 | `--salt-hex`       | 32-char hex salt for PBKDF2 key derivation (with keyring)        | Encrypt/Decrypt   |
 
+**🔄 Key Management Workflow (Future CLI additions):**
+```bash
+# PLANNED: Advanced key management operations
+./target/release/trustedge-audio --rotate-key --current-key-id <old-id> --new-key-id <new-id>
+./target/release/trustedge-audio --export-key --key-id <id> --output-file key.export
+./target/release/trustedge-audio --import-key --input-file key.export --verify-signature
+./target/release/trustedge-audio --list-keys --show-metadata
+./target/release/trustedge-audio --migrate-backend --from keyring --to tpm --device-path /dev/tpm0
+```
+
+**🎙️ Live Audio Workflow (Future CLI additions):**
+```bash
+# PLANNED: Live audio capture and streaming
+./target/release/trustedge-audio --live-capture --device-id 0 --chunk-duration 100ms
+./target/release/trustedge-audio --stream-to-server --server 192.168.1.100:8080 --live
+./target/release/trustedge-audio --verify-live-stream --server 192.168.1.100:8080 --audit-log stream.log
+```
+
 ### Network-Specific CLI Options
 
 **trustedge-server:**
@@ -337,6 +355,47 @@ These invariants are strictly enforced during decryption and help prevent record
 
 If any validation fails during decryption (e.g., manifest signature, nonce prefix, nonce counter, manifest sequence, key ID mismatch, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered, out-of-sequence, replayed, or incorrectly keyed records cannot be decrypted or accepted.
 
+**Common Error Scenarios & CLI Examples:**
+
+```bash
+# Example: Key mismatch error
+$ ./target/release/trustedge-audio --decrypt --input test.trst --out output.wav --key-hex "wrong_key..."
+Error: Key validation failed
+  → Manifest key_id (a1b2c3d4...) does not match derived key_id (e5f6g7h8...)
+  → Ensure you're using the same key that encrypted this envelope
+  → Use --list-keys to see available key IDs
+
+# Example: Tampered envelope detection  
+$ ./target/release/trustedge-audio --decrypt --input corrupted.trst --out output.wav --use-keyring --salt-hex "abc123..."
+Error: Manifest validation failed at record 3
+  → Signature verification failed for Ed25519 signature
+  → File may be corrupted or tampered with
+  → Use --verify-only to check envelope integrity without decryption
+
+# Example: Migration between key backends
+$ ./target/release/trustedge-audio --migrate-backend --from keyring --to tpm --device-path /dev/tpm0
+Success: Migrated key a1b2c3d4e5f6g7h8 from keyring to TPM
+  → Old keyring key has been securely zeroized
+  → New TPM handle: 0x81000001
+  → Update your scripts to use: --backend tpm --key-handle 0x81000001
+
+# Example: Live audio capture error handling
+$ ./target/release/trustedge-audio --live-capture --device-id 99
+Error: Audio device not found
+  → Device ID 99 is not available
+  → Available devices:
+    0: Built-in Microphone (default)
+    1: USB Audio Device
+  → Use --list-audio-devices to see all available capture devices
+```
+
+**🚀 Planned Error Handling Enhancements (Phase 2-3):**
+- Detailed error codes with suggested recovery actions
+- Verbose mode with step-by-step validation reporting
+- Recovery tools for partially corrupted envelopes
+- Migration rollback procedures for failed backend transitions
+- Network error recovery with automatic retry logic
+
 ---
 
 **Protocol Versioning:**
@@ -344,9 +403,9 @@ The protocol is versioned (see StreamHeader and file preamble). Future changes w
 
 
 
-### Current Status & Next Steps
+### Development Roadmap & Status
 
-**✅ M1 Milestone (Format v1) - COMPLETED:**
+**✅ Phase 1: Core Foundation - COMPLETED:**
 * [x] Complete `.trst` envelope format with comprehensive validation
 * [x] Deterministic test vectors with golden hash verification
 * [x] Production-ready client-server network stack
@@ -354,19 +413,38 @@ The protocol is versioned (see StreamHeader and file preamble). Future changes w
 * [x] Comprehensive testing: unit, integration, CLI, and network protocol tests
 * [x] Full documentation: format spec, protocol spec, security analysis
 
-**🚀 M2 Milestone (Key Management) - IN PROGRESS:**
+**🚀 Phase 2: Key Management & Modularization - IN PROGRESS:**
 * [x] Key ID fields and rotation foundation
 * [x] Keyring-based key derivation with PBKDF2
-* [ ] Advanced key versioning and migration tools
-* [ ] HSM/TPM integration points for production deployments
-* [ ] Comprehensive key lifecycle management
+* [ ] **Modular key management backend system** for easy TPM/HSM integration
+* [ ] **Complete CLI documentation** for all key operations (`--set-passphrase`, `--rotate-key`, `--export-key`, `--import-key`)
+* [ ] **Migration tooling** and clear upgrade paths between key backends
+* [ ] **Error handling documentation** with example CLI outputs and edge cases
 
-**📋 M3 Milestone (Verification & QA) - PLANNED:**
-* [ ] `trustedge-verify` CLI tool with human and JSON output
-* [ ] Property-based testing with proptest
-* [ ] Fuzzing campaign with cargo-fuzz
-* [ ] Security audit and penetration testing
-* [ ] Performance benchmarking and optimization
+**🎙️ Phase 3: Live Audio Capture & Streaming - PLANNED:**
+* [ ] **Live microphone capture** using `cpal` crate for cross-platform audio input
+* [ ] **Real-time chunking pipeline** for mic → encrypt → stream workflow
+* [ ] **Comprehensive audio workflow demos** (record → encrypt → transmit → decrypt → playback)
+* [ ] **Round-trip testing scripts** demonstrating complete pipeline
+* [ ] **Matter compatibility simulation** with local test CA/cert workflows
+
+**🌐 Phase 4: Network & Interoperability Enhancement - PLANNED:**
+* [ ] **Enhanced client/server tools** with improved logging and chunk validation
+* [ ] **Live streaming to TrustEdge servers** with transparent audit logging
+* [ ] **Matter device simulation** with certificate onboarding workflows
+* [ ] **Protocol extensions** for real-world device integration scenarios
+
+**🔍 Phase 5: Testing, Fuzzing & Auditability - PLANNED:**
+* [ ] **Enhanced test vectors** covering files and live streams
+* [ ] **Comprehensive error simulation** (tampering, reordering, key mismatches)
+* [ ] **Fuzzing integration** with documented configuration and results
+* [ ] **Audit trail generation** for compliance and verification workflows
+
+**📖 Phase 6: Documentation & Community - PLANNED:**
+* [ ] **Complete workflow documentation** for all CLI scenarios
+* [ ] **Demo scripts and lab guides** for hands-on learning
+* [ ] **Community outreach strategy** and beta testing programs
+* [ ] **Ecosystem integration guides** for privacy and IoT communities
 
 ---
 

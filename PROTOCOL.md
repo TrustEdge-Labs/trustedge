@@ -181,13 +181,56 @@ struct FileHeader {
 - **Replay Protection:** Sequence numbers and timestamps
 - **Extensibility:** Protocol is versioned and designed for future upgrades (e.g., QUIC, mutual TLS, chunk reordering, error handling)
 
-### Key Selection
+### Key Selection & Backend Architecture
 
+**Current Implementation:**
 - The decryption key must be provided via `--key-hex` (64-char hex) or derived from the keyring using `--use-keyring` and `--salt-hex` (32 hex chars, 16 bytes).
 - In decrypt mode, one of these must be provided; random key is not allowed.
 - In encrypt mode, if neither is provided, a random key is generated and optionally saved with `--key-out`.
 
-**Mutual Exclusivity:** `--key-hex` and `--use-keyring` are mutually exclusive. Only one may be used at a time.
+**Planned Modular Backend System (Phase 2):**
+The key management system will be refactored to support pluggable backends:
+
+```rust
+trait KeyBackend {
+    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32]>;
+    fn store_key(&self, key_id: &[u8; 16], key_data: &[u8; 32]) -> Result<()>;
+    fn rotate_key(&self, old_id: &[u8; 16], new_id: &[u8; 16]) -> Result<()>;
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>>;
+}
+
+// Backend implementations:
+// - KeyringBackend (current PBKDF2 implementation)
+// - TpmBackend (TPM 2.0 integration)
+// - HsmBackend (Hardware Security Module)
+// - MatterBackend (Matter certificate-based keys)
+```
+
+**Backend Selection CLI (Planned):**
+```bash
+# Use keyring backend (current default)
+--backend keyring --salt-hex <salt>
+
+# Use TPM backend
+--backend tpm --device-path /dev/tpm0 --key-handle <handle>
+
+# Use HSM backend  
+--backend hsm --pkcs11-lib /usr/lib/libpkcs11.so --slot-id 0
+
+# Use Matter certificate backend
+--backend matter --fabric-id <id> --device-cert <path>
+```
+
+**Migration Between Backends (Planned):**
+```bash
+# Migrate from keyring to TPM
+trustedge-audio --migrate-backend \
+  --from keyring --salt-hex <salt> \
+  --to tpm --device-path /dev/tpm0 \
+  --key-id <key-id>
+```
+
+**Mutual Exclusivity:** Backend selection flags are mutually exclusive. Only one backend may be specified per operation.
 
 **PBKDF2 Parameters:**
 - PBKDF2 with SHA-256
@@ -205,13 +248,97 @@ struct FileHeader {
 
 ---
 
-## 6. Future Extensions
+## 6. Future Extensions & Planned Features
 
-- Encrypted transport (QUIC/TLS)
-- Chunk acknowledgments and retransmission
-- Session management and authentication
-- Error reporting and diagnostics
-- Support for additional data types (e.g., video, sensor data)
+### 6.1 Live Audio Streaming Protocol
+**Status:** Planned for Phase 3
+
+- **Real-time chunk processing** with configurable latency targets
+- **Audio-specific metadata** in manifest (sample rate, channels, format)
+- **Temporal synchronization** for live playback scenarios
+- **Buffer management** for network jitter and packet loss recovery
+
+**Planned Message Extensions:**
+```rust
+struct AudioChunk {
+    chunk: NetworkChunk,         // Standard encrypted chunk
+    sample_rate: u32,            // Audio sample rate (Hz)
+    channels: u8,                // Number of audio channels
+    format: AudioFormat,         // PCM format specification
+    duration_ms: u32,            // Chunk duration in milliseconds
+}
+
+struct LiveStreamMetadata {
+    session_id: [u8; 16],        // Unique session identifier
+    device_id: Vec<u8>,          // Audio capture device identifier
+    start_timestamp: u64,        // Session start time (Unix epoch)
+    expected_duration: Option<u64>, // Expected session duration (ms)
+}
+```
+
+### 6.2 Matter Device Integration Protocol
+**Status:** Planned for Phase 4
+
+- **Certificate-based device authentication** using Matter credentials
+- **Device onboarding workflow** with local test CA simulation
+- **Matter device ID mapping** to TrustEdge envelope manifests
+- **Commissioning protocol integration** for seamless device addition
+
+**Planned Extensions:**
+```rust
+struct MatterDeviceManifest {
+    matter_device_id: [u8; 8],   // Matter 64-bit device identifier
+    fabric_id: [u8; 8],          // Matter fabric identifier
+    certificate_chain: Vec<Vec<u8>>, // X.509 certificate chain
+    commissioning_data: Vec<u8>, // Device commissioning information
+}
+
+struct DeviceAttestationData {
+    attestation_nonce: [u8; 32], // Attestation challenge nonce
+    device_signature: Vec<u8>,   // Device-signed attestation
+    timestamp: u64,              // Attestation timestamp
+}
+```
+
+### 6.3 Enhanced Key Management Protocol
+**Status:** Planned for Phase 2
+
+- **Multi-backend key derivation** (keyring, TPM, HSM)
+- **Key rotation protocol** with backward compatibility
+- **Hardware security module integration** for enterprise deployments
+- **Distributed key management** for multi-device scenarios
+
+**Key Rotation Message Flow:**
+```
+Client → Server: KeyRotationRequest {
+    old_key_id: [u8; 16],
+    new_key_id: [u8; 16], 
+    rotation_signature: Vec<u8>,
+    effective_timestamp: u64
+}
+
+Server → Client: KeyRotationResponse {
+    status: RotationStatus,
+    confirmed_key_id: [u8; 16],
+    migration_required: bool
+}
+```
+
+### 6.4 Advanced Transport Features
+**Status:** Planned for Phase 4
+
+- **QUIC transport layer** for improved performance and security
+- **Mutual TLS authentication** for production deployments
+- **Connection pooling** and multiplexing for high-throughput scenarios
+- **Chunk retransmission** and error recovery protocols
+
+### 6.5 Audit and Compliance Extensions
+**Status:** Planned for Phase 5
+
+- **Comprehensive audit logging** with structured JSON output
+- **Compliance report generation** for regulatory requirements
+- **Chain of custody tracking** for forensic applications
+- **Tamper evidence reporting** with detailed failure analysis
 
 ---
 
