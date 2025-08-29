@@ -484,11 +484,11 @@ $ trustedge-audio --backend keyring --backend-config "iterations=150000"
 
 If any validation fails during decryption (e.g., manifest signature, nonce prefix, nonce counter, manifest sequence, key ID mismatch, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered, out-of-sequence, replayed, or incorrectly keyed records cannot be decrypted or accepted.
 
-**🚀 Planned Error Handling Enhancements (Phase 2-3):**
+**🚀 Planned Error Handling Enhancements (Phase 4-5):**
+- Advanced key migration tools with rollback procedures
 - Detailed error codes with suggested recovery actions
 - Verbose mode with step-by-step validation reporting
 - Recovery tools for partially corrupted envelopes
-- Migration rollback procedures for failed backend transitions
 - Network error recovery with automatic retry logic
 
 ---
@@ -508,22 +508,28 @@ The protocol is versioned (see StreamHeader and file preamble). Future changes w
 * [x] Comprehensive testing: unit, integration, CLI, and network protocol tests
 * [x] Full documentation: format spec, protocol spec, security analysis
 
-**🚀 Phase 2: Key Management & Modularization - IN PROGRESS:**
+**✅ Phase 2: Key Management & Modularization - COMPLETED:**
 * [x] Key ID fields and rotation foundation
 * [x] Keyring-based key derivation with PBKDF2
 * [x] **Modular key management backend system** for easy TPM/HSM integration
 * [x] **Complete CLI documentation** for all key operations (`--set-passphrase`, `--rotate-key`, `--export-key`, `--import-key`)
-* [ ] **Migration tooling** and clear upgrade paths between key backends
 * [x] **Error handling documentation** with example CLI outputs and edge cases
+* [x] **Clean codebase** with deprecated code removed and professional code quality
 
-**🎙️ Phase 3: Live Audio Capture & Streaming - PLANNED:**
+**🔧 Phase 3: Hardware Security & Migration Tooling - READY TO START:**
+* [ ] **TPM 2.0 backend implementation** using established modular architecture
+* [ ] **Migration tooling** and clear upgrade paths between key backends
+* [ ] **Hardware Security Module (HSM) support** for enterprise deployments
+* [ ] **Key rotation and backup tools** for operational security
+
+**🎙️ Phase 4: Live Audio Capture & Streaming - PLANNED:**
 * [ ] **Live microphone capture** using `cpal` crate for cross-platform audio input
 * [ ] **Real-time chunking pipeline** for mic → encrypt → stream workflow
 * [ ] **Comprehensive audio workflow demos** (record → encrypt → transmit → decrypt → playback)
 * [ ] **Round-trip testing scripts** demonstrating complete pipeline
 * [ ] **Matter compatibility simulation** with local test CA/cert workflows
 
-**🌐 Phase 4: Network & Interoperability Enhancement - PLANNED:**
+**🌐 Phase 5: Network & Interoperability Enhancement - PLANNED:**
 * [ ] **Enhanced client/server tools** with improved logging and chunk validation
 * [ ] **Live streaming to TrustEdge servers** with transparent audit logging
 * [ ] **Matter device simulation** with certificate onboarding workflows

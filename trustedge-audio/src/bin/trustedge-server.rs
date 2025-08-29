@@ -13,7 +13,10 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
 // network payload type from lib.rs
-use trustedge_audio::{build_aad, Manifest, NetworkChunk, SignedManifest, NONCE_LEN, KeyringBackend, KeyBackend, KeyContext};
+use trustedge_audio::{
+    build_aad, KeyBackend, KeyContext, KeyringBackend, Manifest, NetworkChunk, SignedManifest,
+    NONCE_LEN,
+};
 
 // ---- Crypto bits ------------------------------------------------------------
 
@@ -108,7 +111,7 @@ async fn main() -> Result<()> {
             let mut salt = [0u8; 16];
             salt.copy_from_slice(&salt_bytes);
             println!("Using keyring passphrase with provided salt");
-            
+
             let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
             let context = KeyContext::new(salt.to_vec());
             let derived_key = backend.derive_key(&salt, &context)?;
