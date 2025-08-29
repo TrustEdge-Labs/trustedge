@@ -7,16 +7,17 @@
 //
 /// lib.rs - Core library for privacy-preserving edge data processing
 //
-use keyring::Entry;
 use serde::{Deserialize, Serialize};
 
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
 pub const NONCE_LEN: usize = 12;
 
 pub mod vectors;
-
 pub mod format;
+pub mod backends;
+
 pub use format::*;
+pub use backends::{KeyBackend, KeyContext, KeyMetadata, BackendInfo, BackendRegistry, KeyringBackend};
 
 /// Represents a chunk of data sent over the network, including encrypted data,
 /// a signed manifest, the nonce used for encryption, and a timestamp.
@@ -97,18 +98,21 @@ impl NetworkChunk {
     }
 }
 
-// use the system keyring for keys
+// use the system keyring for keys (DEPRECATED - use backends::KeyringBackend instead)
+#[deprecated(note = "Use backends::KeyringBackend instead")]
 pub struct KeyManager {
     service_name: &'static str,
     username: &'static str,
 }
 
+#[allow(deprecated)]
 impl Default for KeyManager {
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[allow(deprecated)]
 impl KeyManager {
     #[must_use]
     pub fn new() -> Self {
@@ -119,25 +123,22 @@ impl KeyManager {
     }
 
     pub fn store_passphrase(&self, passphrase: &str) -> Result<(), anyhow::Error> {
-        let entry = Entry::new(self.service_name, self.username)?;
-        entry.set_password(passphrase)?;
-        Ok(())
+        // Delegate to the new backend system
+        let backend = crate::backends::KeyringBackend::new()?;
+        backend.store_passphrase(passphrase)
     }
 
     pub fn get_passphrase(&self) -> Result<String, anyhow::Error> {
-        let entry = Entry::new(self.service_name, self.username)?;
-        let passphrase = entry.get_password()?;
-        Ok(passphrase)
+        // Delegate to the new backend system
+        let backend = crate::backends::KeyringBackend::new()?;
+        backend.get_passphrase()
     }
 
     pub fn derive_key(&self, salt: &[u8; 16]) -> Result<[u8; 32], anyhow::Error> {
-        let passphrase = self.get_passphrase()?;
-
-        use pbkdf2::pbkdf2_hmac;
-        use sha2::Sha256;
-
-        let mut key = [0u8; 32];
-        pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), salt, 100_000, &mut key);
-        Ok(key)
+        // Delegate to the new backend system
+        let backend = crate::backends::KeyringBackend::new()?;
+        let key_id = [0u8; 16]; // Default key ID for backward compatibility
+        let context = crate::backends::KeyContext::new(salt.to_vec());
+        backend.derive_key(&key_id, &context)
     }
 }
