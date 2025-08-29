@@ -69,8 +69,9 @@ Project: trustedg**Acceptance**
 
 ---
 
-## Current Status
+## Current Status & Implementation Plan
 
+**✅ Phase 1: Core Foundation - COMPLETED:**
 * [x] Per-chunk encrypt/decrypt round-trip
 * [x] Signed manifest bound into AAD
 * [x] `.trst` envelope with preamble (`MAGIC="TRST"`, `VERSION=1`) and invariants
@@ -83,6 +84,245 @@ Project: trustedg**Acceptance**
 * [x] Production-ready network stack with TCP client/server
 * [x] Deterministic test vectors with golden hash verification
 * [x] Integration testing with CLI and network protocol validation
+
+---
+
+## Phase 2: Harden & Modularize Key Management 🚀
+
+**Goal:** Production-ready key management with modular backend support and comprehensive CLI workflows.
+
+**Key Tasks:**
+
+### 2.1 CLI Documentation & Workflow Enhancement
+* [ ] **Complete CLI flag documentation** with examples for each function:
+  - `--set-passphrase <passphrase>` - Initial keyring setup
+  - `--rotate-key --current-key-id <old> --new-key-id <new>` - Key rotation
+  - `--export-key --key-id <id> --output-file <path>` - Key export
+  - `--import-key --input-file <path> --verify-signature` - Key import
+  - `--list-keys --show-metadata` - Key inventory
+  - `--migrate-backend --from <source> --to <dest>` - Backend migration
+
+### 2.2 Modular Backend Architecture
+* [ ] **Abstract key management interfaces** for pluggable backends:
+  - Software keyring (current PBKDF2 implementation) 
+  - TPM 2.0 integration points
+  - HSM support framework
+  - Future Matter test CA/certificate workflows
+* [ ] **Backend registry system** for runtime backend selection
+* [ ] **Configuration management** for backend-specific parameters
+
+### 2.3 Migration & Error Handling
+* [ ] **Comprehensive migration documentation** with step-by-step guides:
+  - Software → hardware-backed key migration
+  - Key rotation procedures and rollback scenarios
+  - Cross-platform migration considerations
+* [ ] **Enhanced error handling** with detailed CLI output examples:
+  - Key mismatch scenarios and recovery steps
+  - Backend failure modes and fallback procedures
+  - Network connectivity issues during key operations
+
+**Acceptance Criteria:**
+* Complete CLI documentation with working examples for all key operations
+* Modular backend system supports easy addition of new key sources
+* Migration procedures tested across different backend combinations
+* Error scenarios documented with actual CLI output examples
+
+---
+
+## Phase 3: Live Audio Capture & Chunking Pipeline 🎙️
+
+**Goal:** Real-time audio processing with live microphone capture and streaming capabilities.
+
+**Key Tasks:**
+
+### 3.1 Cross-Platform Audio Integration
+* [ ] **Integrate `cpal` crate** for cross-platform microphone input
+* [ ] **Linux audio testing** with ALSA/PulseAudio compatibility
+* [ ] **Audio device enumeration** and selection workflows
+* [ ] **Real-time capture optimization** for low-latency processing
+
+### 3.2 Live Streaming Architecture
+* [ ] **Real-time chunking pipeline**: mic → encrypt → stream
+* [ ] **CLI mode for live streaming**:
+  - `--live-capture --device-id <id> --chunk-duration <ms>`
+  - `--stream-to-server --server <addr> --live --audit-log <path>`
+* [ ] **Buffer management** for continuous audio processing
+* [ ] **Latency optimization** and performance tuning
+
+### 3.3 Comprehensive Workflow Documentation
+* [ ] **End-to-end audio workflow guide**: record → encrypt → transmit → decrypt → playback
+* [ ] **Sample CLI invocations** and demonstration scripts
+* [ ] **Integration with FORMAT.md and PROTOCOL.md** showing audio-specific examples
+* [ ] **Round-trip testing scripts** for validation
+
+**Acceptance Criteria:**
+* Live microphone capture working on Linux with plans for cross-platform
+* Complete audio workflow demonstrable via CLI commands
+* Documentation includes working demo scripts
+* Performance benchmarks for real-time processing
+
+---
+
+## Phase 4: Network Streaming & Interoperability 🌐
+
+**Goal:** Enhanced network capabilities with Matter compatibility and robust client-server tools.
+
+**Key Tasks:**
+
+### 4.1 Enhanced Client-Server Tools
+* [ ] **Improved logging and error handling** with structured output
+* [ ] **Chunk validation reporting** with detailed status information
+* [ ] **Sequence validation** and out-of-order handling
+* [ ] **Network resilience** features (reconnection, buffering)
+
+### 4.2 Live Network Streaming
+* [ ] **Server-side live stream handling** with transparent audit logging
+* [ ] **CLI options for live streaming**:
+  - `--server-mode live-stream --audit-output <path>`
+  - `--client-mode live-stream --target <server>`
+* [ ] **Manifest audit trail** generation for compliance
+* [ ] **Real-time monitoring** and health checks
+
+### 4.3 Matter Compatibility Framework
+* [ ] **Local test CA/certificate workflow** mimicking Matter device onboarding
+* [ ] **Certificate-to-envelope mapping** for Matter device IDs
+* [ ] **PROTOCOL.md updates** with Matter integration examples
+* [ ] **Simulation tools** for Matter device scenarios
+
+**Acceptance Criteria:**
+* Enhanced client-server tools with production-ready logging
+* Live streaming capabilities with audit trail generation
+* Matter compatibility documented with working examples
+* Protocol documentation covers device integration scenarios
+
+---
+
+## Phase 5: Testing, Fuzzing & Auditability 🔍
+
+**Goal:** Comprehensive testing infrastructure with fuzzing and audit capabilities.
+
+**Key Tasks:**
+
+### 5.1 Enhanced Test Vectors
+* [ ] **Deterministic vectors** for files and live streams
+* [ ] **Cross-platform test coverage** ensuring consistent behavior
+* [ ] **Performance benchmarks** and regression testing
+* [ ] **Test vector publication** for third-party validation
+
+### 5.2 Comprehensive Error Simulation
+* [ ] **Tampering simulation** with documented failure modes
+* [ ] **Reordering attack testing** and prevention validation
+* [ ] **Key mismatch scenarios** with recovery procedures
+* [ ] **Network failure simulation** and resilience testing
+
+### 5.3 Fuzzing & Property-Based Testing
+* [ ] **Integration with fuzzing tools** (cargo-fuzz, etc.)
+* [ ] **Property-based testing** with proptest or similar
+* [ ] **Fuzzing configuration documentation** in TESTING.md
+* [ ] **Continuous fuzzing** in CI/CD pipeline
+
+**Acceptance Criteria:**
+* Comprehensive test suite covering all critical paths
+* Fuzzing runs 24+ hours without crashes
+* All error scenarios documented with expected behaviors
+* Test infrastructure supports regression testing
+
+---
+
+## Phase 6: Documentation & Community Engagement 📖
+
+**Goal:** Complete documentation ecosystem and community building for feedback and contributions.
+
+**Key Tasks:**
+
+### 6.1 Complete Documentation Update
+* [ ] **All markdown docs reflect new CLI workflows** and features
+* [ ] **Error handling documentation** with real CLI examples
+* [ ] **Integration scenario guides** for various use cases
+* [ ] **Migration and upgrade path documentation**
+
+### 6.2 Demo Scripts & Lab Guides
+* [ ] **Step-by-step demo script**: "record → stream → decrypt → verify → audit"
+* [ ] **Lab guide creation** for hands-on learning
+* [ ] **Video tutorials** or screen recordings for complex workflows
+* [ ] **Example configurations** for common scenarios
+
+### 6.3 Community Outreach Strategy
+* [ ] **Beta testing program** with privacy-focused communities
+* [ ] **Feedback collection framework** for user experience improvements
+* [ ] **Contribution guidelines** and development setup documentation
+* [ ] **Community engagement plan**:
+  - Privacy advocacy groups
+  - Maker communities
+  - IoT developer communities
+  - Security researcher networks
+
+**Target Communities (documented in ROADMAP.md):**
+- Privacy advocacy organizations (EFF, etc.)
+- Maker spaces and hardware hacker communities  
+- IoT developer forums and conferences
+- Security research communities
+- Edge AI developer groups
+
+**Acceptance Criteria:**
+* All documentation updated and consistent across repository
+* Demo scripts work out-of-the-box for new users
+* Community outreach plan implemented with measurable engagement
+* Beta testing program active with regular feedback collection
+
+---
+
+## Phase 7: Modular Hardware & Ecosystem Integration 🔧
+
+**Goal:** Production-ready hardware integration and ecosystem compatibility.
+
+**Key Tasks:**
+
+### 7.1 Hardware Abstraction Layer
+* [ ] **Abstract key management** for easy backend swapping
+* [ ] **TPM 2.0 integration** with proper key isolation
+* [ ] **HSM support** for enterprise scenarios
+* [ ] **Hardware-specific documentation** and setup guides
+
+### 7.2 Upgrade Path Documentation
+* [ ] **Migration procedures** between different hardware backends
+* [ ] **Compatibility matrices** for supported hardware
+* [ ] **Troubleshooting guides** for common hardware issues
+* [ ] **Future roadmap** for additional hardware support
+
+**Acceptance Criteria:**
+* Clean abstraction allows easy addition of new backends
+* TPM integration working with proper security boundaries
+* Migration between backends tested and documented
+* Hardware compatibility clearly documented
+
+---
+
+## Immediate Next Actions (Priority Order)
+
+### Week 1-2: Planning & Documentation
+1. **Update README and ROADMAP.md** with this comprehensive plan ✅
+2. **Create GitHub issues/milestones** for each discrete deliverable
+3. **Establish project board** with clear task tracking
+4. **Document current CLI gaps** and plan implementation order
+
+### Week 3-4: Key Management Foundation
+1. **Begin modular key management refactoring**
+2. **Document all existing CLI flows** with examples
+3. **Design backend abstraction interface**
+4. **Start TPM integration research and planning**
+
+### Month 2: Live Audio Integration
+1. **Integrate cpal for audio capture**
+2. **Build real-time chunking pipeline**
+3. **Implement basic live streaming CLI**
+4. **Create audio workflow documentation**
+
+### Month 3: Network & Testing
+1. **Enhance client-server tools**
+2. **Add comprehensive error simulation**
+3. **Begin fuzzing integration**
+4. **Start community outreach planning**
 
 ---
 
@@ -210,7 +450,67 @@ Project: trustedg**Acceptance**
 
 ---
 
-## Longer-Term
+## Adding New Key Backends (Developer Guide)
+
+### Backend Implementation Pattern
+
+To add a new key management backend (e.g., TPM, HSM, or Matter certificates), implement the `KeyBackend` trait:
+
+```rust
+use trustedge_audio::{KeyBackend, KeyContext, KeyMetadata};
+
+struct YourBackend {
+    config: YourBackendConfig,
+}
+
+impl KeyBackend for YourBackend {
+    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32]> {
+        // Your backend-specific key derivation logic
+        // Must be deterministic for the same key_id + context
+    }
+    
+    fn store_key(&self, key_id: &[u8; 16], key_data: &[u8; 32]) -> Result<()> {
+        // Store key securely in your backend
+        // Implement proper zeroization of sensitive data
+    }
+    
+    fn rotate_key(&self, old_id: &[u8; 16], new_id: &[u8; 16]) -> Result<()> {
+        // Implement key rotation with rollback capability
+        // Ensure atomicity for production deployments
+    }
+    
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
+        // Return available keys with metadata
+        // Don't expose actual key material
+    }
+}
+```
+
+### Integration Steps
+
+1. **Add backend-specific dependencies** to `Cargo.toml`
+2. **Implement the KeyBackend trait** for your hardware/service
+3. **Add CLI argument parsing** for backend-specific options
+4. **Register backend** in the backend registry system
+5. **Add integration tests** with mock hardware if needed
+6. **Document CLI usage** and migration procedures
+
+### Example Backend Integrations
+
+**TPM 2.0 Backend:**
+- Use `tss-esapi` crate for TPM communication
+- Implement secure key storage in TPM NVRAM
+- Add attestation support for key provenance
+
+**HSM Backend:**
+- Use PKCS#11 interface for hardware security modules
+- Implement proper session management
+- Add support for high-availability HSM clusters
+
+**Matter Certificate Backend:**
+- Integrate with Matter commissioning protocols
+- Map device certificates to encryption keys
+- Support fabric-based key isolation
 
 * **Interoperability:** Optional CBOR/COSE envelope variant; map manifest to C2PA claims where practical.
 * **Packaging:** C ABI for SDK; language bindings.
@@ -280,6 +580,88 @@ trustedge-client --server 127.0.0.1:8080 --test-chunks 100 \
   `Record { seq, nonce, sm, ct }`
 * **Manifest:** Includes `key_id` field for key rotation support
 * **FileHeader:** 58 bytes with `key_id`, `device_id_hash`, `nonce_prefix`, and other metadata
+
+---
+
+## Community Engagement Strategy (Phase 6)
+
+### Target Communities for Beta Testing & Feedback
+
+**Privacy Advocacy Groups:**
+- Electronic Frontier Foundation (EFF) developer community
+- Tor Project ecosystem developers
+- Privacy-focused hackers and security researchers
+- Digital rights organizations with technical capacity
+
+**Maker & Hardware Communities:**
+- Local maker spaces with IoT projects
+- Arduino and Raspberry Pi communities
+- Hardware hacking groups (DEF CON villages, etc.)
+- DIY security and privacy tool builders
+
+**IoT Developer Communities:**
+- Matter/Thread developer forums
+- Zigbee Alliance technical working groups
+- Edge computing developer conferences
+- Industrial IoT security practitioners
+
+**Security Research Networks:**
+- Academic researchers in applied cryptography
+- Bug bounty hunters interested in new protocols
+- Security consultants working with IoT devices
+- Penetration testers needing new tools
+
+**Edge AI Developer Groups:**
+- TinyML community members
+- Edge computing framework developers
+- Privacy-preserving ML researchers
+- Federated learning practitioners
+
+### Engagement Activities
+
+**Phase 6.1: Community Research & Outreach**
+- [ ] **Identify key community leaders** and potential early adopters
+- [ ] **Create community engagement plan** with specific outreach targets
+- [ ] **Develop presentation materials** for conferences and meetups
+- [ ] **Establish feedback collection mechanisms** (surveys, GitHub discussions)
+
+**Phase 6.2: Beta Testing Program**
+- [ ] **Recruit 10-15 beta testers** from target communities
+- [ ] **Provide comprehensive testing guides** and support documentation
+- [ ] **Schedule regular feedback sessions** and technical reviews
+- [ ] **Implement feedback tracking system** for feature prioritization
+
+**Phase 6.3: Conference & Community Presentations**
+- [ ] **Submit to relevant conferences**:
+  - DEF CON (IoT Village, Crypto & Privacy Village)
+  - RSA Conference (Applied Cryptography track)
+  - Black Hat (IoT Security presentations)
+  - Privacy engineering conferences
+- [ ] **Local meetup presentations**:
+  - Privacy engineering meetups
+  - Rust user groups
+  - IoT developer meetups
+  - Security researcher gatherings
+
+**Phase 6.4: Open Source Community Building**
+- [ ] **Establish contributor guidelines** and code of conduct
+- [ ] **Create beginner-friendly issues** with "good first issue" labels
+- [ ] **Mentorship program** for new contributors
+- [ ] **Regular community calls** for coordination and feedback
+
+### Community Success Metrics
+
+**Engagement Targets:**
+- 50+ GitHub stars from technical community members
+- 10+ meaningful contributions from external developers
+- 5+ production deployments by beta testers
+- Positive feedback from 80%+ of beta testing participants
+
+**Technical Validation:**
+- External security review by 2+ independent researchers
+- Successful integration demonstrations in 3+ different environments
+- Performance validation by community members
+- Documentation rated as "comprehensive" by 90%+ of users
 
 ---
 

@@ -11,8 +11,11 @@ output/
 # Ignore all txt files
 *.txt
 
-# Ignore all .trst files
+# Ignore all .trst files  
 *.trst
+
+# Ignore all Cargo.lock files except in workspace roots
+**/Cargo.lock
 
 # Ignore output files in trustedge-audio/
 trustedge-audio/out.trst
