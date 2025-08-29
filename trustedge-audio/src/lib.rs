@@ -12,12 +12,14 @@ use serde::{Deserialize, Serialize};
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
 pub const NONCE_LEN: usize = 12;
 
-pub mod vectors;
-pub mod format;
 pub mod backends;
+pub mod format;
+pub mod vectors;
 
+pub use backends::{
+    BackendInfo, BackendRegistry, KeyBackend, KeyContext, KeyMetadata, KeyringBackend,
+};
 pub use format::*;
-pub use backends::{KeyBackend, KeyContext, KeyMetadata, BackendInfo, BackendRegistry, KeyringBackend};
 
 /// Represents a chunk of data sent over the network, including encrypted data,
 /// a signed manifest, the nonce used for encryption, and a timestamp.
@@ -95,50 +97,5 @@ impl NetworkChunk {
         }
 
         Ok(())
-    }
-}
-
-// use the system keyring for keys (DEPRECATED - use backends::KeyringBackend instead)
-#[deprecated(note = "Use backends::KeyringBackend instead")]
-pub struct KeyManager {
-    service_name: &'static str,
-    username: &'static str,
-}
-
-#[allow(deprecated)]
-impl Default for KeyManager {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-#[allow(deprecated)]
-impl KeyManager {
-    #[must_use]
-    pub fn new() -> Self {
-        Self {
-            service_name: "trustedge",
-            username: "encryption_key",
-        }
-    }
-
-    pub fn store_passphrase(&self, passphrase: &str) -> Result<(), anyhow::Error> {
-        // Delegate to the new backend system
-        let backend = crate::backends::KeyringBackend::new()?;
-        backend.store_passphrase(passphrase)
-    }
-
-    pub fn get_passphrase(&self) -> Result<String, anyhow::Error> {
-        // Delegate to the new backend system
-        let backend = crate::backends::KeyringBackend::new()?;
-        backend.get_passphrase()
-    }
-
-    pub fn derive_key(&self, salt: &[u8; 16]) -> Result<[u8; 32], anyhow::Error> {
-        // Delegate to the new backend system
-        let backend = crate::backends::KeyringBackend::new()?;
-        let key_id = [0u8; 16]; // Default key ID for backward compatibility
-        let context = crate::backends::KeyContext::new(salt.to_vec());
-        backend.derive_key(&key_id, &context)
     }
 }

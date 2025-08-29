@@ -12,8 +12,8 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
 use trustedge_audio::{
-    build_aad, FileHeader, KeyManager, Manifest, NetworkChunk, SignedManifest, ALG_AES_256_GCM,
-    NONCE_LEN,
+    build_aad, FileHeader, Manifest, NetworkChunk, SignedManifest, ALG_AES_256_GCM,
+    NONCE_LEN, KeyringBackend, KeyBackend, KeyContext,
 };
 
 // --- Cryptograph ---
@@ -68,10 +68,9 @@ struct Args {
 async fn main() -> Result<()> {
     let args = Args::parse();
 
-    let key_manager = KeyManager::new();
-
     if let Some(passphrase) = args.set_passphrase.as_ref() {
-        key_manager.store_passphrase(passphrase)?;
+        let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
+        backend.store_passphrase(passphrase)?;
         println!("Passphrase stored in system keyring");
         return Ok(());
     }
@@ -95,7 +94,13 @@ async fn main() -> Result<()> {
         let mut salt = [0u8; 16];
         salt.copy_from_slice(&salt_bytes);
         println!("Using keyring passphrase with provided salt");
-        key_manager.derive_key(&salt)?
+        
+        let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
+        let context = KeyContext::new(salt.to_vec());
+        let derived_key = backend.derive_key(&salt, &context)?;
+        let mut key_bytes = [0u8; 32];
+        key_bytes.copy_from_slice(&derived_key);
+        key_bytes
     } else if let Some(ref kh) = args.key_hex {
         parse_key_hex(kh)?
     } else {
