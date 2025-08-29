@@ -267,13 +267,9 @@ async fn handle_connection(
         session.expected_seq_next += 1;
 
         // Decrypt path
-        if decrypt {
-            if let Some(_) = session.cipher {
-                let pt_len = process_and_decrypt_chunk(&chunk, &mut session, verbose)
-                    .await
-                    .with_context(|| format!("decrypt chunk seq={} failed", chunk.sequence))?;
-                total_pt_bytes += pt_len;
-            }
+        if decrypt && session.cipher.is_some() {
+            let pt_len = process_and_decrypt_chunk(&chunk, &mut session, verbose).await?;
+            total_pt_bytes += pt_len;
         }
 
         // Save encrypted payload to disk (optional)
@@ -365,7 +361,7 @@ async fn process_and_decrypt_chunk(
 
     let snp = session.stream_nonce_prefix.unwrap();
     anyhow::ensure!(
-        &chunk.nonce[..4] == &snp,
+        chunk.nonce[..4] == snp,
         "record nonce prefix != stream nonce_prefix"
     );
 
@@ -436,7 +432,7 @@ async fn save_chunk_to_disk(
         "timestamp": chunk.timestamp,
         "data_size": chunk.data.len(),
         "manifest_size": chunk.manifest.len(),
-        "nonce_hex": hex::encode(&chunk.nonce),
+        "nonce_hex": hex::encode(chunk.nonce),
         "received_at": chrono::Utc::now().to_rfc3339(),
     });
 

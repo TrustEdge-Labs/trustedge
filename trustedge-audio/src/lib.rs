@@ -107,7 +107,14 @@ pub struct KeyManager {
     username: &'static str,
 }
 
+impl Default for KeyManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl KeyManager {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             service_name: "trustedge",
