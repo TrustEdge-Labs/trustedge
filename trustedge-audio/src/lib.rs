@@ -8,15 +8,16 @@
 // lib.rs - Core library for privacy-preserving edge data processing
 //
 //! TrustEdge - Privacy and trust at the edge
-//! 
+//!
 //! Core library for privacy-preserving edge data processing
 
-use serde::{Serialize, Deserialize};
 use keyring::Entry;
+use serde::{Deserialize, Serialize};
 
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
 pub const NONCE_LEN: usize = 12;
 
+pub mod vectors;
 
 pub mod format;
 pub use format::*;
@@ -55,7 +56,12 @@ impl NetworkChunk {
     }
 
     /// Creates a new `NetworkChunk` with the given sequence number, encrypted data, manifest, and explicit nonce.
-    pub fn new_with_nonce(seq: u64, encrypted_data: Vec<u8>, manifest_bytes: Vec<u8>, nonce: [u8; NONCE_LEN]) -> Self {
+    pub fn new_with_nonce(
+        seq: u64,
+        encrypted_data: Vec<u8>,
+        manifest_bytes: Vec<u8>,
+        nonce: [u8; NONCE_LEN],
+    ) -> Self {
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
@@ -86,7 +92,8 @@ impl NetworkChunk {
             .map_err(|e| anyhow::anyhow!("Time error: {}", e))?
             .as_secs();
 
-        if self.timestamp > now + 300 { // Not more than 5 minutes in future
+        if self.timestamp > now + 300 {
+            // Not more than 5 minutes in future
             return Err(anyhow::anyhow!("Chunk timestamp is too far in the future"));
         }
 
@@ -107,25 +114,25 @@ impl KeyManager {
             username: "encryption_key",
         }
     }
-    
+
     pub fn store_passphrase(&self, passphrase: &str) -> Result<(), anyhow::Error> {
         let entry = Entry::new(self.service_name, self.username)?;
         entry.set_password(passphrase)?;
         Ok(())
     }
-    
+
     pub fn get_passphrase(&self) -> Result<String, anyhow::Error> {
         let entry = Entry::new(self.service_name, self.username)?;
         let passphrase = entry.get_password()?;
         Ok(passphrase)
     }
-    
+
     pub fn derive_key(&self, salt: &[u8; 16]) -> Result<[u8; 32], anyhow::Error> {
         let passphrase = self.get_passphrase()?;
-        
+
         use pbkdf2::pbkdf2_hmac;
         use sha2::Sha256;
-        
+
         let mut key = [0u8; 32];
         pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), salt, 100_000, &mut key);
         Ok(key)

@@ -1,6 +1,7 @@
 // Copyright (c) 2025 John Turner
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: trustedge — Privacy and trust at the edge.
+//
 #![forbid(unsafe_code)]
 
 use aes_gcm::{
@@ -11,7 +12,7 @@ use aes_gcm::{
 use anyhow::{anyhow, Context, Result};
 use bincode::{deserialize_from, serialize_into};
 use clap::Parser;
-use ed25519_dalek::{Signer, SigningKey, Signature, Verifier, VerifyingKey};
+use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use hex;
 use rand_core::RngCore;
 use std::fs::File;
@@ -22,12 +23,21 @@ use trustedge_audio::KeyManager;
 use zeroize::Zeroize;
 
 use trustedge_audio::{
-    // constants
-    NONCE_LEN, MAGIC, VERSION, HEADER_LEN, ALG_AES_256_GCM,
-    // types
-    Manifest, SignedManifest, StreamHeader, Record, FileHeader,
     // helpers
-    build_aad, write_stream_header,
+    build_aad,
+    write_stream_header,
+    FileHeader,
+    // types
+    Manifest,
+    Record,
+    SignedManifest,
+    StreamHeader,
+    ALG_AES_256_GCM,
+    HEADER_LEN,
+    MAGIC,
+    // constants
+    NONCE_LEN,
+    VERSION,
 };
 
 // --- constants --------------------------------------------------------------
@@ -104,7 +114,10 @@ fn select_aes_key(args: &Args, km: &KeyManager, mode: Mode) -> Result<[u8; 32]> 
             .as_ref()
             .ok_or_else(|| anyhow!("--salt-hex required with --use-keyring"))?;
         let salt_bytes = hex::decode(salt_hex).context("salt_hex decode")?;
-        anyhow::ensure!(salt_bytes.len() == 16, "salt must be 16 bytes (32 hex chars)");
+        anyhow::ensure!(
+            salt_bytes.len() == 16,
+            "salt must be 16 bytes (32 hex chars)"
+        );
         let mut salt = [0u8; 16];
         salt.copy_from_slice(&salt_bytes);
         return km.derive_key(&salt);
@@ -162,7 +175,17 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
     let stream_nonce_prefix: [u8; 4] = sh.header[50..54].try_into().unwrap();
 
-    // verify header hash
+    // turn Vec<u8> into the fixed array
+    let header_arr: [u8; trustedge_audio::HEADER_LEN] = sh
+        .header
+        .as_slice()
+        .try_into()
+        .context("stream header length != 58")?;
+
+    // parse the 58-byte header into a FileHeader
+    let fh = trustedge_audio::FileHeader::from_bytes(&header_arr);
+
+    // verify stored header hash matches recompute
     let hh = blake3::hash(&sh.header);
     anyhow::ensure!(hh.as_bytes() == &sh.header_hash, "header_hash mismatch");
 
@@ -202,7 +225,9 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             rec.seq,
             expected_seq
         );
-        expected_seq = expected_seq.checked_add(1).ok_or_else(|| anyhow!("seq overflow"))?;
+        expected_seq = expected_seq
+            .checked_add(1)
+            .ok_or_else(|| anyhow!("seq overflow"))?;
 
         // manifest signature
         let pubkey_arr: [u8; 32] = rec
@@ -217,24 +242,36 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             .verify(&rec.sm.manifest, &Signature::from_bytes(&sig_arr))
             .context("manifest signature verify failed")?;
 
-        // manifest contents
+        // manifest contents - deserialize first so we can use it for verification
         let m: Manifest = bincode::deserialize(&rec.sm.manifest).context("manifest decode")?;
+
+        // verify invariants
+        anyhow::ensure!(
+            rec.nonce[..4] == fh.nonce_prefix,
+            "record nonce prefix != stream header nonce_prefix"
+        );
+
         anyhow::ensure!(
             m.header_hash == sh.header_hash,
             "manifest.header_hash != stream header_hash"
         );
 
+        anyhow::ensure!(m.key_id == fh.key_id, "manifest.key_id != header.key_id");
+
         // ensure manifest seq matches record seq
-        anyhow::ensure!(
-            m.seq == rec.seq,
-            "manifest.seq != record.seq"
-        );
+        anyhow::ensure!(m.seq == rec.seq, "manifest.seq != record.seq");
 
         // decrypt
         let mh = blake3::hash(&rec.sm.manifest);
         let aad = build_aad(&sh.header_hash, rec.seq, &rec.nonce, mh.as_bytes());
         let pt = cipher
-            .decrypt(Nonce::from_slice(&rec.nonce), Payload { msg: &rec.ct, aad: &aad })
+            .decrypt(
+                Nonce::from_slice(&rec.nonce),
+                Payload {
+                    msg: &rec.ct,
+                    aad: &aad,
+                },
+            )
             .map_err(|_| anyhow!("AES-GCM decrypt/verify failed"))?;
 
         // pt hash
@@ -278,8 +315,14 @@ fn main() -> Result<()> {
     );
 
     // inputs/outputs
-    let input = args.input.as_ref().ok_or_else(|| anyhow!("--input is required"))?;
-    let out = args.out.as_ref().ok_or_else(|| anyhow!("--out is required"))?;
+    let input = args
+        .input
+        .as_ref()
+        .ok_or_else(|| anyhow!("--input is required"))?;
+    let out = args
+        .out
+        .as_ref()
+        .ok_or_else(|| anyhow!("--out is required"))?;
     let mut fin = BufReader::new(File::open(input).context("open input")?);
     let mut fout = BufWriter::new(File::create(out).context("create output")?);
 
@@ -297,7 +340,8 @@ fn main() -> Result<()> {
     OsRng.fill_bytes(&mut key_id);
 
     // device hash (demo)
-    let device_id = std::env::var("TRUSTEDGE_DEVICE_ID").unwrap_or_else(|_| "trustedge-abc123".into());
+    let device_id =
+        std::env::var("TRUSTEDGE_DEVICE_ID").unwrap_or_else(|_| "trustedge-abc123".into());
     let salt = std::env::var("TRUSTEDGE_SALT").unwrap_or_else(|_| "trustedge-demo-salt".into());
     let mut device_id_hash = [0u8; 32];
     let mut hasher = blake3::Hasher::new();
@@ -318,7 +362,9 @@ fn main() -> Result<()> {
 
     // optional envelope writer
     let mut env_out = if let Some(path) = &args.envelope {
-        Some(BufWriter::new(File::create(path).context("create envelope")?))
+        Some(BufWriter::new(
+            File::create(path).context("create envelope")?,
+        ))
     } else {
         None
     };
@@ -379,7 +425,13 @@ fn main() -> Result<()> {
         let aad = build_aad(header_hash.as_bytes(), seq, &nonce_bytes, mhash.as_bytes());
 
         let ct = cipher
-            .encrypt(nonce, Payload { msg: &buf[..n], aad: &aad })
+            .encrypt(
+                nonce,
+                Payload {
+                    msg: &buf[..n],
+                    aad: &aad,
+                },
+            )
             .map_err(|_| anyhow!("AES-GCM encrypt failed"))?;
 
         // debug-only tamper check
@@ -390,7 +442,13 @@ fn main() -> Result<()> {
                 ct_bad[0] ^= 0x01;
                 debug_assert!(
                     cipher
-                        .decrypt(nonce, Payload { msg: &ct_bad, aad: &aad })
+                        .decrypt(
+                            nonce,
+                            Payload {
+                                msg: &ct_bad,
+                                aad: &aad
+                            }
+                        )
                         .is_err(),
                     "tamper test should fail"
                 );
@@ -399,8 +457,11 @@ fn main() -> Result<()> {
 
         // verify manifest + round-trip decrypt (sanity)
         let _m2: Manifest = bincode::deserialize(&sm.manifest).context("manifest decode")?;
-        let pubkey_arr: [u8; 32] =
-            sm.pubkey.as_slice().try_into().context("pubkey length != 32")?;
+        let pubkey_arr: [u8; 32] = sm
+            .pubkey
+            .as_slice()
+            .try_into()
+            .context("pubkey length != 32")?;
         let sig_arr: [u8; 64] = sm.sig.as_slice().try_into().context("sig len != 64")?;
         VerifyingKey::from_bytes(&pubkey_arr)
             .context("bad pubkey")?
@@ -409,7 +470,13 @@ fn main() -> Result<()> {
 
         let aad_rx = build_aad(header_hash.as_bytes(), seq, &nonce_bytes, mhash.as_bytes());
         let pt = cipher
-            .decrypt(Nonce::from_slice(&nonce_bytes), Payload { msg: &ct, aad: &aad_rx })
+            .decrypt(
+                Nonce::from_slice(&nonce_bytes),
+                Payload {
+                    msg: &ct,
+                    aad: &aad_rx,
+                },
+            )
             .map_err(|_| anyhow!("AES-GCM decrypt/verify failed"))?;
         let pt_hash_rx = blake3::hash(&pt);
         anyhow::ensure!(pt_hash_rx.as_bytes() == &m.pt_hash, "pt hash mismatch");

@@ -11,7 +11,10 @@ use std::path::PathBuf;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
-use trustedge_audio::{KeyManager, NetworkChunk, NONCE_LEN, ALG_AES_256_GCM, Manifest, SignedManifest, FileHeader, build_aad};
+use trustedge_audio::{
+    build_aad, FileHeader, KeyManager, Manifest, NetworkChunk, SignedManifest, ALG_AES_256_GCM,
+    NONCE_LEN,
+};
 
 // --- Cryptograph ---
 use aes_gcm::{
@@ -107,8 +110,14 @@ async fn main() -> Result<()> {
         send_encrypted_test_chunks(&mut stream, n, args.chunk_size, &key_bytes, args.verbose)
             .await?;
     } else if let Some(ref file_path) = args.file {
-        send_encrypted_file(&mut stream, file_path, &key_bytes, args.chunk_size, args.verbose)
-            .await?;
+        send_encrypted_file(
+            &mut stream,
+            file_path,
+            &key_bytes,
+            args.chunk_size,
+            args.verbose,
+        )
+        .await?;
     } else {
         return Err(anyhow::anyhow!(
             "Must specify either --file or --test-chunks"
@@ -176,11 +185,22 @@ async fn send_encrypted_file(
         };
 
         // AAD
-        let aad = build_aad(&header_hash, sequence, &nonce_bytes, blake3::hash(&m_bytes).as_bytes());
+        let aad = build_aad(
+            &header_hash,
+            sequence,
+            &nonce_bytes,
+            blake3::hash(&m_bytes).as_bytes(),
+        );
 
         // Encrypt
         let ciphertext = cipher
-            .encrypt(nonce, Payload { msg: &buffer[..bytes_read], aad: &aad })
+            .encrypt(
+                nonce,
+                Payload {
+                    msg: &buffer[..bytes_read],
+                    aad: &aad,
+                },
+            )
             .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
 
         // Frame
@@ -265,9 +285,20 @@ async fn send_encrypted_test_chunks(
             pubkey: signing.verifying_key().to_bytes().to_vec(),
         };
 
-        let aad = build_aad(&header_hash, seq, &nonce_bytes, blake3::hash(&m_bytes).as_bytes());
+        let aad = build_aad(
+            &header_hash,
+            seq,
+            &nonce_bytes,
+            blake3::hash(&m_bytes).as_bytes(),
+        );
         let ciphertext = cipher
-            .encrypt(nonce, Payload { msg: &pt, aad: &aad })
+            .encrypt(
+                nonce,
+                Payload {
+                    msg: &pt,
+                    aad: &aad,
+                },
+            )
             .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
 
         let chunk =
@@ -316,7 +347,8 @@ fn build_session_header(chunk_size: usize) -> Result<([u8; 32], [u8; 4], [u8; 16
     OsRng.fill_bytes(&mut key_id);
 
     // Device hash from env (like main.rs), but tolerate absence
-    let device_id = std::env::var("TRUSTEDGE_DEVICE_ID").unwrap_or_else(|_| "trustedge-abc123".into());
+    let device_id =
+        std::env::var("TRUSTEDGE_DEVICE_ID").unwrap_or_else(|_| "trustedge-abc123".into());
     let salt = std::env::var("TRUSTEDGE_SALT").unwrap_or_else(|_| "trustedge-demo-salt".into());
     let mut device_id_hash = [0u8; 32];
     let mut hasher = blake3::Hasher::new();
@@ -351,7 +383,10 @@ async fn send_chunk(stream: &mut TcpStream, chunk: &NetworkChunk, verbose: bool)
     let length = serialized.len() as u32;
 
     if verbose {
-        println!("[SEND] Sending chunk seq={}, {} bytes", chunk.sequence, length);
+        println!(
+            "[SEND] Sending chunk seq={}, {} bytes",
+            chunk.sequence, length
+        );
     }
 
     stream

@@ -244,7 +244,43 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 
 ---
 
-## 8. Implementation Notes
+## 8. Test Vectors
+
+### 8.1. Deterministic Test Vector
+
+TrustEdge includes deterministic test vectors to validate format compliance:
+
+**Test Parameters:**
+- **AES-256 Key**: `000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f` (hex)
+- **Ed25519 Seed**: `4242424242424242424242424242424224242424242424242424242424242424` (hex)
+- **Nonce Prefix**: `aabbccdd` (hex)
+- **Key ID**: `TEST_KEY_ID_16B!` (ASCII)
+- **Input Size**: 32,768 bytes (deterministic pseudo-random)
+- **Chunk Size**: 4,096 bytes
+
+**Golden Hash:**
+```
+BLAKE3(.trst) = 8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c
+```
+
+**Usage:**
+- Run `cargo test vectors::tests::golden_trst_digest_is_stable` to verify format compliance
+- Any intentional format changes require updating the golden hash
+- External implementations can use these vectors for validation
+
+### 8.2. Integration Testing
+
+The implementation includes comprehensive integration tests:
+
+1. **Round-trip Test**: Encrypt → envelope → decrypt with known keys
+2. **Tamper Detection**: Verify corrupted envelopes fail validation  
+3. **CLI Testing**: End-to-end testing via command-line interface
+
+**Test Location**: `tests/vectors.rs` and `src/vectors.rs`
+
+---
+
+## 9. Implementation Notes
 
 ### 8.1. Bincode Encoding
 

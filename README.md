@@ -199,6 +199,71 @@ The `.trst` envelope file is a binary format containing:
 
 All fields are bincode-encoded for compactness and speed.
 
+### Enhanced Validation & Security Invariants
+
+Recent improvements include comprehensive validation during decryption to prevent tampering and ensure data integrity:
+
+- **Header Consistency**: Manifest header hash must match stream header hash
+- **Key Rotation Support**: Manifest key ID must match file header key ID
+- **Strict Sequencing**: Sequence numbers must be contiguous with no gaps
+- **Nonce Integrity**: Record nonce prefix must match stream header prefix
+- **Cryptographic Binding**: All hashes, signatures, and encrypted data verified
+- **Fail-Safe Design**: Any validation failure immediately aborts processing
+
+These invariants ensure that encrypted streams cannot be tampered with, reordered, or substituted without detection.
+
+---
+
+## Testing and Validation
+
+### Test Vectors
+
+TrustEdge includes comprehensive deterministic test vectors for format validation:
+
+```bash
+# Run format compliance test with golden hash verification
+cargo test vectors::tests::golden_trst_digest_is_stable
+
+# Run integration tests (round-trip, tamper detection)
+cargo test --test vectors
+
+# Run all tests
+cargo test
+```
+
+**Golden Test Vector:**
+- **Input**: 32KB deterministic pseudo-random data
+- **Chunk Size**: 4KB chunks  
+- **Expected Hash**: `8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c`
+- **Purpose**: Ensures format stability and enables external validation
+
+### Integration Testing
+
+The test suite validates:
+- ✅ **Format compliance**: Deterministic envelope generation with known cryptographic material
+- ✅ **Round-trip integrity**: Encrypt → envelope → decrypt cycle verification
+- ✅ **Tamper detection**: Corrupted envelopes correctly rejected
+- ✅ **CLI functionality**: End-to-end testing via command-line interface
+- ✅ **Network protocol**: Client/server chunk transfer validation
+
+### Manual Verification
+
+```bash
+# Quick smoke test
+echo "test data" > input.txt
+./target/release/trustedge-audio 
+  --input input.txt --out output.txt --envelope test.trst 
+  --key-hex 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+./target/release/trustedge-audio 
+  --decrypt --input test.trst --out decrypted.txt 
+  --key-hex 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+diff input.txt decrypted.txt  # Should be identical
+```
+
+---
+
 **Envelope Integrity Invariants:**
 - Each record's nonce prefix (first 4 bytes) must match the stream header's nonce prefix.
 - The nonce counter (last 8 bytes) must equal the record's sequence number.
