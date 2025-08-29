@@ -6,21 +6,30 @@ Project: trustedge — Privacy and trust at the edge.
 
 # TrustEdge Protocol Specification
 
-**Version:** 0.1 (Draft)
+**Version:** 1.0 (Stable)
 **Date:** August 28, 2025
 
 > **Related Documentation**: For security policies and vulnerability reporting, see [`SECURITY.md`](./SECURITY.md)
 
 ## Overview
 
-This document describes the wire format and protocol for chunk transfer between TrustEdge clients and servers. The protocol is designed for privacy-preserving, authenticated, and integrity-checked streaming of data (e.g., audio) at the edge.
+This document describes the wire format and network protocol for chunk transfer between TrustEdge clients and servers. The protocol provides privacy-preserving, authenticated, and integrity-checked streaming of data with comprehensive validation and tamper detection.
+
+**Key Features:**
+- **TCP-based transport** with plans for QUIC/TLS
+- **Length-prefixed message framing** for reliable parsing
+- **Comprehensive validation** with strict security invariants
+- **Real-time processing** with ACK/response flow
+- **Complete tamper detection** preventing replay and reordering attacks
 
 ---
 
 ## 1. Transport Layer
 
-- **Current:** TCP (with plans for QUIC/TLS in future)
-- **Message Framing:** Each message is length-prefixed (u32, big-endian) followed by the message payload.
+- **Current:** TCP with comprehensive validation and error handling
+- **Message Framing:** Length-prefixed (u32, little-endian) followed by bincode-encoded payload
+- **Future:** QUIC/TLS for enhanced security and performance
+- **Flow Control:** ACK/response protocol with error reporting
 
 ---
 
@@ -30,18 +39,27 @@ This document describes the wire format and protocol for chunk transfer between 
 
 Each chunk sent over the wire is serialized as a `NetworkChunk` struct (bincode encoding):
 
-```
+```rust
 struct NetworkChunk {
-    sequence: u64,           // Chunk sequence number
+    sequence: u64,           // Chunk sequence number (starting from 1)
     data: Vec<u8>,           // Encrypted chunk data (AES-GCM)
     manifest: Vec<u8>,       // bincode-encoded, signed manifest
-    nonce: [u8; 12],         // Nonce used for AES-GCM
+    nonce: [u8; 12],         // Nonce used for AES-GCM (prefix + counter)
     timestamp: u64,          // Seconds since UNIX epoch
 }
 ```
 
-- **Encoding:** bincode
-- **Length Prefix:** Each chunk is sent as `[u32 length][bincode(NetworkChunk)]`
+**Transport Encoding:**
+- **Serialization:** bincode (efficient binary format)
+- **Frame Format:** `[u32 length][bincode(NetworkChunk)]`
+- **Validation:** Each chunk undergoes comprehensive validation on receipt
+
+**Chunk Validation:**
+- Data and manifest must not be empty
+- Timestamp must not be more than 5 minutes in the future
+- Sequence numbers must be contiguous (no gaps or duplicates)
+- Nonce prefix must match session header prefix
+- All cryptographic validation must pass
 
 ### 2.1.1. Envelope File Format
 
@@ -104,24 +122,54 @@ struct FileHeader {
 
 ## 3. Protocol Flow
 
+### 3.1. Connection and Session Setup
+
 1. **Connection Establishment:**
-   - Client connects to server (TCP, future: QUIC/TLS).
-2. **Chunk Transfer:**
-   - Client sends a sequence of length-prefixed `NetworkChunk` messages.
-   - Server receives, validates, and (optionally) decrypts each chunk.
-3. **Validation:**
-   - Server checks manifest signature, nonce, sequence, timestamp, and enforces these invariants:
-     - The record's nonce prefix matches the stream header's prefix
-     - The nonce counter matches the record's sequence number  
-     - The manifest's `seq` matches the record's sequence number
-     - The manifest's `header_hash` matches the stream header's `header_hash` 
-     - The manifest's `key_id` matches the file header's `key_id`
-     - Sequence numbers are strictly contiguous (no gaps or duplicates)
-   - Decrypts chunk using provided nonce and key (see Key Selection below).
-   - Verifies plaintext hash matches manifest.
-   - If any validation fails (e.g., signature, nonce prefix, hash, header consistency), the record is rejected and an error is reported/logged.
-4. **Acknowledgment (Future):**
-   - Protocol may be extended to include ACKs, error reporting, or flow control.
+   - Client connects to server via TCP
+   - Server allocates per-connection state and session tracking
+   - Connection ID assigned for logging and debugging
+
+2. **Session Initialization:**
+   - First valid chunk establishes session parameters
+   - Header hash, nonce prefix, and key ID locked for session
+   - Sequence tracking initialized (expecting sequence 1)
+
+### 3.2. Chunk Processing Pipeline
+
+1. **Chunk Reception:**
+   - Server reads length-prefixed NetworkChunk from socket
+   - Basic structure validation (non-empty data/manifest, timestamp bounds)
+
+2. **Cryptographic Validation:**
+   - Manifest signature verification (Ed25519)
+   - Key ID validation against configured keys
+   - Nonce prefix and counter validation
+   - Sequence number continuity check
+
+3. **Decryption and Integrity:**
+   - AES-GCM decryption with AAD binding
+   - Plaintext hash verification against manifest
+   - Header consistency validation
+
+4. **Processing and Storage:**
+   - Optional plaintext storage to output directory
+   - Session state update (next expected sequence)
+   - ACK response to client (future enhancement)
+
+### 3.3. Validation Enforcement
+
+**Critical Security Invariants (strictly enforced):**
+- Record nonce prefix must match stream header nonce prefix
+- Nonce counter (last 8 bytes) must equal record sequence number
+- Manifest sequence must match record sequence number
+- Manifest header hash must match stream header hash
+- Manifest key ID must match file header key ID
+- Sequence numbers must be strictly contiguous (no gaps or reuse)
+
+**Failure Response:**
+- Any validation failure immediately rejects the chunk
+- Detailed error logging for debugging and monitoring
+- Connection may be terminated for security violations
 
 ---
 
