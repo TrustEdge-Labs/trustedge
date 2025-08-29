@@ -21,7 +21,10 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
-use trustedge_audio::KeyManager;
+use trustedge_audio::{
+    KeyManager, // Deprecated - will be replaced with backend system
+    KeyBackend, KeyContext, BackendRegistry, KeyringBackend
+};
 use zeroize::Zeroize;
 
 use trustedge_audio::{
@@ -89,12 +92,73 @@ struct Args {
     /// Use key derived from keyring passphrase + salt instead of --key-hex
     #[arg(long)]
     use_keyring: bool,
+
+    /// Key management backend to use (keyring, tpm, hsm, matter)
+    #[arg(long, default_value = "keyring")]
+    backend: String,
+
+    /// List available key management backends
+    #[arg(long)]
+    list_backends: bool,
+
+    /// Backend-specific configuration (format: key=value)
+    #[arg(long)]
+    backend_config: Vec<String>,
 }
 
 /// Helpers
 enum Mode {
     Encrypt,
     Decrypt,
+}
+
+/// List available key management backends
+fn list_backends() -> Result<()> {
+    let registry = BackendRegistry::new();
+    let available = registry.list_available_backends();
+    
+    println!("Available key management backends:");
+    for backend_name in available {
+        // Create backend to get info
+        if let Ok(backend) = registry.create_backend(backend_name) {
+            let info = backend.backend_info();
+            let status = if info.available { "✓" } else { "✗" };
+            println!("  {} {} - {}", status, info.name, info.description);
+            
+            if !info.config_requirements.is_empty() {
+                println!("    Required config: {}", info.config_requirements.join(", "));
+            }
+        }
+    }
+    
+    println!("\nUsage examples:");
+    println!("  --backend keyring --use-keyring --salt-hex <salt>");
+    println!("  --backend tpm --backend-config device_path=/dev/tpm0");
+    println!("  --backend hsm --backend-config pkcs11_lib=/usr/lib/libpkcs11.so");
+    
+    Ok(())
+}
+
+/// Create a backend from CLI arguments
+fn create_backend_from_args(args: &Args) -> Result<Box<dyn KeyBackend>> {
+    let registry = BackendRegistry::new();
+    
+    // For now, only keyring is supported
+    match args.backend.as_str() {
+        "keyring" => {
+            let backend = KeyringBackend::new()
+                .context("Failed to create keyring backend")?;
+            Ok(Box::new(backend))
+        },
+        other => {
+            anyhow::bail!(
+                "Backend '{}' not yet implemented. Available: keyring\n\
+                Future backends: tpm, hsm, matter\n\
+                Use --list-backends to see all options", 
+                other
+            );
+        }
+    }
 }
 
 /// Parse a hex string into a 32-byte array
@@ -106,29 +170,40 @@ fn parse_key_hex(s: &str) -> Result<[u8; 32]> {
     Ok(out)
 }
 
-/// Select the AES key to use for encryption/decryption
-fn select_aes_key(args: &Args, km: &KeyManager, mode: Mode) -> Result<[u8; 32]> {
-    if args.use_keyring {
+/// Select the AES key to use for encryption/decryption using the new backend system
+fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {
+    // Check for explicit key first (highest priority)
+    if let Some(kh) = &args.key_hex {
+        return parse_key_hex(kh);
+    }
+
+    // Use backend system for key derivation (if salt provided or use_keyring flag set)
+    if args.use_keyring || args.salt_hex.is_some() {
+        let backend = create_backend_from_args(args)?;
+        
         let salt_hex = args
             .salt_hex
             .as_ref()
-            .ok_or_else(|| anyhow!("--salt-hex required with --use-keyring"))?;
+            .ok_or_else(|| anyhow!("--salt-hex required for backend key derivation"))?;
         let salt_bytes = hex::decode(salt_hex).context("salt_hex decode")?;
         anyhow::ensure!(
             salt_bytes.len() == 16,
             "salt must be 16 bytes (32 hex chars)"
         );
-        let mut salt = [0u8; 16];
-        salt.copy_from_slice(&salt_bytes);
-        return km.derive_key(&salt);
+        
+        let key_id = [0u8; 16]; // Default key ID for now
+        let context = KeyContext::new(salt_bytes);
+        return backend.derive_key(&key_id, &context);
     }
 
-    if let Some(kh) = &args.key_hex {
-        return parse_key_hex(kh);
-    }
-
+    // Fall back to random key generation for encrypt mode
     match mode {
-        Mode::Decrypt => anyhow::bail!("provide --use-keyring or --key-hex in --decrypt mode"),
+        Mode::Decrypt => anyhow::bail!(
+            "Decrypt mode requires key material. Use one of:\n\
+            --key-hex <64-char-hex>   # Explicit key\n\
+            --use-keyring --salt-hex <salt>  # Keyring backend\n\
+            --backend <type> --salt-hex <salt>  # Specific backend"
+        ),
         Mode::Encrypt => {
             let mut kb = [0u8; 32];
             OsRng.fill_bytes(&mut kb);
@@ -142,11 +217,17 @@ fn select_aes_key(args: &Args, km: &KeyManager, mode: Mode) -> Result<[u8; 32]> 
     }
 }
 
+/// Select the AES key to use for encryption/decryption (DEPRECATED - use select_aes_key_with_backend)
+#[deprecated(note = "Use select_aes_key_with_backend instead")]
+fn select_aes_key(args: &Args, km: &KeyManager, mode: Mode) -> Result<[u8; 32]> {
+    // For backward compatibility, delegate to the new function
+    select_aes_key_with_backend(args, mode)
+}
+
 /// Decrypt the envelope (header + records)
 fn decrypt_envelope(args: &Args) -> Result<()> {
     // key
-    let km = KeyManager::new();
-    let mut key_bytes = select_aes_key(args, &km, Mode::Decrypt)?;
+    let mut key_bytes = select_aes_key_with_backend(args, Mode::Decrypt)?;
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
 
     // io
@@ -294,6 +375,11 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
 fn main() -> Result<()> {
     let args = Args::parse();
 
+    // Handle --list-backends option
+    if args.list_backends {
+        return list_backends();
+    }
+
     // one-time keyring setup
     if let Some(passphrase) = &args.set_passphrase {
         let km = KeyManager::new();
@@ -326,8 +412,7 @@ fn main() -> Result<()> {
     let mut fout = BufWriter::new(File::create(out).context("create output")?);
 
     // keys
-    let km = KeyManager::new();
-    let mut key_bytes = select_aes_key(&args, &km, Mode::Encrypt)?;
+    let mut key_bytes = select_aes_key_with_backend(&args, Mode::Encrypt)?;
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
     let signing = SigningKey::generate(&mut OsRng); // demo only
     let verify: VerifyingKey = signing.verifying_key();
