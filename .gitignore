@@ -5,3 +5,17 @@ output/
 *.bin
 *.meta.json
 
+# Ignore all mp3 files
+*.mp3
+
+# Ignore all txt files
+*.txt
+
+# Ignore all .trst files
+*.trst
+
+# Ignore output files in trustedge-audio/
+trustedge-audio/out.trst
+trustedge-audio/restored.mp3
+trustedge-audio/roundtrip*.mp3
+trustedge-audio/test*.txt
