@@ -1,7 +1,11 @@
 <!--
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
+Project: trustedg**Acceptance**
+
+* ✅ A reader implemented from the spec (no repo code) can verify test vectors.
+* ✅ Deterministic test vectors with golden hash: `8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c`
+* [ ] Fuzz on `deserialize(Record)` doesn't crash (see M3).Privacy and trust at the edge.
 -->
 
 # TrustEdge Roadmap
@@ -85,9 +89,9 @@ Project: trustedge — Privacy and trust at the edge.
 * [x] Finalize manifest fields (add `key_id`; keep `model_ids`, `ai_used`; reserve `device_attest`).
 * [x] Consolidate format types in centralized `format.rs` module.
 * [x] Spec doc (`FORMAT.md`): structures, byte orders, invariants, failure modes.
-* [ ] Confirm invariants: contiguous `seq`, fixed `nonce_prefix`, `header_hash` match, AAD layout.
+* [x] Confirm invariants: contiguous `seq`, fixed `nonce_prefix`, `header_hash` match, `key_id` match, AAD layout.
+* [x] Test vectors: deterministic `.trst` with known keys and golden hash verification.
 * [ ] File framing: keep preamble + bincode framing; document record boundaries & EOF handling.
-* [ ] Test vectors: tiny `.trst` with 1–3 records + known keys; publish expected hashes/tags.
 
 **Acceptance**
 

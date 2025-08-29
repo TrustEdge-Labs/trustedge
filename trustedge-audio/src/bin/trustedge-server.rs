@@ -13,7 +13,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
 // network payload type from lib.rs
-use trustedge_audio::{KeyManager, NetworkChunk, NONCE_LEN, Manifest, SignedManifest, build_aad};
+use trustedge_audio::{build_aad, KeyManager, Manifest, NetworkChunk, SignedManifest, NONCE_LEN};
 
 // ---- Crypto bits ------------------------------------------------------------
 
@@ -26,7 +26,11 @@ use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 // ---- CLI --------------------------------------------------------------------
 
 #[derive(Parser, Debug)]
-#[command(name = "trustedge-server", version, about = "TrustEdge network processing server")]
+#[command(
+    name = "trustedge-server",
+    version,
+    about = "TrustEdge network processing server"
+)]
 struct Args {
     /// Address to listen on
     #[arg(short, long, default_value = "127.0.0.1:8080")]
@@ -98,7 +102,10 @@ async fn main() -> Result<()> {
                 .as_ref()
                 .ok_or_else(|| anyhow!("--salt-hex required when using keyring"))?;
             let salt_bytes = hex::decode(salt_hex)?;
-            anyhow::ensure!(salt_bytes.len() == 16, "Salt must be 16 bytes (32 hex chars)");
+            anyhow::ensure!(
+                salt_bytes.len() == 16,
+                "Salt must be 16 bytes (32 hex chars)"
+            );
             let mut salt = [0u8; 16];
             salt.copy_from_slice(&salt_bytes);
             println!("Using keyring passphrase with provided salt");
@@ -132,14 +139,20 @@ async fn main() -> Result<()> {
             .as_deref()
             .unwrap_or(std::path::Path::new("(none)"))
     );
-    println!("[SEC] Decryption: {}", if args.decrypt { "ENABLED" } else { "disabled" });
+    println!(
+        "[SEC] Decryption: {}",
+        if args.decrypt { "ENABLED" } else { "disabled" }
+    );
 
     let mut connection_id = 0u64;
 
     loop {
         let (stream, peer_addr) = listener.accept().await?;
         connection_id += 1;
-    println!("[CONN] New connection #{} from {}", connection_id, peer_addr);
+        println!(
+            "[CONN] New connection #{} from {}",
+            connection_id, peer_addr
+        );
 
         let session = ProcessingSession {
             connection_id,
@@ -206,7 +219,11 @@ async fn handle_connection(
             Err(e) => return Err(e).context("Failed to read chunk length"),
         }
         let length = u32::from_le_bytes(len_bytes) as usize;
-        anyhow::ensure!(length <= 100 * 1024 * 1024, "Chunk too large: {} bytes", length);
+        anyhow::ensure!(
+            length <= 100 * 1024 * 1024,
+            "Chunk too large: {} bytes",
+            length
+        );
 
         if verbose {
             println!(
@@ -252,10 +269,9 @@ async fn handle_connection(
         // Decrypt path
         if decrypt {
             if let Some(_) = session.cipher {
-                let pt_len =
-                    process_and_decrypt_chunk(&chunk, &mut session, verbose).await.with_context(
-                        || format!("decrypt chunk seq={} failed", chunk.sequence),
-                    )?;
+                let pt_len = process_and_decrypt_chunk(&chunk, &mut session, verbose)
+                    .await
+                    .with_context(|| format!("decrypt chunk seq={} failed", chunk.sequence))?;
                 total_pt_bytes += pt_len;
             }
         }
@@ -359,7 +375,13 @@ async fn process_and_decrypt_chunk(
     let nonce = Nonce::from_slice(&chunk.nonce);
 
     let pt = cipher
-        .decrypt(nonce, Payload { msg: &chunk.data, aad: &aad })
+        .decrypt(
+            nonce,
+            Payload {
+                msg: &chunk.data,
+                aad: &aad,
+            },
+        )
         .map_err(|_| anyhow!("AES-GCM decrypt/verify failed"))?;
 
     // Verify plaintext hash

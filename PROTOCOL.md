@@ -7,7 +7,7 @@ Project: trustedge — Privacy and trust at the edge.
 # TrustEdge Protocol Specification
 
 **Version:** 0.1 (Draft)
-**Date:** August 24, 2025
+**Date:** August 28, 2025
 
 > **Related Documentation**: For security policies and vulnerability reporting, see [`SECURITY.md`](./SECURITY.md)
 
@@ -110,13 +110,16 @@ struct FileHeader {
    - Client sends a sequence of length-prefixed `NetworkChunk` messages.
    - Server receives, validates, and (optionally) decrypts each chunk.
 3. **Validation:**
-    - Server checks manifest signature, nonce, sequence, timestamp, and that:
-       - The record's nonce prefix matches the stream header's prefix
-       - The nonce counter matches the record's sequence number
-       - The manifest's `seq` matches the record's sequence number
+   - Server checks manifest signature, nonce, sequence, timestamp, and enforces these invariants:
+     - The record's nonce prefix matches the stream header's prefix
+     - The nonce counter matches the record's sequence number  
+     - The manifest's `seq` matches the record's sequence number
+     - The manifest's `header_hash` matches the stream header's `header_hash` 
+     - The manifest's `key_id` matches the file header's `key_id`
+     - Sequence numbers are strictly contiguous (no gaps or duplicates)
    - Decrypts chunk using provided nonce and key (see Key Selection below).
    - Verifies plaintext hash matches manifest.
-   - If any validation fails (e.g., signature, nonce prefix, hash), the record is rejected and an error is reported/logged.
+   - If any validation fails (e.g., signature, nonce prefix, hash, header consistency), the record is rejected and an error is reported/logged.
 4. **Acknowledgment (Future):**
    - Protocol may be extended to include ACKs, error reporting, or flow control.
 
@@ -164,7 +167,42 @@ struct FileHeader {
 
 ---
 
-## 7. Error Handling
+## 8. Test Vectors and Validation
+
+### 8.1. Deterministic Test Vectors
+
+TrustEdge provides deterministic test vectors to verify protocol compliance:
+
+**Test Configuration:**
+- **32KB input data**: Deterministic pseudo-random bytes via LCG
+- **4KB chunks**: Standard chunking for realistic testing
+- **Fixed cryptographic material**: Known AES-256 and Ed25519 keys
+- **Golden envelope hash**: `8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c`
+
+**Validation Tests:**
+1. **Format compliance**: `cargo test vectors::tests::golden_trst_digest_is_stable`
+2. **Round-trip integrity**: `cargo test golden_envelope_roundtrip`  
+3. **Tamper detection**: `cargo test tamper_fails_on_manifest_change`
+
+### 8.2. Integration Testing
+
+The implementation includes end-to-end protocol testing:
+
+- **CLI-based testing**: Real binary execution via command line
+- **File-based round-trips**: Input → encrypt → envelope → decrypt → verify
+- **Network protocol testing**: Client/server chunk transfer validation
+- **Error injection**: Corruption detection and failure modes
+
+**Test Execution:**
+```bash
+cargo test                     # All tests
+cargo test --test vectors      # Integration tests only
+cargo test golden_trst         # Format compliance only
+```
+
+---
+
+## 9. Error Handling
 
 If any validation fails during decryption (e.g., manifest signature, nonce prefix, nonce counter, manifest sequence, key ID mismatch, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered, out-of-sequence, replayed, or incorrectly keyed records cannot be decrypted or accepted.
 

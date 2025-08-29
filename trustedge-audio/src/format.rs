@@ -5,7 +5,7 @@
 // trustedge_audio/src/format.rs
 // src/format.rs
 use anyhow::{Context, Result};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 pub const NONCE_LEN: usize = 12;
 pub const AAD_LEN: usize = 32 + 8 + NONCE_LEN + 32;
@@ -64,7 +64,7 @@ pub struct Manifest {
     pub seq: u64,
     pub header_hash: [u8; 32],
     pub pt_hash: [u8; 32],
-    pub key_id: [u8; 16],       // Added for key identification/rotation
+    pub key_id: [u8; 16], // Added for key identification/rotation
     pub ai_used: bool,
     pub model_ids: Vec<String>,
 }
@@ -79,7 +79,7 @@ pub struct SignedManifest {
 #[derive(Serialize, Deserialize)]
 pub struct StreamHeader {
     pub v: u8,
-    pub header: Vec<u8>,       // 58 bytes in practice
+    pub header: Vec<u8>, // 58 bytes in practice
     pub header_hash: [u8; 32],
 }
 
@@ -99,10 +99,13 @@ pub fn build_aad(
 ) -> [u8; AAD_LEN] {
     let mut aad = [0u8; AAD_LEN];
     let mut off = 0;
-    aad[off..off+32].copy_from_slice(header_hash); off += 32;
-    aad[off..off+8].copy_from_slice(&seq.to_be_bytes()); off += 8;
-    aad[off..off+NONCE_LEN].copy_from_slice(nonce); off += NONCE_LEN;
-    aad[off..off+32].copy_from_slice(manifest_hash);
+    aad[off..off + 32].copy_from_slice(header_hash);
+    off += 32;
+    aad[off..off + 8].copy_from_slice(&seq.to_be_bytes());
+    off += 8;
+    aad[off..off + NONCE_LEN].copy_from_slice(nonce);
+    off += NONCE_LEN;
+    aad[off..off + 32].copy_from_slice(manifest_hash);
     aad
 }
 

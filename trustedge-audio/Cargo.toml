@@ -7,7 +7,7 @@
 #
 [package]
 name = "trustedge-audio"
-version = "0.1.4"
+version = "0.1.7"
 edition = "2021"
 
 [lib]
@@ -44,7 +44,13 @@ serde_json = "1.0"  # For metadata saving
 sha2 = "0.10"
 zeroize = "1.7"
 
-#  network dependencies
+# Network dependencies
 quinn = "0.10"
 rustls = "0.21"
 tokio = { version = "1.0", features = ["full"] }
+
+[dev-dependencies]
+assert_cmd = "2"
+assert_fs = "1"
+predicates = "3"
+tempfile = "3"
