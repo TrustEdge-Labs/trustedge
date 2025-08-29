@@ -158,6 +158,9 @@ mod tests {
         let context = KeyContext::new(vec![1, 2, 3]); // Only 3 bytes
         let result = backend.derive_key(&key_id, &context);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Salt must be exactly 16 bytes"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("Salt must be exactly 16 bytes"));
     }
 }
