@@ -21,12 +21,7 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
-use trustedge_audio::{
-    BackendRegistry,
-    KeyBackend,
-    KeyContext,
-    KeyringBackend,
-};
+use trustedge_audio::{BackendRegistry, KeyBackend, KeyContext, KeyringBackend};
 use zeroize::Zeroize;
 
 use trustedge_audio::{
