@@ -49,15 +49,15 @@ impl KeyringBackend {
 
 impl KeyBackend for KeyringBackend {
     fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32]> {
+        // Validate salt length first (before keyring access)
+        if context.salt.len() != 16 {
+            return Err(anyhow!("Salt must be exactly 16 bytes for keyring backend"));
+        }
+
         // Get passphrase from keyring
         let passphrase = self
             .get_passphrase()
             .map_err(|e| anyhow!("Failed to get passphrase from keyring: {}", e))?;
-
-        // Validate salt length
-        if context.salt.len() != 16 {
-            return Err(anyhow!("Salt must be exactly 16 bytes for keyring backend"));
-        }
 
         // Convert salt to array
         let mut salt_array = [0u8; 16];
@@ -154,13 +154,13 @@ mod tests {
         let backend = KeyringBackend::new().unwrap();
         let key_id = [1u8; 16];
 
-        // Test with wrong salt length
+        // Test with wrong salt length - this should fail before keyring access
         let context = KeyContext::new(vec![1, 2, 3]); // Only 3 bytes
         let result = backend.derive_key(&key_id, &context);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("Salt must be exactly 16 bytes"));
+        
+        // Check for the salt validation error
+        let error_msg = result.unwrap_err().to_string();
+        assert!(error_msg.contains("Salt must be exactly 16 bytes"));
     }
 }
