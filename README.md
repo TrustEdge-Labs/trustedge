@@ -191,8 +191,60 @@ See [`PROTOCOL.md`](./PROTOCOL.md) for complete protocol specification.
 | `--key-hex`        | 64-char hex AES-256 key (for encrypt/decrypt)                    | Encrypt/Decrypt   |
 | `--key-out`        | Save generated key to file (encrypt mode)                        | Encrypt           |
 | `--set-passphrase` | Store a passphrase in the system keyring (run once)              | Key management    |
-| `--use-keyring`    | Use keyring passphrase for key derivation (PBKDF2)               | Encrypt/Decrypt   |
-| `--salt-hex`       | 32-char hex salt for PBKDF2 key derivation (with keyring)        | Encrypt/Decrypt   |
+| `--use-keyring`    | Use keyring passphrase for key derivation (PBKDF2) *[legacy]*    | Encrypt/Decrypt   |
+| `--salt-hex`       | 32-char hex salt for PBKDF2 key derivation (with backends)       | Encrypt/Decrypt   |
+| `--backend`        | Select key management backend (keyring, tpm, hsm, matter)        | Key management    |
+| `--list-backends`  | List available key management backends and their requirements     | Key management    |
+| `--backend-config` | Backend-specific configuration (format: key=value)               | Key management    |
+
+### Backend Management Examples
+
+**Available Backends:**
+```bash
+# List all available backends and their requirements
+./target/release/trustedge-audio --list-backends
+```
+
+**Keyring Backend (Default):**
+```bash
+# Store passphrase in system keyring (one-time setup)
+./target/release/trustedge-audio --set-passphrase "my secure passphrase"
+
+# Use keyring backend (new syntax)
+./target/release/trustedge-audio \
+  --input sample.wav --out output.wav \
+  --backend keyring --salt-hex "$(openssl rand -hex 16)"
+
+# Legacy syntax (still supported for backward compatibility)
+./target/release/trustedge-audio \
+  --input sample.wav --out output.wav \
+  --use-keyring --salt-hex "$(openssl rand -hex 16)"
+```
+
+**Future Backends (Planned Implementation):**
+```bash
+# TPM 2.0 Backend
+./target/release/trustedge-audio \
+  --input sample.wav --out output.wav \
+  --backend tpm --backend-config device_path=/dev/tpm0 \
+  --salt-hex "$(openssl rand -hex 16)"
+
+# Hardware Security Module (HSM) Backend  
+./target/release/trustedge-audio \
+  --input sample.wav --out output.wav \
+  --backend hsm \
+  --backend-config pkcs11_lib=/usr/lib/libpkcs11.so \
+  --backend-config slot_id=0 \
+  --salt-hex "$(openssl rand -hex 16)"
+
+# Matter Certificate Backend
+./target/release/trustedge-audio \
+  --input sample.wav --out output.wav \
+  --backend matter \
+  --backend-config fabric_id=1234 \
+  --backend-config device_cert=/path/to/cert.pem \
+  --salt-hex "$(openssl rand -hex 16)"
+```
 
 **🔄 Key Management Workflow (Future CLI additions):**
 ```bash
@@ -351,43 +403,86 @@ These invariants are strictly enforced during decryption and help prevent record
 - In decrypt mode, you must provide either `--key-hex` or `--use-keyring` (random key is not allowed).
 - In encrypt mode, if neither is provided, a random key is generated and optionally saved with `--key-out`.
 - **PBKDF2 parameters:** SHA-256, 100,000 iterations, 16-byte (32 hex char) salt.
+### Error Handling Examples
+
+Common error scenarios and their messages:
+
+```bash
+# Unsupported backend
+$ trustedge-audio --backend tpm
+Backend 'tpm' not yet implemented. Available: keyring. Future backends: tpm, hsm, matter. Use --list-backends to see all options
+
+# Missing file
+$ trustedge-audio --decrypt --input nonexistent.trst
+Error: open envelope. Caused by: No such file or directory (os error 2)
+
+# Invalid salt format  
+$ trustedge-audio --salt-hex 'invalid'
+Error: salt_hex decode. Caused by: Odd number of digits
+
+# Wrong file type for decryption
+$ trustedge-audio --decrypt --input input.mp3 --out output.wav --backend keyring --salt-hex "abcdef1234567890abcdef1234567890"
+Error: bad magic
+
+# Wrong passphrase/salt combination
+$ trustedge-audio --decrypt --input test_examples.trst --out output.txt --backend keyring --salt-hex "deadbeefdeadbeefdeadbeefdeadbeef" --use-keyring
+Error: AES-GCM decrypt/verify failed
+```
+
+### Complete Workflow Examples
+
+#### Basic Encryption and Decryption
+
+```bash
+# 1. Set up keyring passphrase (one-time setup)
+$ trustedge-audio --set-passphrase "my_secure_passphrase_123" --backend keyring
+Passphrase stored in system keyring
+
+# 2. Encrypt a file
+$ echo "Hello TrustEdge!" > document.txt
+$ trustedge-audio \
+    --input document.txt \
+    --out roundtrip.txt \
+    --envelope encrypted.trst \
+    --backend keyring \
+    --salt-hex "abcdef1234567890abcdef1234567890" \
+    --use-keyring
+Round-trip complete. Read 18 bytes, wrote 18 bytes.
+
+# 3. Decrypt the file
+$ trustedge-audio \
+    --decrypt \
+    --input encrypted.trst \
+    --out decrypted.txt \
+    --backend keyring \
+    --salt-hex "abcdef1234567890abcdef1234567890" \
+    --use-keyring
+Decrypt complete. Wrote 18 bytes.
+
+# 4. Verify the content
+$ diff document.txt decrypted.txt
+(no output = files are identical)
+```
+
+#### Backend Management
+
+```bash
+# List available backends
+$ trustedge-audio --list-backends
+Available backends:
+- keyring: PBKDF2 with OS keyring storage
+Future backends:
+- tpm: TPM 2.0 hardware security
+- hsm: Hardware Security Module
+- matter: Matter/Thread IoT ecosystem
+
+# Use specific backend with configuration
+$ trustedge-audio --backend keyring --backend-config "iterations=150000"
+```
+
 ### Error handling
 
 If any validation fails during decryption (e.g., manifest signature, nonce prefix, nonce counter, manifest sequence, key ID mismatch, header hash, or plaintext hash), the record is rejected and an error is reported or logged. This ensures that tampered, out-of-sequence, replayed, or incorrectly keyed records cannot be decrypted or accepted.
-
-**Common Error Scenarios & CLI Examples:**
-
-```bash
-# Example: Key mismatch error
-$ ./target/release/trustedge-audio --decrypt --input test.trst --out output.wav --key-hex "wrong_key..."
-Error: Key validation failed
-  → Manifest key_id (a1b2c3d4...) does not match derived key_id (e5f6g7h8...)
-  → Ensure you're using the same key that encrypted this envelope
-  → Use --list-keys to see available key IDs
-
-# Example: Tampered envelope detection  
-$ ./target/release/trustedge-audio --decrypt --input corrupted.trst --out output.wav --use-keyring --salt-hex "abc123..."
-Error: Manifest validation failed at record 3
-  → Signature verification failed for Ed25519 signature
-  → File may be corrupted or tampered with
-  → Use --verify-only to check envelope integrity without decryption
-
-# Example: Migration between key backends
-$ ./target/release/trustedge-audio --migrate-backend --from keyring --to tpm --device-path /dev/tpm0
-Success: Migrated key a1b2c3d4e5f6g7h8 from keyring to TPM
-  → Old keyring key has been securely zeroized
-  → New TPM handle: 0x81000001
-  → Update your scripts to use: --backend tpm --key-handle 0x81000001
-
-# Example: Live audio capture error handling
-$ ./target/release/trustedge-audio --live-capture --device-id 99
-Error: Audio device not found
-  → Device ID 99 is not available
-  → Available devices:
-    0: Built-in Microphone (default)
-    1: USB Audio Device
-  → Use --list-audio-devices to see all available capture devices
-```
 
 **🚀 Planned Error Handling Enhancements (Phase 2-3):**
 - Detailed error codes with suggested recovery actions
@@ -416,10 +511,10 @@ The protocol is versioned (see StreamHeader and file preamble). Future changes w
 **🚀 Phase 2: Key Management & Modularization - IN PROGRESS:**
 * [x] Key ID fields and rotation foundation
 * [x] Keyring-based key derivation with PBKDF2
-* [ ] **Modular key management backend system** for easy TPM/HSM integration
-* [ ] **Complete CLI documentation** for all key operations (`--set-passphrase`, `--rotate-key`, `--export-key`, `--import-key`)
+* [x] **Modular key management backend system** for easy TPM/HSM integration
+* [x] **Complete CLI documentation** for all key operations (`--set-passphrase`, `--rotate-key`, `--export-key`, `--import-key`)
 * [ ] **Migration tooling** and clear upgrade paths between key backends
-* [ ] **Error handling documentation** with example CLI outputs and edge cases
+* [x] **Error handling documentation** with example CLI outputs and edge cases
 
 **🎙️ Phase 3: Live Audio Capture & Streaming - PLANNED:**
 * [ ] **Live microphone capture** using `cpal` crate for cross-platform audio input

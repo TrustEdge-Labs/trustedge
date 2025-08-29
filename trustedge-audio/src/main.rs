@@ -22,8 +22,10 @@ use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 use trustedge_audio::{
-    KeyManager, // Deprecated - will be replaced with backend system
-    KeyBackend, KeyContext, BackendRegistry, KeyringBackend
+    BackendRegistry,
+    KeyBackend,
+    KeyContext,
+    KeyringBackend,
 };
 use zeroize::Zeroize;
 
@@ -116,7 +118,7 @@ enum Mode {
 fn list_backends() -> Result<()> {
     let registry = BackendRegistry::new();
     let available = registry.list_available_backends();
-    
+
     println!("Available key management backends:");
     for backend_name in available {
         // Create backend to get info
@@ -124,37 +126,37 @@ fn list_backends() -> Result<()> {
             let info = backend.backend_info();
             let status = if info.available { "✓" } else { "✗" };
             println!("  {} {} - {}", status, info.name, info.description);
-            
+
             if !info.config_requirements.is_empty() {
-                println!("    Required config: {}", info.config_requirements.join(", "));
+                println!(
+                    "    Required config: {}",
+                    info.config_requirements.join(", ")
+                );
             }
         }
     }
-    
+
     println!("\nUsage examples:");
     println!("  --backend keyring --use-keyring --salt-hex <salt>");
     println!("  --backend tpm --backend-config device_path=/dev/tpm0");
     println!("  --backend hsm --backend-config pkcs11_lib=/usr/lib/libpkcs11.so");
-    
+
     Ok(())
 }
 
 /// Create a backend from CLI arguments
 fn create_backend_from_args(args: &Args) -> Result<Box<dyn KeyBackend>> {
-    let registry = BackendRegistry::new();
-    
     // For now, only keyring is supported
     match args.backend.as_str() {
         "keyring" => {
-            let backend = KeyringBackend::new()
-                .context("Failed to create keyring backend")?;
+            let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
             Ok(Box::new(backend))
-        },
+        }
         other => {
             anyhow::bail!(
                 "Backend '{}' not yet implemented. Available: keyring\n\
                 Future backends: tpm, hsm, matter\n\
-                Use --list-backends to see all options", 
+                Use --list-backends to see all options",
                 other
             );
         }
@@ -180,7 +182,7 @@ fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {
     // Use backend system for key derivation (if salt provided or use_keyring flag set)
     if args.use_keyring || args.salt_hex.is_some() {
         let backend = create_backend_from_args(args)?;
-        
+
         let salt_hex = args
             .salt_hex
             .as_ref()
@@ -190,7 +192,7 @@ fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {
             salt_bytes.len() == 16,
             "salt must be 16 bytes (32 hex chars)"
         );
-        
+
         let key_id = [0u8; 16]; // Default key ID for now
         let context = KeyContext::new(salt_bytes);
         return backend.derive_key(&key_id, &context);
@@ -215,13 +217,6 @@ fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {
             Ok(kb)
         }
     }
-}
-
-/// Select the AES key to use for encryption/decryption (DEPRECATED - use select_aes_key_with_backend)
-#[deprecated(note = "Use select_aes_key_with_backend instead")]
-fn select_aes_key(args: &Args, km: &KeyManager, mode: Mode) -> Result<[u8; 32]> {
-    // For backward compatibility, delegate to the new function
-    select_aes_key_with_backend(args, mode)
 }
 
 /// Decrypt the envelope (header + records)
@@ -382,8 +377,8 @@ fn main() -> Result<()> {
 
     // one-time keyring setup
     if let Some(passphrase) = &args.set_passphrase {
-        let km = KeyManager::new();
-        km.store_passphrase(passphrase)?;
+        let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
+        backend.store_passphrase(passphrase)?;
         println!("Passphrase stored in system keyring");
         return Ok(());
     }
