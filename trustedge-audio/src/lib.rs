@@ -3,13 +3,10 @@
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Project: trustedge — Privacy and trust at the edge.
+/// Project: trustedge — Privacy and trust at the edge.
 //
-// lib.rs - Core library for privacy-preserving edge data processing
+/// lib.rs - Core library for privacy-preserving edge data processing
 //
-//! TrustEdge - Privacy and trust at the edge
-//!
-//! Core library for privacy-preserving edge data processing
 
 use keyring::Entry;
 use serde::{Deserialize, Serialize};

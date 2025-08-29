@@ -2,8 +2,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: trustedge — Privacy and trust at the edge.
 
-// trustedge_audio/src/format.rs
-// src/format.rs
+/// trustedge_audio/src/format.rs
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
@@ -15,6 +14,7 @@ pub const MAGIC: &[u8; 4] = b"TRST";
 pub const VERSION: u8 = 1;
 pub const ALG_AES_256_GCM: u8 = 1;
 
+/// FileHeader structure
 #[derive(Clone, Copy, Debug)]
 pub struct FileHeader {
     pub version: u8,              // 1
@@ -25,6 +25,7 @@ pub struct FileHeader {
     pub chunk_size: u32,          // 4 (BE)
 }
 
+/// FileHeader serialization/deserialization
 impl FileHeader {
     pub fn to_bytes(&self) -> [u8; HEADER_LEN] {
         let mut out = [0u8; HEADER_LEN];
@@ -37,6 +38,7 @@ impl FileHeader {
         out
     }
 
+    /// Create a FileHeader from bytes
     pub fn from_bytes(bytes: &[u8; HEADER_LEN]) -> Self {
         let mut key_id = [0u8; 16];
         key_id.copy_from_slice(&bytes[2..18]);
@@ -57,6 +59,7 @@ impl FileHeader {
     }
 }
 
+/// Manifest structure
 #[derive(Serialize, Deserialize)]
 pub struct Manifest {
     pub v: u8,
@@ -69,6 +72,7 @@ pub struct Manifest {
     pub model_ids: Vec<String>,
 }
 
+/// SignedManifest structure
 #[derive(Serialize, Deserialize)]
 pub struct SignedManifest {
     pub manifest: Vec<u8>,
@@ -76,6 +80,7 @@ pub struct SignedManifest {
     pub pubkey: Vec<u8>,
 }
 
+/// StreamHeader structure
 #[derive(Serialize, Deserialize)]
 pub struct StreamHeader {
     pub v: u8,
@@ -83,6 +88,7 @@ pub struct StreamHeader {
     pub header_hash: [u8; 32],
 }
 
+/// Record structure
 #[derive(Serialize, Deserialize)]
 pub struct Record {
     pub seq: u64,
@@ -91,6 +97,7 @@ pub struct Record {
     pub ct: Vec<u8>,
 }
 
+/// Build Additional Authenticated Data (AAD) for encryption
 pub fn build_aad(
     header_hash: &[u8; 32],
     seq: u64,
@@ -109,6 +116,7 @@ pub fn build_aad(
     aad
 }
 
+/// Write the stream header to the output
 pub fn write_stream_header<W: std::io::Write>(w: &mut W, sh: &StreamHeader) -> Result<()> {
     w.write_all(MAGIC).context("write magic")?;
     w.write_all(&[VERSION]).context("write version")?;
@@ -116,6 +124,7 @@ pub fn write_stream_header<W: std::io::Write>(w: &mut W, sh: &StreamHeader) -> R
     Ok(())
 }
 
+/// Read the preamble and stream header from the input
 pub fn read_preamble_and_header<R: std::io::Read>(r: &mut R) -> Result<StreamHeader> {
     let mut magic = [0u8; 4];
     r.read_exact(&mut magic).context("read magic")?;
