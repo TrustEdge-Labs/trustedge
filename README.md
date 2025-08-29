@@ -56,9 +56,13 @@ For details on the wire format and network protocol, see [`PROTOCOL.md`](./PROTO
 git clone git@github.com:johnzilla/trustedge.git
 cd trustedge/trustedge-audio
 
-# Build
+# Build all binaries
 cargo build --release
 
+# Three binaries are available:
+# - trustedge-audio: CLI for file encryption/decryption 
+# - trustedge-server: Network server for chunk processing
+# - trustedge-client: Network client for streaming encrypted chunks
 
 # Encrypt and write envelope (with hex key)
 ./target/release/trustedge-audio \
@@ -107,25 +111,51 @@ sha256sum ./sample.wav ./roundtrip.wav
 
 ## Network Mode Example
 
-If you have the networked client/server binaries (`trustedge-client` and `trustedge-server`), you can transfer encrypted audio chunks over the network:
+TrustEdge includes a complete client-server network stack for streaming encrypted chunks:
 
 ### 1. Start the server
 
 ```bash
-./target/release/trustedge-server --listen 127.0.0.1:8080 --output_dir ./received_chunks --key-hex <64-char-hex-key> --decrypt
+# Start server with decryption and local storage
+./target/release/trustedge-server \
+  --listen 127.0.0.1:8080 \
+  --output-dir ./received_chunks \
+  --key-hex <64-char-hex-key> \
+  --decrypt --verbose
+
+# Or use keyring-based key derivation
+./target/release/trustedge-server \
+  --listen 127.0.0.1:8080 \
+  --use-keyring \
+  --salt-hex <32-char-hex-salt> \
+  --decrypt
 ```
 
 ### 2. Run the client
 
 ```bash
-./target/release/trustedge-client --server 127.0.0.1:8080 --file ./sample.wav --key-hex <64-char-hex-key>
+# Stream a file to the server
+./target/release/trustedge-client \
+  --server 127.0.0.1:8080 \
+  --file ./sample.wav \
+  --key-hex <64-char-hex-key> \
+  --verbose
+
+# Or send synthetic test chunks
+./target/release/trustedge-client \
+  --server 127.0.0.1:8080 \
+  --test-chunks 10 \
+  --use-keyring \
+  --salt-hex <32-char-hex-salt>
 ```
 
-* The client reads and encrypts the file in chunks, sending each chunk with a signed manifest and nonce.
-* The server receives, validates, and (if `--decrypt` is set) decrypts and saves the plaintext.
-* Use the same key for both client and server for successful decryption.
+**Protocol Features:**
+- Each chunk includes encrypted data, signed manifest, nonce, and timestamp
+- Server validates signatures, sequence numbers, and cryptographic integrity
+- Real-time processing with ACK/response flow
+- Comprehensive validation prevents tampering, replay, and out-of-order attacks
 
-See [`PROTOCOL.md`](./PROTOCOL.md) for protocol details.
+See [`PROTOCOL.md`](./PROTOCOL.md) for complete protocol specification.
 
 
 **Heads-up:** A matching hash doesn’t “prove” encryption occurred — it proves the **encrypt→decrypt** pipeline is lossless. The code actually performs AES-GCM per chunk and immediately verifies the tag before writing plaintext out.
@@ -136,31 +166,52 @@ See [`PROTOCOL.md`](./PROTOCOL.md) for protocol details.
 
 ### Documentation
 
-* [`FORMAT.md`](./FORMAT.md) — Binary format specification: structures, byte orders, and invariants
-* [`PROTOCOL.md`](./PROTOCOL.md) — Wire format and network protocol for chunk transfer
-* [`THREAT_MODEL.md`](./THREAT_MODEL.md) — Security goals, threat analysis, mitigations
+* [`FORMAT.md`](./FORMAT.md) — Binary format specification: structures, byte orders, validation rules, and security invariants
+* [`PROTOCOL.md`](./PROTOCOL.md) — Network protocol specification for client-server chunk streaming and validation
+* [`THREAT_MODEL.md`](./THREAT_MODEL.md) — Security goals, threat analysis, attack vectors, and mitigations
 * [`SECURITY.md`](./SECURITY.md) — Security policy, vulnerability reporting, and best practices
-* [`ROADMAP.md`](./ROADMAP.md) — Project direction, milestones, and planned features
-* `src/format.rs` — Centralized format definitions: types, constants, and helpers
-* `src/main.rs` — CLI tool: chunked file read, per-chunk AES-256-GCM, signed manifest, envelope output, decrypt/verify mode, key management
-* `src/lib.rs` — Core library with network types and key management
-* `Cargo.toml` — all crypto and serialization dependencies
+* [`ROADMAP.md`](./ROADMAP.md) — Project direction, milestones, completed features, and planned enhancements
+* `src/format.rs` — Centralized format definitions: types, constants, validation helpers
+* `src/main.rs` — CLI tool: chunked processing, AES-256-GCM encryption, signed manifests, envelope format
+* `src/lib.rs` — Core library with network types, key management, and validation
+* `src/bin/trustedge-server.rs` — Network server for chunk processing and validation
+* `src/bin/trustedge-client.rs` — Network client for streaming encrypted chunks
+* `Cargo.toml` — Dependencies: crypto, serialization, network, and testing frameworks
 
 ### CLI options
 
 | Flag               | Description                                                      | Mode(s)           |
 |--------------------|------------------------------------------------------------------|-------------------|
-| `--input`          | Input file (audio or any bytes)                                  | Both              |
-| `--out`            | Output file (decrypted/plaintext)                                | Both              |
-| `--chunk`          | Chunk size in bytes (default: 4096)                              | Both              |
-| `--envelope`       | Write envelope file (.trst) with header + records                | Envelope          |
-| `--no-plaintext`   | Skip writing round-tripped plaintext                             | Both              |
-| `--decrypt`        | Decrypt envelope to plaintext                                    | Envelope/Decrypt  |
-| `--key-hex`        | 64-char hex AES-256 key (for encrypt/decrypt)                    | Both              |
-| `--key-out`        | Save generated key to file (encrypt mode)                        | Envelope/Encrypt  |
+| `--input`          | Input file (audio or any bytes)                                  | Encrypt/Decrypt   |
+| `--out`            | Output file (decrypted/plaintext)                                | Encrypt/Decrypt   |
+| `--chunk`          | Chunk size in bytes (default: 4096)                              | Encrypt/Decrypt   |
+| `--envelope`       | Write envelope file (.trst) with header + records                | Encrypt           |
+| `--no-plaintext`   | Skip writing round-tripped plaintext                             | Encrypt           |
+| `--decrypt`        | Decrypt envelope to plaintext                                    | Decrypt           |
+| `--key-hex`        | 64-char hex AES-256 key (for encrypt/decrypt)                    | Encrypt/Decrypt   |
+| `--key-out`        | Save generated key to file (encrypt mode)                        | Encrypt           |
 | `--set-passphrase` | Store a passphrase in the system keyring (run once)              | Key management    |
-| `--use-keyring`    | Use keyring passphrase for key derivation (PBKDF2)               | Both              |
-| `--salt-hex`       | 32-char hex salt for PBKDF2 key derivation (with keyring)        | Both              |
+| `--use-keyring`    | Use keyring passphrase for key derivation (PBKDF2)               | Encrypt/Decrypt   |
+| `--salt-hex`       | 32-char hex salt for PBKDF2 key derivation (with keyring)        | Encrypt/Decrypt   |
+
+### Network-Specific CLI Options
+
+**trustedge-server:**
+| Flag               | Description                                                      |
+|--------------------|------------------------------------------------------------------|
+| `--listen`         | Address to listen on (default: 127.0.0.1:8080)                 |
+| `--output-dir`     | Directory to save received chunks (optional)                    |
+| `--decrypt`        | Decrypt received chunks and save plaintext                      |
+| `--verbose`        | Enable detailed logging and validation reporting                |
+
+**trustedge-client:**
+| Flag               | Description                                                      |
+|--------------------|------------------------------------------------------------------|
+| `--server`         | Server address to connect to (default: 127.0.0.1:8080)         |
+| `--file`           | File to send (will be processed into chunks)                    |
+| `--test-chunks`    | Send N synthetic encrypted chunks instead of a real file        |
+| `--chunk-size`     | Chunk size for file processing (default: 4096)                  |
+| `--verbose`        | Enable detailed logging and progress reporting                   |
 
 ### How it works
 
@@ -293,14 +344,29 @@ The protocol is versioned (see StreamHeader and file preamble). Future changes w
 
 
 
-### Next steps
+### Current Status & Next Steps
 
-* [x] Write header and manifest+ct to output for a real encrypted file format
-* [x] Add a decrypt/verify mode to the CLI
-* [x] Document the file format (header, manifest, chunk) in the README
-* [x] Add passphrase/keyring-based key management and PBKDF2 support
-* [ ] Add more tests for serialization, AAD, and round-trip
-* [ ] (Optional) Add logging for chunk/manifest info
+**✅ M1 Milestone (Format v1) - COMPLETED:**
+* [x] Complete `.trst` envelope format with comprehensive validation
+* [x] Deterministic test vectors with golden hash verification
+* [x] Production-ready client-server network stack
+* [x] Enhanced security: header consistency, key ID validation, strict sequencing
+* [x] Comprehensive testing: unit, integration, CLI, and network protocol tests
+* [x] Full documentation: format spec, protocol spec, security analysis
+
+**🚀 M2 Milestone (Key Management) - IN PROGRESS:**
+* [x] Key ID fields and rotation foundation
+* [x] Keyring-based key derivation with PBKDF2
+* [ ] Advanced key versioning and migration tools
+* [ ] HSM/TPM integration points for production deployments
+* [ ] Comprehensive key lifecycle management
+
+**📋 M3 Milestone (Verification & QA) - PLANNED:**
+* [ ] `trustedge-verify` CLI tool with human and JSON output
+* [ ] Property-based testing with proptest
+* [ ] Fuzzing campaign with cargo-fuzz
+* [ ] Security audit and penetration testing
+* [ ] Performance benchmarking and optimization
 
 ---
 

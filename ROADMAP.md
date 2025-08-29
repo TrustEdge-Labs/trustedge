@@ -5,6 +5,8 @@ Project: trustedg**Acceptance**
 
 * ✅ A reader implemented from the spec (no repo code) can verify test vectors.
 * ✅ Deterministic test vectors with golden hash: `8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c`
+* ✅ Network stack: complete client/server with chunk validation and ACK protocol
+* ✅ Comprehensive validation: all security invariants enforced during processing
 * [ ] Fuzz on `deserialize(Record)` doesn't crash (see M3).Privacy and trust at the edge.
 -->
 
@@ -72,11 +74,15 @@ Project: trustedg**Acceptance**
 * [x] Per-chunk encrypt/decrypt round-trip
 * [x] Signed manifest bound into AAD
 * [x] `.trst` envelope with preamble (`MAGIC="TRST"`, `VERSION=1`) and invariants
-* [x] Reference client/server with ACKs
-* [x] Keyring-derived key support
+* [x] Reference client/server with ACKs and network streaming
+* [x] Keyring-derived key support with PBKDF2
 * [x] Shared types/helpers centralized in the lib crate
 * [x] Format types consolidated in `src/format.rs`
 * [x] Key ID field added to manifest for rotation support
+* [x] Comprehensive validation: header consistency, sequence integrity, nonce verification
+* [x] Production-ready network stack with TCP client/server
+* [x] Deterministic test vectors with golden hash verification
+* [x] Integration testing with CLI and network protocol validation
 
 ---
 
@@ -91,7 +97,10 @@ Project: trustedg**Acceptance**
 * [x] Spec doc (`FORMAT.md`): structures, byte orders, invariants, failure modes.
 * [x] Confirm invariants: contiguous `seq`, fixed `nonce_prefix`, `header_hash` match, `key_id` match, AAD layout.
 * [x] Test vectors: deterministic `.trst` with known keys and golden hash verification.
-* [ ] File framing: keep preamble + bincode framing; document record boundaries & EOF handling.
+* [x] File framing: keep preamble + bincode framing; document record boundaries & EOF handling.
+* [x] Enhanced validation: header consistency, key ID verification, strict sequencing
+* [x] Network protocol: complete client/server implementation with validation
+* [x] Comprehensive testing: unit tests, integration tests, CLI testing, network validation
 
 **Acceptance**
 
@@ -100,22 +109,27 @@ Project: trustedg**Acceptance**
 
 ---
 
-## Milestone M2 — **Key Management (production-ish)**
+## Milestone M2 — **Key Management & Enhanced Security**
 
-**Goal:** Introduce durable key IDs and a rotation story.
+**Goal:** Production-ready key management and advanced security features.
 
 **Scope**
 
-* [ ] Add `key_id` to `FileHeader` and surface in spec + CLIs.
-* [ ] Derive per-session AEAD keys from a device root via HKDF (demo root = keyring passphrase + salt).
-* [ ] Reject decrypt when `key_id` mismatches the configured/derivable key.
-* [ ] CLI UX: `--use-keyring --salt-hex …` (derive); `--key-hex` (override).
-* [ ] Document rotation & recovery (how to re-derive past session keys).
+* [x] Add `key_id` to `FileHeader` and surface in spec + CLIs.
+* [x] Derive per-session AEAD keys from a device root via PBKDF2 (keyring passphrase + salt).
+* [x] Reject decrypt when `key_id` mismatches the configured/derivable key.
+* [x] CLI UX: `--use-keyring --salt-hex …` (derive); `--key-hex` (override).
+* [x] Document rotation & recovery (how to re-derive past session keys).
+* [ ] Add key versioning and migration tools
+* [ ] Implement secure key storage with proper zeroization
+* [ ] Add HSM/TPM integration points for production deployments
 
 **Acceptance**
 
-* Decrypt fails fast on wrong `key_id`.
-* Round-trip passes with both keyring-derived and explicit `--key-hex`.
+* ✅ Decrypt fails fast on wrong `key_id`.
+* ✅ Round-trip passes with both keyring-derived and explicit `--key-hex`.
+* [ ] Key rotation scenarios fully tested and documented
+* [ ] Production key management best practices documented
 
 ---
 
@@ -243,9 +257,17 @@ trustedge-audio -i input.wav -o roundtrip.wav \
 trustedge-audio --decrypt -i out.trst -o restored.wav \
   --use-keyring --salt-hex "$SALT"
 
-# Network demo (TCP)
-trustedge-server --listen 127.0.0.1:8080 --decrypt --use-keyring --salt-hex "$SALT"
-trustedge-client --server 127.0.0.1:8080 --file input.wav --use-keyring --salt-hex "$SALT"
+# Network demo (TCP) - start server
+trustedge-server --listen 127.0.0.1:8080 --decrypt \
+  --use-keyring --salt-hex "$SALT" --verbose
+
+# Network demo (TCP) - send file
+trustedge-client --server 127.0.0.1:8080 --file input.wav \
+  --use-keyring --salt-hex "$SALT"
+
+# Test network with synthetic chunks
+trustedge-client --server 127.0.0.1:8080 --test-chunks 100 \
+  --key-hex <64-char-hex-key>
 ```
 
 ---
