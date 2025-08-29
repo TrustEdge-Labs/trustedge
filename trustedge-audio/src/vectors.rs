@@ -1,6 +1,4 @@
 #![allow(dead_code)]
-
-// src/vectors.rs
 //
 // Copyright (c) 2025 John Turner
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -8,17 +6,15 @@
 //
 // Project: trustedge — Privacy and trust at the edge.
 //
-//
-
 /// Deterministic test vectors for the TrustEdge envelope format.
 ///
 /// Fix *all* randomness (AES key, signing key, nonce prefix, header fields,
 /// timestamp) so `.trst` bytes are **identical** on every run under test.
-//
+///
 /// First run: the test will print a BLAKE3 digest of the generated .trst buffer.
 /// Copy that digest into `GOLDEN_TRST_BLAKE3` below and commit. When the format/crypto
 /// changes intentionally, re-run, copy the new digest (rebase the golden), and commit.
-
+///
 /// Test vectors for the TrustEdge envelope format.
 #[cfg(test)]
 mod tests {
@@ -40,9 +36,9 @@ mod tests {
     };
     use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 
-    /// ----------------------------
-    /// Fixed, test-only constants
-    /// ----------------------------
+    // ----------------------------
+    // Fixed, test-only constants
+    // ----------------------------
 
     /// 32-byte AES-256 key (hex = 000102...1f). TEST USE ONLY.
     const TEST_AES_KEY: [u8; 32] = [
@@ -77,15 +73,15 @@ mod tests {
     const GOLDEN_TRST_BLAKE3: &str =
         "8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c";
 
-    /// ----------------------------
-    /// Helpers
-    /// ----------------------------
+    // ----------------------------
+    // Helpers
+    // ----------------------------
 
     /// Create a file header for the given chunk size.
     fn make_file_header(chunk_size: usize) -> (FileHeader, [u8; HEADER_LEN], [u8; 32]) {
         assert!(chunk_size as u64 <= u32::MAX as u64, "chunk too large");
 
-        /// device_id_hash = BLAKE3(device_id || salt)
+        // device_id_hash = BLAKE3(device_id || salt)
         let mut hasher = blake3::Hasher::new();
         hasher.update(TEST_DEVICE_ID);
         hasher.update(TEST_SALT);
