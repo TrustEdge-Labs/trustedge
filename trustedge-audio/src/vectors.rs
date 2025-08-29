@@ -6,7 +6,7 @@
 //
 // Project: trustedge — Privacy and trust at the edge.
 //
-// 
+//
 
 // Deterministic test vectors for the TrustEdge envelope format.
 //
