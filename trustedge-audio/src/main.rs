@@ -13,7 +13,6 @@ use anyhow::{anyhow, Context, Result};
 use bincode::{deserialize_from, serialize_into};
 use clap::Parser;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
-use hex;
 use rand_core::RngCore;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
