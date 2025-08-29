@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 // src/vectors.rs
 //
 // Copyright (c) 2025 John Turner
@@ -16,8 +18,6 @@
 /// First run: the test will print a BLAKE3 digest of the generated .trst buffer.
 /// Copy that digest into `GOLDEN_TRST_BLAKE3` below and commit. When the format/crypto
 /// changes intentionally, re-run, copy the new digest (rebase the golden), and commit.
-
-#![allow(dead_code)]
 
 /// Test vectors for the TrustEdge envelope format.
 #[cfg(test)]

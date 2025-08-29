@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 //
 // Copyright (c) 2025 John Turner
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -5,9 +7,6 @@
 //
 /// Project: trustedge — Privacy and trust at the edge.
 ///
-
-#![forbid(unsafe_code)]
-
 use aes_gcm::{
     aead::{Aead, KeyInit, OsRng, Payload},
     Aes256Gcm, Key, Nonce,
@@ -26,11 +25,11 @@ use trustedge_audio::KeyManager;
 use zeroize::Zeroize;
 
 use trustedge_audio::{
-    /// Helpers
+    // helpers
     build_aad,
     write_stream_header,
     FileHeader,
-    /// Types
+    // Types
     Manifest,
     Record,
     SignedManifest,
@@ -38,7 +37,7 @@ use trustedge_audio::{
     ALG_AES_256_GCM,
     HEADER_LEN,
     MAGIC,
-    /// Constants
+    // Constants
     NONCE_LEN,
     VERSION,
 };
@@ -145,12 +144,12 @@ fn select_aes_key(args: &Args, km: &KeyManager, mode: Mode) -> Result<[u8; 32]> 
 
 /// Decrypt the envelope (header + records)
 fn decrypt_envelope(args: &Args) -> Result<()> {
-    /// key
+    // key
     let km = KeyManager::new();
     let mut key_bytes = select_aes_key(args, &km, Mode::Decrypt)?;
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
 
-    /// io
+    // io
     let input = args
         .input
         .as_ref()
@@ -162,7 +161,7 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     let mut r = BufReader::new(File::open(input).context("open envelope")?);
     let mut w = BufWriter::new(File::create(out).context("create output")?);
 
-    /// preamble
+    // preamble
     let mut magic = [0u8; 4];
     r.read_exact(&mut magic).context("read magic")?;
     anyhow::ensure!(&magic == MAGIC, "bad magic");
@@ -170,30 +169,30 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     r.read_exact(&mut ver).context("read version")?;
     anyhow::ensure!(ver[0] == VERSION, "unsupported version");
 
-    /// stream header
+    // stream header
     let sh: StreamHeader = deserialize_from(&mut r).context("read stream header")?;
     anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
     let stream_nonce_prefix: [u8; 4] = sh.header[50..54].try_into().unwrap();
 
-    /// turn Vec<u8> into the fixed array
+    // turn Vec<u8> into the fixed array
     let header_arr: [u8; trustedge_audio::HEADER_LEN] = sh
         .header
         .as_slice()
         .try_into()
         .context("stream header length != 58")?;
 
-    /// parse the 58-byte header into a FileHeader
+    // parse the 58-byte header into a FileHeader
     let fh = trustedge_audio::FileHeader::from_bytes(&header_arr);
 
-    /// verify stored header hash matches recompute
+    // verify stored header hash matches recompute
     let hh = blake3::hash(&sh.header);
     anyhow::ensure!(hh.as_bytes() == &sh.header_hash, "header_hash mismatch");
 
-    /// records
+    // records
     let mut total_out = 0usize;
     let mut expected_seq: u64 = 1;
 
-    /// record loop
+    // record loop
     loop {
         let rec: Record = match deserialize_from(&mut r) {
             Ok(x) => x,
@@ -207,13 +206,13 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             }
         };
 
-        /// envelope invariants
+        // envelope invariants
         anyhow::ensure!(
             rec.nonce[..4] == stream_nonce_prefix,
             "record nonce prefix != stream header nonce_prefix"
         );
 
-        /// ensure nonce counter == seq
+        // ensure nonce counter == seq
         let seq_bytes = rec.seq.to_be_bytes();
         anyhow::ensure!(
             rec.nonce[4..] == seq_bytes,
@@ -230,7 +229,7 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             .checked_add(1)
             .ok_or_else(|| anyhow!("seq overflow"))?;
 
-        /// manifest signature
+        // manifest signature
         let pubkey_arr: [u8; 32] = rec
             .sm
             .pubkey
@@ -243,10 +242,10 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             .verify(&rec.sm.manifest, &Signature::from_bytes(&sig_arr))
             .context("manifest signature verify failed")?;
 
-        /// manifest contents - deserialize first so we can use it for verification
+        // manifest contents - deserialize first so we can use it for verification
         let m: Manifest = bincode::deserialize(&rec.sm.manifest).context("manifest decode")?;
 
-        /// verify invariants
+        // verify invariants
         anyhow::ensure!(
             rec.nonce[..4] == fh.nonce_prefix,
             "record nonce prefix != stream header nonce_prefix"
@@ -259,10 +258,10 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
 
         anyhow::ensure!(m.key_id == fh.key_id, "manifest.key_id != header.key_id");
 
-        /// ensure manifest seq matches record seq
+        // ensure manifest seq matches record seq
         anyhow::ensure!(m.seq == rec.seq, "manifest.seq != record.seq");
 
-        /// decrypt
+        // decrypt
         let mh = blake3::hash(&rec.sm.manifest);
         let aad = build_aad(&sh.header_hash, rec.seq, &rec.nonce, mh.as_bytes());
         let pt = cipher
@@ -275,11 +274,11 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             )
             .map_err(|_| anyhow!("AES-GCM decrypt/verify failed"))?;
 
-        /// pt hash
+        // pt hash
         let pt_hash_rx = blake3::hash(&pt);
         anyhow::ensure!(pt_hash_rx.as_bytes() == &m.pt_hash, "pt hash mismatch");
 
-        /// write
+        // write
         w.write_all(&pt).context("write plaintext")?;
         total_out += pt.len();
     }
@@ -295,7 +294,7 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    /// one-time keyring setup
+    // one-time keyring setup
     if let Some(passphrase) = &args.set_passphrase {
         let km = KeyManager::new();
         km.store_passphrase(passphrase)?;
@@ -307,14 +306,14 @@ fn main() -> Result<()> {
         return decrypt_envelope(&args);
     }
 
-    /// encrypt mode
+    // encrypt mode
     anyhow::ensure!(args.chunk > 0, "chunk must be > 0");
     anyhow::ensure!(
         args.chunk as u64 <= u32::MAX as u64,
         "chunk too large for header"
     );
 
-    /// inputs/outputs
+    // inputs/outputs
     let input = args
         .input
         .as_ref()
@@ -333,13 +332,13 @@ fn main() -> Result<()> {
     let signing = SigningKey::generate(&mut OsRng); // demo only
     let verify: VerifyingKey = signing.verifying_key();
 
-    /// header fields (demo placeholders as needed)
+    // header fields (demo placeholders as needed)
     let mut nonce_prefix = [0u8; 4];
     OsRng.fill_bytes(&mut nonce_prefix);
     let mut key_id = [0u8; 16];
     OsRng.fill_bytes(&mut key_id);
 
-    /// device hash (demo)
+    // device hash (demo)
     let device_id =
         std::env::var("TRUSTEDGE_DEVICE_ID").unwrap_or_else(|_| "trustedge-abc123".into());
     let salt = std::env::var("TRUSTEDGE_SALT").unwrap_or_else(|_| "trustedge-demo-salt".into());
@@ -360,7 +359,7 @@ fn main() -> Result<()> {
     let header_bytes = header.to_bytes();
     let header_hash = blake3::hash(&header_bytes);
 
-    /// optional envelope writer
+    // optional envelope writer
     let mut env_out = if let Some(path) = &args.envelope {
         Some(BufWriter::new(
             File::create(path).context("create envelope")?,
@@ -378,14 +377,14 @@ fn main() -> Result<()> {
         write_stream_header(w, &sh)?;
     }
 
-    /// loop
+    // loop
     let mut buf = vec![0u8; args.chunk];
     let mut total_in = 0usize;
     let mut total_out = 0usize;
     let mut seq: u64 = 0;
     let mut nonce_bytes = [0u8; NONCE_LEN];
 
-    /// loop to process input chunks
+    // loop to process input chunks
     loop {
         let n = fin.read(&mut buf).context("read chunk")?;
         if n == 0 {
@@ -435,7 +434,7 @@ fn main() -> Result<()> {
             )
             .map_err(|_| anyhow!("AES-GCM encrypt failed"))?;
 
-        /// debug-only tamper check
+        // debug-only tamper check
         #[cfg(debug_assertions)]
         {
             if !ct.is_empty() {
@@ -456,7 +455,7 @@ fn main() -> Result<()> {
             }
         }
 
-        /// verify manifest + round-trip decrypt (sanity)
+        // verify manifest + round-trip decrypt (sanity)
         let _m2: Manifest = bincode::deserialize(&sm.manifest).context("manifest decode")?;
         let pubkey_arr: [u8; 32] = sm
             .pubkey
@@ -508,7 +507,7 @@ fn main() -> Result<()> {
         w.flush().context("flush envelope")?;
     }
 
-    /// status and exit
+    // status and exit
     eprintln!(
         "Round-trip complete. Read {} bytes, wrote {} bytes.",
         total_in, total_out

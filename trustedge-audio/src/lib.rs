@@ -7,7 +7,6 @@
 //
 /// lib.rs - Core library for privacy-preserving edge data processing
 //
-
 use keyring::Entry;
 use serde::{Deserialize, Serialize};
 
