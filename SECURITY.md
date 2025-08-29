@@ -52,7 +52,7 @@ TrustEdge implements privacy-preserving audio encryption with the following secu
 
 Please report security vulnerabilities by:
 
-1. **Email**: security@trustedge.example.com (GPG key: [KEY_ID])
+1. **Email**: johnturner+trustedge@gmail.com
 2. **GitHub**: Use private vulnerability reporting (if enabled)
 3. **Alternative**: Contact maintainer directly via secure channel
 
