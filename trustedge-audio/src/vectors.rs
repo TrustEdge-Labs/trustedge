@@ -1,12 +1,21 @@
 // src/vectors.rs
-//! Deterministic test vectors for the TrustEdge envelope format.
-//!
-//! Fix *all* randomness (AES key, signing key, nonce prefix, header fields,
-//! timestamp) so `.trst` bytes are **identical** on every run under test.
-//!
-//! First run: the test will print a BLAKE3 digest of the generated .trst buffer.
-//! Copy that digest into `GOLDEN_TRST_BLAKE3` below and commit. When the format/crypto
-//! changes intentionally, re-run, copy the new digest (rebase the golden), and commit.
+//
+// Copyright (c) 2025 John Turner
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+// 
+
+// Deterministic test vectors for the TrustEdge envelope format.
+//
+// Fix *all* randomness (AES key, signing key, nonce prefix, header fields,
+// timestamp) so `.trst` bytes are **identical** on every run under test.
+//
+// First run: the test will print a BLAKE3 digest of the generated .trst buffer.
+// Copy that digest into `GOLDEN_TRST_BLAKE3` below and commit. When the format/crypto
+// changes intentionally, re-run, copy the new digest (rebase the golden), and commit.
 
 #![allow(dead_code)]
 
