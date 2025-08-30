@@ -8,8 +8,10 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
+use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+use tokio::time::{sleep, timeout};
 
 use trustedge_audio::{
     build_aad, FileHeader, KeyBackend, KeyContext, KeyringBackend, Manifest, NetworkChunk,
@@ -23,6 +25,10 @@ use aes_gcm::{
 };
 use ed25519_dalek::{Signature, Signer, SigningKey};
 use rand_core::RngCore;
+
+// Network operation timeouts
+const CHUNK_SEND_TIMEOUT: Duration = Duration::from_secs(30);
+const ACK_READ_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(Parser, Debug)]
 #[command(name = "trustedge-client", version, about = "TrustEdge network client")]
@@ -59,9 +65,76 @@ struct Args {
     #[arg(long)]
     use_keyring: bool,
 
+    /// Connection timeout in seconds
+    #[arg(long, default_value_t = 10)]
+    connect_timeout: u64,
+
+    /// Number of connection retry attempts
+    #[arg(long, default_value_t = 3)]
+    retry_attempts: u32,
+
+    /// Delay between retry attempts in seconds
+    #[arg(long, default_value_t = 2)]
+    retry_delay: u64,
+
     /// Verbose logging
     #[arg(short, long)]
     verbose: bool,
+}
+
+/// Connect to server with timeout and retry logic
+async fn connect_with_retry(
+    server_addr: std::net::SocketAddr,
+    connect_timeout: Duration,
+    retry_attempts: u32,
+    retry_delay: Duration,
+    verbose: bool,
+) -> Result<TcpStream> {
+    let mut last_error = None;
+
+    for attempt in 1..=retry_attempts {
+        if verbose && attempt > 1 {
+            println!("Connection attempt {} of {}", attempt, retry_attempts);
+        }
+
+        match timeout(connect_timeout, TcpStream::connect(server_addr)).await {
+            Ok(Ok(stream)) => {
+                if verbose {
+                    println!("Connected to {} on attempt {}", server_addr, attempt);
+                }
+                return Ok(stream);
+            }
+            Ok(Err(e)) => {
+                last_error = Some(anyhow::Error::from(e));
+                if verbose {
+                    println!("Connection attempt {} failed: connection refused", attempt);
+                }
+            }
+            Err(_) => {
+                last_error = Some(anyhow::anyhow!(
+                    "Connection timeout after {:?}",
+                    connect_timeout
+                ));
+                if verbose {
+                    println!(
+                        "Connection attempt {} failed: timeout after {:?}",
+                        attempt, connect_timeout
+                    );
+                }
+            }
+        }
+
+        // Don't sleep after the last attempt
+        if attempt < retry_attempts {
+            if verbose {
+                println!("Waiting {:?} before retry...", retry_delay);
+            }
+            sleep(retry_delay).await;
+        }
+    }
+
+    Err(last_error
+        .unwrap_or_else(|| anyhow::anyhow!("Failed to connect after {} attempts", retry_attempts)))
 }
 
 #[tokio::main]
@@ -76,9 +149,20 @@ async fn main() -> Result<()> {
     }
 
     println!("Connecting to TrustEdge server at {}", args.server);
-    let mut stream = TcpStream::connect(args.server)
-        .await
-        .with_context(|| format!("Failed to connect to {}", args.server))?;
+    let mut stream = connect_with_retry(
+        args.server,
+        Duration::from_secs(args.connect_timeout),
+        args.retry_attempts,
+        Duration::from_secs(args.retry_delay),
+        args.verbose,
+    )
+    .await
+    .with_context(|| {
+        format!(
+            "Failed to connect to {} after {} attempts",
+            args.server, args.retry_attempts
+        )
+    })?;
     println!("Connected successfully!");
 
     // Determine AES key
@@ -216,8 +300,18 @@ async fn send_encrypted_file(
             nonce_bytes,
         );
 
-        send_chunk(stream, &chunk, verbose).await?;
-        let ack = read_ack(stream).await?;
+        // Send chunk with timeout
+        timeout(CHUNK_SEND_TIMEOUT, send_chunk(stream, &chunk, verbose))
+            .await
+            .context("Chunk send timeout")?
+            .context("Failed to send chunk")?;
+
+        // Read ACK with timeout
+        let ack = timeout(ACK_READ_TIMEOUT, read_ack(stream))
+            .await
+            .context("ACK read timeout")?
+            .context("Failed to read ACK")?;
+
         total_bytes_sent += bytes_read;
 
         if verbose {
@@ -309,8 +403,17 @@ async fn send_encrypted_test_chunks(
         let chunk =
             NetworkChunk::new_with_nonce(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
 
-        send_chunk(stream, &chunk, verbose).await?;
-        let ack = read_ack(stream).await?;
+        // Send chunk with timeout
+        timeout(CHUNK_SEND_TIMEOUT, send_chunk(stream, &chunk, verbose))
+            .await
+            .context("Chunk send timeout")?
+            .context("Failed to send chunk")?;
+
+        // Read ACK with timeout
+        let ack = timeout(ACK_READ_TIMEOUT, read_ack(stream))
+            .await
+            .context("ACK read timeout")?
+            .context("Failed to read ACK")?;
 
         if verbose {
             println!("[OK] Test chunk {} acknowledged: {}", seq, ack);
