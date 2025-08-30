@@ -71,7 +71,7 @@ mod tests {
     /// const GOLDEN_TRST_BLAKE3: &str = "<fill-me-after-first-run>";
     /// after first run =
     const GOLDEN_TRST_BLAKE3: &str =
-        "8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c";
+        "1891b8e45a0b2081728c6cf0ed71b32eb3bdd21ba47d413b4d16054de314098f";
 
     // ----------------------------
     // Helpers
@@ -161,6 +161,7 @@ mod tests {
                 ai_used: false,
                 model_ids: vec![],
                 key_id: TEST_KEY_ID,
+                data_type: crate::DataType::File { mime_type: None }, // Test data
             };
 
             let m_bytes = bincode::serialize(&m).expect("manifest serialize");
