@@ -254,7 +254,7 @@ async fn main() -> Result<()> {
                                 require_auth,
                                 session_manager: session_mgr,
                             };
-                            
+
                             if let Err(e) = handle_connection_with_shutdown(
                                 stream, session, config, conn_shutdown_rx
                             ).await {
