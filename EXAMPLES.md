@@ -299,6 +299,142 @@ kill -INT $(pgrep trustedge-server)
   --key-hex $(cat meeting_key.hex)
 ```
 
+### Secure Authentication Examples
+
+#### Production Server with Authentication
+
+```bash
+# Terminal 1: Start production server with authentication
+./target/release/trustedge-server \
+  --listen 0.0.0.0:8443 \
+  --require-auth \
+  --server-identity "TrustEdge Production Server v2.1" \
+  --server-key ./config/server_signing.key \
+  --session-timeout 600 \
+  --decrypt \
+  --use-keyring \
+  --salt-hex "production_salt_secure_2024_abcdef" \
+  --output-dir ./secure_uploads \
+  --verbose
+
+# Server output:
+# 🔧 Authentication enabled - loading server certificates...
+# ✅ Server signing key loaded from ./config/server_signing.key
+# ✅ Server identity certificate: "TrustEdge Production Server v2.1"
+# 🚀 TrustEdge Server starting with authentication...
+# 🔐 Listening on 0.0.0.0:8443 (authenticated connections only)
+# ⏱️  Session timeout: 600 seconds
+# 📁 Secure output directory: ./secure_uploads
+# 🔍 Waiting for authenticated clients...
+```
+
+#### Mobile App Client Connection
+
+```bash
+# Terminal 2: Mobile app connecting with authentication
+./target/release/trustedge-client \
+  --server production.trustedge.com:8443 \
+  --input user_voice_memo.trst \
+  --require-auth \
+  --client-identity "TrustEdge Mobile App v3.1.4" \
+  --client-key ./mobile_app_cert.key \
+  --use-keyring \
+  --salt-hex "production_salt_secure_2024_abcdef" \
+  --connect-timeout 30 \
+  --retry-attempts 3 \
+  --verbose
+
+# Client output:
+# 🔧 Authentication enabled - loading client certificates...
+# ✅ Client identity: "TrustEdge Mobile App v3.1.4"
+# 🔐 Connecting to authenticated server at production.trustedge.com:8443...
+# 🤝 Performing mutual authentication handshake...
+# ✅ Server certificate verified successfully
+# ✅ Client authentication completed
+# 🆔 Session ID: 0xa8f7e2d1c9b5463f
+# 📤 Sending encrypted voice memo (2.3 MB)...
+# ✅ Transfer completed successfully in 1.24s
+```
+
+#### IoT Device Fleet Management
+
+```bash
+# Server for multiple IoT devices
+./target/release/trustedge-server \
+  --listen 0.0.0.0:8080 \
+  --require-auth \
+  --server-identity "IoT Hub Central" \
+  --session-timeout 1800 \  # 30 minutes for IoT
+  --decrypt \
+  --use-keyring \
+  --salt-hex "iot_fleet_salt_2024_manufacturing" \
+  --output-dir ./iot_data \
+  --verbose
+
+# IoT Device #1: Temperature sensor
+./target/release/trustedge-client \
+  --server iot-hub.company.com:8080 \
+  --input sensor_temp_readings.trst \
+  --require-auth \
+  --client-identity "TempSensor-Floor2-Room201" \
+  --client-key ./device_certs/temp_sensor_201.key \
+  --use-keyring \
+  --salt-hex "iot_fleet_salt_2024_manufacturing" \
+  --retry-attempts 5 \
+  --verbose
+
+# IoT Device #2: Security camera
+./target/release/trustedge-client \
+  --server iot-hub.company.com:8080 \
+  --input security_footage.trst \
+  --require-auth \
+  --client-identity "SecurityCam-Entrance-Alpha" \
+  --client-key ./device_certs/sec_cam_alpha.key \
+  --use-keyring \
+  --salt-hex "iot_fleet_salt_2024_manufacturing" \
+  --retry-attempts 5 \
+  --verbose
+```
+
+#### Development vs Production Configuration
+
+```bash
+# Development: No authentication (for testing)
+./target/release/trustedge-server \
+  --listen 127.0.0.1:8080 \
+  --decrypt \
+  --key-hex "dev_key_1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" \
+  --output-dir ./dev_uploads
+
+./target/release/trustedge-client \
+  --server 127.0.0.1:8080 \
+  --input test_data.trst \
+  --key-hex "dev_key_1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+
+# Production: Full authentication required
+./target/release/trustedge-server \
+  --listen 0.0.0.0:443 \
+  --require-auth \
+  --server-identity "Production TrustEdge Server" \
+  --session-timeout 300 \
+  --decrypt \
+  --use-keyring \
+  --salt-hex "production_salt_256bit_secure" \
+  --output-dir ./production_data \
+  --verbose
+
+./target/release/trustedge-client \
+  --server secure.company.com:443 \
+  --input production_data.trst \
+  --require-auth \
+  --client-identity "Authorized Client App" \
+  --use-keyring \
+  --salt-hex "production_salt_256bit_secure" \
+  --verbose
+```
+
+### Legacy Network Examples (No Authentication)
+
 ### 1. Start the server
 
 ```bash
