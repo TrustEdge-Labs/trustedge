@@ -158,7 +158,7 @@ mod tests {
         let context = KeyContext::new(vec![1, 2, 3]); // Only 3 bytes
         let result = backend.derive_key(&key_id, &context);
         assert!(result.is_err());
-        
+
         // Check for the salt validation error
         let error_msg = result.unwrap_err().to_string();
         assert!(error_msg.contains("Salt must be exactly 16 bytes"));
