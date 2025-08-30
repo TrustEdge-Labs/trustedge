@@ -14,7 +14,7 @@ GitHub: https://github.com/johnzilla/trustedge
 
 ## Why This Project?
 
-Most people learning Rust start with CRUD web apps. This project stems from an idea: "If I wanted to speak to a LLM, how could I make sure it was private?"
+Most people learning Rust start with CRUD web apps. This project stems from a question: "If I wanted to speak to a LLM, how could I make sure it was private?"
 
 That random thought and an urge to do something out of my comfort zone led to this project, TrustEdge. 
 
