@@ -10,6 +10,7 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 
 ## Table of Contents
 - [Basic File Encryption](#basic-file-encryption)
+- [Live Audio Capture](#live-audio-capture)
 - [Network Mode Examples](#network-mode-examples)
 - [Audio Pipeline Examples](#audio-pipeline-examples)
 - [Key Management Scenarios](#key-management-scenarios)
@@ -65,6 +66,103 @@ diff business_plan.txt roundtrip.txt
   --backend keyring \
   --salt-hex "meeting2024_salt_1234567890abcdef" \
   --use-keyring
+```
+
+---
+
+## Live Audio Capture
+
+### Voice Memo Recording
+
+```bash
+# Quick voice note with system keyring
+./target/release/trustedge-audio \
+  --audio-capture \
+  --duration 30 \
+  --envelope voice_note_$(date +%Y%m%d_%H%M%S).trst \
+  --backend keyring \
+  --salt-hex "voice_notes_salt_1234567890abcdef" \
+  --use-keyring
+
+# Output:
+# Audio capture started (44100Hz, 1ch)...
+# Captured 30.0 seconds, encrypted 2646000 bytes
+# Encrypted envelope: voice_note_20240115_143022.trst
+```
+
+### High-Quality Recording Session
+
+```bash
+# Professional audio recording with device selection
+./target/release/trustedge-audio --list-devices
+# Available audio input devices:
+#   0: Default (Built-in Microphone)
+#   1: USB Audio Interface [Focusrite Scarlett 2i2]
+#   2: Line In (Built-in Audio)
+
+# Record from professional interface
+./target/release/trustedge-audio \
+  --audio-capture \
+  --device 1 \
+  --duration 1800 \
+  --sample-rate 48000 \
+  --channels 2 \
+  --envelope studio_session.trst \
+  --key-out session_key.hex \
+  --verbose
+
+# Output:
+# Using device: USB Audio Interface [Focusrite Scarlett 2i2]
+# Audio capture started (48000Hz, 2ch)...
+# Generated AES-256 key: f4e8c2a1b3d5e7f9...
+# Captured 1800.0 seconds (30 minutes), encrypted 345600000 bytes
+```
+
+### Interview Recording with Auto-Stop
+
+```bash
+# Record until file reaches size limit
+./target/release/trustedge-audio \
+  --audio-capture \
+  --max-size 52428800 \  # 50MB limit
+  --sample-rate 44100 \
+  --channels 1 \
+  --envelope interview.trst \
+  --backend keyring \
+  --salt-hex "interview_salt_abcdef1234567890" \
+  --use-keyring
+
+# Output:
+# Audio capture started (44100Hz, 1ch)...
+# Reached size limit (50.0 MB), stopping capture
+# Captured 1190.5 seconds (19m 50s), encrypted 52428800 bytes
+```
+
+### Decrypt and Analyze Audio
+
+```bash
+# Decrypt the interview audio
+./target/release/trustedge-audio \
+  --decrypt \
+  --input interview.trst \
+  --out interview_decrypted.wav \
+  --backend keyring \
+  --salt-hex "interview_salt_abcdef1234567890" \
+  --use-keyring
+
+# Check the metadata
+./target/release/trustedge-audio --inspect interview.trst
+# TrustEdge Archive Contents:
+#   Data Type: Audio
+#   Original Size: 52428800 bytes
+#   Audio Format: f32
+#   Sample Rate: 44100 Hz
+#   Channels: 1
+#   Encryption: AES-256-GCM
+#   Created: 2024-01-15 15:45:33 UTC
+
+# Convert to MP3 for sharing (requires ffmpeg)
+ffmpeg -i interview_decrypted.wav -c:a libmp3lame -b:a 128k interview_final.mp3
 ```
 
 ---
@@ -134,6 +232,71 @@ kill -INT $(pgrep trustedge-server)
 # [SRV] Graceful shutdown initiated...
 # [SRV] Waiting for 2 active connections to complete...
 # [SRV] Server shutdown complete
+```
+
+### Streaming Audio with Network Pipeline
+
+```bash
+# Terminal 1: Start server for real-time audio processing
+./target/release/trustedge-server \
+  --listen 0.0.0.0:8080 \
+  --verbose \
+  --decrypt \
+  --output-dir ./live_audio_chunks \
+  --backend keyring \
+  --salt-hex "live_stream_salt_abcdef1234567890"
+
+# Terminal 2: Stream live audio to server
+./target/release/trustedge-audio \
+  --audio-capture \
+  --duration 300 \  # 5 minutes
+  --sample-rate 44100 \
+  --channels 1 \
+  --envelope live_stream.trst \
+  --backend keyring \
+  --salt-hex "live_stream_salt_abcdef1234567890" \
+  --use-keyring
+
+# After capture, send to server
+./target/release/trustedge-client \
+  --server 127.0.0.1:8080 \
+  --input live_stream.trst \
+  --backend keyring \
+  --salt-hex "live_stream_salt_abcdef1234567890" \
+  --use-keyring
+```
+
+### Multi-Device Audio Collection
+
+```bash
+# Device 1: Conference room microphone
+./target/release/trustedge-audio \
+  --audio-capture \
+  --device 0 \
+  --duration 3600 \  # 1 hour meeting
+  --sample-rate 48000 \
+  --channels 2 \
+  --envelope meeting_room.trst \
+  --key-out meeting_key.hex
+
+# Device 2: Personal recorder  
+./target/release/trustedge-audio \
+  --audio-capture \
+  --device 1 \
+  --duration 3600 \
+  --sample-rate 44100 \
+  --channels 1 \
+  --envelope personal_notes.trst \
+  --key-hex $(cat meeting_key.hex)  # Use same key
+
+# Later: decrypt both with same key
+./target/release/trustedge-audio \
+  --decrypt --input meeting_room.trst --out room_audio.wav \
+  --key-hex $(cat meeting_key.hex)
+
+./target/release/trustedge-audio \
+  --decrypt --input personal_notes.trst --out notes_audio.wav \
+  --key-hex $(cat meeting_key.hex)
 ```
 
 ### 1. Start the server
@@ -252,25 +415,34 @@ cat decrypted_chunk_*.wav > reconstructed_stream.wav
 
 ## Key Management Scenarios
 
-### Multi-Environment Setup
+### Cross-Platform Audio Workflows
 
 #### Development Environment
 ```bash
-# Dev environment with simple hex keys
+# Dev environment with simple hex keys for testing
 ./target/release/trustedge-audio \
-  --input dev_test.wav \
+  --audio-capture \
+  --duration 10 \
   --envelope dev_test.trst \
+  --key-hex "dev_key_1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+
+# Quick verification
+./target/release/trustedge-audio \
+  --decrypt --input dev_test.trst --out dev_restored.wav \
   --key-hex "dev_key_1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
 ```
 
 #### Staging Environment  
 ```bash
-# Staging with keyring
+# Staging with keyring - more secure
 ./target/release/trustedge-audio --set-passphrase "staging_passphrase_secure_123"
 
 ./target/release/trustedge-audio \
-  --input staging_data.wav \
-  --envelope staging_encrypted.trst \
+  --audio-capture \
+  --duration 60 \
+  --sample-rate 48000 \
+  --channels 2 \
+  --envelope staging_recording.trst \
   --backend keyring \
   --salt-hex "staging_salt_abcdef1234567890abcdef12" \
   --use-keyring
@@ -280,10 +452,67 @@ cat decrypted_chunk_*.wav > reconstructed_stream.wav
 ```bash
 # Production with TPM (planned)
 ./target/release/trustedge-audio \
-  --input production_audio.wav \
+  --audio-capture \
+  --duration 1800 \
+  --sample-rate 48000 \
+  --channels 2 \
   --envelope production_secure.trst \
   --backend tpm \
   --backend-config "device_path=/dev/tpm0"
+```
+
+### Data Type Agnostic Workflows
+
+#### Mixed Content with Shared Keys
+```bash
+# Generate master key for project
+MASTER_KEY=$(./target/release/trustedge-audio \
+  --audio-capture --duration 1 --key-out /dev/stdout | head -1)
+
+# Encrypt various data types with same key
+./target/release/trustedge-audio \
+  --input project_docs.pdf \
+  --envelope docs.trst \
+  --key-hex $MASTER_KEY
+
+./target/release/trustedge-audio \
+  --audio-capture \
+  --duration 300 \
+  --envelope meeting_audio.trst \
+  --key-hex $MASTER_KEY
+
+./target/release/trustedge-audio \
+  --input sensor_data.json \
+  --envelope sensor.trst \
+  --key-hex $MASTER_KEY
+
+# All can be decrypted with same key
+echo "Encrypted project bundle with unified key management"
+```
+
+#### Content Type Inspection
+```bash
+# Check what's in encrypted files
+./target/release/trustedge-audio --inspect docs.trst
+# TrustEdge Archive Contents:
+#   Data Type: File
+#   Original Size: 2048576 bytes
+#   Encryption: AES-256-GCM
+
+./target/release/trustedge-audio --inspect meeting_audio.trst  
+# TrustEdge Archive Contents:
+#   Data Type: Audio
+#   Original Size: 26460000 bytes
+#   Audio Format: f32
+#   Sample Rate: 44100 Hz
+#   Channels: 1
+#   Encryption: AES-256-GCM
+
+./target/release/trustedge-audio --inspect sensor.trst
+# TrustEdge Archive Contents:
+#   Data Type: File  
+#   Original Size: 15876 bytes
+#   Encryption: AES-256-GCM
 ```
 
 ### Key Rotation Simulation

@@ -84,15 +84,51 @@ trustedge-audio/
 ├── src/
 │   ├── lib.rs           # Main library interface
 │   ├── main.rs          # CLI application entry point
-│   ├── format.rs        # TrustEdge format implementation
+│   ├── format.rs        # TrustEdge format with data type metadata
+│   ├── audio.rs         # Live audio capture implementation (feature-gated)
 │   ├── vectors.rs       # Test vectors and validation
 │   └── bin/
 │       ├── trustedge-client.rs  # Network client
-│       └── trustedge-server.rs  # Network server
+│       ├── trustedge-server.rs  # Network server
+│       └── inspect-trst.rs      # Metadata inspection utility
 └── tests/
     ├── cli_roundtrip.rs # End-to-end CLI tests
     └── vectors.rs       # Test vector validation
 ```
+
+### Data-Agnostic Architecture
+
+TrustEdge operates on a data-agnostic model that can encrypt any type of data while preserving relevant metadata:
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum DataType {
+    File,
+    Audio { format: AudioFormat, sample_rate: u32, channels: u16 },
+    Video { format: String, width: u32, height: u32 },
+    Sensor { sensor_type: String, units: String },
+}
+```
+
+#### Live Audio Capture
+- **Cross-platform support**: Uses `cpal` library for ALSA/WASAPI/CoreAudio backends
+- **Feature-gated compilation**: Optional audio dependencies via `--features audio`
+- **Configurable quality**: Sample rate, channel count, duration controls
+- **Metadata preservation**: Audio format details stored in manifest
+
+#### Input Abstraction
+TrustEdge uses a unified `InputReader` trait for processing different data sources:
+
+```rust
+pub trait InputReader {
+    fn read_chunk(&mut self, buf: &mut [u8]) -> io::Result<usize>;
+    fn size_hint(&self) -> Option<u64>;
+}
+```
+
+Implementations:
+- `FileInputReader`: Traditional file processing
+- `AudioInputReader`: Live audio capture (when audio feature enabled)
 
 ### Backend Architecture
 
@@ -143,19 +179,27 @@ TrustEdge implements chunked encryption for performance and streaming:
 - [x] Enhanced error handling
 - [x] Professional code quality (clippy clean)
 
-### Phase 3: Network Operations 🔄 (IN PROGRESS)
+### Phase 3: Network Operations ✅ (COMPLETED)
 - [x] Basic client-server architecture
 - [x] TCP connection handling
 - [x] Chunk streaming over network
 - [x] **Connection management improvements**
 - [x] **Connection timeouts and retry logic**
 - [x] **Graceful server shutdown handling**
+- [x] **Live audio capture integration**
+- [x] **Data-agnostic architecture with metadata**
+- [x] **Feature-gated compilation for audio dependencies**
+- [x] **Cross-platform audio support (Linux/Windows/macOS)**
 - [ ] **Server authentication**  
 - [ ] **Client certificate validation**
 - [ ] **Concurrent client handling**
 - [ ] **Network error recovery**
 
-### Phase 4: Security Hardening 🔄 (PLANNED)
+### Phase 4: Security Hardening 🔄 (NEXT)
+- [ ] **Server authentication**  
+- [ ] **Client certificate validation**
+- [ ] **Concurrent client handling**
+- [ ] **Network error recovery**
 - [ ] **TPM backend implementation**
 - [ ] **Hardware security module support**
 - [ ] **Key rotation mechanisms**
@@ -166,7 +210,7 @@ TrustEdge implements chunked encryption for performance and streaming:
 ### Phase 5: Production Features 📋 (PLANNED)
 - [ ] **Performance optimizations**
 - [ ] **Compression integration**
-- [ ] **Metadata preservation**
+- [ ] **Advanced metadata preservation**
 - [ ] **Batch processing modes**
 - [ ] **API library interface**
 - [ ] **Language bindings (Python, C)**
@@ -203,10 +247,17 @@ git clone https://github.com/yourusername/trustedge.git
 cd trustedge/trustedge-audio
 
 # Build project
+# Build with audio support
+cargo build --release --features audio
+
+# Build without audio (CI-compatible)
 cargo build --release
 
 # Run tests
 cargo test
+
+# Test audio features specifically
+cargo test --features audio
 
 # Check code quality
 cargo clippy -- -D warnings
@@ -225,12 +276,24 @@ git checkout -b feature/tpm-backend
 
 # 3. Validate changes
 cargo test
+cargo test --features audio  # Test audio-specific functionality
 cargo clippy -- -D warnings
 cargo fmt
 
-# 4. Test end-to-end
+# 4. Test end-to-end scenarios
+# Basic file encryption
 cargo run --release -- --input test.txt --envelope test.trst --key-hex $(openssl rand -hex 32)
 cargo run --release -- --decrypt --input test.trst --out roundtrip.txt
+
+# Live audio capture (if audio features enabled)
+cargo run --release --features audio -- --audio-capture --duration 5 --envelope voice.trst --key-out key.hex
+cargo run --release --features audio -- --decrypt --input voice.trst --out restored.wav --key-hex $(cat key.hex)
+
+# Network mode testing
+cargo run --release --bin trustedge-server -- --port 8080 --decrypt &
+SERVER_PID=$!
+cargo run --release --bin trustedge-client -- --server 127.0.0.1:8080 --input test.txt
+kill $SERVER_PID
 
 # 5. Commit and push
 git add .
