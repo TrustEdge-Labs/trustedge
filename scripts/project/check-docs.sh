@@ -2,6 +2,9 @@
 
 # TrustEdge Documentation Status Checker
 # Verifies that all documentation is current and consistent
+#
+# Usage: ./scripts/project/check-docs.sh
+# Run from project root directory
 
 set -e
 
@@ -56,8 +59,8 @@ check_file_status ".github/ISSUE_TEMPLATE/feature-request.yml" "Feature Request 
 check_file_status ".github/ISSUE_TEMPLATE/documentation.yml" "Documentation Template"
 check_file_status ".github/ISSUE_TEMPLATE/security.yml" "Security Template"
 check_file_status ".github/pull_request_template.md" "PR Template"
-check_file_status "setup_github_project.sh" "GitHub Setup Script"
-check_file_status "check_project_status.sh" "Status Checker Script"
+check_file_status "scripts/project/setup-github.sh" "GitHub Setup Script"
+check_file_status "scripts/project/check-status.sh" "Status Checker Script"
 
 echo ""
 echo "🔗 Cross-Reference Checks:"
@@ -103,8 +106,8 @@ echo ""
 echo "🎯 Quick Actions:"
 echo "---------------"
 echo "• Update docs: Edit relevant .md files"
-echo "• Check issues: ./check_project_status.sh"
-echo "• Setup GitHub: ./setup_github_project.sh"
+echo "• Check issues: ./scripts/project/check-status.sh"
+echo "• Setup GitHub: ./scripts/project/setup-github.sh"
 echo "• Project board: https://github.com/users/johnzilla/projects/2"
 
 echo ""

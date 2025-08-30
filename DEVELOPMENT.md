@@ -43,7 +43,7 @@ Development information, roadmap, and contribution guidelines for TrustEdge.
 **Status Checking**:
 ```bash
 # Quick project status overview
-./check_project_status.sh
+./scripts/project/check-status.sh
 
 # View specific milestone
 gh issue list --milestone "Day 10: Server Authentication"
@@ -274,7 +274,7 @@ git push origin feature/tpm-backend
    cargo fmt --check
    cargo clippy -- -D warnings
    cargo test
-   ./check_project_status.sh  # Check issue status
+   ./scripts/project/check-status.sh  # Check issue status
    ```
 
 3. **Issue Updates**

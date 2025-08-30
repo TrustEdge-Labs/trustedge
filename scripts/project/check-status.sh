@@ -2,6 +2,9 @@
 
 # TrustEdge Project Status Checker
 # Quick status overview of Phase 3 development
+# 
+# Usage: ./scripts/project/check-status.sh
+# Run from project root directory
 
 set -e
 
