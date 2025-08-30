@@ -18,17 +18,13 @@ Most people learning Rust start with CRUD web apps. This project stems from a qu
 
 That random thought and an urge to do something out of my comfort zone led to this project, TrustEdge. 
 
-TrustEdge is a learning journey in Rust that aligns with my background in IoT product development, security/PKI and edge systems:
+TrustEdge is a learning journey in Rust that aligns with my background in IoT product development, security/PKI and edge systems. TrustEdge features:
 
-* **Privacy by design**: encrypt at the edge, not just TLS in transit
-* **Rust at the edge**: safety + performance for streaming workloads  
-* **Learning in public**: small, honest milestones → real, reviewable code
-
-**TrustEdge** is a Rust prototype for privacy-preserving, provenance-aware edge audio.
-
-- **Private by default:** audio chunks are encrypted with AES-256-GCM before leaving the device
 - **Provenance by design:** each chunk carries a signed manifest (C2PA-inspired) whose hash is bound into AEAD AAD; tampering breaks decryption
+* **Privacy by design & default**: encrypt at the edge, not just TLS in transit, audio chunks are encrypted with AES-256-GCM before leaving the device
+* **Rust at the edge**: safety + performance for streaming workloads  
 - **Streaming-friendly:** fixed nonce discipline (prefix||counter) and per-chunk records
+* **Learning in public**: small, honest milestones → real, reviewable code
 
 **Technology Stack:**
 - Language: Rust (stable)
