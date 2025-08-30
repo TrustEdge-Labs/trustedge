@@ -23,7 +23,9 @@ use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 #[cfg(feature = "audio")]
 use trustedge_audio::AudioCapture;
-use trustedge_audio::{AudioConfig, BackendRegistry, KeyBackend, KeyContext, KeyringBackend};
+#[cfg(feature = "audio")]
+use trustedge_audio::AudioConfig;
+use trustedge_audio::{BackendRegistry, KeyBackend, KeyContext, KeyringBackend};
 use zeroize::Zeroize;
 
 use trustedge_audio::{

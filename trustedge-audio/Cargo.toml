@@ -52,8 +52,8 @@ rustls = "0.21"
 tokio = { version = "1.0", features = ["full"] }
 
 [features]
-default = ["audio"]  # Enable audio by default
-audio = ["cpal"]     # Audio capture feature
+default = []         # No features by default (CI-friendly)
+audio = ["cpal"]     # Audio capture feature (opt-in)
 
 [dev-dependencies]
 assert_cmd = "2"
