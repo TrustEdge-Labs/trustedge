@@ -53,7 +53,7 @@ Complete command-line interface documentation for TrustEdge.
 | Option | Description | Example |
 |--------|-------------|---------|
 | `--live-capture` | Enable live audio capture from microphone | `--live-capture` |
-| `--audio-device <DEVICE>` | Audio device name (use --list-audio-devices to see options) | `--audio-device "hw:CARD=BRIO,DEV=0"` |
+| `--audio-device <DEVICE>` | Audio device name (use --list-audio-devices to see options) | `--audio-device "hw:CARD=USB_AUDIO,DEV=0"` |
 | `--list-audio-devices` | List available audio input devices | `--list-audio-devices` |
 | `--sample-rate <RATE>` | Audio sample rate in Hz [default: 44100] | `--sample-rate 48000` |
 | `--channels <CHANNELS>` | Number of audio channels (1=mono, 2=stereo) [default: 1] | `--channels 2` |
@@ -386,7 +386,7 @@ $ trustedge-server --listen 0.0.0.0:8080 --verbose --decrypt
 [SRV] TrustEdge server listening on 0.0.0.0:8080
 [DIR] Output directory: "(none)"
 [SEC] Decryption: ENABLED
-[CONN] New connection #1 from 192.168.1.100:45678
+[CONN] New connection #1 from 10.0.1.50:45678
 
 # Press Ctrl+C for graceful shutdown
 ^C

@@ -97,7 +97,7 @@ diff business_plan.txt roundtrip.txt
 ./target/release/trustedge-audio --list-devices
 # Available audio input devices:
 #   0: Default (Built-in Microphone)
-#   1: USB Audio Interface [Focusrite Scarlett 2i2]
+#   1: USB Audio Interface [Professional Audio Device]
 #   2: Line In (Built-in Audio)
 
 # Record from professional interface
@@ -112,7 +112,7 @@ diff business_plan.txt roundtrip.txt
   --verbose
 
 # Output:
-# Using device: USB Audio Interface [Focusrite Scarlett 2i2]
+# Using device: USB Audio Interface [Professional Audio Device]
 # Audio capture started (48000Hz, 2ch)...
 # Generated AES-256 key: f4e8c2a1b3d5e7f9...
 # Captured 1800.0 seconds (30 minutes), encrypted 345600000 bytes
@@ -176,7 +176,7 @@ ffmpeg -i interview_decrypted.wav -c:a libmp3lame -b:a 128k interview_final.mp3
 ```bash
 # Robust client with retry logic for unstable networks
 ./target/release/trustedge-client \
-  --server 192.168.1.100:8080 \
+  --server 10.0.1.100:8080 \
   --input audio_stream.wav \
   --backend keyring \
   --salt-hex "network_demo_salt_abcdef1234567890ab" \
@@ -187,11 +187,11 @@ ffmpeg -i interview_decrypted.wav -c:a libmp3lame -b:a 128k interview_final.mp3
   --verbose
 
 # Output shows retry attempts:
-# Connecting to TrustEdge server at 192.168.1.100:8080
+# Connecting to TrustEdge server at 10.0.1.100:8080
 # Connection attempt 1 failed: connection refused
 # Waiting 3s before retry...
 # Connection attempt 2 of 5
-# Connected to 192.168.1.100:8080 on attempt 2
+# Connected to 10.0.1.100:8080 on attempt 2
 ```
 
 #### Conservative Settings for Reliable Networks
@@ -994,7 +994,7 @@ open https://github.com/users/johnzilla/projects/2
 ```bash
 # Test connection timeout
 ./target/release/trustedge-client \
-  --server 192.168.1.999:8080 \
+  --server 10.0.1.999:8080 \
   --file test.txt \
   --key-hex $(openssl rand -hex 32) \
   --connect-timeout 3 \
