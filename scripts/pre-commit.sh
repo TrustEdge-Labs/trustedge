@@ -32,21 +32,23 @@ check_copyright() {
 }
 
 # Check staged files only
-git diff --cached --name-only --diff-filter=ACM | while IFS= read -r file; do
+MISSING_COUNT=0
+while IFS= read -r file; do
     if [[ -f "$file" ]]; then
         case "$file" in
             *.rs|*.md|*.yml|*.yaml|*.toml)
                 if ! check_copyright "$file"; then
                     echo -e "${RED}❌ Missing copyright header: $file${NC}"
+                    MISSING_COUNT=$((MISSING_COUNT + 1))
                 fi
                 ;;
         esac
     fi
-done
+done < <(git diff --cached --name-only --diff-filter=ACM)
 
 # If any files are missing headers, block the commit
-if [ ${#MISSING_FILES[@]} -gt 0 ]; then
-    echo -e "${RED}❌ Commit blocked: ${#MISSING_FILES[@]} files missing copyright headers${NC}"
+if [ $MISSING_COUNT -gt 0 ]; then
+    echo -e "${RED}❌ Commit blocked: $MISSING_COUNT files missing copyright headers${NC}"
     echo -e "${YELLOW}💡 Run 'make fix-copyright' to automatically add headers${NC}"
     exit 1
 fi
