@@ -268,7 +268,7 @@ trustedge-audio --migrate-backend \
 --retry-delay <SECONDS>        # Delay between retries (default: 2)
 
 # Example: Aggressive retry for unstable networks
-trustedge-client --server 192.168.1.100:8080 \
+trustedge-client --server 10.0.1.100:8080 \
   --file data.wav \
   --connect-timeout 5 \
   --retry-attempts 5 \

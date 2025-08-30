@@ -84,7 +84,7 @@ cargo build --release --features audio
 # Capture with specific device and quality
 ./target/release/trustedge-audio \
   --live-capture \
-  --audio-device "hw:CARD=BRIO,DEV=0" \
+  --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
   --sample-rate 48000 \
   --channels 2 \
   --envelope stereo_voice.trst \
