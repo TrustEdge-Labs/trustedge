@@ -11,6 +11,8 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
+use tokio::signal;
+use tokio::sync::broadcast;
 
 // network payload type from lib.rs
 use trustedge_audio::{
@@ -152,37 +154,109 @@ async fn main() -> Result<()> {
         if args.decrypt { "ENABLED" } else { "disabled" }
     );
 
+    // Create shutdown signal handler
+    let (shutdown_tx, _) = broadcast::channel::<()>(1);
+    let shutdown_listener = shutdown_tx.clone();
+
+    // Spawn shutdown signal handler
+    tokio::spawn(async move {
+        signal::ctrl_c().await.expect("Failed to listen for ctrl+c");
+        println!("\n[SRV] Shutdown signal received, stopping server...");
+        let _ = shutdown_listener.send(());
+    });
+
     let mut connection_id = 0u64;
+    let mut active_connections = Vec::new();
+    let mut shutdown_rx = shutdown_tx.subscribe();
 
     loop {
-        let (stream, peer_addr) = listener.accept().await?;
-        connection_id += 1;
-        println!(
-            "[CONN] New connection #{} from {}",
-            connection_id, peer_addr
-        );
+        tokio::select! {
+            // Accept new connections
+            accept_result = listener.accept() => {
+                match accept_result {
+                    Ok((stream, peer_addr)) => {
+                        connection_id += 1;
+                        println!(
+                            "[CONN] New connection #{} from {}",
+                            connection_id, peer_addr
+                        );
 
-        let session = ProcessingSession {
-            connection_id,
-            chunks: HashMap::new(),
-            cipher: cipher.clone(),
-            output_file: None,
-            expected_seq_next: 1, // first chunk must be seq=1
-            stream_header_hash: None,
-            stream_nonce_prefix: None,
-        };
+                        let session = ProcessingSession {
+                            connection_id,
+                            chunks: HashMap::new(),
+                            cipher: cipher.clone(),
+                            output_file: None,
+                            expected_seq_next: 1, // first chunk must be seq=1
+                            stream_header_hash: None,
+                            stream_nonce_prefix: None,
+                        };
 
-        let output_dir = args.output_dir.clone();
-        let verbose = args.verbose;
-        let decrypt = args.decrypt;
+                        let output_dir = args.output_dir.clone();
+                        let verbose = args.verbose;
+                        let decrypt = args.decrypt;
+                        let conn_shutdown_rx = shutdown_tx.subscribe();
 
-        tokio::spawn(async move {
-            if let Err(e) = handle_connection(stream, session, output_dir, decrypt, verbose).await {
-                eprintln!("[ERR] Connection #{} error: {:#}", connection_id, e);
-            } else {
-                println!("[OK] Connection #{} completed", connection_id);
+                        let handle = tokio::spawn(async move {
+                            if let Err(e) = handle_connection_with_shutdown(
+                                stream, session, output_dir, decrypt, verbose, conn_shutdown_rx
+                            ).await {
+                                eprintln!("[ERR] Connection #{} error: {:#}", connection_id, e);
+                            } else {
+                                println!("[OK] Connection #{} completed", connection_id);
+                            }
+                        });
+
+                        active_connections.push(handle);
+                    }
+                    Err(e) => {
+                        eprintln!("[ERR] Failed to accept connection: {}", e);
+                    }
+                }
             }
-        });
+
+            // Handle shutdown signal
+            _ = shutdown_rx.recv() => {
+                println!("[SRV] Graceful shutdown initiated...");
+                break;
+            }
+        }
+    }
+
+    // Wait for active connections to complete
+    println!(
+        "[SRV] Waiting for {} active connections to complete...",
+        active_connections.len()
+    );
+    for handle in active_connections {
+        let _ = handle.await;
+    }
+
+    println!("[SRV] Server shutdown complete");
+    Ok(())
+}
+
+// ---- Connection handler with shutdown support ------------------------------
+
+async fn handle_connection_with_shutdown(
+    stream: TcpStream,
+    session: ProcessingSession,
+    output_dir: Option<std::path::PathBuf>,
+    decrypt: bool,
+    verbose: bool,
+    mut shutdown_rx: broadcast::Receiver<()>,
+) -> Result<()> {
+    let connection_id = session.connection_id;
+
+    tokio::select! {
+        result = handle_connection(stream, session, output_dir, decrypt, verbose) => {
+            result
+        }
+        _ = shutdown_rx.recv() => {
+            if verbose {
+                println!("[CONN] Connection #{} interrupted by shutdown", connection_id);
+            }
+            Ok(())
+        }
     }
 }
 
