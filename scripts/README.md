@@ -9,6 +9,7 @@ scripts/
 ├── project/          # Project management and GitHub utilities
 │   ├── check-status.sh    # Check GitHub issues and project status
 │   ├── setup-github.sh    # Setup GitHub milestones, labels, and project
+│   ├── manage-board.sh    # Manage project board items and synchronization
 │   └── check-docs.sh      # Validate documentation status and consistency
 └── testing/          # Testing and validation scripts
     └── test-day9.sh       # Test Day 9 network resilience features
@@ -25,6 +26,9 @@ All scripts should be run from the project root directory:
 # Setup GitHub project management
 ./scripts/project/setup-github.sh
 
+# Manage project board items
+./scripts/project/manage-board.sh
+
 # Validate documentation
 ./scripts/project/check-docs.sh
 
@@ -39,6 +43,7 @@ Scripts for managing the GitHub project, issues, and documentation:
 
 - **check-status.sh**: Monitor GitHub issues and development progress
 - **setup-github.sh**: Initialize GitHub milestones, labels, and project structure
+- **manage-board.sh**: Manage project board items and synchronization
 - **check-docs.sh**: Validate documentation currency and cross-references
 
 ### Testing (`testing/`)

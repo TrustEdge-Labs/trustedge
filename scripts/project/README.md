@@ -36,7 +36,23 @@ Initialize GitHub project management infrastructure.
 - GitHub CLI authenticated (`gh auth login`)
 - Repository write access
 
-### 📚 check-docs.sh
+### � manage-board.sh
+Manage GitHub project board items and synchronization.
+
+**Usage:**
+```bash
+./scripts/project/manage-board.sh
+```
+
+**Features:**
+- Add issues to project board automatically
+- List current project board items
+- Interactive issue management
+- Bulk operations for labeled issues
+
+**Note:** GitHub project boards require manual addition of issues. This script automates that process.
+
+### �📚 check-docs.sh
 Validate documentation status and consistency.
 
 **Usage:**

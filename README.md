@@ -220,6 +220,8 @@ We welcome contributions! Please see our comprehensive guidelines and project ma
 - **[GitHub Issues](https://github.com/johnzilla/trustedge/issues)** — Bug reports, feature requests, and tasks
 - **[Milestones](https://github.com/johnzilla/trustedge/milestones)** — Development phases and deadlines
 
+**Note**: GitHub project boards require manual addition of issues. Use `./scripts/project/manage-board.sh` to add issues to the project board.
+
 ### 📝 **Issue Templates**
 - 🐛 **[Bug Reports](./.github/ISSUE_TEMPLATE/bug-report.yml)** — Report issues with detailed information
 - ✨ **[Feature Requests](./.github/ISSUE_TEMPLATE/feature-request.yml)** — Suggest new features and improvements

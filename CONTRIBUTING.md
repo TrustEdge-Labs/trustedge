@@ -52,6 +52,14 @@ When requesting features:
 3. **Install dependencies**: `cd trustedge/trustedge-audio && cargo build`
 4. **Run tests**: `cargo test` and `cargo clippy`
 
+### Project Board Management
+
+**Important**: GitHub project boards require manual addition of issues.
+
+- **View project board**: [TrustEdge Development](https://github.com/users/johnzilla/projects/2)
+- **Add issues to board**: Use `./scripts/project/manage-board.sh`
+- **GitHub Issues vs Project Board**: All issues are in `/issues`, but only manually added ones appear on the project board
+
 ### Coding Standards
 
 - **Style**: Follow standard Rust formatting (`cargo fmt`)
