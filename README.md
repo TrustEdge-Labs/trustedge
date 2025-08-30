@@ -14,7 +14,11 @@ GitHub: https://github.com/johnzilla/trustedge
 
 ## Why This Project?
 
-Most people learning Rust start with CRUD web apps. I'm taking a different route that aligns with my background in IoT product development, security/PKI and edge systems:
+Most people learning Rust start with CRUD web apps. This project stems from an idea: "If I wanted to speak to a LLM, how could I make sure it was private?"
+
+That random thought and an urge to do something out of my comfort zone led to this project, TrustEdge. 
+
+TrustEdge is a learning journey in Rust that aligns with my background in IoT product development, security/PKI and edge systems:
 
 * **Privacy by design**: encrypt at the edge, not just TLS in transit
 * **Rust at the edge**: safety + performance for streaming workloads  
