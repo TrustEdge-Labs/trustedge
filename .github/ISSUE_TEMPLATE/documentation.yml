@@ -1,0 +1,62 @@
+name: 📚 Documentation Issue
+description: Report missing, incorrect, or unclear documentation
+title: "[Docs]: "
+labels: ["documentation", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve TrustEdge documentation! Report issues with existing docs or suggest new documentation.
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation is this about?
+      options:
+        - README.md
+        - PROTOCOL.md (Protocol specification)
+        - CLI.md (Command-line usage)
+        - EXAMPLES.md (Usage examples)
+        - DEVELOPMENT.md (Developer guide)
+        - Code comments/docstrings
+        - GitHub wiki
+        - New documentation needed
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: Documentation Issue
+      description: What's wrong with the current documentation or what's missing?
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: |
+        Where is this issue located? Include:
+        - File name and section
+        - URL if applicable
+        - Line numbers if relevant
+
+  - type: textarea
+    id: improvement
+    attributes:
+      label: Suggested Improvement
+      description: How should the documentation be improved?
+
+  - type: dropdown
+    id: audience
+    attributes:
+      label: Target Audience
+      description: Who is the primary audience for this documentation?
+      options:
+        - End users
+        - Developers/contributors
+        - System administrators
+        - Security auditors
+        - API consumers

@@ -14,6 +14,7 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 - [Audio Pipeline Examples](#audio-pipeline-examples)
 - [Key Management Scenarios](#key-management-scenarios)
 - [Integration Examples](#integration-examples)
+- [Development and Project Management Examples](#development-and-project-management-examples)
 
 ---
 
@@ -69,6 +70,71 @@ diff business_plan.txt roundtrip.txt
 ---
 
 ## Network Mode Examples
+
+### Connection Resilience & Error Recovery
+
+#### Handling Network Issues
+
+```bash
+# Robust client with retry logic for unstable networks
+./target/release/trustedge-client \
+  --server 192.168.1.100:8080 \
+  --input audio_stream.wav \
+  --backend keyring \
+  --salt-hex "network_demo_salt_abcdef1234567890ab" \
+  --use-keyring \
+  --connect-timeout 15 \
+  --retry-attempts 5 \
+  --retry-delay 3 \
+  --verbose
+
+# Output shows retry attempts:
+# Connecting to TrustEdge server at 192.168.1.100:8080
+# Connection attempt 1 failed: connection refused
+# Waiting 3s before retry...
+# Connection attempt 2 of 5
+# Connected to 192.168.1.100:8080 on attempt 2
+```
+
+#### Conservative Settings for Reliable Networks
+
+```bash
+# Minimal retry for high-reliability environments
+./target/release/trustedge-client \
+  --server secure-server.company.com:8080 \
+  --input document.pdf \
+  --key-hex "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" \
+  --connect-timeout 30 \
+  --retry-attempts 1 \
+  --verbose
+```
+
+#### Server with Graceful Shutdown
+
+```bash
+# Terminal 1: Start server with connection tracking
+./target/release/trustedge-server \
+  --listen 0.0.0.0:8080 \
+  --verbose \
+  --decrypt \
+  --output-dir ./production_data \
+  --backend keyring \
+  --salt-hex "production_salt_1234567890abcdef1234"
+
+# Server output:
+# [SRV] TrustEdge server listening on 0.0.0.0:8080
+# [DIR] Output directory: "./production_data"
+# [SEC] Decryption: ENABLED
+
+# Terminal 2: Send SIGINT for graceful shutdown
+kill -INT $(pgrep trustedge-server)
+
+# Server gracefully shuts down:
+# [SRV] Shutdown signal received, stopping server...
+# [SRV] Graceful shutdown initiated...
+# [SRV] Waiting for 2 active connections to complete...
+# [SRV] Server shutdown complete
+```
 
 ### 1. Start the server
 
@@ -490,6 +556,117 @@ encrypt_with_fallback "important_data.txt" "important_data.trst"
 
 ## Real-World Use Cases
 
+### Production Deployment Examples
+
+#### High-Availability Server Setup
+
+```bash
+#!/bin/bash
+# production_server.sh - Production server with monitoring
+
+LISTEN_ADDR="0.0.0.0:8080"
+OUTPUT_DIR="/var/lib/trustedge/received"
+SALT="production_salt_$(date +%Y%m%d)_secure_random_salt"
+
+# Ensure output directory exists
+mkdir -p "$OUTPUT_DIR"
+
+# Start server with production settings
+./target/release/trustedge-server \
+  --listen "$LISTEN_ADDR" \
+  --decrypt \
+  --output-dir "$OUTPUT_DIR" \
+  --backend keyring \
+  --salt-hex "$SALT" \
+  --verbose 2>&1 | tee /var/log/trustedge/server.log
+
+# Server will handle SIGTERM gracefully during system shutdown
+```
+
+#### Client with Comprehensive Error Handling
+
+```bash
+#!/bin/bash
+# robust_client.sh - Client with full error recovery
+
+SERVER="$1"
+INPUT_FILE="$2"
+SALT="$3"
+
+if [[ -z "$SERVER" || -z "$INPUT_FILE" || -z "$SALT" ]]; then
+    echo "Usage: $0 <server:port> <input_file> <salt_hex>"
+    exit 1
+fi
+
+# Retry with different timeout strategies
+for strategy in "quick" "normal" "patient"; do
+    case $strategy in
+        "quick")
+            TIMEOUT=5; RETRIES=3; DELAY=1
+            ;;
+        "normal") 
+            TIMEOUT=10; RETRIES=3; DELAY=2
+            ;;
+        "patient")
+            TIMEOUT=30; RETRIES=5; DELAY=5
+            ;;
+    esac
+    
+    echo "Attempting $strategy connection strategy..."
+    
+    if ./target/release/trustedge-client \
+        --server "$SERVER" \
+        --input "$INPUT_FILE" \
+        --backend keyring \
+        --salt-hex "$SALT" \
+        --use-keyring \
+        --connect-timeout "$TIMEOUT" \
+        --retry-attempts "$RETRIES" \
+        --retry-delay "$DELAY" \
+        --verbose; then
+        echo "✓ Success with $strategy strategy"
+        exit 0
+    else
+        echo "✗ Failed with $strategy strategy"
+    fi
+done
+
+echo "All connection strategies failed"
+exit 1
+```
+
+#### Load Balancing and Failover
+
+```bash
+# multi_server_client.sh - Client with server failover
+
+SERVERS=("server1.example.com:8080" "server2.example.com:8080" "server3.example.com:8080")
+INPUT_FILE="$1"
+SALT_HEX="$2"
+
+for server in "${SERVERS[@]}"; do
+    echo "Trying server: $server"
+    
+    if ./target/release/trustedge-client \
+        --server "$server" \
+        --input "$INPUT_FILE" \
+        --backend keyring \
+        --salt-hex "$SALT_HEX" \
+        --use-keyring \
+        --connect-timeout 10 \
+        --retry-attempts 2 \
+        --verbose; then
+        echo "✓ Successfully connected to $server"
+        exit 0
+    else
+        echo "✗ Failed to connect to $server, trying next..."
+    fi
+done
+
+echo "All servers failed"
+exit 1
+```
+
 ### IoT Sensor Data Protection
 
 ```bash
@@ -559,8 +736,87 @@ split_and_encrypt_stream "live_audio.wav" "4096"
 
 ---
 
+## Development and Project Management Examples
+
+### 🔧 Working with the TrustEdge Project
+
+```bash
+# Check current project status
+./check_project_status.sh
+
+# View current Phase 3 issues
+gh issue list --milestone "Phase 3: Network Operations"
+
+# View specific day milestone
+gh issue list --milestone "Day 10: Server Authentication"
+
+# Create a bug report
+gh issue create --template bug-report
+
+# Check project board
+open https://github.com/users/johnzilla/projects/2
+```
+
+### 🧪 Testing Day 9 Network Resilience Features
+
+```bash
+# Test connection timeout
+./target/release/trustedge-client \
+  --server 192.168.1.999:8080 \
+  --file test.txt \
+  --key-hex $(openssl rand -hex 32) \
+  --connect-timeout 3 \
+  --retry-attempts 2 \
+  --verbose
+
+# Test graceful server shutdown
+./target/release/trustedge-server \
+  --port 8080 \
+  --key-hex $(openssl rand -hex 32) \
+  --decrypt &
+
+SERVER_PID=$!
+sleep 2
+echo "Sending SIGTERM to server..."
+kill -TERM $SERVER_PID
+wait $SERVER_PID
+echo "Server shutdown gracefully"
+```
+
+### 📋 Contributing Workflow Example
+
+```bash
+# 1. Check current priorities
+./check_project_status.sh
+
+# 2. Assign yourself to an issue
+gh issue edit 11 --add-assignee @me
+
+# 3. Create feature branch
+git checkout -b feature/day-10-server-auth
+
+# 4. Make changes and test
+cargo test
+cargo clippy
+
+# 5. Commit with issue reference
+git commit -m "feat(server): add certificate validation
+
+Implements server certificate loading and validation
+for secure client connections.
+
+Progress on #11"
+
+# 6. Create PR with template
+gh pr create --fill
+```
+
+---
+
 For complete CLI reference, see [CLI.md](./CLI.md).
 
 For testing procedures, see [TESTING.md](./TESTING.md).
 
 For technical protocol details, see [PROTOCOL.md](./PROTOCOL.md).
+
+For development guidelines, see [DEVELOPMENT.md](./DEVELOPMENT.md) and [CONTRIBUTING.md](./CONTRIBUTING.md).

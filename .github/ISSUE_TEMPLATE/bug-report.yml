@@ -1,0 +1,81 @@
+name: 🐛 Bug Report
+description: Report a bug or issue with TrustEdge
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: input
+    id: version
+    attributes:
+      label: TrustEdge Version
+      description: What version of TrustEdge are you using?
+      placeholder: "0.1.7"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component is affected?
+      options:
+        - trustedge-audio (CLI)
+        - trustedge-server (Network server)
+        - trustedge-client (Network client)
+        - Key management/backends
+        - File format/protocol
+        - Documentation
+        - Build/CI
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: |
+        Steps to reproduce the behavior:
+        1. Run command '...'
+        2. See error
+      placeholder: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log Output
+      description: If applicable, add log output or error messages.
+      render: shell
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: "OS, Rust version, etc."
+      placeholder: "Ubuntu 22.04, Rust 1.70.0"
+    validations:
+      required: true

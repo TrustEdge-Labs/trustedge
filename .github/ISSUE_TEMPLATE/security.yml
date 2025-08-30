@@ -1,0 +1,71 @@
+name: 🔒 Security Issue
+description: Report a security vulnerability (use private disclosure for sensitive issues)
+title: "[Security]: "
+labels: ["security", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **Security Notice**: If this is a sensitive security vulnerability that could be exploited, please consider using private disclosure channels instead of a public issue.
+        
+        For non-sensitive security improvements or questions about security practices, this public template is appropriate.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity Level
+      description: How severe is this security issue?
+      options:
+        - Info (security question or suggestion)
+        - Low (minor security improvement)
+        - Medium (potential security issue)
+        - High (likely exploitable vulnerability)
+        - Critical (actively exploitable)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Security Category
+      description: What type of security issue is this?
+      options:
+        - Cryptographic implementation
+        - Key management
+        - Authentication/authorization
+        - Input validation
+        - Network security
+        - File handling
+        - Dependency security
+        - Build/CI security
+        - Documentation security
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Security Issue Description
+      description: Describe the security issue or improvement suggestion.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Impact
+      description: What could an attacker achieve if this issue is exploited?
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Suggested Mitigation
+      description: How should this issue be addressed?
+
+  - type: checkboxes
+    id: disclosure
+    attributes:
+      label: Disclosure
+      options:
+        - label: I confirm this is not a sensitive vulnerability requiring private disclosure
+          required: true
