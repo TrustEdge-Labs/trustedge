@@ -262,6 +262,7 @@ async fn send_encrypted_file(
             key_id,
             ai_used: false,
             model_ids: vec![],
+            data_type: trustedge_audio::DataType::File { mime_type: None }, // Generic file data
         };
 
         // Sign & wrap
@@ -374,6 +375,7 @@ async fn send_encrypted_test_chunks(
             key_id,
             ai_used: false,
             model_ids: vec![],
+            data_type: trustedge_audio::DataType::File { mime_type: None }, // Test data
         };
 
         let m_bytes = bincode::serialize(&manifest)?;

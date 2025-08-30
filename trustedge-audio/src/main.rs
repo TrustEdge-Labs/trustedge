@@ -30,8 +30,10 @@ use trustedge_audio::{
     // helpers
     build_aad,
     write_stream_header,
-    FileHeader,
     // Types
+    AudioFormat,
+    DataType,
+    FileHeader,
     Manifest,
     Record,
     SignedManifest,
@@ -43,6 +45,82 @@ use trustedge_audio::{
     NONCE_LEN,
     VERSION,
 };
+
+/// Input source for the trustedge application
+#[derive(Debug)]
+enum InputSource {
+    File(PathBuf),
+    LiveAudio,
+}
+
+/// Trait for unified input reading
+trait InputReader {
+    fn read_chunk(&mut self, buf: &mut [u8]) -> Result<usize>;
+}
+
+/// File-based input reader
+struct FileInputReader {
+    reader: BufReader<File>,
+}
+
+impl FileInputReader {
+    fn new(reader: BufReader<File>) -> Self {
+        Self { reader }
+    }
+}
+
+impl InputReader for FileInputReader {
+    fn read_chunk(&mut self, buf: &mut [u8]) -> Result<usize> {
+        self.reader.read(buf).context("read chunk")
+    }
+}
+
+/// Audio-based input reader
+#[cfg(feature = "audio")]
+struct AudioInputReader {
+    capture: AudioCapture,
+    started: bool,
+}
+
+#[cfg(feature = "audio")]
+impl AudioInputReader {
+    fn new(mut capture: AudioCapture) -> Result<Self> {
+        capture.initialize()?;
+        Ok(Self {
+            capture,
+            started: false,
+        })
+    }
+}
+
+#[cfg(feature = "audio")]
+impl InputReader for AudioInputReader {
+    fn read_chunk(&mut self, buf: &mut [u8]) -> Result<usize> {
+        if !self.started {
+            self.capture.start()?;
+            self.started = true;
+            println!("🎙️  Live audio capture started");
+        }
+
+        // Wait for audio chunk - keep trying until we get data
+        loop {
+            match self.capture.try_next_chunk()? {
+                Some(audio_chunk) => {
+                    println!("📦 Audio chunk: {} samples", audio_chunk.data.len());
+                    let audio_bytes = audio_chunk.to_bytes();
+                    let bytes_to_copy = std::cmp::min(audio_bytes.len(), buf.len());
+                    buf[..bytes_to_copy].copy_from_slice(&audio_bytes[..bytes_to_copy]);
+                    return Ok(bytes_to_copy);
+                }
+                None => {
+                    // Brief pause and try again - don't timeout here
+                    std::thread::sleep(Duration::from_millis(10));
+                    // Let the main loop handle timeouts via max_duration
+                }
+            }
+        }
+    }
+}
 
 /// CLI Arguments
 #[derive(Parser, Debug)]
@@ -209,165 +287,6 @@ fn list_audio_devices() -> Result<()> {
     println!("   2. Rebuild with: cargo build --features audio");
     println!("   3. Or use default build (audio enabled): cargo build");
     Ok(())
-}
-
-/// Live audio capture and encryption
-#[cfg(feature = "audio")]
-fn live_audio_capture(args: &Args) -> Result<()> {
-    println!("🎙️  Starting live audio capture...");
-
-    // Create audio configuration
-    let audio_config = AudioConfig {
-        device_name: args.audio_device.clone(),
-        sample_rate: args.sample_rate,
-        channels: args.channels,
-        chunk_duration_ms: args.chunk_duration_ms,
-        buffer_size: 8192,
-    };
-
-    // Initialize audio capture
-    let mut capture = AudioCapture::new(audio_config)?;
-    capture.initialize()?;
-    capture.start()?;
-
-    // Determine how long to capture
-    let start_time = std::time::Instant::now();
-    let max_duration = if args.max_duration > 0 {
-        Some(Duration::from_secs(args.max_duration))
-    } else {
-        None
-    };
-
-    println!(
-        "📊 Capture config: {} Hz, {} channels, {}ms chunks",
-        args.sample_rate, args.channels, args.chunk_duration_ms
-    );
-
-    if let Some(duration) = max_duration {
-        println!("⏱️  Max duration: {:?}", duration);
-    } else {
-        println!("⏱️  Capture duration: unlimited (Ctrl+C to stop)");
-    }
-
-    // Set up key management if encryption is needed
-    let mut encryption_key: Option<[u8; 32]> = None;
-    if args.key_hex.is_some() || args.use_keyring {
-        encryption_key = Some(resolve_encryption_key(args)?);
-        println!("🔑 Encryption enabled");
-    }
-
-    // Output setup
-    let output_file = if let Some(ref path) = args.out {
-        Some(File::create(path).context("Failed to create output file")?)
-    } else {
-        None
-    };
-
-    println!("🎙️  Capturing audio... (Ctrl+C to stop)");
-
-    let mut chunk_count = 0u64;
-    let mut total_samples = 0usize;
-
-    // Main capture loop
-    loop {
-        // Check duration limit
-        if let Some(max_dur) = max_duration {
-            if start_time.elapsed() >= max_dur {
-                println!("⏱️  Maximum duration reached, stopping capture");
-                break;
-            }
-        }
-
-        // Get next audio chunk (with timeout)
-        match capture.try_next_chunk()? {
-            Some(chunk) => {
-                chunk_count += 1;
-                total_samples += chunk.data.len();
-
-                println!(
-                    "📦 Chunk #{}: {:.1}ms, {} samples",
-                    chunk.sequence,
-                    chunk.duration_ms(),
-                    chunk.data.len()
-                );
-
-                // Process the chunk
-                if let Some(key) = encryption_key {
-                    // Encrypt the audio chunk
-                    let chunk_bytes = chunk.to_bytes();
-                    let encrypted = encrypt_chunk(&chunk_bytes, &key, chunk.sequence)?;
-
-                    // Write encrypted data if output file specified
-                    if let Some(ref mut file) = output_file.as_ref() {
-                        // In a real implementation, you'd want to write this in the .trst format
-                        // For now, just write the raw encrypted bytes
-                        let mut writer = BufWriter::new(file);
-                        writer.write_all(&encrypted)?;
-                        writer.flush()?;
-                    }
-                } else {
-                    // No encryption, just log or save raw audio
-                    println!("🎵 Raw audio chunk captured (no encryption)");
-                }
-
-                // Check for Ctrl+C or other interrupt signals
-                // (In a real implementation, you'd set up signal handlers)
-            }
-            None => {
-                // No chunk available right now, brief pause
-                std::thread::sleep(Duration::from_millis(10));
-            }
-        }
-    }
-
-    capture.stop()?;
-
-    let elapsed = start_time.elapsed();
-    println!("✅ Capture complete!");
-    println!("📊 Statistics:");
-    println!("   Duration: {:.2}s", elapsed.as_secs_f64());
-    println!("   Chunks: {}", chunk_count);
-    println!("   Total samples: {}", total_samples);
-    println!(
-        "   Average chunk rate: {:.1} chunks/sec",
-        chunk_count as f64 / elapsed.as_secs_f64()
-    );
-
-    Ok(())
-}
-
-/// Live audio capture and encryption (stub when audio not available)
-#[cfg(not(feature = "audio"))]
-fn live_audio_capture(_args: &Args) -> Result<()> {
-    println!("❌ Audio capture not available in this build");
-    println!("💡 To enable audio capture:");
-    println!("   1. Install audio libraries: sudo apt install libasound2-dev pkg-config");
-    println!("   2. Rebuild with audio feature: cargo build --features audio");
-    println!("   3. Or use default build (audio enabled): cargo build");
-    println!();
-    println!("🔄 Alternative: Use file-based encryption while waiting for audio:");
-    println!("   trustedge-audio --input audio.wav --out encrypted.trst --key-hex <key>");
-
-    Err(anyhow::anyhow!(
-        "Audio capture requires audio feature to be enabled"
-    ))
-}
-
-/// Simple chunk encryption (placeholder - in real implementation use full .trst format)
-fn encrypt_chunk(data: &[u8], key: &[u8; 32], sequence: u64) -> Result<Vec<u8>> {
-    use aes_gcm::aead::{Aead, KeyInit};
-    use aes_gcm::{Aes256Gcm, Nonce};
-
-    let cipher = Aes256Gcm::new(key.into());
-
-    // Create nonce from sequence number (simplified)
-    let mut nonce_bytes = [0u8; 12];
-    nonce_bytes[4..12].copy_from_slice(&sequence.to_be_bytes());
-    let nonce = Nonce::from_slice(&nonce_bytes);
-
-    cipher
-        .encrypt(nonce, data)
-        .map_err(|e| anyhow::anyhow!("Encryption failed: {}", e))
 }
 
 /// Create a backend from CLI arguments
@@ -592,11 +511,6 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     Ok(())
 }
 
-/// Resolve encryption key from command line arguments
-fn resolve_encryption_key(args: &Args) -> Result<[u8; 32]> {
-    select_aes_key_with_backend(args, Mode::Encrypt)
-}
-
 fn main() -> Result<()> {
     let args = Args::parse();
 
@@ -608,11 +522,6 @@ fn main() -> Result<()> {
     // Handle --list-audio-devices option
     if args.list_audio_devices {
         return list_audio_devices();
-    }
-
-    // Handle --live-capture option
-    if args.live_capture {
-        return live_audio_capture(&args);
     }
 
     // one-time keyring setup
@@ -634,16 +543,22 @@ fn main() -> Result<()> {
         "chunk too large for header"
     );
 
-    // inputs/outputs
-    let input = args
-        .input
-        .as_ref()
-        .ok_or_else(|| anyhow!("--input is required"))?;
+    // Determine input source: file or live audio
+    let input_source = if args.live_capture {
+        InputSource::LiveAudio
+    } else {
+        let input = args
+            .input
+            .as_ref()
+            .ok_or_else(|| anyhow!("--input is required when not using --live-capture"))?;
+        InputSource::File(input.clone())
+    };
+
+    // outputs
     let out = args
         .out
         .as_ref()
         .ok_or_else(|| anyhow!("--out is required"))?;
-    let mut fin = BufReader::new(File::open(input).context("open input")?);
     let mut fout = BufWriter::new(File::create(out).context("create output")?);
 
     // keys
@@ -704,11 +619,64 @@ fn main() -> Result<()> {
     let mut seq: u64 = 0;
     let mut nonce_bytes = [0u8; NONCE_LEN];
 
+    // Initialize input source
+    let mut input_reader: Box<dyn InputReader> = match &input_source {
+        InputSource::File(path) => {
+            let fin = BufReader::new(File::open(path).context("open input")?);
+            Box::new(FileInputReader::new(fin))
+        }
+        InputSource::LiveAudio => {
+            #[cfg(feature = "audio")]
+            {
+                let audio_config = AudioConfig {
+                    device_name: args.audio_device.clone(),
+                    sample_rate: args.sample_rate,
+                    channels: args.channels,
+                    chunk_duration_ms: args.chunk_duration_ms,
+                    buffer_size: 8192,
+                };
+                let capture = AudioCapture::new(audio_config)?;
+                Box::new(AudioInputReader::new(capture)?)
+            }
+            #[cfg(not(feature = "audio"))]
+            {
+                return Err(anyhow!(
+                    "Audio capture not available - rebuild with --features audio"
+                ));
+            }
+        }
+    };
+
     // loop to process input chunks
+    let start_time = std::time::Instant::now();
+    let max_duration = if args.max_duration > 0 {
+        Some(Duration::from_secs(args.max_duration))
+    } else {
+        None
+    };
+
     loop {
-        let n = fin.read(&mut buf).context("read chunk")?;
+        // Check time limit for live audio
+        if let Some(max_dur) = max_duration {
+            if start_time.elapsed() >= max_dur {
+                println!("⏱️  Maximum duration reached, stopping capture");
+                break;
+            }
+        }
+
+        let n = input_reader.read_chunk(&mut buf)?;
         if n == 0 {
-            break;
+            // For live audio, continue if within time limit
+            if matches!(input_source, InputSource::LiveAudio) {
+                if max_duration.is_some() {
+                    continue; // Keep trying until time limit
+                } else {
+                    break; // No time limit, exit on no data
+                }
+            } else {
+                // File EOF
+                break;
+            }
         }
 
         seq = seq.checked_add(1).ok_or_else(|| anyhow!("seq overflow"))?;
@@ -722,6 +690,16 @@ fn main() -> Result<()> {
             .unwrap_or_default()
             .as_millis() as u64;
 
+        // Determine data type for manifest
+        let data_type = match &input_source {
+            InputSource::File(_) => DataType::File { mime_type: None },
+            InputSource::LiveAudio => DataType::Audio {
+                sample_rate: args.sample_rate,
+                channels: args.channels,
+                format: AudioFormat::F32Le, // Current implementation uses f32 samples
+            },
+        };
+
         let m = Manifest {
             v: 1,
             ts_ms,
@@ -731,6 +709,7 @@ fn main() -> Result<()> {
             key_id: header.key_id,
             ai_used: false,
             model_ids: vec![],
+            data_type,
         };
 
         let m_bytes = bincode::serialize(&m).expect("manifest serialize");

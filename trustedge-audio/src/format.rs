@@ -59,6 +59,43 @@ impl FileHeader {
     }
 }
 
+/// Data type enumeration for different input sources
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub enum DataType {
+    /// Unknown or unspecified data type
+    Unknown,
+    /// Generic file data (original behavior)
+    File { mime_type: Option<String> },
+    /// Live audio capture
+    Audio {
+        sample_rate: u32,
+        channels: u16,
+        format: AudioFormat,
+    },
+    /// Video capture (future use)
+    Video {
+        width: u32,
+        height: u32,
+        fps: f32,
+        format: String,
+    },
+    /// Raw sensor data (future use)
+    Sensor { sensor_type: String },
+}
+
+/// Audio format specification
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub enum AudioFormat {
+    /// 32-bit floating point samples
+    F32Le,
+    /// 16-bit signed integer samples
+    I16Le,
+    /// 24-bit signed integer samples
+    I24Le,
+    /// Other/custom format
+    Other(String),
+}
+
 /// Manifest structure
 #[derive(Serialize, Deserialize)]
 pub struct Manifest {
@@ -70,6 +107,7 @@ pub struct Manifest {
     pub key_id: [u8; 16], // Added for key identification/rotation
     pub ai_used: bool,
     pub model_ids: Vec<String>,
+    pub data_type: DataType, // NEW: Data type and format metadata
 }
 
 /// SignedManifest structure
