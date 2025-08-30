@@ -35,46 +35,83 @@ TrustEdge implements privacy-preserving audio encryption with the following secu
 ### Known Limitations
 
 1. **Pre-1.0 Software**: Not recommended for production use
-2. **Key Management**: Manual key distribution required
-3. **Network Security**: TLS/transport security is user responsibility
+2. **Authentication**: Server and client authentication in development (Phase 3)
+3. **Network Security**: TLS authentication being implemented
 4. **Side Channel Attacks**: No specific mitigations implemented
 5. **Memory Safety**: Relies on Rust's memory safety guarantees
+
+### Current Security Status (Phase 3)
+
+**✅ Implemented Security Features:**
+- AES-256-GCM authenticated encryption
+- Ed25519 digital signatures for provenance
+- PBKDF2 key derivation with keyring integration
+- Connection timeouts and retry logic
+- Graceful shutdown handling
+
+**🔄 In Development (Phase 3):**
+- Server certificate validation and mutual TLS
+- Client authentication and authorization
+- Enhanced security features (Perfect Forward Secrecy)
+- Production deployment security hardening
+
+**📋 Planned Security Features:**
+- TPM and HSM key storage backends
+- Key rotation and revocation mechanisms
+- Rate limiting and DoS protection
+- Security audit logging
 
 ### Security Assumptions
 
 - Users manage encryption keys securely
-- Network transport provides confidentiality (HTTPS/TLS)
+- Network transport provides confidentiality (HTTPS/TLS) - being enhanced
 - System entropy source is reliable for cryptographic operations
 - Dependencies (aes-gcm, ed25519-dalek, etc.) are trustworthy
 
 ## Reporting a Vulnerability
 
-**[DRAFT - Update with actual contact information]**
+We take security vulnerabilities seriously. Please follow responsible disclosure practices.
 
-### How to Report
+### 🔒 Private Security Issues
 
-Please report security vulnerabilities by:
+For **sensitive security vulnerabilities** that could be exploited:
 
-1. **Email**: johnturner+trustedge@gmail.com
-2. **GitHub**: Use private vulnerability reporting (if enabled)
-3. **Alternative**: Contact maintainer directly via secure channel
+1. **GitHub Security Advisories**: [Create Private Advisory](https://github.com/johnzilla/trustedge/security/advisories/new)
+2. **Direct Contact**: Email security concerns to security@[project-domain] (when available)
 
-### What to Include
+**Do not** disclose sensitive vulnerabilities publicly until we've had time to address them.
 
-Please provide the following information:
+### 📋 General Security Issues
+
+For **general security improvements** or **questions about security practices**:
+
+1. **Security Issue Template**: [Create Security Issue](./.github/ISSUE_TEMPLATE/security.yml)
+2. **GitHub Issues**: Use for non-sensitive security discussions
+
+### 🎯 What to Include
+
+When reporting security issues, please include:
 
 - **Description**: Clear description of the vulnerability
-- **Impact**: Potential security impact and affected components
+- **Impact**: Potential security impact and attack scenarios
 - **Reproduction**: Steps to reproduce the issue
-- **Environment**: Version, OS, and configuration details
-- **Proposed Fix**: If you have suggestions for remediation
+- **Environment**: TrustEdge version, OS, Rust version
+- **Mitigation**: Suggested fixes or workarounds (if any)
 
-### Response Timeline
+### ⏱️ Response Timeline
 
-- **Initial Response**: Within 48 hours
-- **Assessment**: Within 7 days
-- **Fix Development**: Timeline depends on severity
-- **Disclosure**: Coordinated disclosure after fix is available
+- **Acknowledgment**: Within 48 hours
+- **Initial Assessment**: Within 1 week
+- **Progress Updates**: Weekly for active issues
+- **Resolution**: Timeline depends on severity and complexity
+
+### 🏆 Recognition
+
+We appreciate security researchers who help improve TrustEdge security:
+
+- **Security Hall of Fame**: Recognition for responsible disclosure
+- **Attribution**: Credit in release notes (with permission)
+- **Coordination**: Work together on disclosure timeline
 
 ### Severity Classification
 

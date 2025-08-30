@@ -48,6 +48,14 @@ Complete command-line interface documentation for TrustEdge.
 | `--list-backends` | List available key management backends | `--list-backends` |
 | `--backend-config <CONFIG>` | Backend-specific configuration (format: key=value) | `--backend-config "iterations=150000"` |
 
+### Connection Management Options (Client)
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--connect-timeout <SECONDS>` | Connection establishment timeout [default: 10] | `--connect-timeout 15` |
+| `--retry-attempts <COUNT>` | Number of connection retry attempts [default: 3] | `--retry-attempts 5` |
+| `--retry-delay <SECONDS>` | Delay between retry attempts [default: 2] | `--retry-delay 3` |
+
 ### Network Options
 
 | Option | Description | Example |
@@ -209,6 +217,66 @@ $ trustedge-audio \
     --out decrypted.txt \
     --key-hex $(cat generated_key.hex)
 Decrypt complete. Wrote 18 bytes.
+```
+
+---
+
+## Connection Management & Error Recovery
+
+### Network Resilience Examples
+
+#### Robust Client with Retry Logic
+```bash
+# For unstable networks - aggressive retry strategy
+$ trustedge-client \
+    --server remote.example.com:8080 \
+    --input large_file.wav \
+    --backend keyring \
+    --salt-hex "network_salt_abcdef1234567890abcdef" \
+    --use-keyring \
+    --connect-timeout 15 \
+    --retry-attempts 5 \
+    --retry-delay 3 \
+    --verbose
+
+Connecting to TrustEdge server at remote.example.com:8080
+Connection attempt 1 failed: connection refused
+Waiting 3s before retry...
+Connection attempt 2 of 5
+Connection attempt 2 failed: timeout after 15s
+Waiting 3s before retry...
+Connection attempt 3 of 5
+Connected to remote.example.com:8080 on attempt 3
+Connected successfully!
+```
+
+#### Conservative Settings for Stable Networks
+```bash
+# Minimal retry for high-reliability environments
+$ trustedge-client \
+    --server local-server:8080 \
+    --input data.txt \
+    --key-hex "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" \
+    --connect-timeout 30 \
+    --retry-attempts 1
+```
+
+#### Server with Graceful Shutdown
+```bash
+# Start server with connection tracking
+$ trustedge-server --listen 0.0.0.0:8080 --verbose --decrypt
+[SRV] TrustEdge server listening on 0.0.0.0:8080
+[DIR] Output directory: "(none)"
+[SEC] Decryption: ENABLED
+[CONN] New connection #1 from 192.168.1.100:45678
+
+# Press Ctrl+C for graceful shutdown
+^C
+[SRV] Shutdown signal received, stopping server...
+[SRV] Graceful shutdown initiated...
+[SRV] Waiting for 1 active connections to complete...
+[OK] Connection #1 completed
+[SRV] Server shutdown complete
 ```
 
 ### Large File Processing

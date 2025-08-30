@@ -9,12 +9,64 @@ GitHub: https://github.com/johnzilla/trustedge
 Development information, roadmap, and contribution guidelines for TrustEdge.
 
 ## Table of Contents
+- [Project Management](#project-management)
 - [Project Architecture](#project-architecture)
 - [Development Roadmap](#development-roadmap)
 - [Development Setup](#development-setup)
 - [Contribution Guidelines](#contribution-guidelines)
 - [Code Quality Standards](#code-quality-standards)
 - [Security Considerations](#security-considerations)
+
+---
+
+## Project Management
+
+### 📊 GitHub Project Organization
+
+**Project Board**: [TrustEdge Development](https://github.com/users/johnzilla/projects/2)
+- Visual task tracking and progress monitoring
+- Kanban-style organization (Todo, In Progress, Done)
+- Integrated with GitHub issues and milestones
+
+**Issue Tracking**: [GitHub Issues](https://github.com/johnzilla/trustedge/issues)
+- Structured issue templates for bugs, features, docs, and security
+- Comprehensive labeling system for organization
+- Milestone-based development tracking
+
+**Development Phases**: [Milestones](https://github.com/johnzilla/trustedge/milestones)
+- Phase 3: Network Operations (Current)
+- Individual day-based milestones (Day 10-14)
+- Clear deliverables and acceptance criteria
+
+### 🛠️ Project Management Tools
+
+**Status Checking**:
+```bash
+# Quick project status overview
+./check_project_status.sh
+
+# View specific milestone
+gh issue list --milestone "Day 10: Server Authentication"
+
+# View all Phase 3 issues
+gh issue list --label "phase-3"
+```
+
+**Issue Management**:
+```bash
+# Create new issue with template
+gh issue create --template bug-report
+
+# Assign issue to yourself
+gh issue edit <issue-number> --add-assignee @me
+
+# Update issue status
+gh issue edit <issue-number> --add-label "in-progress"
+```
+
+### 📋 Current Development Status
+
+See **[PHASE3_PROGRESS.md](./PHASE3_PROGRESS.md)** for detailed status and **[Issue #16](https://github.com/johnzilla/trustedge/issues/16)** for progress tracking.
 
 ---
 
@@ -90,7 +142,9 @@ TrustEdge implements chunked encryption for performance and streaming:
 - [x] Basic client-server architecture
 - [x] TCP connection handling
 - [x] Chunk streaming over network
-- [ ] **Connection management improvements**
+- [x] **Connection management improvements**
+- [x] **Connection timeouts and retry logic**
+- [x] **Graceful server shutdown handling**
 - [ ] **Server authentication**  
 - [ ] **Client certificate validation**
 - [ ] **Concurrent client handling**
@@ -182,6 +236,56 @@ git push origin feature/tpm-backend
 ---
 
 ## Contribution Guidelines
+
+### 🚀 Getting Started
+
+1. **Check Project Status**
+   - Visit the [Project Board](https://github.com/users/johnzilla/projects/2) for current priorities
+   - Review [Phase 3 Progress](./PHASE3_PROGRESS.md) for development status
+   - Check [open issues](https://github.com/johnzilla/trustedge/issues) for available tasks
+
+2. **Choose an Issue**
+   - Look for issues labeled `good-first-issue` for newcomers
+   - Check current [Phase 3 milestone](https://github.com/johnzilla/trustedge/milestone/1) for priority work
+   - Assign yourself to issues you want to work on
+
+3. **Use Templates**
+   - Follow [PR template](./.github/pull_request_template.md) for submissions
+   - Use [issue templates](./.github/ISSUE_TEMPLATE/) for bug reports and features
+   - See [CONTRIBUTING.md](./CONTRIBUTING.md) for complete guidelines
+
+### 🔧 Development Workflow
+
+1. **Branch Management**
+   ```bash
+   # Create feature branch
+   git checkout -b feature/day-10-server-auth
+   
+   # Make changes and commit
+   git commit -m "feat(server): add certificate validation"
+   
+   # Push and create PR
+   git push origin feature/day-10-server-auth
+   ```
+
+2. **Quality Checks**
+   ```bash
+   # Run all quality checks
+   cargo fmt --check
+   cargo clippy -- -D warnings
+   cargo test
+   ./check_project_status.sh  # Check issue status
+   ```
+
+3. **Issue Updates**
+   ```bash
+   # Link commits to issues
+   git commit -m "feat(auth): implement server cert validation
+   
+   Implements certificate loading and validation for Day 10.
+   
+   Closes #11"
+   ```
 
 ### Code Standards
 

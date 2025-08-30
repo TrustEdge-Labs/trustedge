@@ -28,9 +28,23 @@ This document describes the wire format and network protocol for chunk transfer 
 ## 1. Transport Layer
 
 - **Current:** TCP with comprehensive validation and error handling
+- **Connection Management:** Configurable timeouts, automatic retry logic, and graceful shutdown
 - **Message Framing:** Length-prefixed (u32, little-endian) followed by bincode-encoded payload
 - **Future:** QUIC/TLS for enhanced security and performance
 - **Flow Control:** ACK/response protocol with error reporting
+
+### 1.1. Connection Resilience
+
+**Client Connection Features:**
+- **Connection Timeouts:** Configurable connection establishment timeout (default: 10 seconds)
+- **Retry Logic:** Automatic retry with exponential backoff (default: 3 attempts)
+- **Operation Timeouts:** Chunk send timeout (30s) and ACK read timeout (10s)
+- **Error Recovery:** Comprehensive error context and recovery guidance
+
+**Server Connection Features:**
+- **Graceful Shutdown:** SIGINT/SIGTERM handling with connection completion
+- **Connection Tracking:** Per-connection state management and cleanup
+- **Resource Management:** Proper cleanup of active connections during shutdown
 
 ---
 
@@ -126,7 +140,8 @@ struct FileHeader {
 ### 3.1. Connection and Session Setup
 
 1. **Connection Establishment:**
-   - Client connects to server via TCP
+   - Client connects to server via TCP with configurable timeout
+   - Automatic retry logic with exponential backoff for failed connections
    - Server allocates per-connection state and session tracking
    - Connection ID assigned for logging and debugging
 
@@ -134,6 +149,11 @@ struct FileHeader {
    - First valid chunk establishes session parameters
    - Header hash, nonce prefix, and key ID locked for session
    - Sequence tracking initialized (expecting sequence 1)
+
+3. **Connection Management:**
+   - Client operations include timeout handling for chunk transmission and ACK reception
+   - Server supports graceful shutdown with active connection completion
+   - Connection state tracking enables proper resource cleanup
 
 ### 3.2. Chunk Processing Pipeline
 
@@ -237,6 +257,43 @@ trustedge-audio --migrate-backend \
 - PBKDF2 with SHA-256
 - 100,000 iterations
 - 16-byte (32 hex char) salt (required with `--use-keyring`)
+
+### Connection Management Options
+
+**Client Connection Resilience (trustedge-client):**
+```bash
+# Configure connection timeouts and retry behavior
+--connect-timeout <SECONDS>    # Connection establishment timeout (default: 10)
+--retry-attempts <COUNT>       # Number of retry attempts (default: 3)
+--retry-delay <SECONDS>        # Delay between retries (default: 2)
+
+# Example: Aggressive retry for unstable networks
+trustedge-client --server 192.168.1.100:8080 \
+  --file data.wav \
+  --connect-timeout 5 \
+  --retry-attempts 5 \
+  --retry-delay 1 \
+  --verbose
+
+# Example: Conservative settings for reliable networks
+trustedge-client --server server.example.com:8080 \
+  --file data.wav \
+  --connect-timeout 30 \
+  --retry-attempts 1
+```
+
+**Server Connection Management (trustedge-server):**
+```bash
+# Graceful shutdown via SIGINT/SIGTERM
+# Server will complete active connections before shutdown
+kill -INT <server_pid>
+
+# Example: Server with verbose connection tracking
+trustedge-server --listen 0.0.0.0:8080 \
+  --verbose \
+  --decrypt \
+  --output-dir ./received_data
+```
 
 ---
 

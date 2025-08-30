@@ -1,0 +1,77 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for TrustEdge
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please provide detailed information about your request.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component would this feature affect?
+      options:
+        - trustedge-audio (CLI)
+        - trustedge-server (Network server)
+        - trustedge-client (Network client)
+        - Key management/backends
+        - File format/protocol
+        - Documentation
+        - Build/CI
+        - New component
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low (nice to have)
+        - Medium (would improve workflows)
+        - High (blocks important use cases)
+        - Critical (security or data integrity)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Description
+      description: What problem does this feature solve? What use case does it enable?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal solution or implementation approach.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation Notes
+      description: Any technical details, API suggestions, or implementation ideas.
+
+  - type: checkboxes
+    id: breaking
+    attributes:
+      label: Breaking Changes
+      description: Would this feature require breaking changes?
+      options:
+        - label: This feature would require breaking changes to the API
+        - label: This feature would require breaking changes to the file format
+        - label: This feature would require changes to key management
