@@ -2,6 +2,10 @@
 
 # TrustEdge GitHub Project Management Setup
 # This script helps organize issues and milestones for Phase 3 development
+#
+# Usage: ./scripts/project/setup-github.sh
+# Run from project root directory
+# Requires: GitHub CLI (gh) authenticated
 
 set -e
 

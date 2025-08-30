@@ -742,7 +742,7 @@ split_and_encrypt_stream "live_audio.wav" "4096"
 
 ```bash
 # Check current project status
-./check_project_status.sh
+./scripts/project/check-status.sh
 
 # View current Phase 3 issues
 gh issue list --milestone "Phase 3: Network Operations"
@@ -787,7 +787,7 @@ echo "Server shutdown gracefully"
 
 ```bash
 # 1. Check current priorities
-./check_project_status.sh
+./scripts/project/check-status.sh
 
 # 2. Assign yourself to an issue
 gh issue edit 11 --add-assignee @me

@@ -1,13 +1,16 @@
 #!/bin/bash
 # Test script for Day 9 network resilience improvements
+#
+# Usage: ./scripts/testing/test-day9.sh
+# Run from project root directory
 
 set -e
 
 echo "🚀 TrustEdge Day 9: Network Resilience Testing"
 echo "=============================================="
 
-# Navigate to correct directory
-cd /home/john/projects/github.com/trustedge/trustedge-audio
+# Navigate to correct directory for build artifacts
+cd "$(dirname "$0")/../../trustedge-audio"
 
 # Create test data
 echo "Creating test data..."

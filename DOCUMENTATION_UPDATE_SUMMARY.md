@@ -56,9 +56,9 @@
 - 📝 Documentation update requirements
 
 #### **Project Management Scripts**
-- 🚀 **setup_github_project.sh** - Automated GitHub project setup
-- 📊 **check_project_status.sh** - Issue status monitoring
-- 📚 **check_documentation.sh** - Documentation status checker
+- 🚀 **scripts/project/setup-github.sh** - Automated GitHub project setup
+- 📊 **scripts/project/check-status.sh** - Issue status monitoring
+- 📚 **scripts/project/check-docs.sh** - Documentation status checker
 
 ### ✅ GitHub Project Infrastructure
 
