@@ -141,23 +141,54 @@ diff document.txt recovered.txt  # Should be identical
 
 ### Network Mode
 
-**Start Server:**
+**Secure Server (with Authentication):**
 ```bash
-./target/release/trustedge-server 
-  --port 8080 
-  --decrypt 
-  --output-dir ./received 
-  --backend keyring 
-  --salt-hex $(openssl rand -hex 16)
+# Start authenticated server - generates certificates automatically
+./target/release/trustedge-server \
+  --listen 127.0.0.1:8080 \
+  --require-auth \
+  --server-identity "Production TrustEdge Server" \
+  --decrypt \
+  --output-dir ./received \
+  --use-keyring \
+  --salt-hex $(openssl rand -hex 16) \
+  --verbose
+
+# Server will:
+# 1. Generate server signing key (if not exists)
+# 2. Create server identity certificate
+# 3. Require client authentication via Ed25519 certificates
+# 4. Validate sessions with cryptographic session IDs
 ```
 
-**Send Data from Client:**
+**Authenticated Client:**
 ```bash
-./target/release/trustedge-client 
-  --server 127.0.0.1:8080 
-  --input data.wav 
-  --backend keyring 
-  --salt-hex <same-salt-as-server>
+# Send data with mutual authentication
+./target/release/trustedge-client \
+  --server 127.0.0.1:8080 \
+  --input voice_recording.wav \
+  --require-auth \
+  --client-identity "Mobile App v1.2.3" \
+  --use-keyring \
+  --salt-hex <same-salt-as-server> \
+  --verbose
+
+# Client will:
+# 1. Generate client identity certificate (if not exists)
+# 2. Perform mutual authentication handshake
+# 3. Establish cryptographically secure session
+# 4. Transfer encrypted data chunks
+```
+
+**Legacy Server (no authentication):**
+```bash
+# Basic server without authentication
+./target/release/trustedge-server \
+  --listen 127.0.0.1:8080 \
+  --decrypt \
+  --output-dir ./received \
+  --use-keyring \
+  --salt-hex $(openssl rand -hex 16)
 ```
 
 ---
@@ -183,13 +214,18 @@ Data Source → Raw Chunks → Metadata + Encryption → .trst Format
 **Security Properties** (applies to all data types):
 1. **Per-Chunk Encryption**: Each chunk encrypted with AES-256-GCM
 2. **Signed Manifests**: Ed25519 signatures provide authenticity and provenance
-3. **Data Type Metadata**: Format info (audio: sample rate, channels, bit depth) travels securely
-4. **Integrity Binding**: Cryptographic binding prevents tampering and replay attacks
-5. **Streaming Support**: Chunks can be processed independently for real-time workflows
+3. **Mutual Authentication**: Ed25519-based client/server authentication with certificate validation
+4. **Session Management**: Cryptographically secure session IDs with configurable timeouts
+5. **Data Type Metadata**: Format info (audio: sample rate, channels, bit depth) travels securely
+6. **Integrity Binding**: Cryptographic binding prevents tampering and replay attacks
+7. **Streaming Support**: Chunks can be processed independently for real-time workflows
 
 **Key Features:**
 - ✅ Data-agnostic encryption (files, audio, sensors, etc.)
 - ✅ Live audio capture with cross-platform support
+- ✅ **Mutual authentication system with Ed25519 certificates**
+- ✅ **Session validation and automatic session cleanup**
+- ✅ **Server identity verification and client authorization**
 - ✅ Metadata preservation (audio format, device info, etc.)
 - ✅ Chunked encryption for memory efficiency
 - ✅ Authenticated encryption (AES-256-GCM)
@@ -239,13 +275,14 @@ Data Source → Raw Chunks → Metadata + Encryption → .trst Format
 - Configurable audio quality (sample rate, channels, devices) ✅
 - Feature-gated compilation for CI/CD compatibility ✅
 
-**✅ Phase 4: Network Operations (60% COMPLETE)**
+**✅ Phase 4: Network Operations (COMPLETED)**
 - Basic client-server architecture ✅
 - Connection timeouts and retry logic ✅
 - Graceful server shutdown ✅
 - Enhanced connection management ✅
-- Server authentication and client validation 📋
-- Production deployment features 📋
+- **Mutual authentication with Ed25519 certificates** ✅
+- **Session management and validation** ✅
+- **Production-ready security features** ✅
 
 **📋 Phase 5: Security Hardening (PLANNED)**
 - TPM backend implementation
@@ -266,7 +303,9 @@ See **[DEVELOPMENT.md](./DEVELOPMENT.md)** for complete roadmap and **[PHASE3_PR
 
 **Current Security Properties:**
 - AES-256-GCM authenticated encryption
-- Ed25519 digital signatures for provenance
+- Ed25519 digital signatures for provenance and authentication
+- **Mutual authentication between clients and servers**
+- **Cryptographically secure session management**
 - PBKDF2 key derivation (100,000 iterations)
 - Comprehensive validation prevents tampering
 

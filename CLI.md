@@ -78,8 +78,19 @@ Complete command-line interface documentation for TrustEdge.
 | Option | Description | Example |
 |--------|-------------|---------|
 | `--server <ADDRESS>` | Server address for network mode (client) | `--server 127.0.0.1:8080` |
-| `--port <PORT>` | Port to listen on (server mode) | `--port 8080` |
+| `--listen <ADDRESS>` | Address to listen on (server mode) | `--listen 127.0.0.1:8080` |
 | `--output-dir <DIR>` | Directory to save decrypted chunks (server mode) | `--output-dir ./chunks` |
+
+### Authentication Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--require-auth` | Enable mutual authentication (server/client) | `--require-auth` |
+| `--server-identity <ID>` | Server identity for certificate generation | `--server-identity "Production Server"` |
+| `--client-identity <ID>` | Client identity for certificate generation | `--client-identity "Mobile App v1.2"` |
+| `--server-key <PATH>` | Path to server signing key file (generates if missing) | `--server-key ./server.key` |
+| `--client-key <PATH>` | Path to client signing key file (generates if missing) | `--client-key ./client.key` |
+| `--session-timeout <SECS>` | Session timeout in seconds [default: 300] | `--session-timeout 600` |
 
 ---
 
@@ -446,7 +457,7 @@ Waiting for encrypted chunks...
 
 #### Send encrypted data to server
 ```bash
-$ trustedge-audio \
+$ trustedge-client \
     --server 127.0.0.1:8080 \
     --input audio_chunk.wav \
     --use-keyring \
@@ -454,6 +465,80 @@ $ trustedge-audio \
 Connecting to TrustEdge server at 127.0.0.1:8080
 Connected successfully!
 Sent chunk 1/1 (4096 bytes)
+```
+
+### Authenticated Network Operations
+
+#### Secure Server with Authentication
+```bash
+# Start server requiring mutual authentication
+$ trustedge-server \
+    --listen 127.0.0.1:8080 \
+    --require-auth \
+    --server-identity "Production TrustEdge Server" \
+    --decrypt \
+    --use-keyring \
+    --salt-hex "networkkey1234567890abcdef1234" \
+    --output-dir ./received_chunks \
+    --verbose
+
+🔧 Authentication enabled - generating server certificates...
+✅ Server identity certificate created
+🚀 TrustEdge Server starting with authentication...
+🔐 Listening on 127.0.0.1:8080 (authenticated connections only)
+⏱️  Session timeout: 300 seconds
+📁 Output directory: ./received_chunks
+🔍 Waiting for authenticated clients...
+```
+
+#### Authenticated Client Connection
+```bash
+# Connect with mutual authentication
+$ trustedge-client \
+    --server 127.0.0.1:8080 \
+    --input sensitive_data.wav \
+    --require-auth \
+    --client-identity "Mobile App v1.2.3" \
+    --use-keyring \
+    --salt-hex "networkkey1234567890abcdef1234" \
+    --verbose
+
+🔧 Authentication enabled - generating client certificates...
+✅ Client identity certificate created
+🔐 Connecting to authenticated server at 127.0.0.1:8080...
+🤝 Performing mutual authentication handshake...
+✅ Server authenticated successfully
+✅ Client authentication completed
+🆔 Session ID: 0x7f9a2e8b1c4d3f6a
+📤 Sending encrypted data...
+✅ Transfer completed successfully
+```
+
+#### Authentication Failure Scenarios
+```bash
+# Server rejects unauthenticated clients
+$ trustedge-client \
+    --server 127.0.0.1:8080 \
+    --input data.wav
+
+❌ Error: Server requires authentication but client not configured for auth
+💡 Add --require-auth and --client-identity to connect to authenticated servers
+
+# Client certificate invalid
+$ trustedge-client \
+    --server 127.0.0.1:8080 \
+    --require-auth \
+    --client-identity "Invalid Client"
+
+❌ Error: Authentication failed - client certificate rejected by server
+💡 Check client certificate and server trust configuration
+
+# Session timeout
+$ trustedge-client --server 127.0.0.1:8080 --require-auth --client-identity "Client"
+# ... wait 5+ minutes without activity ...
+
+❌ Error: Session expired - please reconnect
+💡 Sessions expire after 300 seconds of inactivity by default
 ```
 
 ---
