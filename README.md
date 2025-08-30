@@ -42,7 +42,7 @@ Most people learning Rust start with CRUD web apps. I'm taking a different route
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Clone and build
-git clone https://github.com/yourusername/trustedge.git
+git clone https://github.com/johnzilla/trustedge.git
 cd trustedge/trustedge-audio
 cargo build --release
 ```
