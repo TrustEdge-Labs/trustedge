@@ -14,6 +14,9 @@ output/
 # Ignore all .trst files  
 *.trst
 
+# Ignore all .wav files  
+*.wav
+
 # Ignore all Cargo.lock files except in workspace roots
 **/Cargo.lock
 
