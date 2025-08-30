@@ -1,3 +1,10 @@
+<!--
+Copyright (c) 2025 John Turner
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/johnzilla/trustedge
+-->
+
 # Contributing to TrustEdge
 
 Thank you for your interest in contributing to TrustEdge! This document provides guidelines for contributing to the project.
