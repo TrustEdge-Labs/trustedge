@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 pub const NONCE_LEN: usize = 12;
 
 pub mod audio;
+pub mod auth;
 pub mod backends;
 pub mod format;
 pub mod vectors;
@@ -20,6 +21,11 @@ pub mod vectors;
 #[cfg(feature = "audio")]
 pub use audio::AudioCapture;
 pub use audio::{AudioChunk, AudioConfig};
+pub use auth::{
+    client_authenticate, server_authenticate, AuthChallenge, AuthMessage, AuthMessageType,
+    ClientAuthResponse, ServerAuthConfirm, ServerCertificate, SessionInfo, SessionManager,
+    SESSION_ID_SIZE, SESSION_TIMEOUT,
+};
 pub use backends::{
     BackendInfo, BackendRegistry, KeyBackend, KeyContext, KeyMetadata, KeyringBackend,
 };
