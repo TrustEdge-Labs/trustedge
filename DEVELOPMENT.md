@@ -27,11 +27,13 @@ Development information, roadmap, and contribution guidelines for TrustEdge.
 - Visual task tracking and progress monitoring
 - Kanban-style organization (Todo, In Progress, Done)
 - Integrated with GitHub issues and milestones
+- **Note**: Issues must be manually added to project boards
 
 **Issue Tracking**: [GitHub Issues](https://github.com/johnzilla/trustedge/issues)
 - Structured issue templates for bugs, features, docs, and security
 - Comprehensive labeling system for organization
 - Milestone-based development tracking
+- All repository issues are listed here (whether on project board or not)
 
 **Development Phases**: [Milestones](https://github.com/johnzilla/trustedge/milestones)
 - Phase 3: Network Operations (Current)
@@ -62,6 +64,9 @@ gh issue edit <issue-number> --add-assignee @me
 
 # Update issue status
 gh issue edit <issue-number> --add-label "in-progress"
+
+# Add issue to project board
+./scripts/project/manage-board.sh
 ```
 
 ### 📋 Current Development Status

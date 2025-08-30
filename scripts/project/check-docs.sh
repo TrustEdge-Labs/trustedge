@@ -60,6 +60,7 @@ check_file_status ".github/ISSUE_TEMPLATE/documentation.yml" "Documentation Temp
 check_file_status ".github/ISSUE_TEMPLATE/security.yml" "Security Template"
 check_file_status ".github/pull_request_template.md" "PR Template"
 check_file_status "scripts/project/setup-github.sh" "GitHub Setup Script"
+check_file_status "scripts/project/manage-board.sh" "Project Board Manager"
 check_file_status "scripts/project/check-status.sh" "Status Checker Script"
 
 echo ""
@@ -108,6 +109,7 @@ echo "---------------"
 echo "• Update docs: Edit relevant .md files"
 echo "• Check issues: ./scripts/project/check-status.sh"
 echo "• Setup GitHub: ./scripts/project/setup-github.sh"
+echo "• Manage board: ./scripts/project/manage-board.sh"
 echo "• Project board: https://github.com/users/johnzilla/projects/2"
 
 echo ""

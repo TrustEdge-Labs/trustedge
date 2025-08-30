@@ -750,6 +750,9 @@ gh issue list --milestone "Phase 3: Network Operations"
 # View specific day milestone
 gh issue list --milestone "Day 10: Server Authentication"
 
+# Add issues to project board
+./scripts/project/manage-board.sh
+
 # Create a bug report
 gh issue create --template bug-report
 
