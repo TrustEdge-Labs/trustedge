@@ -14,6 +14,7 @@ use tokio::net::TcpStream;
 use tokio::time::{sleep, timeout};
 
 use trustedge_audio::{
+    auth::{client_authenticate, load_server_cert, save_client_cert, ClientCertificate},
     build_aad, FileHeader, KeyBackend, KeyContext, KeyringBackend, Manifest, NetworkChunk,
     SignedManifest, ALG_AES_256_GCM, NONCE_LEN,
 };
@@ -25,6 +26,22 @@ use aes_gcm::{
 };
 use ed25519_dalek::{Signature, Signer, SigningKey};
 use rand_core::RngCore;
+
+/// Load client certificate from file  
+fn load_client_cert(path: &PathBuf) -> Result<ClientCertificate> {
+    let cert_data = std::fs::read_to_string(path)
+        .with_context(|| format!("Failed to read client certificate from {:?}", path))?;
+
+    let cert: ClientCertificate =
+        serde_json::from_str(&cert_data).context("Failed to parse client certificate JSON")?;
+
+    // Since signing key is not serialized, we need to reconstruct it
+    if cert.signing_key.is_none() {
+        return Err(anyhow::anyhow!("Client certificate file does not contain signing key. Please regenerate the certificate."));
+    }
+
+    Ok(cert)
+}
 
 // Network operation timeouts
 const CHUNK_SEND_TIMEOUT: Duration = Duration::from_secs(30);
@@ -80,6 +97,22 @@ struct Args {
     /// Verbose logging
     #[arg(short, long)]
     verbose: bool,
+
+    /// Enable authentication with server certificate verification
+    #[arg(long)]
+    enable_auth: bool,
+
+    /// Path to server certificate file (for authentication)
+    #[arg(long)]
+    server_cert: Option<PathBuf>,
+
+    /// Path to client certificate file (for authentication)
+    #[arg(long)]
+    client_cert: Option<PathBuf>,
+
+    /// Client identity name (for authentication)
+    #[arg(long)]
+    client_identity: Option<String>,
 }
 
 /// Connect to server with timeout and retry logic
@@ -164,6 +197,58 @@ async fn main() -> Result<()> {
         )
     })?;
     println!("Connected successfully!");
+
+    // Perform authentication if enabled
+    if args.enable_auth {
+        // Load or create client certificate
+        let client_cert = if let Some(cert_path) = &args.client_cert {
+            load_client_cert(cert_path).context("Failed to load client certificate")?
+        } else {
+            let identity = args
+                .client_identity
+                .clone()
+                .unwrap_or_else(|| "trustedge-client".to_string());
+            let cert = ClientCertificate::generate(&identity)?;
+
+            // Save certificate for future use
+            let cert_path = format!("{}_client.cert", identity);
+            save_client_cert(&cert, &cert_path)?;
+            println!("Generated new client certificate: {}", cert_path);
+            cert
+        };
+
+        // Load server certificate
+        let _server_cert = if let Some(cert_path) = &args.server_cert {
+            load_server_cert(&cert_path.to_string_lossy())
+                .context("Failed to load server certificate")?
+        } else {
+            return Err(anyhow::anyhow!(
+                "Server certificate path required when authentication is enabled. Use --server-cert"
+            ));
+        };
+
+        // Perform client authentication
+        match client_authenticate(
+            &mut stream,
+            client_cert.signing_key()?,
+            Some(client_cert.identity.clone()),
+            None,
+        )
+        .await
+        {
+            Ok((session_id, _server_cert)) => {
+                if args.verbose {
+                    println!(
+                        "[AUTH] Authenticated successfully with server. Session ID: {}",
+                        hex::encode(session_id)
+                    );
+                }
+            }
+            Err(e) => {
+                return Err(anyhow::anyhow!("Authentication failed: {}", e));
+            }
+        }
+    }
 
     // Determine AES key
     let key_bytes = if args.use_keyring {

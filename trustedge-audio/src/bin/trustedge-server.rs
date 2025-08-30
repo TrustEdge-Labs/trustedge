@@ -16,8 +16,8 @@ use tokio::sync::broadcast;
 
 // network payload type from lib.rs
 use trustedge_audio::{
-    build_aad, KeyBackend, KeyContext, KeyringBackend, Manifest, NetworkChunk, SignedManifest,
-    NONCE_LEN,
+    build_aad, server_authenticate, KeyBackend, KeyContext, KeyringBackend, Manifest, NetworkChunk,
+    SessionManager, SignedManifest, NONCE_LEN,
 };
 
 // ---- Crypto bits ------------------------------------------------------------
@@ -68,6 +68,18 @@ struct Args {
     /// Verbose logging
     #[arg(short, long)]
     verbose: bool,
+
+    /// Enable mutual authentication (requires client certificates)
+    #[arg(long)]
+    require_auth: bool,
+
+    /// Server identity for certificate generation
+    #[arg(long, default_value = "TrustEdge Server")]
+    server_identity: String,
+
+    /// Path to server signing key file (optional, generates if not found)
+    #[arg(long)]
+    server_key: Option<std::path::PathBuf>,
 }
 
 // ---- Per-connection state ---------------------------------------------------
@@ -83,6 +95,11 @@ struct ProcessingSession {
     expected_seq_next: u64,
     stream_header_hash: Option<[u8; 32]>,
     stream_nonce_prefix: Option<[u8; 4]>,
+
+    // authentication info
+    authenticated: bool,
+    session_id: Option<[u8; 16]>,
+    client_identity: Option<String>,
 }
 
 // ---- Main -------------------------------------------------------------------
@@ -153,6 +170,28 @@ async fn main() -> Result<()> {
         "[SEC] Decryption: {}",
         if args.decrypt { "ENABLED" } else { "disabled" }
     );
+    println!(
+        "[AUTH] Mutual authentication: {}",
+        if args.require_auth {
+            "REQUIRED"
+        } else {
+            "disabled"
+        }
+    );
+
+    // Initialize session manager if authentication is required
+    let session_manager = if args.require_auth {
+        Some(SessionManager::new(args.server_identity.clone())?)
+    } else {
+        None
+    };
+
+    if let Some(ref manager) = session_manager {
+        println!(
+            "[AUTH] Server certificate: {}",
+            manager.server_certificate().identity
+        );
+    }
 
     // Create shutdown signal handler
     let (shutdown_tx, _) = broadcast::channel::<()>(1);
@@ -189,16 +228,35 @@ async fn main() -> Result<()> {
                             expected_seq_next: 1, // first chunk must be seq=1
                             stream_header_hash: None,
                             stream_nonce_prefix: None,
+                            authenticated: !args.require_auth, // authenticated if auth not required
+                            session_id: None,
+                            client_identity: None,
                         };
 
                         let output_dir = args.output_dir.clone();
                         let verbose = args.verbose;
                         let decrypt = args.decrypt;
+                        let require_auth = args.require_auth;
                         let conn_shutdown_rx = shutdown_tx.subscribe();
 
+                        // Clone session manager for this connection if needed
+                        let session_mgr = if require_auth {
+                            session_manager.as_ref().map(|mgr| SessionManager::new(mgr.server_certificate().identity.clone()).unwrap())
+                        } else {
+                            None
+                        };
+
                         let handle = tokio::spawn(async move {
+                            let config = ConnectionConfig {
+                                output_dir,
+                                decrypt,
+                                verbose,
+                                require_auth,
+                                session_manager: session_mgr,
+                            };
+                            
                             if let Err(e) = handle_connection_with_shutdown(
-                                stream, session, output_dir, decrypt, verbose, conn_shutdown_rx
+                                stream, session, config, conn_shutdown_rx
                             ).await {
                                 eprintln!("[ERR] Connection #{} error: {:#}", connection_id, e);
                             } else {
@@ -237,22 +295,28 @@ async fn main() -> Result<()> {
 
 // ---- Connection handler with shutdown support ------------------------------
 
-async fn handle_connection_with_shutdown(
-    stream: TcpStream,
-    session: ProcessingSession,
+struct ConnectionConfig {
     output_dir: Option<std::path::PathBuf>,
     decrypt: bool,
     verbose: bool,
+    require_auth: bool,
+    session_manager: Option<SessionManager>,
+}
+
+async fn handle_connection_with_shutdown(
+    stream: TcpStream,
+    session: ProcessingSession,
+    config: ConnectionConfig,
     mut shutdown_rx: broadcast::Receiver<()>,
 ) -> Result<()> {
     let connection_id = session.connection_id;
 
     tokio::select! {
-        result = handle_connection(stream, session, output_dir, decrypt, verbose) => {
+        result = handle_connection(stream, session, config.output_dir, config.decrypt, config.verbose, config.require_auth, config.session_manager) => {
             result
         }
         _ = shutdown_rx.recv() => {
-            if verbose {
+            if config.verbose {
                 println!("[CONN] Connection #{} interrupted by shutdown", connection_id);
             }
             Ok(())
@@ -268,8 +332,45 @@ async fn handle_connection(
     output_dir: Option<std::path::PathBuf>,
     decrypt: bool,
     verbose: bool,
+    require_auth: bool,
+    mut session_manager: Option<SessionManager>,
 ) -> Result<()> {
     let peer_addr = stream.peer_addr().context("Failed to get peer address")?;
+
+    // Perform authentication if required
+    if require_auth {
+        if let Some(ref mut mgr) = session_manager {
+            match server_authenticate(&mut stream, mgr).await {
+                Ok(auth_session) => {
+                    session.authenticated = true;
+                    session.session_id = Some(auth_session.session_id);
+                    session.client_identity = auth_session.client_identity.clone();
+
+                    if verbose {
+                        println!(
+                            "[AUTH] Connection #{} authenticated successfully. Client: {}",
+                            session.connection_id,
+                            auth_session
+                                .client_identity
+                                .as_deref()
+                                .unwrap_or("(anonymous)")
+                        );
+                    }
+                }
+                Err(e) => {
+                    eprintln!(
+                        "[AUTH] Connection #{} authentication failed: {}",
+                        session.connection_id, e
+                    );
+                    return Err(e.context("Authentication failed"));
+                }
+            }
+        } else {
+            return Err(anyhow!(
+                "Authentication required but no session manager available"
+            ));
+        }
+    }
 
     let mut chunks_received = 0u64;
     let mut total_enc_bytes = 0usize;
