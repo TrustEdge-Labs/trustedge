@@ -8,7 +8,7 @@ GitHub: https://github.com/johnzilla/trustedge
 
 # TrustEdge — Trustable Edge AI (Rust)
 
-> Not another CRUD app. Learning Rust through **Trustable Edge AI** — privacy-preserving edge pipelines.
+> Not another CRUD app. Learning Rust through **Trustable Edge AI** — privacy-preserving edge pipelines with **live audio capture** and data-agnostic encryption.
 
 ---
 
@@ -20,6 +20,8 @@ That random thought and an urge to do something out of my comfort zone led to th
 
 TrustEdge is a learning journey in Rust that aligns with my background in IoT product development, security/PKI and edge systems. TrustEdge features:
 
+- **Data-agnostic encryption:** Works with files, live audio, sensor data, or any binary stream
+- **Live audio capture:** Real-time microphone input with configurable quality and device selection
 - **Provenance by design:** each chunk carries a signed manifest (C2PA-inspired) whose hash is bound into AEAD AAD; tampering breaks decryption
 * **Privacy by design & default**: encrypt at the edge, not just TLS in transit, audio chunks are encrypted with AES-256-GCM before leaving the device
 * **Rust at the edge**: safety + performance for streaming workloads  
@@ -29,6 +31,7 @@ TrustEdge is a learning journey in Rust that aligns with my background in IoT pr
 **Technology Stack:**
 - Language: Rust (stable)
 - Crypto: `aes-gcm` (AEAD), 256-bit keys, 96-bit nonces
+- Audio: `cpal` library with cross-platform support (Linux/ALSA, Windows/WASAPI, macOS/CoreAudio)
 - Key Management: Pluggable backends (keyring, TPM, HSM planned)
 
 ---
@@ -37,17 +40,64 @@ TrustEdge is a learning journey in Rust that aligns with my background in IoT pr
 
 ### Installation
 
+**Basic Installation (no audio):**
 ```bash
 # Install Rust (if needed)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Clone and build
+# Clone and build (file encryption only)
 git clone https://github.com/johnzilla/trustedge.git
 cd trustedge/trustedge-audio
-cargo build --release
+cargo build --release --no-default-features
+```
+
+**Full Installation (with live audio capture):**
+```bash
+# Install audio system dependencies
+# On Ubuntu/Debian:
+sudo apt-get install libasound2-dev pkg-config
+
+# On macOS (via Homebrew):
+# Audio libraries included with Xcode/Command Line Tools
+
+# On Windows:
+# Audio libraries included with Windows SDK
+
+# Build with audio features
+cargo build --release --features audio
 ```
 
 ### Basic Usage
+
+**Live Audio Capture (NEW!):**
+```bash
+# Capture 10 seconds of live audio and encrypt it
+./target/release/trustedge-audio \
+  --live-capture \
+  --envelope voice_note.trst \
+  --key-out voice_key.hex \
+  --max-duration 10
+
+# List available audio devices
+./target/release/trustedge-audio --list-audio-devices
+
+# Capture with specific device and quality
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "hw:CARD=BRIO,DEV=0" \
+  --sample-rate 48000 \
+  --channels 2 \
+  --envelope stereo_voice.trst \
+  --use-keyring \
+  --max-duration 30
+
+# Decrypt captured audio (produces raw audio data)
+./target/release/trustedge-audio \
+  --decrypt \
+  --input voice_note.trst \
+  --out recovered_audio.raw \
+  --key-hex $(cat voice_key.hex)
+```
 
 **Simple File Encryption:**
 ```bash
@@ -114,14 +164,33 @@ diff document.txt recovered.txt  # Should be identical
 
 ## How It Works
 
-TrustEdge processes files in configurable chunks (default 4KB) with the following security properties:
+TrustEdge uses a **data-agnostic architecture** that treats all input sources uniformly:
 
+### Data Sources
+- **Files**: Documents, images, videos, any binary data
+- **Live Audio**: Real-time microphone capture with configurable quality
+- **Future**: Camera feeds, sensor data, IoT device streams
+
+### Processing Pipeline
+```
+Data Source → Raw Chunks → Metadata + Encryption → .trst Format
+                ↓
+          (Sample rate, format, device info stored in manifest)
+                ↓
+          Receiver → Decrypt + Metadata → Consumer Application
+```
+
+**Security Properties** (applies to all data types):
 1. **Per-Chunk Encryption**: Each chunk encrypted with AES-256-GCM
 2. **Signed Manifests**: Ed25519 signatures provide authenticity and provenance
-3. **Integrity Binding**: Cryptographic binding prevents tampering and replay attacks
-4. **Streaming Support**: Chunks can be processed independently for real-time workflows
+3. **Data Type Metadata**: Format info (audio: sample rate, channels, bit depth) travels securely
+4. **Integrity Binding**: Cryptographic binding prevents tampering and replay attacks
+5. **Streaming Support**: Chunks can be processed independently for real-time workflows
 
 **Key Features:**
+- ✅ Data-agnostic encryption (files, audio, sensors, etc.)
+- ✅ Live audio capture with cross-platform support
+- ✅ Metadata preservation (audio format, device info, etc.)
 - ✅ Chunked encryption for memory efficiency
 - ✅ Authenticated encryption (AES-256-GCM)
 - ✅ Pluggable key management backends
@@ -164,15 +233,21 @@ TrustEdge processes files in configurable chunks (default 4KB) with the followin
 - Keyring integration with PBKDF2
 - Professional code quality standards
 
-**✅ Phase 3: Network Operations (60% COMPLETE)**
+**✅ Phase 3: Data Sources (COMPLETED)**
+- Live audio capture with cross-platform support ✅
+- Data-agnostic architecture with metadata preservation ✅
+- Configurable audio quality (sample rate, channels, devices) ✅
+- Feature-gated compilation for CI/CD compatibility ✅
+
+**✅ Phase 4: Network Operations (60% COMPLETE)**
 - Basic client-server architecture ✅
 - Connection timeouts and retry logic ✅
 - Graceful server shutdown ✅
 - Enhanced connection management ✅
-- Server authentication and client validation �
+- Server authentication and client validation 📋
 - Production deployment features 📋
 
-**📋 Phase 4: Security Hardening (PLANNED)**
+**📋 Phase 5: Security Hardening (PLANNED)**
 - TPM backend implementation
 - Hardware security module support  
 - Key rotation mechanisms

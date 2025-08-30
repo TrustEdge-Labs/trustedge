@@ -48,6 +48,23 @@ Complete command-line interface documentation for TrustEdge.
 | `--list-backends` | List available key management backends | `--list-backends` |
 | `--backend-config <CONFIG>` | Backend-specific configuration (format: key=value) | `--backend-config "iterations=150000"` |
 
+### Audio Capture Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--live-capture` | Enable live audio capture from microphone | `--live-capture` |
+| `--audio-device <DEVICE>` | Audio device name (use --list-audio-devices to see options) | `--audio-device "hw:CARD=BRIO,DEV=0"` |
+| `--list-audio-devices` | List available audio input devices | `--list-audio-devices` |
+| `--sample-rate <RATE>` | Audio sample rate in Hz [default: 44100] | `--sample-rate 48000` |
+| `--channels <CHANNELS>` | Number of audio channels (1=mono, 2=stereo) [default: 1] | `--channels 2` |
+| `--chunk-duration-ms <MS>` | Duration of each audio chunk in milliseconds [default: 1000] | `--chunk-duration-ms 500` |
+| `--max-duration <SECONDS>` | Maximum capture duration in seconds (0 = unlimited) [default: 0] | `--max-duration 30` |
+
+**Note**: Audio features require building with `--features audio`. Install audio system dependencies first:
+- **Linux**: `sudo apt-get install libasound2-dev pkg-config`
+- **macOS**: Included with Xcode/Command Line Tools
+- **Windows**: Included with Windows SDK
+
 ### Connection Management Options (Client)
 
 | Option | Description | Example |
@@ -157,7 +174,7 @@ Error: AES-GCM decrypt/verify failed
 
 ## Complete Workflows
 
-### Basic Encryption and Decryption
+### Basic File Encryption and Decryption
 
 #### 1. Set up keyring passphrase (one-time setup)
 ```bash
@@ -196,6 +213,75 @@ $ diff document.txt decrypted.txt
 (no output = files are identical)
 ```
 
+### Live Audio Capture Workflows
+
+#### 1. Real-time Audio Encryption
+```bash
+# Capture 10 seconds of high-quality audio and encrypt it
+$ trustedge-audio \
+    --audio-capture \
+    --duration 10 \
+    --sample-rate 48000 \
+    --channels 2 \
+    --envelope voice_memo.trst \
+    --backend keyring \
+    --salt-hex "abcdef1234567890abcdef1234567890" \
+    --use-keyring
+Audio capture started (48kHz, 2ch)...
+Captured 10.0 seconds, encrypted 1920000 bytes
+```
+
+#### 2. Decrypt and Restore Audio
+```bash
+# Decrypt the audio and save as MP3
+$ trustedge-audio \
+    --decrypt \
+    --input voice_memo.trst \
+    --out restored_voice.mp3 \
+    --backend keyring \
+    --salt-hex "abcdef1234567890abcdef1234567890" \
+    --use-keyring
+Decrypt complete. Wrote 1920000 bytes.
+Audio metadata: 48000Hz, 2 channels, f32 format
+```
+
+#### 3. Quick Voice Notes with Device Selection
+```bash
+# List available audio devices
+$ trustedge-audio --list-devices
+Available audio input devices:
+  0: Default (Built-in Microphone)
+  1: USB Microphone [Manufacturer]
+  2: Line In (External Interface)
+
+# Record from specific device
+$ trustedge-audio \
+    --audio-capture \
+    --device 1 \
+    --duration 30 \
+    --envelope quick_note.trst \
+    --key-out note_key.hex
+Using device: USB Microphone [Manufacturer]
+Generated AES-256 key: f4e8c2a1...
+Captured 30.0 seconds, encrypted 2880000 bytes
+```
+
+#### 4. Continuous Recording with Size Limits
+```bash
+# Record until file reaches ~10MB, then auto-stop
+$ trustedge-audio \
+    --audio-capture \
+    --max-size 10485760 \
+    --sample-rate 44100 \
+    --channels 1 \
+    --envelope interview.trst \
+    --backend keyring \
+    --use-keyring
+Audio capture started (44kHz, 1ch)...
+Reached size limit (10.0 MB), stopping capture
+Captured 238.1 seconds, encrypted 10485760 bytes
+```
+
 ### Using Raw Hex Keys
 
 #### Generate and save a key
@@ -217,6 +303,38 @@ $ trustedge-audio \
     --out decrypted.txt \
     --key-hex $(cat generated_key.hex)
 Decrypt complete. Wrote 18 bytes.
+```
+
+### Data-Agnostic Encryption Examples
+
+#### Inspect Encrypted File Metadata
+```bash
+# Check what type of data was encrypted
+$ trustedge-audio --inspect voice_memo.trst
+TrustEdge Archive Contents:
+  Data Type: Audio
+  Original Size: 1920000 bytes
+  Audio Format: f32
+  Sample Rate: 48000 Hz
+  Channels: 2
+  Encryption: AES-256-GCM
+  Created: 2024-01-15 14:30:22 UTC
+```
+
+#### Mixed Data Workflows
+```bash
+# Encrypt various data types with same key
+$ KEY="a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+
+# Encrypt a document
+$ trustedge-audio --input report.pdf --envelope report.trst --key-hex $KEY
+
+# Encrypt live audio
+$ trustedge-audio --audio-capture --duration 60 --envelope meeting.trst --key-hex $KEY
+
+# Both use same decryption process
+$ trustedge-audio --decrypt --input report.trst --out restored_report.pdf --key-hex $KEY
+$ trustedge-audio --decrypt --input meeting.trst --out meeting_audio.wav --key-hex $KEY
 ```
 
 ---
