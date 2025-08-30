@@ -1,7 +1,8 @@
 <!--
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedg**Acceptance**
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/johnzilla/trustedge
 
 * ✅ A reader implemented from the spec (no repo code) can verify test vectors.
 * ✅ Deterministic test vectors with golden hash: `8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c`
