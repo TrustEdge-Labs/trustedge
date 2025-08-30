@@ -77,7 +77,7 @@ We take security vulnerabilities seriously. Please follow responsible disclosure
 For **sensitive security vulnerabilities** that could be exploited:
 
 1. **GitHub Security Advisories**: [Create Private Advisory](https://github.com/johnzilla/trustedge/security/advisories/new)
-2. **Direct Contact**: Email security concerns to security@[project-domain] (when available)
+2. **Direct Contact**: Email security concerns to security@[PLACEHOLDER] (planned)
 
 **Do not** disclose sensitive vulnerabilities publicly until we've had time to address them.
 
