@@ -147,9 +147,9 @@ file restored.pdf   # Should show PDF document
 # Output Behavior: Original file format preserved
 
 # Decryption should show format-aware messages:
-# 📄 Input Type: File
-# 📋 MIME Type: application/json
-# ✅ Output: Original file format preserved
+# ● Input Type: File
+#   MIME Type: application/json
+# ✔ Output: Original file format preserved
 ```
 
 ### Comprehensive Validation
