@@ -71,7 +71,7 @@ gh issue edit <issue-number> --add-label "in-progress"
 
 ### 📋 Current Development Status
 
-See **[PHASE3_PROGRESS.md](./PHASE3_PROGRESS.md)** for detailed status and **[Issue #16](https://github.com/johnzilla/trustedge/issues/16)** for progress tracking.
+See **[GitHub Issues](https://github.com/johnzilla/trustedge/issues)** for detailed tasks and **[Issue #16](https://github.com/johnzilla/trustedge/issues/16)** for progress tracking.
 
 ---
 
@@ -309,7 +309,7 @@ git push origin feature/tpm-backend
 
 1. **Check Project Status**
    - Visit the [Project Board](https://github.com/users/johnzilla/projects/2) for current priorities
-   - Review [Phase 3 Progress](./PHASE3_PROGRESS.md) for development status
+   - Review [GitHub Issues](https://github.com/johnzilla/trustedge/issues) for development status
    - Check [open issues](https://github.com/johnzilla/trustedge/issues) for available tasks
 
 2. **Choose an Issue**

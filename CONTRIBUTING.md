@@ -23,7 +23,7 @@ Thank you for your interest in contributing to TrustEdge! This document provides
 1. **Check existing work**: Search [issues](https://github.com/trustedge/trustedge/issues) and [PRs](https://github.com/trustedge/trustedge/pulls)
 2. **Read the docs**: Review [DEVELOPMENT.md](./DEVELOPMENT.md) for technical details
 3. **Review coding standards**: See [CODING_STANDARDS.md](./CODING_STANDARDS.md) for style guidelines
-4. **Check progress**: See [PHASE3_PROGRESS.md](./PHASE3_PROGRESS.md) for current status
+4. **Check progress**: See [GitHub Issues](https://github.com/johnzilla/trustedge/issues) and [Issue #16](https://github.com/johnzilla/trustedge/issues/16) for current status
 5. **Understand the code**: Review the codebase structure and patterns
 
 ## 🐛 Reporting Issues
@@ -237,13 +237,19 @@ Help improve test coverage:
 
 ## 🎯 Current Priorities
 
-See [PHASE3_PROGRESS.md](./PHASE3_PROGRESS.md) for current development focus:
+**Current Focus**: Phase 3 - Network Operations & Authentication
 
-1. **Server Authentication** (Day 10)
-2. **Client Authentication** (Day 11)
-3. **Enhanced Security** (Day 12)
-4. **Production Deployment** (Day 13)
-5. **Final Testing** (Day 14)
+**High Priority Issues**:
+1. **[Day 10: Server Authentication](https://github.com/johnzilla/trustedge/issues/11)** - Implement server certificate validation and mutual TLS
+2. **[Day 11: Client Authentication](https://github.com/johnzilla/trustedge/issues/12)** - Client certificate and token-based authentication  
+3. **[Cross-platform Audio Capture](https://github.com/johnzilla/trustedge/issues/5)** - Integrate cpal for live audio streaming
+4. **[Day 12: Enhanced Security](https://github.com/johnzilla/trustedge/issues/13)** - Perfect Forward Secrecy and additional algorithms
+
+**Good First Issues**:
+- **[Community Engagement](https://github.com/johnzilla/trustedge/issues/8)** - Beta testing program setup
+- **[Example Configurations](https://github.com/johnzilla/trustedge/issues/9)** - Add deployment scenario examples
+
+**Track Progress**: [Phase 3 Progress Tracker](https://github.com/johnzilla/trustedge/issues/16)
 
 ## 💬 Communication
 
