@@ -10,7 +10,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ⚠️ **Security Notice**: If this is a sensitive security vulnerability that could be exploited, please consider using private disclosure channels instead of a public issue.
+        ⚠ **Security Notice**: If this is a sensitive security vulnerability that could be exploited, please consider using private disclosure channels instead of a public issue.
         
         For non-sensitive security improvements or questions about security practices, this public template is appropriate.
 
