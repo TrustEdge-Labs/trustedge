@@ -185,19 +185,85 @@ Closes #issue-number
 
 ### Legal Framework
 
-- **License**: All contributions are licensed under MPL-2.0
-- **Copyright retention**: Contributors can retain copyright on their work
-- **No CLA required**: We don't require a Contributor License Agreement
+- **License**: All contributions are licensed under MPL-2.0 for open-source use
+- **CLA Required**: Contributors must sign our CLA before code can be merged
+- **Copyright retention**: Contributors retain copyright on their original work
+- **Dual licensing**: CLA enables commercial licensing to sustain the project
 - **Clean IP**: Ensure you have the right to contribute your code
 
 ### For Maintainers
 
 When accepting external PRs:
 
-1. **Verify copyright headers** are appropriate for the contribution size
-2. **Respect contributor copyright** - don't change their copyright line without permission  
-3. **For major contributions**: Ensure Option 1 format is used
-4. **For collaborative files**: Consider using collective copyright (Option 3)
+1. **Verify CLA is signed** via the CLA Assistant bot status
+2. **Verify copyright headers** are appropriate for the contribution size
+3. **Respect contributor copyright** - don't change their copyright line without permission  
+4. **For major contributions**: Ensure Option 1 format is used
+5. **For collaborative files**: Consider using collective copyright (Option 3)
+
+---
+
+## Contributor License Agreement (CLA)
+
+### Why We Require a CLA
+
+All code contributions to TrustEdge require signing our Contributor License Agreement (CLA). We want to be transparent about why this is necessary and what it means for you as a contributor.
+
+**TL;DR**: You keep the copyright to your work, but you give the project permission to use it in flexible ways that help sustain the project long-term.
+
+### What the CLA Means
+
+#### 🏠 **You Retain Copyright**
+The CLA is **not** a copyright assignment. You will always own the copyright to your original contributions. Your name stays on your code, and you can use your contributions however you wish.
+
+#### 📜 **Project Gets Usage Rights**
+The CLA grants TrustEdge (John Turner) a broad, perpetual, and irrevocable license to:
+- Use your contribution in the open-source version
+- Modify and improve your contribution
+- Sublicense your contribution under different terms when necessary
+
+#### 💼 **Why This Matters: Dual-Licensing Strategy**
+TrustEdge uses a **dual-licensing model** to ensure project sustainability:
+
+- **Open-Source License (MPL-2.0)**: Free for everyone to use, modify, and distribute
+- **Commercial License**: Available for organizations that need different licensing terms
+
+The revenue from commercial licensing helps fund:
+- ✅ **Ongoing development** and maintenance
+- ✅ **Security audits** and professional reviews  
+- ✅ **Infrastructure costs** (CI/CD, hosting, etc.)
+- ✅ **Long-term project viability** and feature development
+
+Without the CLA, we couldn't offer commercial licenses, which would limit our ability to sustain and grow the project professionally.
+
+### 🤖 How It Works
+
+1. **Automated Process**: When you submit your first pull request, the CLA Assistant bot will automatically appear
+2. **One-Time Signing**: You only need to sign once - it covers all future contributions
+3. **Digital Signature**: Quick online process, no printing or mailing required
+4. **Immediate Access**: Once signed, your PR can be reviewed and merged
+
+### 📋 CLA Document
+
+The full CLA document is available here: **[TrustEdge CLA](https://github.com/johnzilla/trustedge/blob/main/CLA.md)** *(coming soon)*
+
+### Questions About the CLA?
+
+We believe in transparency. If you have questions about:
+- What rights you're granting
+- How commercial licensing works  
+- Why the CLA is structured this way
+- Your copyright protections
+
+Please [open a discussion](https://github.com/johnzilla/trustedge/discussions) or reach out via [email](mailto:john@trustedge.dev). We're happy to explain our approach and reasoning.
+
+---
+
+## 📄 Copyright and Licensing
+
+### Copyright Headers for Contributions
+
+**For external contributors**: After signing the CLA, you have several options for copyright headers:
 5. **Document significant contributors** in project acknowledgments
 
 ## 🔒 Security Contributions
