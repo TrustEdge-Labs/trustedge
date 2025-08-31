@@ -149,16 +149,8 @@ diff document.txt recovered.txt  # Should be identical
   --require-auth \
   --server-identity "Production TrustEdge Server" \
   --decrypt \
-  --output-dir ./received \
   --use-keyring \
-  --salt-hex $(openssl rand -hex 16) \
-  --verbose
-
-# Server will:
-# 1. Generate server signing key (if not exists)
-# 2. Create server identity certificate
-# 3. Require client authentication via Ed25519 certificates
-# 4. Validate sessions with cryptographic session IDs
+  --salt-hex $(openssl rand -hex 16)
 ```
 
 **Authenticated Client:**
@@ -170,15 +162,10 @@ diff document.txt recovered.txt  # Should be identical
   --require-auth \
   --client-identity "Mobile App v1.2.3" \
   --use-keyring \
-  --salt-hex <same-salt-as-server> \
-  --verbose
-
-# Client will:
-# 1. Generate client identity certificate (if not exists)
-# 2. Perform mutual authentication handshake
-# 3. Establish cryptographically secure session
-# 4. Transfer encrypted data chunks
+  --salt-hex <same-salt-as-server>
 ```
+
+**📖 For complete authentication setup, security considerations, and production deployment, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md).**
 
 **Legacy Server (no authentication):**
 ```bash
@@ -244,6 +231,7 @@ Data Source → Raw Chunks → Metadata + Encryption → .trst Format
 ### User Guides
 - **[CLI.md](./CLI.md)** — Complete command-line reference with examples
 - **[EXAMPLES.md](./EXAMPLES.md)** — Real-world usage examples and workflows
+- **[AUTHENTICATION_GUIDE.md](./AUTHENTICATION_GUIDE.md)** — Complete authentication setup and security guide
 - **[TESTING.md](./TESTING.md)** — Testing procedures and validation
 
 ### Technical Documentation  
