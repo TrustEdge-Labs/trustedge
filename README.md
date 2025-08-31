@@ -18,7 +18,9 @@ Most people learning Rust start with CRUD web apps. This project stems from a qu
 
 That random thought and an urge to do something out of my comfort zone led to this project, TrustEdge. 
 
-TrustEdge is a learning journey in Rust that aligns with my background in IoT product development, security/PKI and edge systems. TrustEdge features:
+TrustEdge is a learning journey in Rust that aligns with my background in IoT product development, security/PKI and edge systems. 
+
+TrustEdge features:
 
 - **Data-agnostic encryption:** Works with files, live audio, sensor data, or any binary stream
 - **Live audio capture:** Real-time microphone input with configurable quality and device selection
