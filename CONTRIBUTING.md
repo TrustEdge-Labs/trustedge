@@ -22,8 +22,9 @@ Thank you for your interest in contributing to TrustEdge! This document provides
 
 1. **Check existing work**: Search [issues](https://github.com/trustedge/trustedge/issues) and [PRs](https://github.com/trustedge/trustedge/pulls)
 2. **Read the docs**: Review [DEVELOPMENT.md](./DEVELOPMENT.md) for technical details
-3. **Check progress**: See [PHASE3_PROGRESS.md](./PHASE3_PROGRESS.md) for current status
-4. **Understand the code**: Review the codebase structure and coding standards
+3. **Review coding standards**: See [CODING_STANDARDS.md](./CODING_STANDARDS.md) for style guidelines
+4. **Check progress**: See [PHASE3_PROGRESS.md](./PHASE3_PROGRESS.md) for current status
+5. **Understand the code**: Review the codebase structure and patterns
 
 ## 🐛 Reporting Issues
 
@@ -69,20 +70,29 @@ When requesting features:
 
 ### Coding Standards
 
+**Follow the comprehensive coding standards**: See [CODING_STANDARDS.md](./CODING_STANDARDS.md) for detailed guidelines.
+
+**Key requirements**:
 - **Style**: Follow standard Rust formatting (`cargo fmt`)
-- **Linting**: Pass all Clippy checks (`cargo clippy`)
+- **Linting**: Pass all Clippy checks (`cargo clippy -- -D warnings`)
+- **Terminal output**: Use professional UTF-8 symbols (✔, ✖, ⚠, ●, ♪, ■) instead of emojis
 - **Testing**: Add tests for new functionality
 - **Documentation**: Include doc comments for public APIs
-- **Error handling**: Use proper error types and messages
+- **Error handling**: Use proper error types and actionable messages
+- **Security**: Follow cryptographic best practices
 
 ### Code Quality Requirements
 
+See [CODING_STANDARDS.md](./CODING_STANDARDS.md) for detailed requirements. Essential checks:
+
 - [ ] Code compiles without warnings
 - [ ] All tests pass (`cargo test`)
-- [ ] Clippy passes without errors (`cargo clippy`)
+- [ ] Clippy passes without errors (`cargo clippy -- -D warnings`)
 - [ ] Code is formatted (`cargo fmt`)
+- [ ] Professional UTF-8 symbols used (no emojis in terminal output)
 - [ ] New code includes appropriate tests
 - [ ] Public APIs include documentation
+- [ ] Error messages are actionable and clear
 - [ ] Commit messages are clear and descriptive
 
 ### Commit Message Format

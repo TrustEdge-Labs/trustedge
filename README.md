@@ -461,6 +461,7 @@ We welcome contributions! Please see our comprehensive guidelines and project ma
 
 ### 📋 **Contribution Guidelines**
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** — Complete contribution guide and standards
+- **[CODING_STANDARDS.md](./CODING_STANDARDS.md)** — Detailed coding conventions and style guide
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)** — Development setup and technical guidelines
 - **[PHASE3_PROGRESS.md](./PHASE3_PROGRESS.md)** — Current development status and roadmap
 
