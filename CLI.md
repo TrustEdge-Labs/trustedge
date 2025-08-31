@@ -116,7 +116,7 @@ Complete command-line interface documentation for TrustEdge.
 | `Invalid device name` | Check exact spelling | Copy device name exactly from `--list-audio-devices` |
 | `Audio choppy/distorted` | Check sample rates | Use `--sample-rate` matching device capability |
 
-**🔧 For detailed audio troubleshooting, device configuration, and system-specific setup, see [TESTING.md](TESTING.md#audio-system-testing).**
+**● For detailed audio troubleshooting, device configuration, and system-specific setup, see [TESTING.md](TESTING.md#audio-system-testing).**
 
 **Note**: Audio features require building with `--features audio`. Install audio system dependencies first:
 - **Linux**: `sudo apt-get install libasound2-dev pkg-config`
@@ -167,15 +167,15 @@ Complete command-line interface documentation for TrustEdge.
 ./target/release/trustedge-audio --decrypt --input data.trst --out output --verbose
 
 # Example output for files:
-# 📄 Input Type: File
-# 📋 MIME Type: application/json
-# ✅ Output: Original file format preserved
-# ✅ Decrypt complete. Wrote 1337 bytes.
+# ● Input Type: File
+#   MIME Type: application/json
+# ✔ Output: Original file format preserved
+# ✔ Decrypt complete. Wrote 1337 bytes.
 
 # Example output for audio:
-# 🎵 Input Type: Audio (44.1kHz, mono)
-# ⚠️  Output: Raw PCM data (requires conversion)
-# ✅ Decrypt complete. Wrote 441000 bytes.
+# ♪ Input Type: Audio (44.1kHz, mono)
+# ⚠ Output: Raw PCM data (requires conversion)
+# ✔ Decrypt complete. Wrote 441000 bytes.
 ```
 
 **PCM Format Specifications (Live Audio Only):**
@@ -341,14 +341,14 @@ For comprehensive error handling, troubleshooting steps, and solutions, see **[T
 
 The CLI supports various encryption and network workflows. For detailed end-to-end examples:
 
-**📋 See [EXAMPLES.md](EXAMPLES.md) for comprehensive workflows including:**
+**● See [EXAMPLES.md](EXAMPLES.md) for comprehensive workflows including:**
 - Basic file encryption and decryption
 - Live audio capture and processing  
 - Secure network operations with authentication
 - Key management scenarios across different backends
 - Integration examples and automation scripts
 
-**🔐 See [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md) for:**
+**● See [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md) for:**
 - Complete authentication setup procedures
 - Certificate management and security considerations
 - Production deployment configurations
@@ -382,7 +382,7 @@ Common CLI errors and their solutions:
 | `Invalid key length` | Wrong key format | Use 64 hex characters (32 bytes) for `--key-hex` |
 | `Invalid salt length` | Wrong salt format | Use 32 hex characters (16 bytes) for `--salt-hex` |
 
-**🔧 For detailed troubleshooting including audio, network, and authentication issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).**
+**● For detailed troubleshooting including audio, network, and authentication issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).**
 
 ---
 
