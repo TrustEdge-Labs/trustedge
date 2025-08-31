@@ -98,6 +98,14 @@ struct Args {
     #[arg(short, long)]
     verbose: bool,
 
+    /// Path to client certificate file for authentication
+    #[arg(long)]
+    client_cert: Option<PathBuf>,
+
+    /// Client identity for certificate generation (if cert doesn't exist)
+    #[arg(long, default_value = "TrustEdge Client")]
+    client_identity: String,
+
     /// Enable authentication with server certificate verification
     #[arg(long)]
     enable_auth: bool,
@@ -105,14 +113,6 @@ struct Args {
     /// Path to server certificate file (for authentication)
     #[arg(long)]
     server_cert: Option<PathBuf>,
-
-    /// Path to client certificate file (for authentication)
-    #[arg(long)]
-    client_cert: Option<PathBuf>,
-
-    /// Client identity name (for authentication)
-    #[arg(long)]
-    client_identity: Option<String>,
 }
 
 /// Connect to server with timeout and retry logic
@@ -204,14 +204,10 @@ async fn main() -> Result<()> {
         let client_cert = if let Some(cert_path) = &args.client_cert {
             load_client_cert(cert_path).context("Failed to load client certificate")?
         } else {
-            let identity = args
-                .client_identity
-                .clone()
-                .unwrap_or_else(|| "trustedge-client".to_string());
-            let cert = ClientCertificate::generate(&identity)?;
+            let cert = ClientCertificate::generate(&args.client_identity)?;
 
             // Save certificate for future use
-            let cert_path = format!("{}_client.cert", identity);
+            let cert_path = format!("{}_client.cert", args.client_identity);
             save_client_cert(&cert, &cert_path)?;
             println!("Generated new client certificate: {}", cert_path);
             cert
