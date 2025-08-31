@@ -147,65 +147,32 @@ diff document.txt recovered.txt  # Should be identical
 
 **Keyring-Based Encryption:**
 ```bash
-# One-time setup: store passphrase
+# One-time setup and basic keyring usage
 ./target/release/trustedge-audio --set-passphrase "my secure passphrase"
-
-# Encrypt with keyring
-./target/release/trustedge-audio 
-  --input audio.wav 
-  --envelope audio.trst 
-  --backend keyring 
-  --salt-hex $(openssl rand -hex 16)
-
-# Decrypt with keyring
-./target/release/trustedge-audio 
-  --decrypt 
-  --input audio.trst 
-  --out recovered.wav 
-  --backend keyring 
-  --salt-hex <same-salt-as-encryption>
+./target/release/trustedge-audio --input file.txt --envelope file.trst --use-keyring --salt-hex $(openssl rand -hex 16)
 ```
+
+**🔧 For complete CLI options and key management backends, see [CLI.md](CLI.md#key-management-options).**
+
+**💡 For detailed workflows and backend configuration, see [EXAMPLES.md](EXAMPLES.md#key-management-scenarios).**
 
 ### Network Mode
 
-**Secure Server (with Authentication):**
-```bash
-# Start authenticated server - generates certificates automatically
-./target/release/trustedge-server \
-  --listen 127.0.0.1:8080 \
-  --require-auth \
-  --server-identity "Production TrustEdge Server" \
-  --decrypt \
-  --use-keyring \
-  --salt-hex $(openssl rand -hex 16)
-```
+TrustEdge supports secure client-server communication with mutual authentication:
 
-**Authenticated Client:**
 ```bash
-# Send data with mutual authentication
-./target/release/trustedge-client \
-  --server 127.0.0.1:8080 \
-  --input voice_recording.wav \
-  --require-auth \
-  --client-identity "Mobile App v1.2.3" \
-  --use-keyring \
-  --salt-hex <same-salt-as-server>
+# Quick start: Authenticated server
+./target/release/trustedge-server --listen 127.0.0.1:8080 --require-auth --decrypt
+
+# Quick start: Authenticated client  
+./target/release/trustedge-client --server 127.0.0.1:8080 --input file.txt --require-auth
 ```
 
 **📖 For complete authentication setup, security considerations, and production deployment, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md).**
 
-> **💡 Credential Storage:** Server certificates are automatically generated at `./trustedge-server.key` and client certificates at `./trustedge-client.key`. Use `--server-key` and `--client-key` options to specify custom secure locations like `/opt/trustedge/certs/` or `~/.config/trustedge/`.
+**� For detailed CLI options and network configuration, see [CLI.md](CLI.md#network-options).**
 
-**Legacy Server (no authentication):**
-```bash
-# Basic server without authentication
-./target/release/trustedge-server \
-  --listen 127.0.0.1:8080 \
-  --decrypt \
-  --output-dir ./received \
-  --use-keyring \
-  --salt-hex $(openssl rand -hex 16)
-```
+**💡 For comprehensive examples and use cases, see [EXAMPLES.md](EXAMPLES.md#network-mode-examples).**
 
 ---
 
