@@ -245,7 +245,7 @@ Without the CLA, we couldn't offer commercial licenses, which would limit our ab
 
 ### 📋 CLA Document
 
-The full CLA document is available here: **[TrustEdge CLA](https://github.com/johnzilla/trustedge/blob/main/CLA.md)** *(coming soon)*
+The full CLA document is available here: **[TrustEdge CLA](https://gist.github.com/johnzilla/0624a138cdabd17e9f5ae44607958922)** 
 
 ### Questions About the CLA?
 
