@@ -1,0 +1,1 @@
+{"message": "TrustEdge format detection", "version": "2.0", "features": ["inspect", "mime-detection", "format-aware"]}

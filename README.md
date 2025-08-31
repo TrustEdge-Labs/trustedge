@@ -91,12 +91,32 @@ cargo build --release --features audio
   --use-keyring \
   --max-duration 30
 
-# Decrypt captured audio (produces raw audio data)
+# Decrypt captured audio (produces raw PCM audio data)
 ./target/release/trustedge-audio \
   --decrypt \
   --input voice_note.trst \
   --out recovered_audio.raw \
   --key-hex $(cat voice_key.hex)
+
+# Convert raw PCM to playable WAV file (requires ffmpeg)
+ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
+```
+
+**📋 Format-Aware Decryption:** 
+- **File inputs**: Decryption preserves original file format with MIME type detection (PDF→PDF, JSON→JSON, etc.)
+- **Live audio inputs**: Decryption outputs **raw PCM data** (requires conversion for playback)
+- **Inspection**: Use `--inspect` to view data type and format without decryption
+
+```bash
+# Inspect encrypted data format without decrypting
+./target/release/trustedge-audio --input data.trst --inspect --verbose
+
+# Example output:
+# TrustEdge Archive Information:
+#   File: data.trst
+#   Data Type: File
+#   MIME Type: application/json
+#   Output Behavior: Original file format preserved
 ```
 
 **Simple File Encryption:**
@@ -107,12 +127,19 @@ cargo build --release --features audio
   --envelope document.trst 
   --key-out mykey.hex
 
-# Decrypt file
+# Decrypt file with format-aware output
 ./target/release/trustedge-audio 
   --decrypt 
   --input document.trst 
   --out recovered.txt 
   --key-hex $(cat mykey.hex)
+  --verbose
+
+# Example verbose output:
+# 📄 Input Type: File
+# 📋 MIME Type: text/plain
+# ✅ Output: Original file format preserved
+# ✅ Decrypt complete. Wrote 1337 bytes.
 
 # Verify integrity
 diff document.txt recovered.txt  # Should be identical
@@ -184,7 +211,41 @@ diff document.txt recovered.txt  # Should be identical
 
 ## How It Works
 
-TrustEdge uses a **data-agnostic architecture** that treats all input sources uniformly:
+TrustEdge uses a **data-agnostic architecture** with **format-aware decryption** that treats all input sources uniformly while preserving format information:
+
+### Format-Aware Processing Flow
+
+```mermaid
+graph TD
+    A[Input Source] --> B{Source Type}
+    B -->|File| C[File Input]
+    B -->|Live Audio| D[Audio Capture]
+    
+    C --> E[MIME Detection]
+    E --> F[DataType::File]
+    D --> G[Audio Config]
+    G --> H[DataType::Audio]
+    
+    F --> I[Manifest Creation]
+    H --> I
+    I --> J[Encryption + Signing]
+    J --> K[.trst Archive]
+    
+    K --> L[Decrypt Request]
+    L --> M[Read Manifest]
+    M --> N{Data Type?}
+    
+    N -->|File| O[Format Preserved]
+    N -->|Audio| P[Raw PCM Output]
+    
+    O --> Q[📄 Original Format]
+    P --> R[🎵 PCM + Conversion Info]
+    
+    style A fill:#e1f5fe
+    style K fill:#fff3e0
+    style Q fill:#e8f5e8
+    style R fill:#ffe8e8
+```
 
 ### Data Sources
 - **Files**: Documents, images, videos, any binary data
@@ -195,9 +256,9 @@ TrustEdge uses a **data-agnostic architecture** that treats all input sources un
 ```
 Data Source → Raw Chunks → Metadata + Encryption → .trst Format
                 ↓
-          (Sample rate, format, device info stored in manifest)
+          (MIME type, format, device info stored in manifest)
                 ↓
-          Receiver → Decrypt + Metadata → Consumer Application
+          Receiver → Decrypt + Format-Aware Output → Consumer Application
 ```
 
 ### Security Architecture
@@ -295,6 +356,8 @@ graph TD
 - Data-agnostic architecture with metadata preservation ✅
 - Configurable audio quality (sample rate, channels, devices) ✅
 - Feature-gated compilation for CI/CD compatibility ✅
+- **Format-aware decryption with MIME type detection** ✅
+- **Enhanced user experience with inspection tools** ✅
 
 **✅ Phase 4: Network Operations (COMPLETED)**
 - Basic client-server architecture ✅
@@ -336,6 +399,90 @@ See **[DEVELOPMENT.md](./DEVELOPMENT.md)** for complete roadmap and **[PHASE3_PR
 - Limited to software-based key storage
 
 For detailed security analysis, see **[THREAT_MODEL.md](./THREAT_MODEL.md)**.
+
+---
+
+## TrustEdge Ecosystem Overview
+
+```mermaid
+graph TB
+    subgraph "Input Sources"
+        A1[📄 Files<br/>JSON, PDF, Images]
+        A2[🎵 Live Audio<br/>Microphone Capture]
+        A3[🔮 Future<br/>Camera, Sensors]
+    end
+    
+    subgraph "Format Detection"
+        B1[MIME Detection<br/>30+ File Types]
+        B2[Audio Metadata<br/>Sample Rate, Channels]
+    end
+    
+    subgraph "Encryption Pipeline"
+        C1[📝 Manifest Creation<br/>DataType + Metadata]
+        C2[🔒 AES-256-GCM<br/>Authenticated Encryption]
+        C3[✍️ Ed25519 Signatures<br/>Provenance + Auth]
+    end
+    
+    subgraph "Storage & Transport"
+        D1[💾 .trst Archives<br/>Encrypted + Metadata]
+        D2[🌐 Network Transfer<br/>Mutual Authentication]
+        D3[🔍 Inspection Tools<br/>Format Without Decrypt]
+    end
+    
+    subgraph "Format-Aware Decryption"
+        E1[📋 Read Manifest<br/>Detect Original Type]
+        E2{Data Type?}
+        E3[📄 File Output<br/>Format Preserved]
+        E4[🎵 PCM Output<br/>+ Conversion Guide]
+    end
+    
+    subgraph "Key Management"
+        F1[🔐 OS Keyring<br/>PBKDF2 + Salt]
+        F2[🔑 Hardware Keys<br/>TPM, HSM Future]
+        F3[🎟️ Session Keys<br/>Mutual Auth]
+    end
+    
+    A1 --> B1
+    A2 --> B2
+    A3 --> B1
+    
+    B1 --> C1
+    B2 --> C1
+    
+    C1 --> C2
+    C2 --> C3
+    C3 --> D1
+    
+    D1 --> D2
+    D1 --> D3
+    
+    D2 --> E1
+    D3 --> E1
+    E1 --> E2
+    E2 -->|File| E3
+    E2 -->|Audio| E4
+    
+    F1 --> C2
+    F2 --> C2
+    F3 --> D2
+    
+    style A1 fill:#e1f5fe
+    style A2 fill:#e8f5e8
+    style C2 fill:#fff3e0
+    style E3 fill:#e8f5e8
+    style E4 fill:#ffe8e8
+    style F1 fill:#f3e5f5
+```
+
+**Key Features:**
+- 🔒 **End-to-End Security**: AES-256-GCM + Ed25519 signatures
+- 📋 **Format Awareness**: MIME detection with intelligent output handling
+- 🎵 **Audio-First Design**: Live capture with metadata preservation
+- 🔍 **Inspection Tools**: View format without decryption
+- 🌐 **Network Security**: Mutual authentication and session management
+- 🔐 **Flexible Key Management**: OS keyring with future hardware support
+
+---
 
 **Vulnerability Reporting:** See **[SECURITY.md](./SECURITY.md)** for responsible disclosure process.
 

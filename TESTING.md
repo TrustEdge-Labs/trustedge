@@ -100,6 +100,58 @@ echo "test data" > input.txt
 diff input.txt decrypted.txt  # Should be identical
 ```
 
+### Format-Aware Testing
+
+**Test Different File Types:**
+```bash
+# Create test files of different types
+echo '{"test": "data"}' > test.json
+echo "%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj" > test.pdf
+dd if=/dev/urandom bs=1024 count=1 of=test.bin 2>/dev/null
+
+# Test encryption with format detection
+./target/release/trustedge-audio --input test.json --envelope test_json.trst --key-out json.key --verbose
+./target/release/trustedge-audio --input test.pdf --envelope test_pdf.trst --key-out pdf.key --verbose
+./target/release/trustedge-audio --input test.bin --envelope test_bin.trst --key-out bin.key --verbose
+
+# Test inspection
+./target/release/trustedge-audio --input test_json.trst --inspect --verbose
+./target/release/trustedge-audio --input test_pdf.trst --inspect --verbose
+./target/release/trustedge-audio --input test_bin.trst --inspect --verbose
+
+# Test decryption with format awareness
+./target/release/trustedge-audio --decrypt --input test_json.trst --out restored.json --key-hex $(cat json.key) --verbose
+./target/release/trustedge-audio --decrypt --input test_pdf.trst --out restored.pdf --key-hex $(cat pdf.key) --verbose
+./target/release/trustedge-audio --decrypt --input test_bin.trst --out restored.bin --key-hex $(cat bin.key) --verbose
+
+# Verify format preservation
+diff test.json restored.json
+diff test.pdf restored.pdf
+diff test.bin restored.bin
+file restored.json  # Should show JSON data
+file restored.pdf   # Should show PDF document
+```
+
+**Expected Output Verification:**
+```bash
+# JSON file inspection should show:
+# MIME Type: application/json
+# Output Behavior: Original file format preserved
+
+# PDF file inspection should show:
+# MIME Type: application/pdf
+# Output Behavior: Original file format preserved
+
+# Binary file inspection should show:
+# MIME Type: application/octet-stream
+# Output Behavior: Original file format preserved
+
+# Decryption should show format-aware messages:
+# 📄 Input Type: File
+# 📋 MIME Type: application/json
+# ✅ Output: Original file format preserved
+```
+
 ### Comprehensive Validation
 
 #### 1. Format Validation
@@ -630,24 +682,111 @@ Error: Audio device "wrong_name" not found
 
 ### Audio Validation Testing
 
-#### 1. Round-trip Audio Test
+#### 1. Round-trip Audio Test with Format Verification
 ```bash
-# Capture audio
+# Capture audio with known parameters
 ./target/release/trustedge-audio \
   --live-capture \
+  --sample-rate 44100 \
+  --channels 2 \
   --max-duration 10 \
   --envelope captured_audio.trst \
-  --key-out audio_key.hex
+  --key-out audio_key.hex \
+  --verbose
 
-# Decrypt and verify
+# Decrypt and verify (produces raw PCM f32le data)
 ./target/release/trustedge-audio \
   --decrypt \
   --input captured_audio.trst \
   --out recovered_audio.raw \
-  --key-hex $(cat audio_key.hex)
+  --key-hex $(cat audio_key.hex) \
+  --verbose
 
-# Check file size (should be > 0)
-ls -la recovered_audio.raw
+# Verify file size matches expected PCM data size
+# Formula: size = sample_rate * channels * duration * 4 bytes (f32)
+# Expected: 44100 * 2 * 10 * 4 = 3,528,000 bytes
+actual_size=$(wc -c < recovered_audio.raw)
+expected_size=$((44100 * 2 * 10 * 4))
+echo "Actual size: $actual_size bytes, Expected: ~$expected_size bytes"
+
+# Convert to playable format for verification
+ffmpeg -f f32le -ar 44100 -ac 2 -i recovered_audio.raw test_playback.wav
+
+# Verify conversion worked
+ffprobe test_playback.wav 2>&1 | grep -E "(Duration|Stream|Audio)"
+```
+
+#### 2. PCM Format Validation
+```bash
+# Test different audio configurations
+for sample_rate in 22050 44100 48000; do
+  for channels in 1 2; do
+    echo "Testing ${sample_rate}Hz, ${channels} channel(s)"
+    
+    # Capture with specific parameters
+    ./target/release/trustedge-audio \
+      --live-capture \
+      --sample-rate $sample_rate \
+      --channels $channels \
+      --max-duration 3 \
+      --envelope test_${sample_rate}_${channels}ch.trst \
+      --key-hex $(openssl rand -hex 32) \
+      --verbose
+    
+    # Decrypt to raw PCM
+    ./target/release/trustedge-audio \
+      --decrypt \
+      --input test_${sample_rate}_${channels}ch.trst \
+      --out test_${sample_rate}_${channels}ch.raw \
+      --key-hex $(openssl rand -hex 32) \
+      --verbose
+    
+    # Convert and validate
+    ffmpeg -f f32le -ar $sample_rate -ac $channels \
+      -i test_${sample_rate}_${channels}ch.raw \
+      test_${sample_rate}_${channels}ch.wav
+    
+    # Check if playable
+    ffprobe test_${sample_rate}_${channels}ch.wav >/dev/null 2>&1 && \
+      echo "✅ ${sample_rate}Hz ${channels}ch: Valid" || \
+      echo "❌ ${sample_rate}Hz ${channels}ch: Invalid"
+  done
+done
+```
+
+#### 3. Audio Metadata Verification
+```bash
+# Capture with metadata logging
+./target/release/trustedge-audio \
+  --live-capture \
+  --sample-rate 48000 \
+  --channels 2 \
+  --max-duration 5 \
+  --envelope metadata_test.trst \
+  --key-hex $(openssl rand -hex 32) \
+  --verbose 2>&1 | tee capture_log.txt
+
+# Decrypt with metadata extraction
+./target/release/trustedge-audio \
+  --decrypt \
+  --input metadata_test.trst \
+  --out metadata_test.raw \
+  --key-hex $(openssl rand -hex 32) \
+  --verbose 2>&1 | tee decrypt_log.txt
+
+# Verify metadata consistency
+echo "Verifying audio metadata consistency:"
+grep -E "Sample Rate|Channels|Format" capture_log.txt
+grep -E "Sample Rate|Channels|Format" decrypt_log.txt
+
+# Verify PCM data matches metadata
+pcm_size=$(wc -c < metadata_test.raw)
+sample_rate=$(grep "Sample Rate:" decrypt_log.txt | grep -o '[0-9]*')
+channels=$(grep "Channels:" decrypt_log.txt | grep -o '[0-9]*')
+duration=5
+expected_size=$((sample_rate * channels * duration * 4))
+echo "PCM size: $pcm_size, Expected: $expected_size (tolerance: ±10%)"
+```
 ```
 
 #### 2. Multi-Device Testing

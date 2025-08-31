@@ -4,7 +4,18 @@ MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/johnzilla/trustedge
 -->
-# TrustEdge CLI Reference
+# TrustEdge CL# Extract Audio Metadata from .trst (Live Audio Only):**
+Live audio captures store the original audio parameters in the encrypted envelope:
+```bash
+./target/release/trustedge-audio --decrypt --input audio.trst --out audio.raw --key-hex $KEY --verbose
+# Output shows: Sample Rate: 44100Hz, Channels: 1, Format: f32
+```
+
+**Format-Aware Capabilities:**
+- **Automatic MIME detection**: Recognizes 30+ file types including documents, images, audio, video
+- **Format preservation**: File inputs maintain original format perfectly
+- **Audio-aware output**: Live audio provides format-specific guidance and metadata
+- **Inspection tools**: View format information without decryption using `--inspect`nce
 
 Complete command-line interface documentation for TrustEdge.
 
@@ -29,6 +40,14 @@ Complete command-line interface documentation for TrustEdge.
 | `--envelope <ENVELOPE>` | Optional: write envelope (header + records) to this .trst file | `--envelope encrypted.trst` |
 | `--no-plaintext` | Skip writing plaintext during encrypt (still verifies+envelopes) | `--no-plaintext` |
 | `--decrypt` | Decrypt mode: read .trst from --input and write plaintext to --out | `--decrypt` |
+
+### Format-Aware Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--inspect` | Show data type information from manifest without decryption | `--inspect` |
+| `--force-raw` | Force raw output regardless of data type | `--force-raw` |
+| `--verbose` | Enable verbose output for format details | `--verbose` |
 
 ### Key Management Options
 
@@ -103,6 +122,90 @@ Complete command-line interface documentation for TrustEdge.
 - **Linux**: `sudo apt-get install libasound2-dev pkg-config`
 - **macOS**: Included with Xcode/Command Line Tools
 - **Windows**: Included with Windows SDK
+
+#### Audio Output Format & Format-Aware Decryption
+
+**Format-Aware Behavior:** TrustEdge now provides format-aware decryption with MIME type detection and intelligent output handling:
+
+**For File Inputs (any file type):**
+- **Input**: Any file (PDF, JSON, MP3, WAV, etc.) → Encrypted to .trst with MIME type detection
+- **Output**: Original file format preserved exactly (byte-for-byte identical)
+- **Detection**: Automatic MIME type detection (application/json, application/pdf, audio/mpeg, etc.)
+- **Example**: `document.pdf` → `document.trst` → decrypt to `document.pdf`
+
+**For Live Audio Inputs (--live-capture):**
+- **Input**: Live microphone capture → Encrypted to .trst with audio metadata
+- **Output**: Raw PCM data (32-bit float, little-endian)
+- **Detection**: Automatic audio parameter detection (sample rate, channels, format)
+- **Requires Conversion**: Must convert PCM to playable format
+
+**Format Inspection:**
+```bash
+# Inspect format without decryption
+./target/release/trustedge-audio --input data.trst --inspect --verbose
+
+# Example output for a JSON file:
+# TrustEdge Archive Information:
+#   File: data.trst
+#   Data Type: File
+#   MIME Type: application/json
+#   Output Behavior: Original file format preserved
+
+# Example output for live audio:
+# TrustEdge Archive Information:
+#   File: audio.trst
+#   Data Type: Audio
+#   Sample Rate: 44100 Hz
+#   Channels: 1 (mono)
+#   Format: f32le
+#   Output Behavior: Raw PCM data (requires conversion)
+```
+
+**Enhanced Decrypt Output:**
+```bash
+# Decrypt with verbose format information
+./target/release/trustedge-audio --decrypt --input data.trst --out output --verbose
+
+# Example output for files:
+# 📄 Input Type: File
+# 📋 MIME Type: application/json
+# ✅ Output: Original file format preserved
+# ✅ Decrypt complete. Wrote 1337 bytes.
+
+# Example output for audio:
+# 🎵 Input Type: Audio (44.1kHz, mono)
+# ⚠️  Output: Raw PCM data (requires conversion)
+# ✅ Decrypt complete. Wrote 441000 bytes.
+```
+
+**PCM Format Specifications (Live Audio Only):**
+- **Data Type**: 32-bit floating-point samples (`f32le`)
+- **Byte Order**: Little-endian
+- **Range**: [-1.0, 1.0] normalized audio samples
+- **No Headers**: Pure sample data without WAV/MP3 headers
+
+**Converting Raw PCM to Playable Formats:**
+
+```bash
+# For live audio captures only - convert mono 44.1kHz PCM to WAV
+ffmpeg -f f32le -ar 44100 -ac 1 -i audio.raw audio.wav
+
+# For live audio captures only - convert stereo 48kHz PCM to WAV  
+ffmpeg -f f32le -ar 48000 -ac 2 -i audio.raw audio.wav
+
+# For live audio captures only - convert to MP3 (compressed)
+ffmpeg -f f32le -ar 44100 -ac 1 -i audio.raw -c:a libmp3lame -b:a 128k audio.mp3
+
+# For live audio captures only - play directly without conversion (Linux with sox)
+play -t f32 -r 44100 -c 1 audio.raw
+```
+
+**Extract Audio Metadata from .trst (Live Audio Only):**
+Live audio captures store the original audio parameters in the encrypted envelope:
+```bash
+./target/release/trustedge-audio --decrypt --input audio.trst --out audio.raw --key-hex $KEY --verbose
+# Output shows: Sample Rate: 44100Hz, Channels: 1, Format: f32
+```
 
 ### Connection Management Options (Client)
 
