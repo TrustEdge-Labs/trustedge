@@ -9,6 +9,7 @@ GitHub: https://github.com/johnzilla/trustedge
 Real-world examples and use cases for TrustEdge privacy-preserving edge computing.
 
 ## Table of Contents
+- [Secure Session Workflow](#secure-session-workflow)
 - [Basic File Encryption](#basic-file-encryption)
 - [Live Audio Capture](#live-audio-capture)
 - [Network Mode Examples](#network-mode-examples)
@@ -16,6 +17,88 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 - [Key Management Scenarios](#key-management-scenarios)
 - [Integration Examples](#integration-examples)
 - [Development and Project Management Examples](#development-and-project-management-examples)
+
+---
+
+## Secure Session Workflow
+
+### Complete Authenticated Data Transfer
+
+This example shows the end-to-end flow of setting up authentication, transferring data securely, and session management:
+
+```mermaid
+flowchart TD
+    A[Start Server] --> B[Generate Server Certificate]
+    B --> C[Server Listening 🔐]
+    
+    D[Start Client] --> E[Generate Client Certificate]
+    E --> F[Connect to Server]
+    
+    F --> G{Mutual Authentication}
+    G -->|Success| H[Session Established ✅]
+    G -->|Failure| I[Connection Rejected ❌]
+    
+    H --> J[Encrypt Data Chunks]
+    J --> K[Transfer with Session ID]
+    K --> L[Server Validates Session]
+    L --> M[Decrypt & Process]
+    
+    M --> N{More Data?}
+    N -->|Yes| J
+    N -->|No| O[Session Complete]
+    
+    P[Session Timeout] -.-> Q[Auto Cleanup]
+    
+    style C fill:#e8f5e8
+    style H fill:#e1f5fe
+    style I fill:#ffebee
+    style O fill:#f3e5f5
+```
+
+**Step-by-Step Implementation:**
+
+```bash
+# Terminal 1: Start authenticated server
+./target/release/trustedge-server \
+  --listen 127.0.0.1:8080 \
+  --require-auth \
+  --server-identity "Example Production Server" \
+  --session-timeout 600 \
+  --decrypt \
+  --use-keyring \
+  --salt-hex $(openssl rand -hex 16) \
+  --output-dir ./secure_uploads \
+  --verbose
+
+# Output shows:
+# 🔧 Authentication enabled - generating server certificates...
+# ✅ Server identity certificate created
+# 🚀 TrustEdge Server starting with authentication...
+# 🔐 Listening on 127.0.0.1:8080 (authenticated connections only)
+
+# Terminal 2: Connect authenticated client
+./target/release/trustedge-client \
+  --server 127.0.0.1:8080 \
+  --input confidential_report.pdf \
+  --require-auth \
+  --client-identity "Executive Mobile App v2.1" \
+  --use-keyring \
+  --salt-hex <same-salt-as-server> \
+  --verbose
+
+# Output shows:
+# 🔧 Authentication enabled - generating client certificates...
+# ✅ Client identity certificate created
+# 🔐 Connecting to authenticated server...
+# 🤝 Performing mutual authentication handshake...
+# ✅ Server certificate verified
+# ✅ Client authentication completed  
+# 🆔 Session ID: 0xa8f7e2d1c9b5463f
+# 📤 Sending encrypted data (1.2 MB)...
+# ✅ Transfer completed successfully
+```
+
+**🔐 For detailed security flow and implementation details, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md#how-trustedge-secure-session-works).**
 
 ---
 
