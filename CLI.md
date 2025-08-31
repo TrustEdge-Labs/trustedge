@@ -88,9 +88,8 @@ Complete command-line interface documentation for TrustEdge.
 | `--require-auth` | Enable mutual authentication (server/client) | `--require-auth` |
 | `--server-identity <ID>` | Server identity for certificate generation | `--server-identity "Production Server"` |
 | `--client-identity <ID>` | Client identity for certificate generation | `--client-identity "Mobile App v1.2"` |
-| `--server-key <PATH>` | Path to server signing key file (generates if missing) | `--server-key ./server.key` |
-| `--client-key <PATH>` | Path to client signing key file (generates if missing) | `--client-key ./client.key` |
-| `--session-timeout <SECS>` | Session timeout in seconds [default: 300] | `--session-timeout 600` |
+
+**📖 For complete authentication documentation including all options, security considerations, and deployment examples, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md).**
 
 ---
 
