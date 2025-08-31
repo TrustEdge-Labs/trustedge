@@ -35,8 +35,8 @@ flowchart TD
     E --> F[Connect to Server]
     
     F --> G{Mutual Authentication}
-    G -->|Success| H[Session Established ✅]
-    G -->|Failure| I[Connection Rejected ❌]
+    G -->|Success| H[Session Established ✔]
+    G -->|Failure| I[Connection Rejected ✖]
     
     H --> J[Encrypt Data Chunks]
     J --> K[Transfer with Session ID]
@@ -72,7 +72,7 @@ flowchart TD
 
 # Output shows:
 # 🔧 Authentication enabled - generating server certificates...
-# ✅ Server identity certificate created
+# ✔ Server identity certificate created
 # 🚀 TrustEdge Server starting with authentication...
 # 🔐 Listening on 127.0.0.1:8080 (authenticated connections only)
 
@@ -88,14 +88,14 @@ flowchart TD
 
 # Output shows:
 # 🔧 Authentication enabled - generating client certificates...
-# ✅ Client identity certificate created
+# ✔ Client identity certificate created
 # 🔐 Connecting to authenticated server...
 # 🤝 Performing mutual authentication handshake...
-# ✅ Server certificate verified
-# ✅ Client authentication completed  
+# ✔ Server certificate verified
+# ✔ Client authentication completed  
 # 🆔 Session ID: 0xa8f7e2d1c9b5463f
 # 📤 Sending encrypted data (1.2 MB)...
-# ✅ Transfer completed successfully
+# ✔ Transfer completed successfully
 ```
 
 **🔐 For detailed security flow and implementation details, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md#how-trustedge-secure-session-works).**
@@ -120,9 +120,9 @@ echo "Binary data" > data.bin
 ./target/release/trustedge-audio --input data.bin --envelope binary.trst --key-out bin.key --verbose
 
 # Expected verbose output shows MIME detection:
-# 📄 Input: config.json (119 bytes)
+# ● Input: config.json (119 bytes)
 # 📋 MIME Type: application/json detected
-# ✅ Encryption complete. Original format preserved.
+# ✔ Encryption complete. Original format preserved.
 ```
 
 ### Archive Inspection Without Decryption
@@ -172,8 +172,8 @@ graph TD
     J -->|File| K[Preserve Format]
     J -->|Audio| L[Raw PCM + Metadata]
     
-    K --> M[📄 Original Format Output]
-    L --> N[🎵 PCM + Conversion Info]
+    K --> M[● Original Format Output]
+    L --> N[♪ PCM + Conversion Info]
     
     style C fill:#e1f5fe
     style H fill:#fff3e0
@@ -188,12 +188,12 @@ graph TD
 ./target/release/trustedge-audio --decrypt --input config.trst --out config_restored.json --key-hex $(cat json.key) --verbose
 
 # Enhanced output shows format awareness:
-# 📄 Input Type: File
-# 📋 MIME Type: application/json
-# ✅ Output: Original file format preserved
-# ✅ Decrypt complete. Wrote 119 bytes.
-# 📄 Output file preserves original format and should be directly usable.
-# 📋 File type: application/json
+# ● Input Type: File
+#   MIME Type: application/json
+# ✔ Output: Original file format preserved
+# ✔ Decrypt complete. Wrote 119 bytes.
+# ● Output file preserves original format and should be directly usable.
+#   File type: application/json
 
 # Verify format preservation
 diff config.json config_restored.json  # Should be identical
@@ -509,13 +509,13 @@ kill -INT $(pgrep trustedge-server)
 
 # Server output:
 # 🔧 Authentication enabled - loading server certificates...
-# ✅ Server signing key loaded from ./config/server_signing.key
-# ✅ Server identity certificate: "TrustEdge Production Server v2.1"
+# ✔ Server signing key loaded from ./config/server_signing.key
+# ✔ Server identity certificate: "TrustEdge Production Server v2.1"
 # 🚀 TrustEdge Server starting with authentication...
 # 🔐 Listening on 0.0.0.0:8443 (authenticated connections only)
 # ⏱️  Session timeout: 600 seconds
 # 📁 Secure output directory: ./secure_uploads
-# 🔍 Waiting for authenticated clients...
+# ● Waiting for authenticated clients...
 ```
 
 #### Mobile App Client Connection
@@ -536,14 +536,14 @@ kill -INT $(pgrep trustedge-server)
 
 # Client output:
 # 🔧 Authentication enabled - loading client certificates...
-# ✅ Client identity: "TrustEdge Mobile App v3.1.4"
+# ✔ Client identity: "TrustEdge Mobile App v3.1.4"
 # 🔐 Connecting to authenticated server at production.trustedge.com:8443...
 # 🤝 Performing mutual authentication handshake...
-# ✅ Server certificate verified successfully
-# ✅ Client authentication completed
+# ✔ Server certificate verified successfully
+# ✔ Client authentication completed
 # 🆔 Session ID: 0xa8f7e2d1c9b5463f
 # 📤 Sending encrypted voice memo (2.3 MB)...
-# ✅ Transfer completed successfully in 1.24s
+# ✔ Transfer completed successfully in 1.24s
 ```
 
 #### IoT Device Fleet Management
@@ -1045,7 +1045,7 @@ sudo -u trustedge-service ./target/release/trustedge-server \
 # Output shows:
 # 🔧 Authentication enabled - generating server certificates...
 # 📁 Certificate location: /opt/trustedge/certificates/production-server.key
-# ✅ Server identity certificate created
+# ✔ Server identity certificate created
 # 🔒 Private key secured (permissions: 600)
 # 🚀 TrustEdge Server starting with authentication...
 
@@ -1074,7 +1074,7 @@ chmod 700 ~/.config/trustedge/certificates
 # Output shows:
 # 🔧 Authentication enabled - generating client certificates...
 # 📁 Certificate location: ~/.config/trustedge/certificates/mobile-client.key
-# ✅ Client identity certificate created
+# ✔ Client identity certificate created
 # 🔒 Private key secured (permissions: 600)
 # 🔐 Connecting to authenticated server...
 # 🤝 Performing mutual authentication handshake...
@@ -1146,7 +1146,7 @@ rm /opt/trustedge/certificates/production-server.cert
 
 # Output shows new certificate generation:
 # 🔧 Authentication enabled - generating server certificates...
-# ✅ New server identity certificate created
+# ✔ New server identity certificate created
 # 🔄 Certificate rotation completed
 ```
 

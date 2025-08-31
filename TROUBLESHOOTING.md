@@ -592,11 +592,11 @@ Enable verbose output for detailed troubleshooting:
   --verbose
 
 # Example verbose output:
-# 📄 Input Type: File
-# 📋 MIME Type: application/json
-# ✅ Output: Original file format preserved
-# ✅ Decrypt complete. Wrote 1337 bytes.
-# 📄 Output file preserves original format and should be directly usable.
+# ● Input Type: File
+#   MIME Type: application/json
+# ✔ Output: Original file format preserved
+# ✔ Decrypt complete. Wrote 1337 bytes.
+# ● Output file preserves original format and should be directly usable.
 ```
 
 ### Format Inspection Commands

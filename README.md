@@ -136,10 +136,10 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
   --verbose
 
 # Example verbose output:
-# 📄 Input Type: File
-# 📋 MIME Type: text/plain
-# ✅ Output: Original file format preserved
-# ✅ Decrypt complete. Wrote 1337 bytes.
+# ● Input Type: File
+#   MIME Type: text/plain
+# ✔ Output: Original file format preserved
+# ✔ Decrypt complete. Wrote 1337 bytes.
 
 # Verify integrity
 diff document.txt recovered.txt  # Should be identical
