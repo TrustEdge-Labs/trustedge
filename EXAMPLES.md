@@ -102,6 +102,106 @@ flowchart TD
 
 ---
 
+## Format-Aware Encryption and Inspection
+
+### Multi-Format File Handling
+
+TrustEdge automatically detects and preserves file formats during encryption/decryption:
+
+```bash
+# Test with different file types
+echo '{"project": "TrustEdge", "version": "2.0"}' > config.json
+echo "%PDF-1.4..." > document.pdf  # Minimal PDF
+echo "Binary data" > data.bin
+
+# Encrypt multiple file types
+./target/release/trustedge-audio --input config.json --envelope config.trst --key-out json.key --verbose
+./target/release/trustedge-audio --input document.pdf --envelope doc.trst --key-out pdf.key --verbose
+./target/release/trustedge-audio --input data.bin --envelope binary.trst --key-out bin.key --verbose
+
+# Expected verbose output shows MIME detection:
+# 📄 Input: config.json (119 bytes)
+# 📋 MIME Type: application/json detected
+# ✅ Encryption complete. Original format preserved.
+```
+
+### Archive Inspection Without Decryption
+
+```bash
+# Inspect encrypted archives to see format information
+./target/release/trustedge-audio --input config.trst --inspect --verbose
+
+# Example output:
+# TrustEdge Archive Information:
+#   File: config.trst
+#   Format Version: 1
+#   Algorithm: AES-256-GCM
+#   Chunk Size: 4096 bytes
+#   Data Type: File
+#   MIME Type: application/json
+#   Output Behavior: Original file format preserved
+
+./target/release/trustedge-audio --input doc.trst --inspect --verbose
+
+# Example output:
+# TrustEdge Archive Information:
+#   File: doc.trst
+#   Format Version: 1
+#   Algorithm: AES-256-GCM  
+#   Data Type: File
+#   MIME Type: application/pdf
+#   Output Behavior: Original file format preserved
+```
+
+### Format-Aware Decryption Workflow
+
+```mermaid
+graph TD
+    A[Input File] --> B[TrustEdge Encrypt]
+    B --> C[MIME Detection]
+    C --> D[Store in Manifest]
+    D --> E[.trst Archive]
+    
+    E --> F[Inspect Mode]
+    E --> G[Decrypt Mode]
+    
+    F --> H[Show Format Info]
+    G --> I[Read Manifest]
+    I --> J{Data Type?}
+    
+    J -->|File| K[Preserve Format]
+    J -->|Audio| L[Raw PCM + Metadata]
+    
+    K --> M[📄 Original Format Output]
+    L --> N[🎵 PCM + Conversion Info]
+    
+    style C fill:#e1f5fe
+    style H fill:#fff3e0
+    style M fill:#e8f5e8
+    style N fill:#ffe8e8
+```
+
+### Enhanced Decryption with Verbose Output
+
+```bash
+# Decrypt with detailed format information
+./target/release/trustedge-audio --decrypt --input config.trst --out config_restored.json --key-hex $(cat json.key) --verbose
+
+# Enhanced output shows format awareness:
+# 📄 Input Type: File
+# 📋 MIME Type: application/json
+# ✅ Output: Original file format preserved
+# ✅ Decrypt complete. Wrote 119 bytes.
+# 📄 Output file preserves original format and should be directly usable.
+# 📋 File type: application/json
+
+# Verify format preservation
+diff config.json config_restored.json  # Should be identical
+file config_restored.json              # Shows: JSON text data
+```
+
+---
+
 ## Basic File Encryption
 
 ### Simple Document Encryption
@@ -224,28 +324,35 @@ diff business_plan.txt roundtrip.txt
 ### Decrypt and Analyze Audio
 
 ```bash
-# Decrypt the interview audio
+# Decrypt the interview audio (produces raw PCM data)
 ./target/release/trustedge-audio \
   --decrypt \
   --input interview.trst \
-  --out interview_decrypted.wav \
+  --out interview_decrypted.raw \
   --backend keyring \
   --salt-hex "interview_salt_abcdef1234567890" \
-  --use-keyring
+  --use-keyring \
+  --verbose
 
 # Check the metadata
 ./target/release/trustedge-audio --inspect interview.trst
 # TrustEdge Archive Contents:
 #   Data Type: Audio
 #   Original Size: 52428800 bytes
-#   Audio Format: f32
+#   Audio Format: f32 (32-bit float PCM)
 #   Sample Rate: 44100 Hz
 #   Channels: 1
 #   Encryption: AES-256-GCM
 #   Created: 2024-01-15 15:45:33 UTC
 
-# Convert to MP3 for sharing (requires ffmpeg)
-ffmpeg -i interview_decrypted.wav -c:a libmp3lame -b:a 128k interview_final.mp3
+# Convert raw PCM to WAV using metadata from above
+ffmpeg -f f32le -ar 44100 -ac 1 -i interview_decrypted.raw interview_playable.wav
+
+# Convert directly to MP3 for sharing
+ffmpeg -f f32le -ar 44100 -ac 1 -i interview_decrypted.raw -c:a libmp3lame -b:a 128k interview_final.mp3
+
+# Play directly without conversion (requires sox)
+play -t f32 -r 44100 -c 1 interview_decrypted.raw
 ```
 
 ---
@@ -769,6 +876,149 @@ fi
 ```
 
 **🔧 For detailed audio troubleshooting and system configuration, see [TESTING.md](TESTING.md#audio-system-testing).**
+
+### Audio Post-Processing and Format Conversion
+
+#### Understanding TrustEdge Output Behavior
+
+**TrustEdge decryption behavior depends on the original input type:**
+
+**File Inputs (Original Format Preserved):**
+```bash
+# Encrypt any file type
+./target/release/trustedge-audio \
+  --input music.mp3 \
+  --envelope music.trst \
+  --key-hex $KEY
+
+# Decrypt preserves original format
+./target/release/trustedge-audio \
+  --decrypt \
+  --input music.trst \
+  --out music_recovered.mp3 \  # Will be playable MP3
+  --key-hex $KEY
+
+# Works for any file type:
+# PDF → encrypt → decrypt → PDF
+# JPG → encrypt → decrypt → JPG  
+# WAV → encrypt → decrypt → WAV
+```
+
+**Live Audio Inputs (Raw PCM Output):**
+```bash
+# Capture live audio
+./target/release/trustedge-audio \
+  --live-capture \
+  --max-duration 10 \
+  --envelope recording.trst \
+  --key-hex $KEY \
+  --verbose
+
+# Decrypt outputs raw PCM data (not playable)
+./target/release/trustedge-audio \
+  --decrypt \
+  --input recording.trst \
+  --out audio.raw \  # Raw PCM data - requires conversion
+  --key-hex $KEY \
+  --verbose
+
+# The verbose output shows the PCM parameters:
+# Sample Rate: 44100Hz, Channels: 2, Format: f32 (32-bit float)
+```
+
+#### Converting Raw PCM to Standard Formats (Live Audio Only)
+
+**Note:** These conversions only apply to live audio captures. File inputs preserve their original format.
+
+**Basic WAV Conversion:**
+```bash
+# Mono 44.1kHz live audio to WAV
+ffmpeg -f f32le -ar 44100 -ac 1 -i live_mono_audio.raw live_mono_audio.wav
+
+# Stereo 48kHz live audio to WAV
+ffmpeg -f f32le -ar 48000 -ac 2 -i live_stereo_audio.raw live_stereo_audio.wav
+
+# High-quality podcast (mono 22kHz live audio to WAV)
+ffmpeg -f f32le -ar 22050 -ac 1 -i live_podcast.raw live_podcast.wav
+```
+
+**Compressed Format Conversion:**
+```bash
+# Convert live audio to MP3 (efficient for sharing)
+ffmpeg -f f32le -ar 44100 -ac 2 -i live_audio.raw -c:a libmp3lame -b:a 192k live_audio.mp3
+
+# Convert live audio to OGG Vorbis (open source)
+ffmpeg -f f32le -ar 44100 -ac 2 -i live_audio.raw -c:a libvorbis -q:a 5 live_audio.ogg
+
+# Convert live audio to AAC (compatibility)
+ffmpeg -f f32le -ar 44100 -ac 2 -i live_audio.raw -c:a aac -b:a 128k live_audio.m4a
+```
+
+**Audio Processing with External Tools:**
+
+```bash
+# Normalize audio levels (requires sox)
+sox -t f32 -r 44100 -c 1 input.raw output.wav norm
+
+# Apply noise reduction (requires sox)
+sox -t f32 -r 44100 -c 1 input.raw output.wav noisered profile.txt 0.21
+
+# Speed adjustment (requires sox)
+sox -t f32 -r 44100 -c 1 input.raw output.wav speed 1.25  # 25% faster
+
+# Extract specific time range (requires sox)
+sox -t f32 -r 44100 -c 1 input.raw output.wav trim 10 30  # Extract 30s from 10s mark
+```
+
+**Direct Playback without Conversion:**
+```bash
+# Play raw PCM directly (Linux/macOS with sox)
+play -t f32 -r 44100 -c 2 stereo_audio.raw
+
+# Play with volume adjustment
+play -t f32 -r 44100 -c 1 mono_audio.raw vol 0.5
+
+# Play in a loop
+play -t f32 -r 44100 -c 1 audio.raw repeat 3
+```
+
+**Automated Conversion Scripts:**
+```bash
+# Script: convert_trustedge_audio.sh
+#!/bin/bash
+TRST_FILE="$1"
+KEY="$2"
+OUTPUT_NAME="${3:-converted_audio}"
+
+# Decrypt to raw PCM
+./target/release/trustedge-audio \
+  --decrypt \
+  --input "$TRST_FILE" \
+  --out temp.raw \
+  --key-hex "$KEY" \
+  --verbose 2>&1 | tee metadata.txt
+
+# Extract audio parameters from verbose output
+SAMPLE_RATE=$(grep "Sample Rate:" metadata.txt | cut -d: -f2 | tr -d ' Hz')
+CHANNELS=$(grep "Channels:" metadata.txt | cut -d: -f2 | tr -d ' ')
+
+# Convert to WAV using extracted parameters
+ffmpeg -f f32le -ar "$SAMPLE_RATE" -ac "$CHANNELS" -i temp.raw "${OUTPUT_NAME}.wav"
+
+# Convert to MP3
+ffmpeg -f f32le -ar "$SAMPLE_RATE" -ac "$CHANNELS" -i temp.raw -c:a libmp3lame -b:a 192k "${OUTPUT_NAME}.mp3"
+
+# Cleanup
+rm temp.raw metadata.txt
+
+echo "Converted $TRST_FILE to ${OUTPUT_NAME}.wav and ${OUTPUT_NAME}.mp3"
+```
+
+**Usage:**
+```bash
+chmod +x convert_trustedge_audio.sh
+./convert_trustedge_audio.sh recording.trst $MY_KEY podcast_episode
+```
 
 ---
 

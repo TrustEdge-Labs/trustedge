@@ -299,6 +299,38 @@ sox -d test_system.wav trim 0 3  # macOS/Linux
   --max-duration 5
 ```
 
+#### Decrypted Audio Not Playable
+**Cause:** Live audio captures output raw PCM data, not playable audio files.
+
+**Important:** TrustEdge decryption behavior varies by input type:
+- **File inputs** (MP3, WAV, etc.): Original format preserved
+- **Live audio captures** (`--live-capture`): Outputs **raw PCM data** (32-bit float, little-endian)
+
+**Solutions:**
+```bash
+# For live audio captures: Always use .raw extension for clarity
+./target/release/trustedge-audio \
+  --decrypt \
+  --input live_audio.trst \
+  --out audio.raw \
+  --key-hex $KEY \
+  --verbose
+
+# For live audio captures: Extract audio parameters from verbose output
+# Look for: "Sample Rate: 44100Hz, Channels: 2, Format: f32"
+
+# For live audio captures: Convert raw PCM to playable WAV
+ffmpeg -f f32le -ar 44100 -ac 2 -i audio.raw audio.wav
+
+# For file inputs: Use original extension
+./target/release/trustedge-audio \
+  --decrypt \
+  --input music_file.trst \
+  --out music_file.mp3 \
+  --key-hex $KEY
+# Output will be playable MP3 file (original format preserved)
+```
+
 **📋 For comprehensive audio testing and system configuration, see [TESTING.md](TESTING.md#audio-system-testing).**
 
 ---
@@ -356,7 +388,142 @@ file suspicious_file.trst
 
 ## File and Format Issues
 
+### Format-Aware Decryption Issues
+
+#### Unknown File Type Detection
+**Symptoms:** File shows as `application/octet-stream` instead of expected type
+
+**Diagnosis:**
+```bash
+# Inspect file format detection
+./target/release/trustedge-audio --input file.trst --inspect --verbose
+
+# Check original file extension and content
+file original_file.pdf  # Should show PDF document
+hexdump -C original_file.pdf | head -2  # Check file headers
+```
+
+**Solutions:**
+```bash
+# For unknown extensions, the file will still decrypt correctly
+# but will show as binary data. This is expected behavior.
+
+# To verify correct handling:
+./target/release/trustedge-audio --decrypt --input file.trst --out restored_file.pdf --key-hex $KEY
+file restored_file.pdf  # Should match original type
+diff original_file.pdf restored_file.pdf  # Should be identical
+```
+
+#### MIME Type Mismatch
+**Symptoms:** Expected MIME type doesn't match detected type
+
+**Common Causes:**
+- File extension doesn't match content (e.g., `.txt` file containing JSON)
+- Corrupted file headers
+- Custom file formats not in MIME database
+
+**Verification:**
+```bash
+# Check what MIME type was detected
+./target/release/trustedge-audio --input file.trst --inspect
+
+# Expected output:
+# MIME Type: application/pdf  (for PDF files)
+# MIME Type: application/json (for JSON files)
+# MIME Type: text/plain      (for text files)
+# MIME Type: application/octet-stream (for unknown types)
+```
+
+#### Format Inspection Without Decryption
+**Use Case:** Verify file type before decryption
+
+```bash
+# Inspect encrypted archive
+./target/release/trustedge-audio --input suspicious_file.trst --inspect --verbose
+
+# Example output:
+# TrustEdge Archive Information:
+#   File: suspicious_file.trst
+#   Format Version: 1
+#   Algorithm: AES-256-GCM
+#   Data Type: File
+#   MIME Type: application/pdf
+#   Output Behavior: Original file format preserved
+
+# This tells you it's a PDF file without decrypting it
+```
+
 ### Format Validation
+
+#### Header Corruption
+**Test for header corruption:**
+```bash
+# Verify file magic bytes
+hexdump -C file.trst | head -1
+# Should show expected magic bytes
+
+# Test with known good file
+cp known_good.trst test_copy.trst
+./target/release/trustedge-audio --decrypt --input test_copy.trst
+```
+
+#### Record Tampering Detection
+**Symptoms:** Decryption fails partway through file
+
+**Validation Test:**
+```bash
+# Create test file
+echo "test data" > test.txt
+
+# Encrypt
+./target/release/trustedge-audio \
+  --input test.txt \
+  --envelope test.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# Verify encryption worked
+./target/release/trustedge-audio \
+  --decrypt \
+  --input test.trst \
+  --out recovered.txt \
+  --key-hex $(cat last_key.hex)
+
+# Compare files
+diff test.txt recovered.txt
+```
+
+### Format-Aware Output Verification
+
+#### Audio vs File Confusion
+**Symptoms:** Expected audio file but got different output
+
+**Diagnosis:**
+```bash
+# Check what type of data was originally encrypted
+./target/release/trustedge-audio --input file.trst --inspect
+
+# For file inputs (MP3, WAV, etc.):
+# Data Type: File
+# MIME Type: audio/mpeg (or audio/wav)
+# Output Behavior: Original file format preserved
+
+# For live audio capture:
+# Data Type: Audio
+# Sample Rate: 44100 Hz
+# Channels: 1 (mono)
+# Output Behavior: Raw PCM data (requires conversion)
+```
+
+**Solution:**
+```bash
+# File inputs preserve format automatically
+./target/release/trustedge-audio --decrypt --input music.trst --out music.mp3 --key-hex $KEY
+# Output: Playable MP3 file
+
+# Live audio requires conversion
+./target/release/trustedge-audio --decrypt --input live_capture.trst --out audio.raw --key-hex $KEY
+ffmpeg -f f32le -ar 44100 -ac 1 -i audio.raw audio.wav
+```
 
 #### Header Corruption
 **Test for header corruption:**
@@ -415,6 +582,39 @@ Enable verbose output for detailed troubleshooting:
   --server 127.0.0.1:8080 \
   --input file.txt \
   --verbose
+
+# File encryption/decryption with format details
+./target/release/trustedge-audio \
+  --decrypt \
+  --input file.trst \
+  --out restored.txt \
+  --key-hex $KEY \
+  --verbose
+
+# Example verbose output:
+# 📄 Input Type: File
+# 📋 MIME Type: application/json
+# ✅ Output: Original file format preserved
+# ✅ Decrypt complete. Wrote 1337 bytes.
+# 📄 Output file preserves original format and should be directly usable.
+```
+
+### Format Inspection Commands
+
+```bash
+# Quick format check (no decryption)
+./target/release/trustedge-audio --input file.trst --inspect
+
+# Detailed format inspection
+./target/release/trustedge-audio --input file.trst --inspect --verbose
+
+# Compare multiple files
+for file in *.trst; do
+  echo "=== $file ==="
+  ./target/release/trustedge-audio --input "$file" --inspect
+  echo
+done
+```
 
 # Authentication debug
 ./target/release/trustedge-server \

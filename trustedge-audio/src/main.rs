@@ -216,6 +216,19 @@ struct Args {
     /// Maximum capture duration in seconds (0 = unlimited)
     #[arg(long, default_value_t = 0)]
     max_duration: u64,
+
+    // === Format-Aware Decryption Options ===
+    /// Show data type information from manifest without decryption
+    #[arg(long)]
+    inspect: bool,
+
+    /// Force raw output regardless of data type
+    #[arg(long)]
+    force_raw: bool,
+
+    /// Enable verbose output for format details
+    #[arg(long)]
+    verbose: bool,
 }
 
 /// Helpers
@@ -414,6 +427,7 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     // records
     let mut total_out = 0usize;
     let mut expected_seq: u64 = 1;
+    let mut manifest_data_type: Option<DataType> = None;
 
     // record loop
     loop {
@@ -468,6 +482,15 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
         // manifest contents - deserialize first so we can use it for verification
         let m: Manifest = bincode::deserialize(&rec.sm.manifest).context("manifest decode")?;
 
+        // Store data type from first manifest
+        if manifest_data_type.is_none() {
+            manifest_data_type = Some(m.data_type.clone());
+            
+            if args.verbose {
+                print_format_info(&m.data_type);
+            }
+        }
+
         // verify invariants
         anyhow::ensure!(
             rec.nonce[..4] == fh.nonce_prefix,
@@ -509,8 +532,222 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     w.flush().context("flush plaintext")?;
     key_bytes.zeroize();
 
-    eprintln!("Decrypt complete. Wrote {} bytes.", total_out);
+    // Provide format-aware completion message
+    provide_completion_message(manifest_data_type.as_ref(), total_out, args);
     Ok(())
+}
+
+fn inspect_envelope(args: &Args) -> Result<()> {
+    use std::fs::File;
+    use std::io::{BufReader, Read};
+
+    // io
+    let input = args
+        .input
+        .as_ref()
+        .ok_or_else(|| anyhow!("--input is required for --inspect"))?;
+    let mut r = BufReader::new(File::open(input).context("open envelope")?);
+
+    // preamble
+    let mut magic = [0u8; 4];
+    r.read_exact(&mut magic).context("read magic")?;
+    anyhow::ensure!(&magic == MAGIC, "bad magic");
+    let mut ver = [0u8; 1];
+    r.read_exact(&mut ver).context("read version")?;
+    anyhow::ensure!(ver[0] == VERSION, "unsupported version");
+
+    // stream header
+    let sh: StreamHeader = deserialize_from(&mut r).context("read stream header")?;
+    anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
+
+    // turn Vec<u8> into the fixed array
+    let header_arr: [u8; trustedge_audio::HEADER_LEN] = sh
+        .header
+        .as_slice()
+        .try_into()
+        .context("stream header length != 58")?;
+
+    // parse the 58-byte header into a FileHeader
+    let fh = trustedge_audio::FileHeader::from_bytes(&header_arr);
+
+    // verify stored header hash matches recompute
+    let hh = blake3::hash(&sh.header);
+    anyhow::ensure!(hh.as_bytes() == &sh.header_hash, "header_hash mismatch");
+
+    println!("TrustEdge Archive Information:");
+    println!("  File: {}", input.display());
+    println!("  Format Version: {}", ver[0]);
+    println!("  Algorithm: {}", if fh.alg == 1 { "AES-256-GCM" } else { "Unknown" });
+    println!("  Chunk Size: {} bytes", fh.chunk_size);
+
+    // Read first record to get manifest info
+    let rec: Record = deserialize_from(&mut r).context("read first record")?;
+    
+    // manifest contents 
+    let m: Manifest = bincode::deserialize(&rec.sm.manifest).context("manifest decode")?;
+
+    print_manifest_info(&m);
+
+    Ok(())
+}
+
+fn print_manifest_info(manifest: &Manifest) {
+    println!("  Sequence Start: {}", manifest.seq);
+    
+    match &manifest.data_type {
+        DataType::File { mime_type } => {
+            println!("  Data Type: File");
+            if let Some(mime) = mime_type {
+                println!("  MIME Type: {}", mime);
+            } else {
+                println!("  MIME Type: Not specified");
+            }
+            println!("  Output Behavior: Original file format will be preserved during decryption");
+        }
+        DataType::Audio { sample_rate, channels, format } => {
+            println!("  Data Type: Audio (Live Capture)");
+            println!("  Sample Rate: {} Hz", sample_rate);
+            println!("  Channels: {}", channels);
+            println!("  Format: {:?}", format);
+            println!("  Output Behavior: Raw PCM data (requires conversion for playback)");
+            println!("  Conversion Command: ffmpeg -f f32le -ar {} -ac {} -i output.raw output.wav", 
+                sample_rate, channels);
+        }
+        DataType::Video { width, height, fps, format } => {
+            println!("  Data Type: Video");
+            println!("  Resolution: {}x{}", width, height);
+            println!("  FPS: {}", fps);
+            println!("  Format: {}", format);
+            println!("  Output Behavior: Raw video data");
+        }
+        DataType::Sensor { sensor_type } => {
+            println!("  Data Type: Sensor");
+            println!("  Sensor Type: {}", sensor_type);
+            println!("  Output Behavior: Raw sensor data");
+        }
+        DataType::Unknown => {
+            println!("  Data Type: Unknown");
+            println!("  Output Behavior: Raw data (format unknown)");
+        }
+    }
+}
+
+fn print_format_info(data_type: &DataType) {
+    match data_type {
+        DataType::File { mime_type } => {
+            eprintln!("📄 Input Type: File");
+            if let Some(mime) = mime_type {
+                eprintln!("📋 MIME Type: {}", mime);
+            }
+            eprintln!("✅ Output: Original file format preserved");
+        }
+        DataType::Audio { sample_rate, channels, format } => {
+            eprintln!("🎵 Input Type: Live Audio");
+            eprintln!("📊 Sample Rate: {} Hz", sample_rate);
+            eprintln!("📻 Channels: {}", channels);
+            eprintln!("🔧 Format: {:?}", format);
+            eprintln!("⚠️  Output: Raw PCM data (requires conversion)");
+        }
+        DataType::Video { width, height, fps, format } => {
+            eprintln!("🎬 Input Type: Video");
+            eprintln!("📐 Resolution: {}x{}", width, height);
+            eprintln!("🎞️  FPS: {}", fps);
+            eprintln!("📋 Format: {}", format);
+        }
+        DataType::Sensor { sensor_type } => {
+            eprintln!("🔬 Input Type: Sensor Data");
+            eprintln!("🔧 Sensor Type: {}", sensor_type);
+        }
+        DataType::Unknown => {
+            eprintln!("❓ Input Type: Unknown");
+        }
+    }
+}
+
+fn provide_completion_message(data_type: Option<&DataType>, total_bytes: usize, args: &Args) {
+    eprintln!("✅ Decrypt complete. Wrote {} bytes.", total_bytes);
+    
+    if let Some(data_type) = data_type {
+        match data_type {
+            DataType::File { mime_type } => {
+                eprintln!("📄 Output file preserves original format and should be directly usable.");
+                if let Some(mime) = mime_type {
+                    eprintln!("📋 File type: {}", mime);
+                }
+            }
+            DataType::Audio { sample_rate, channels, format: _ } => {
+                if args.force_raw {
+                    eprintln!("⚠️  Raw PCM output (--force-raw specified)");
+                } else {
+                    eprintln!("🎵 Live audio decrypted to raw PCM format");
+                    eprintln!("🔧 To convert to playable audio:");
+                    eprintln!("   ffmpeg -f f32le -ar {} -ac {} -i {} output.wav", 
+                        sample_rate, channels, 
+                        args.out.as_ref().map(|p| p.display().to_string()).unwrap_or_else(|| "output.raw".to_string()));
+                }
+            }
+            DataType::Video { .. } => {
+                eprintln!("🎬 Video data decrypted to raw format");
+            }
+            DataType::Sensor { sensor_type } => {
+                eprintln!("🔬 Sensor data decrypted: {}", sensor_type);
+            }
+            DataType::Unknown => {
+                eprintln!("❓ Unknown data type - raw bytes output");
+            }
+        }
+    }
+}
+
+fn determine_data_type(input_source: &InputSource, args: &Args) -> DataType {
+    match input_source {
+        InputSource::File(path) => {
+            let mime_type = path
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .map(|ext| match ext.to_lowercase().as_str() {
+                    "pdf" => "application/pdf".to_string(),
+                    "jpg" | "jpeg" => "image/jpeg".to_string(),
+                    "png" => "image/png".to_string(),
+                    "gif" => "image/gif".to_string(),
+                    "webp" => "image/webp".to_string(),
+                    "mp3" => "audio/mpeg".to_string(),
+                    "wav" => "audio/wav".to_string(),
+                    "flac" => "audio/flac".to_string(),
+                    "ogg" => "audio/ogg".to_string(),
+                    "m4a" => "audio/mp4".to_string(),
+                    "mp4" => "video/mp4".to_string(),
+                    "avi" => "video/x-msvideo".to_string(),
+                    "mkv" => "video/x-matroska".to_string(),
+                    "webm" => "video/webm".to_string(),
+                    "mov" => "video/quicktime".to_string(),
+                    "txt" => "text/plain".to_string(),
+                    "md" => "text/markdown".to_string(),
+                    "html" | "htm" => "text/html".to_string(),
+                    "css" => "text/css".to_string(),
+                    "js" => "application/javascript".to_string(),
+                    "json" => "application/json".to_string(),
+                    "xml" => "application/xml".to_string(),
+                    "zip" => "application/zip".to_string(),
+                    "tar" => "application/x-tar".to_string(),
+                    "gz" => "application/gzip".to_string(),
+                    "7z" => "application/x-7z-compressed".to_string(),
+                    "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document".to_string(),
+                    "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".to_string(),
+                    "pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation".to_string(),
+                    "exe" => "application/x-executable".to_string(),
+                    "bin" | "dat" => "application/octet-stream".to_string(),
+                    _ => "application/octet-stream".to_string(), // Binary fallback
+                });
+            
+            DataType::File { mime_type }
+        }
+        InputSource::LiveAudio => DataType::Audio {
+            sample_rate: args.sample_rate,
+            channels: args.channels,
+            format: AudioFormat::F32Le, // Current implementation uses f32 samples
+        },
+    }
 }
 
 fn main() -> Result<()> {
@@ -532,6 +769,11 @@ fn main() -> Result<()> {
         backend.store_passphrase(passphrase)?;
         println!("Passphrase stored in system keyring");
         return Ok(());
+    }
+
+    // Handle --inspect option
+    if args.inspect {
+        return inspect_envelope(&args);
     }
 
     if args.decrypt {
@@ -693,14 +935,7 @@ fn main() -> Result<()> {
             .as_millis() as u64;
 
         // Determine data type for manifest
-        let data_type = match &input_source {
-            InputSource::File(_) => DataType::File { mime_type: None },
-            InputSource::LiveAudio => DataType::Audio {
-                sample_rate: args.sample_rate,
-                channels: args.channels,
-                format: AudioFormat::F32Le, // Current implementation uses f32 samples
-            },
-        };
+        let data_type = determine_data_type(&input_source, &args);
 
         let m = Manifest {
             v: 1,
