@@ -212,18 +212,121 @@ TrustEdge certificates contain:
 
 ## Certificate Management
 
-### Automatic Generation
+### Server Credential Storage
 
-Certificates are generated automatically when missing:
+**Where Server Identity Lives:**
 
 ```bash
-# Server generates certificates on first --require-auth run
-./target/release/trustedge-server --require-auth --server-identity "Production Server"
+# Default server certificate location (current working directory)
+./trustedge-server.key    # Ed25519 private key (32 bytes + metadata)
+./trustedge-server.cert   # Self-signed certificate with identity
+
+# Custom server certificate path
+./target/release/trustedge-server \
+  --require-auth \
+  --server-key /opt/trustedge/server-production.key \
+  --server-identity "Production TrustEdge Server v1.0"
 
 # Creates:
-# - Server signing key (Ed25519 private key)
-# - Server identity certificate
-# - Stored in current directory or --server-key path
+/opt/trustedge/server-production.key   # Private key file
+/opt/trustedge/server-production.cert  # Certificate file
+```
+
+**Server Certificate Generation Process:**
+
+1. **Check for Existing Certificate**: Server looks for `--server-key` path or `./trustedge-server.key`
+2. **Generate Ed25519 Key Pair**: If missing, creates new 256-bit private key
+3. **Create Self-Signed Certificate**: Binds server identity to public key
+4. **Write to Filesystem**: Saves both private key and certificate files
+5. **Set File Permissions**: Restricts private key access (recommended: `chmod 600`)
+
+### Client Credential Storage
+
+**Where Client Certificates Get Stored:**
+
+```bash
+# Default client certificate location (current working directory)
+./trustedge-client.key    # Ed25519 private key (32 bytes + metadata)
+./trustedge-client.cert   # Self-signed certificate with identity
+
+# Custom client certificate path
+./target/release/trustedge-client \
+  --require-auth \
+  --client-key ~/.config/trustedge/mobile-app.key \
+  --client-identity "Executive Mobile App v2.1"
+
+# Creates:
+~/.config/trustedge/mobile-app.key   # Private key file
+~/.config/trustedge/mobile-app.cert  # Certificate file
+```
+
+**Client Certificate Generation Process:**
+
+1. **Check for Existing Certificate**: Client looks for `--client-key` path or `./trustedge-client.key`
+2. **Generate Ed25519 Key Pair**: If missing, creates new 256-bit private key
+3. **Create Self-Signed Certificate**: Binds client identity to public key
+4. **Write to Filesystem**: Saves both private key and certificate files
+5. **Secure Storage**: Client apps should store keys in secure locations
+
+### Certificate File Format
+
+**Private Key File (`.key`):**
+```
+-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEIFOr7...Ed25519PrivateKeyData...
+-----END PRIVATE KEY-----
+```
+
+**Certificate File (`.cert`):**
+```json
+{
+  "identity": "Production TrustEdge Server v1.0",
+  "public_key": "AGd8f2V1...",
+  "signature": "BDGd9f8A...",
+  "created": "2025-08-30T10:15:30Z"
+}
+```
+
+### Storage Security Best Practices
+
+**File Permissions:**
+```bash
+# Secure server private key (root/service account only)
+chmod 600 /opt/trustedge/server-production.key
+chown trustedge-service:trustedge-service /opt/trustedge/server-production.key
+
+# Secure client private key (user only)  
+chmod 600 ~/.config/trustedge/mobile-app.key
+
+# Certificate files can be world-readable (contain only public data)
+chmod 644 /opt/trustedge/server-production.cert
+chmod 644 ~/.config/trustedge/mobile-app.cert
+```
+
+**Directory Structure Examples:**
+
+```
+# Production Server Layout
+/opt/trustedge/
+├── server-production.key     # 600 trustedge-service:trustedge-service  
+├── server-production.cert    # 644 trustedge-service:trustedge-service
+├── logs/
+└── config/
+
+# Client Application Layout  
+~/.config/trustedge/
+├── mobile-app.key           # 600 user:user
+├── mobile-app.cert          # 644 user:user
+├── server-certificates/     # Trusted server cert store (optional)
+└── config.json
+
+# Development Environment
+./trustedge-audio/
+├── trustedge-server.key     # 600 developer:developer
+├── trustedge-server.cert    # 644 developer:developer  
+├── trustedge-client.key     # 600 developer:developer
+├── trustedge-client.cert    # 644 developer:developer
+└── target/release/
 ```
 
 ### Manual Certificate Paths
@@ -247,6 +350,8 @@ Certificates are generated automatically when missing:
 - **Self-Signed**: Each certificate self-signed with corresponding private key
 - **Identity Binding**: Human-readable identity cryptographically bound to key
 - **File Protection**: Private keys should be protected with appropriate file permissions
+- **No Certificate Authority**: Eliminates single point of failure and complex PKI infrastructure
+- **Automatic Rotation**: Generate new certificates by deleting existing files and restarting
 
 ---
 

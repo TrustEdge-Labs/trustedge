@@ -634,6 +634,132 @@ cat decrypted_chunk_*.wav > reconstructed_stream.wav
 
 ## Key Management Scenarios
 
+### Certificate and Credential Management
+
+#### Server Certificate Setup for Production
+
+```bash
+# Create secure directory for production server
+sudo mkdir -p /opt/trustedge/certificates
+sudo chown trustedge-service:trustedge-service /opt/trustedge/certificates
+sudo chmod 750 /opt/trustedge/certificates
+
+# Generate server certificates in secure location
+sudo -u trustedge-service ./target/release/trustedge-server \
+  --require-auth \
+  --server-identity "Production TrustEdge Server - East Coast DC1" \
+  --server-key /opt/trustedge/certificates/production-server.key \
+  --listen 0.0.0.0:443 \
+  --verbose
+
+# Output shows:
+# 🔧 Authentication enabled - generating server certificates...
+# 📁 Certificate location: /opt/trustedge/certificates/production-server.key
+# ✅ Server identity certificate created
+# 🔒 Private key secured (permissions: 600)
+# 🚀 TrustEdge Server starting with authentication...
+
+# Verify file permissions
+ls -la /opt/trustedge/certificates/
+# -rw------- trustedge-service trustedge-service production-server.key
+# -rw-r--r-- trustedge-service trustedge-service production-server.cert
+```
+
+#### Client Certificate Management for Applications
+
+```bash
+# Create user-specific certificate directory
+mkdir -p ~/.config/trustedge/certificates
+chmod 700 ~/.config/trustedge/certificates
+
+# Generate client certificates for mobile application
+./target/release/trustedge-client \
+  --require-auth \
+  --client-identity "TrustEdge Mobile Client v3.1 - User: exec@company.com" \
+  --client-key ~/.config/trustedge/certificates/mobile-client.key \
+  --server 127.0.0.1:443 \
+  --input secure_document.pdf \
+  --verbose
+
+# Output shows:
+# 🔧 Authentication enabled - generating client certificates...
+# 📁 Certificate location: ~/.config/trustedge/certificates/mobile-client.key
+# ✅ Client identity certificate created
+# 🔒 Private key secured (permissions: 600)
+# 🔐 Connecting to authenticated server...
+# 🤝 Performing mutual authentication handshake...
+
+# Verify client certificate files
+ls -la ~/.config/trustedge/certificates/
+# -rw------- user user mobile-client.key
+# -rw-r--r-- user user mobile-client.cert
+```
+
+#### Multi-Environment Certificate Strategy
+
+```bash
+# Development environment (local testing)
+./target/release/trustedge-server \
+  --require-auth \
+  --server-identity "Development Server - Local Testing" \
+  --server-key ./dev-certificates/dev-server.key \
+  --listen 127.0.0.1:8080
+
+./target/release/trustedge-client \
+  --require-auth \
+  --client-identity "Dev Client - Test Suite" \
+  --client-key ./dev-certificates/dev-client.key \
+  --server 127.0.0.1:8080 \
+  --input test_data.bin
+
+# Staging environment (integration testing)
+./target/release/trustedge-server \
+  --require-auth \
+  --server-identity "Staging Server - Integration Tests" \
+  --server-key /etc/trustedge/staging/server.key \
+  --listen 0.0.0.0:8443
+
+./target/release/trustedge-client \
+  --require-auth \
+  --client-identity "Staging Client - CI/CD Pipeline" \
+  --client-key ~/.config/trustedge/staging-client.key \
+  --server staging.internal:8443 \
+  --input integration_test.data
+
+# Production environment (live deployment)
+./target/release/trustedge-server \
+  --require-auth \
+  --server-identity "Production Server - Primary DC" \
+  --server-key /opt/trustedge/certs/production.key \
+  --listen 0.0.0.0:443 \
+  --session-timeout 1800
+```
+
+#### Certificate Rotation and Backup
+
+```bash
+# Backup existing certificates before rotation
+cp /opt/trustedge/certificates/production-server.key \
+   /opt/trustedge/backup/production-server-$(date +%Y%m%d).key.bak
+cp /opt/trustedge/certificates/production-server.cert \
+   /opt/trustedge/backup/production-server-$(date +%Y%m%d).cert.bak
+
+# Generate new certificates (removes old ones)
+rm /opt/trustedge/certificates/production-server.key
+rm /opt/trustedge/certificates/production-server.cert
+
+./target/release/trustedge-server \
+  --require-auth \
+  --server-identity "Production Server - Rotated $(date +%Y-%m-%d)" \
+  --server-key /opt/trustedge/certificates/production-server.key \
+  --listen 0.0.0.0:443
+
+# Output shows new certificate generation:
+# 🔧 Authentication enabled - generating server certificates...
+# ✅ New server identity certificate created
+# 🔄 Certificate rotation completed
+```
+
 ### Cross-Platform Audio Workflows
 
 #### Development Environment
