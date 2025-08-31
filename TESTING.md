@@ -136,11 +136,22 @@ done
 ```
 
 #### 3. Error Handling Validation
+
+**📖 For detailed error testing procedures and expected error messages, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).**
+
+**Validation Test Categories:**
+- File system errors (missing files, permissions)
+- Configuration errors (invalid backends, salt formats)  
+- Cryptographic errors (wrong keys, corrupted data)
+- Network errors (connection failures, timeouts)
+- Authentication errors (certificate issues, session timeouts)
+
+**Quick Validation Tests:**
 ```bash
-# Test invalid inputs
-./target/release/trustedge-audio --decrypt --input nonexistent.trst
-./target/release/trustedge-audio --salt-hex "invalid"
-./target/release/trustedge-audio --backend nonexistent
+# Test error reporting for common issues
+./target/release/trustedge-audio --decrypt --input nonexistent.trst    # File not found
+./target/release/trustedge-audio --salt-hex "invalid"                  # Invalid salt
+./target/release/trustedge-audio --backend nonexistent                 # Invalid backend
 ```
 
 ---
@@ -197,7 +208,9 @@ done
 
 ### Tamper Detection Tests
 
-#### 1. Header Tampering
+**📖 For complete error message reference and diagnostic procedures, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#cryptographic-errors).**
+
+#### 1. Header Tampering Validation
 ```bash
 # Create valid envelope
 ./target/release/trustedge-audio \
@@ -205,54 +218,54 @@ done
   --envelope original.trst \
   --key-hex $(openssl rand -hex 32)
 
-# Corrupt header
+# Test header corruption detection
 dd if=/dev/urandom of=corrupted.trst bs=1 count=10 conv=notrunc
 
-# Verify detection
+# Verify detection (should fail)
 ./target/release/trustedge-audio \
   --decrypt \
   --input corrupted.trst \
   --out should_fail.txt \
   --key-hex $(cat last_key.hex)
-# Should fail with "bad magic" or similar
+# Expected: "bad magic" error
 ```
 
-#### 2. Record Tampering
+#### 2. Record Tampering Validation
 ```bash
-# Corrupt middle of file
+# Test data corruption detection
 dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 
-# Verify detection  
+# Verify detection (should fail)
 ./target/release/trustedge-audio \
   --decrypt \
   --input original.trst \
   --out should_fail.txt \
   --key-hex $(cat last_key.hex)
-# Should fail with "AES-GCM decrypt/verify failed"
+# Expected: "AES-GCM decrypt/verify failed" error
 ```
 
 ### Key Validation Tests
 
 #### 1. Wrong Key Detection
 ```bash
-# Encrypt with one key
+# Test cryptographic validation
 ./target/release/trustedge-audio \
   --input test.txt \
   --envelope test.trst \
   --key-hex $(openssl rand -hex 32)
 
-# Try to decrypt with different key
+# Verify wrong key detection (should fail)
 ./target/release/trustedge-audio \
   --decrypt \
   --input test.trst \
   --out should_fail.txt \
   --key-hex $(openssl rand -hex 32)
-# Should fail with "AES-GCM decrypt/verify failed"
+# Expected: "AES-GCM decrypt/verify failed" error
 ```
 
 #### 2. Salt Validation Tests
 ```bash
-# Test with wrong salt
+# Test PBKDF2 validation (should fail)
 ./target/release/trustedge-audio \
   --decrypt \
   --input keyring_test.trst \
@@ -267,35 +280,46 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 
 ## Network Testing
 
+**📖 For network error diagnosis and connection troubleshooting, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#network-problems).**
+
 ### Client-Server Testing
 
-#### 1. Basic Network Flow
+#### 1. Basic Network Flow Validation
 ```bash
 # Terminal 1: Start server
 ./target/release/trustedge-server \
-  --port 8080 \
+  --listen 127.0.0.1:8080 \
   --decrypt \
   --key-hex $(openssl rand -hex 32) \
-  --output-dir ./server_output
+  --output-dir ./server_output \
+  --verbose
 
-# Terminal 2: Run client
+# Terminal 2: Test client connection
 ./target/release/trustedge-client \
   --server 127.0.0.1:8080 \
   --input test_audio.wav \
-  --key-hex $(cat shared_key.hex)
+  --key-hex $(cat shared_key.hex) \
+  --verbose
 ```
 
-#### 2. Network Error Handling
+#### 2. Network Resilience Testing
 ```bash
-# Test connection failures
+# Test connection failure handling
 ./target/release/trustedge-client \
   --server 127.0.0.1:9999 \
   --input test.wav \
-  --key-hex $(openssl rand -hex 32)
-# Should fail with connection error
+  --key-hex $(openssl rand -hex 32) \
+  --retry-attempts 3 \
+  --connect-timeout 5
+# Expected: Connection refused with retry attempts
 
-# Test invalid data
-# (Send corrupted chunks and verify server handling)
+# Test authentication flow (if authentication enabled)
+./target/release/trustedge-client \
+  --server 127.0.0.1:8080 \
+  --input test.wav \
+  --require-auth \
+  --client-identity "Test Client" \
+  --verbose
 ```
 
 ---

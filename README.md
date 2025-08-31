@@ -232,6 +232,7 @@ Data Source → Raw Chunks → Metadata + Encryption → .trst Format
 - **[CLI.md](./CLI.md)** — Complete command-line reference with examples
 - **[EXAMPLES.md](./EXAMPLES.md)** — Real-world usage examples and workflows
 - **[AUTHENTICATION_GUIDE.md](./AUTHENTICATION_GUIDE.md)** — Complete authentication setup and security guide
+- **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)** — Error handling, diagnostics, and common issues
 - **[TESTING.md](./TESTING.md)** — Testing procedures and validation
 
 ### Technical Documentation  
