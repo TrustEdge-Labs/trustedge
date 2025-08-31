@@ -1,0 +1,44 @@
+name: "CLA Assistant"
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened, synchronize, closed]
+
+jobs:
+  cla:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "CLA Assistant"
+        # Use the official CLA Assistant Lite Action
+        uses: contributor-assistant/github-action@v2.6.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # The path to the CLA document.
+          # Use the raw URL of the Gist you created in the previous step.
+          path-to-document: 'https://gist.githubusercontent.com/johnzilla/YOUR_GIST_ID/raw/YOUR_GIST_VERSION/TrustEdge-CLA.md'
+
+          # The path where the signatures will be stored.
+          path-to-signatures: 'signatures/cla.json'
+          
+          # The branch where the signatures will be committed.
+          branch: 'cla-signatures'
+
+          # A list of users to exempt from signing the CLA (e.g., bots).
+          # Separate multiple users with commas.
+          allowlist: bot[bot],dependabot[bot]
+
+          # The comment to post when a contributor needs to sign.
+          # Use {pullRequestAuthor} and {pathToCLADocument} as placeholders.
+          comment-to-post: |
+            Hi @{pullRequestAuthor}. Thank you for your contribution!
+            
+            To make sure we can accept your contribution, we need you to sign our Contributor License Agreement (CLA). By signing, you're confirming that you have the right to license your contribution to us and that you agree to the terms.
+            
+            Please read the CLA here: {pathToCLADocument}
+            
+            You can sign the CLA by responding to this comment with the following sentence:
+            
+            **I have read the CLA Document and I hereby sign the CLA**
