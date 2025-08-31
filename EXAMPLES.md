@@ -10,9 +10,13 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 
 ## Table of Contents
 - [Secure Session Workflow](#secure-session-workflow)
+- [Format-Aware Encryption and Inspection](#format-aware-encryption-and-inspection)
 - [Basic File Encryption](#basic-file-encryption)
 - [Live Audio Capture](#live-audio-capture)
 - [Network Mode Examples](#network-mode-examples)
+  - [Connection Resilience & Error Recovery](#connection-resilience--error-recovery)
+  - [Secure Authentication Examples](#secure-authentication-examples)
+  - [Legacy Network Examples (No Authentication)](#legacy-network-examples-no-authentication)
 - [Audio Pipeline Examples](#audio-pipeline-examples)
 - [Key Management Scenarios](#key-management-scenarios)
 - [Integration Examples](#integration-examples)
@@ -1708,14 +1712,18 @@ split_and_encrypt_stream "live_audio.wav" "4096"
 # Check current project status
 ./scripts/project/check-status.sh
 
-# View current Phase 3 issues
-gh issue list --label "phase-3" --state open
+# View Phase 3 (authentication) completed issues
+gh issue list --label "phase-3" --state closed
 
-# View specific day milestone
-gh issue list --milestone "Day 10: Server Authentication"
+# View Phase 4 (current) development issues
+gh issue list --label "phase-4" --state open
 
-# Add issues to project board
-./scripts/project/manage-board.sh
+# Authentication milestone completed ✔
+gh issue list --milestone "Day 10: Server Authentication" --state closed
+
+# View project board
+gh project list
+gh project view 2  # TrustEdge Development Board
 
 # Create a bug report
 gh issue create --template bug-report
@@ -1724,21 +1732,47 @@ gh issue create --template bug-report
 open https://github.com/users/johnzilla/projects/2
 ```
 
+### ✅ Phase 3 Authentication Testing (Completed)
+
+```bash
+# Test Ed25519 mutual authentication (working ✔)
+./target/release/trustedge-server \
+  --listen 127.0.0.1:8080 \
+  --require-auth \
+  --server-identity "Test Server" \
+  --verbose &
+
+./target/release/trustedge-client \
+  --server 127.0.0.1:8080 \
+  --input test.txt \
+  --require-auth \
+  --client-identity "Test Client" \
+  --verbose
+
+# Test certificate management (working ✔)
+ls -la ~/.config/trustedge/certificates/
+# Shows auto-generated Ed25519 certificates
+
+# Test session management (working ✔)
+# Server automatically generates and validates session IDs
+# Client receives session ID for authenticated connection
+```
+
 ### 🧪 Testing Day 9 Network Resilience Features
 
 ```bash
-# Test connection timeout
+# Test connection timeout (working ✔)
 ./target/release/trustedge-client \
   --server 10.0.1.999:8080 \
-  --file test.txt \
+  --input test.txt \
   --key-hex $(openssl rand -hex 32) \
   --connect-timeout 3 \
   --retry-attempts 2 \
   --verbose
 
-# Test graceful server shutdown
+# Test graceful server shutdown (working ✔)
 ./target/release/trustedge-server \
-  --port 8080 \
+  --listen 0.0.0.0:8080 \
   --key-hex $(openssl rand -hex 32) \
   --decrypt &
 
