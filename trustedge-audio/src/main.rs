@@ -101,7 +101,7 @@ impl InputReader for AudioInputReader {
         if !self.started {
             self.capture.start()?;
             self.started = true;
-            println!("🎙️  Live audio capture started");
+            println!("♪ Live audio capture started");
         }
 
         // Wait for audio chunk - keep trying until we get data
@@ -285,8 +285,8 @@ fn list_audio_devices() -> Result<()> {
             }
         }
         Err(e) => {
-            println!("❌ Error listing audio devices: {}", e);
-            println!("💡 This might happen if no audio system is available or permissions are insufficient.");
+            println!("✖ Error listing audio devices: {}", e);
+            println!("● This might happen if no audio system is available or permissions are insufficient.");
         }
     }
 
@@ -296,8 +296,8 @@ fn list_audio_devices() -> Result<()> {
 /// List available audio input devices (stub when audio not available)
 #[cfg(not(feature = "audio"))]
 fn list_audio_devices() -> Result<()> {
-    println!("❌ Audio support not available in this build");
-    println!("💡 To enable audio support:");
+    println!("✖ Audio support not available in this build");
+    println!("● To enable audio support:");
     println!("   1. Install audio libraries: sudo apt install libasound2-dev pkg-config");
     println!("   2. Rebuild with: cargo build --features audio");
     println!("   3. Or use default build (audio enabled): cargo build");
@@ -653,22 +653,22 @@ fn print_manifest_info(manifest: &Manifest) {
 fn print_format_info(data_type: &DataType) {
     match data_type {
         DataType::File { mime_type } => {
-            eprintln!("📄 Input Type: File");
+            eprintln!("● Input Type: File");
             if let Some(mime) = mime_type {
-                eprintln!("📋 MIME Type: {}", mime);
+                eprintln!("  MIME Type: {}", mime);
             }
-            eprintln!("✅ Output: Original file format preserved");
+            eprintln!("✔ Output: Original file format preserved");
         }
         DataType::Audio {
             sample_rate,
             channels,
             format,
         } => {
-            eprintln!("🎵 Input Type: Live Audio");
-            eprintln!("📊 Sample Rate: {} Hz", sample_rate);
-            eprintln!("📻 Channels: {}", channels);
-            eprintln!("🔧 Format: {:?}", format);
-            eprintln!("⚠️  Output: Raw PCM data (requires conversion)");
+            eprintln!("♪ Input Type: Live Audio");
+            eprintln!("  Sample Rate: {} Hz", sample_rate);
+            eprintln!("  Channels: {}", channels);
+            eprintln!("  Format: {:?}", format);
+            eprintln!("⚠ Output: Raw PCM data (requires conversion)");
         }
         DataType::Video {
             width,
@@ -676,32 +676,30 @@ fn print_format_info(data_type: &DataType) {
             fps,
             format,
         } => {
-            eprintln!("🎬 Input Type: Video");
-            eprintln!("📐 Resolution: {}x{}", width, height);
-            eprintln!("🎞️  FPS: {}", fps);
-            eprintln!("📋 Format: {}", format);
+            eprintln!("■ Input Type: Video");
+            eprintln!("  Resolution: {}x{}", width, height);
+            eprintln!("  FPS: {}", fps);
+            eprintln!("  Format: {}", format);
         }
         DataType::Sensor { sensor_type } => {
-            eprintln!("🔬 Input Type: Sensor Data");
-            eprintln!("🔧 Sensor Type: {}", sensor_type);
+            eprintln!("● Input Type: Sensor Data");
+            eprintln!("  Sensor Type: {}", sensor_type);
         }
         DataType::Unknown => {
-            eprintln!("❓ Input Type: Unknown");
+            eprintln!("? Input Type: Unknown");
         }
     }
 }
 
 fn provide_completion_message(data_type: Option<&DataType>, total_bytes: usize, args: &Args) {
-    eprintln!("✅ Decrypt complete. Wrote {} bytes.", total_bytes);
+    eprintln!("✔ Decrypt complete. Wrote {} bytes.", total_bytes);
 
     if let Some(data_type) = data_type {
         match data_type {
             DataType::File { mime_type } => {
-                eprintln!(
-                    "📄 Output file preserves original format and should be directly usable."
-                );
+                eprintln!("● Output file preserves original format and should be directly usable.");
                 if let Some(mime) = mime_type {
-                    eprintln!("📋 File type: {}", mime);
+                    eprintln!("  File type: {}", mime);
                 }
             }
             DataType::Audio {
@@ -710,10 +708,10 @@ fn provide_completion_message(data_type: Option<&DataType>, total_bytes: usize, 
                 format: _,
             } => {
                 if args.force_raw {
-                    eprintln!("⚠️  Raw PCM output (--force-raw specified)");
+                    eprintln!("⚠ Raw PCM output (--force-raw specified)");
                 } else {
-                    eprintln!("🎵 Live audio decrypted to raw PCM format");
-                    eprintln!("🔧 To convert to playable audio:");
+                    eprintln!("♪ Live audio decrypted to raw PCM format");
+                    eprintln!("  To convert to playable audio:");
                     eprintln!(
                         "   ffmpeg -f f32le -ar {} -ac {} -i {} output.wav",
                         sample_rate,
@@ -726,13 +724,13 @@ fn provide_completion_message(data_type: Option<&DataType>, total_bytes: usize, 
                 }
             }
             DataType::Video { .. } => {
-                eprintln!("🎬 Video data decrypted to raw format");
+                eprintln!("■ Video data decrypted to raw format");
             }
             DataType::Sensor { sensor_type } => {
-                eprintln!("🔬 Sensor data decrypted: {}", sensor_type);
+                eprintln!("● Sensor data decrypted: {}", sensor_type);
             }
             DataType::Unknown => {
-                eprintln!("❓ Unknown data type - raw bytes output");
+                eprintln!("? Unknown data type - raw bytes output");
             }
         }
     }
@@ -948,7 +946,7 @@ fn main() -> Result<()> {
         // Check time limit for live audio
         if let Some(max_dur) = max_duration {
             if start_time.elapsed() >= max_dur {
-                println!("⏱️  Maximum duration reached, stopping capture");
+                println!("● Maximum duration reached, stopping capture");
                 break;
             }
         }

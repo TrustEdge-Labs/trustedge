@@ -339,399 +339,56 @@ For comprehensive error handling, troubleshooting steps, and solutions, see **[T
 
 ## Complete Workflows
 
-### Basic File Encryption and Decryption
+The CLI supports various encryption and network workflows. For detailed end-to-end examples:
 
-#### 1. Set up keyring passphrase (one-time setup)
+**📋 See [EXAMPLES.md](EXAMPLES.md) for comprehensive workflows including:**
+- Basic file encryption and decryption
+- Live audio capture and processing  
+- Secure network operations with authentication
+- Key management scenarios across different backends
+- Integration examples and automation scripts
+
+**🔐 See [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md) for:**
+- Complete authentication setup procedures
+- Certificate management and security considerations
+- Production deployment configurations
+
+**📖 Quick Reference Examples:**
+
 ```bash
-$ trustedge-audio --set-passphrase "my_secure_passphrase_123" --backend keyring
-Passphrase stored in system keyring
+# Basic file encryption
+./target/release/trustedge-audio --input file.txt --envelope file.trst --key-out key.hex
+
+# Live audio capture (requires --features audio)
+./target/release/trustedge-audio --live-capture --envelope audio.trst --max-duration 10
+
+# Format-aware decryption with inspection
+./target/release/trustedge-audio --input file.trst --inspect --verbose
+./target/release/trustedge-audio --input file.trst --decrypt --out restored.txt --key-hex $(cat key.hex)
 ```
 
-#### 2. Encrypt a file
-```bash
-$ echo "Hello TrustEdge!" > document.txt
-$ trustedge-audio \
-    --input document.txt \
-    --out roundtrip.txt \
-    --envelope encrypted.trst \
-    --backend keyring \
-    --salt-hex "abcdef1234567890abcdef1234567890" \
-    --use-keyring
-Round-trip complete. Read 18 bytes, wrote 18 bytes.
-```
-
-#### 3. Decrypt the file
-```bash
-$ trustedge-audio \
-    --decrypt \
-    --input encrypted.trst \
-    --out decrypted.txt \
-    --backend keyring \
-    --salt-hex "abcdef1234567890abcdef1234567890" \
-    --use-keyring
-Decrypt complete. Wrote 18 bytes.
-```
-
-#### 4. Verify the content
-```bash
-$ diff document.txt decrypted.txt
-(no output = files are identical)
-```
-
-### Live Audio Capture Workflows
-
-#### 1. Real-time Audio Encryption
-```bash
-# Capture 10 seconds of high-quality audio and encrypt it
-$ trustedge-audio \
-    --audio-capture \
-    --duration 10 \
-    --sample-rate 48000 \
-    --channels 2 \
-    --envelope voice_memo.trst \
-    --backend keyring \
-    --salt-hex "abcdef1234567890abcdef1234567890" \
-    --use-keyring
-Audio capture started (48kHz, 2ch)...
-Captured 10.0 seconds, encrypted 1920000 bytes
-```
-
-#### 2. Decrypt and Restore Audio
-```bash
-# Decrypt the audio and save as MP3
-$ trustedge-audio \
-    --decrypt \
-    --input voice_memo.trst \
-    --out restored_voice.mp3 \
-    --backend keyring \
-    --salt-hex "abcdef1234567890abcdef1234567890" \
-    --use-keyring
-Decrypt complete. Wrote 1920000 bytes.
-Audio metadata: 48000Hz, 2 channels, f32 format
-```
-
-#### 3. Quick Voice Notes with Device Selection
-```bash
-# List available audio devices
-$ trustedge-audio --list-devices
-Available audio input devices:
-  0: Default (Built-in Microphone)
-  1: USB Microphone [Manufacturer]
-  2: Line In (External Interface)
-
-# Record from specific device
-$ trustedge-audio \
-    --audio-capture \
-    --device 1 \
-    --duration 30 \
-    --envelope quick_note.trst \
-    --key-out note_key.hex
-Using device: USB Microphone [Manufacturer]
-Generated AES-256 key: f4e8c2a1...
-Captured 30.0 seconds, encrypted 2880000 bytes
-```
-
-#### 4. Continuous Recording with Size Limits
-```bash
-# Record until file reaches ~10MB, then auto-stop
-$ trustedge-audio \
-    --audio-capture \
-    --max-size 10485760 \
-    --sample-rate 44100 \
-    --channels 1 \
-    --envelope interview.trst \
-    --backend keyring \
-    --use-keyring
-Audio capture started (44kHz, 1ch)...
-Reached size limit (10.0 MB), stopping capture
-Captured 238.1 seconds, encrypted 10485760 bytes
-```
-
-### Using Raw Hex Keys
-
-#### Generate and save a key
-```bash
-$ trustedge-audio \
-    --input document.txt \
-    --out roundtrip.txt \
-    --envelope encrypted.trst \
-    --key-out generated_key.hex
-Generated AES-256 key: a1b2c3d4e5f6...
-Round-trip complete. Read 18 bytes, wrote 18 bytes.
-```
-
-#### Use the saved key for decryption
-```bash
-$ trustedge-audio \
-    --decrypt \
-    --input encrypted.trst \
-    --out decrypted.txt \
-    --key-hex $(cat generated_key.hex)
-Decrypt complete. Wrote 18 bytes.
-```
-
-### Data-Agnostic Encryption Examples
-
-#### Inspect Encrypted File Metadata
-```bash
-# Check what type of data was encrypted
-$ trustedge-audio --inspect voice_memo.trst
-TrustEdge Archive Contents:
-  Data Type: Audio
-  Original Size: 1920000 bytes
-  Audio Format: f32
-  Sample Rate: 48000 Hz
-  Channels: 2
-  Encryption: AES-256-GCM
-  Created: 2024-01-15 14:30:22 UTC
-```
-
-#### Mixed Data Workflows
-```bash
-# Encrypt various data types with same key
-$ KEY="a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
-
-# Encrypt a document
-$ trustedge-audio --input report.pdf --envelope report.trst --key-hex $KEY
-
-# Encrypt live audio
-$ trustedge-audio --audio-capture --duration 60 --envelope meeting.trst --key-hex $KEY
-
-# Both use same decryption process
-$ trustedge-audio --decrypt --input report.trst --out restored_report.pdf --key-hex $KEY
-$ trustedge-audio --decrypt --input meeting.trst --out meeting_audio.wav --key-hex $KEY
-```
+For comprehensive step-by-step examples, see the respective documentation files listed above.
 
 ---
 
-## Connection Management & Error Recovery
+## Error Handling
 
-### Network Resilience Examples
+Common CLI errors and their solutions:
 
-#### Robust Client with Retry Logic
-```bash
-# For unstable networks - aggressive retry strategy
-$ trustedge-client \
-    --server remote.example.com:8080 \
-    --input large_file.wav \
-    --backend keyring \
-    --salt-hex "network_salt_abcdef1234567890abcdef" \
-    --use-keyring \
-    --connect-timeout 15 \
-    --retry-attempts 5 \
-    --retry-delay 3 \
-    --verbose
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `--out is required` | Missing output file in encrypt mode | Add `--out filename` or use `--no-plaintext` |
+| `Decrypt mode requires key material` | No key provided for decryption | Add `--key-hex <key>` or `--use-keyring --salt-hex <salt>` |
+| `Invalid key length` | Wrong key format | Use 64 hex characters (32 bytes) for `--key-hex` |
+| `Invalid salt length` | Wrong salt format | Use 32 hex characters (16 bytes) for `--salt-hex` |
 
-Connecting to TrustEdge server at remote.example.com:8080
-Connection attempt 1 failed: connection refused
-Waiting 3s before retry...
-Connection attempt 2 of 5
-Connection attempt 2 failed: timeout after 15s
-Waiting 3s before retry...
-Connection attempt 3 of 5
-Connected to remote.example.com:8080 on attempt 3
-Connected successfully!
-```
-
-#### Conservative Settings for Stable Networks
-```bash
-# Minimal retry for high-reliability environments
-$ trustedge-client \
-    --server local-server:8080 \
-    --input data.txt \
-    --key-hex "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" \
-    --connect-timeout 30 \
-    --retry-attempts 1
-```
-
-#### Server with Graceful Shutdown
-```bash
-# Start server with connection tracking
-$ trustedge-server --listen 0.0.0.0:8080 --verbose --decrypt
-[SRV] TrustEdge server listening on 0.0.0.0:8080
-[DIR] Output directory: "(none)"
-[SEC] Decryption: ENABLED
-[CONN] New connection #1 from 10.0.1.50:45678
-
-# Press Ctrl+C for graceful shutdown
-^C
-[SRV] Shutdown signal received, stopping server...
-[SRV] Graceful shutdown initiated...
-[SRV] Waiting for 1 active connections to complete...
-[OK] Connection #1 completed
-[SRV] Server shutdown complete
-```
-
-### Large File Processing
-
-#### Process large files with custom chunk size
-```bash
-$ trustedge-audio \
-    --input large_audio.wav \
-    --out large_roundtrip.wav \
-    --envelope large_encrypted.trst \
-    --chunk 8192 \
-    --backend keyring \
-    --salt-hex "1234567890abcdef1234567890abcdef" \
-    --use-keyring
-Round-trip complete. Read 10485760 bytes, wrote 10485760 bytes.
-```
-
-#### Encrypt without writing plaintext (envelope only)
-```bash
-$ trustedge-audio \
-    --input sensitive_data.bin \
-    --envelope secure.trst \
-    --no-plaintext \
-    --backend keyring \
-    --salt-hex "fedcba0987654321fedcba0987654321" \
-    --use-keyring
-Envelope created. Input processed but plaintext not written.
-```
+**🔧 For detailed troubleshooting including audio, network, and authentication issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).**
 
 ---
 
-## Network Operations
+## Reference Links
 
-### Server Mode
-
-#### Start a decrypting server
-```bash
-$ trustedge-audio \
-    --port 8080 \
-    --decrypt \
-    --use-keyring \
-    --salt-hex "networkkey1234567890abcdef1234" \
-    --output-dir ./received_chunks
-Server listening on 0.0.0.0:8080
-Waiting for encrypted chunks...
-```
-
-### Client Mode
-
-#### Send encrypted data to server
-```bash
-$ trustedge-client \
-    --server 127.0.0.1:8080 \
-    --input audio_chunk.wav \
-    --use-keyring \
-    --salt-hex "networkkey1234567890abcdef1234"
-Connecting to TrustEdge server at 127.0.0.1:8080
-Connected successfully!
-Sent chunk 1/1 (4096 bytes)
-```
-
-### Authenticated Network Operations
-
-#### Secure Server with Authentication
-```bash
-# Start server requiring mutual authentication
-$ trustedge-server \
-    --listen 127.0.0.1:8080 \
-    --require-auth \
-    --server-identity "Production TrustEdge Server" \
-    --decrypt \
-    --use-keyring \
-    --salt-hex "networkkey1234567890abcdef1234" \
-    --output-dir ./received_chunks \
-    --verbose
-
-🔧 Authentication enabled - generating server certificates...
-✅ Server identity certificate created
-🚀 TrustEdge Server starting with authentication...
-🔐 Listening on 127.0.0.1:8080 (authenticated connections only)
-⏱️  Session timeout: 300 seconds
-📁 Output directory: ./received_chunks
-🔍 Waiting for authenticated clients...
-```
-
-#### Authenticated Client Connection
-```bash
-# Connect with mutual authentication
-$ trustedge-client \
-    --server 127.0.0.1:8080 \
-    --input sensitive_data.wav \
-    --require-auth \
-    --client-identity "Mobile App v1.2.3" \
-    --use-keyring \
-    --salt-hex "networkkey1234567890abcdef1234" \
-    --verbose
-
-🔧 Authentication enabled - generating client certificates...
-✅ Client identity certificate created
-🔐 Connecting to authenticated server at 127.0.0.1:8080...
-🤝 Performing mutual authentication handshake...
-✅ Server authenticated successfully
-✅ Client authentication completed
-🆔 Session ID: 0x7f9a2e8b1c4d3f6a
-📤 Sending encrypted data...
-✅ Transfer completed successfully
-```
-
-#### Authentication Failure Scenarios
-
-**📖 For complete authentication troubleshooting including certificate issues, session problems, and debug procedures, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#authentication-issues).**
-
-**Quick Reference:**
-- **Unauthenticated client**: Add `--require-auth --client-identity "App Name"`
-- **Certificate rejected**: Delete certificates and regenerate with `--verbose`
-- **Session expired**: Reconnect or increase server `--session-timeout`
-
----
-
-## Key Management
-
-### Passphrase Management
-- `--set-passphrase`: Store a passphrase in the system keyring (run once).
-- `--use-keyring`: Use the keyring passphrase for key derivation (PBKDF2). **Mutually exclusive** with `--key-hex`.
-- `--salt-hex`: 32-char hex salt for PBKDF2 key derivation (required with `--use-keyring`, must be 16 bytes).
-
-### Key Derivation
-- In decrypt mode, you must provide either `--key-hex` or `--use-keyring` (random key is not allowed).
-- In encrypt mode, if neither is provided, a random key is generated and optionally saved with `--key-out`.
-- **PBKDF2 parameters:** SHA-256, 100,000 iterations, 16-byte (32 hex char) salt.
-
-### Security Notes
-- Keys are zeroized after use
-- Passphrases are stored securely in OS keyring
-- Salt must be consistent between encrypt/decrypt operations
-- Different salts produce different keys from the same passphrase
-
----
-
-## Advanced Configuration
-
-### Backend-Specific Configuration
-
-#### Keyring Backend
-```bash
-# Custom iteration count
---backend-config "iterations=200000"
-
-# Multiple parameters (future)
---backend-config "iterations=150000,timeout=30"
-```
-
-#### TPM Backend (Planned)
-```bash
-# Specify TPM device
---backend-config "device_path=/dev/tpm0"
-
-# Use specific key handle
---backend-config "key_handle=0x81000001"
-```
-
-#### HSM Backend (Planned)
-```bash
-# PKCS#11 library path
---backend-config "pkcs11_lib=/usr/lib/softhsm/libsofthsm2.so"
-
-# Slot and pin
---backend-config "slot=0,pin=1234"
-```
-
----
-
-For more technical details about the underlying protocol and formats, see [PROTOCOL.md](./PROTOCOL.md).
-
-For examples and use cases, see [EXAMPLES.md](./EXAMPLES.md).
+- **[EXAMPLES.md](EXAMPLES.md)** — Complete workflows and real-world usage examples
+- **[AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md)** — Security setup and credential management  
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** — Debugging and problem resolution
+- **[TESTING.md](TESTING.md)** — Testing procedures and validation methods

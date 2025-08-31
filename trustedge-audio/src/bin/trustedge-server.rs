@@ -479,7 +479,7 @@ async fn handle_connection(
     }
 
     println!(
-        "📊 Connection #{} from {} finished: {} chunks, {} encrypted bytes, {} plaintext bytes",
+        "● Connection #{} from {} finished: {} chunks, {} encrypted bytes, {} plaintext bytes",
         session.connection_id, peer_addr, chunks_received, total_enc_bytes, total_pt_bytes
     );
 

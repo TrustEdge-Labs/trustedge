@@ -171,7 +171,7 @@ impl AudioCapture {
                 .ok_or_else(|| anyhow!("No default input device available"))?
         };
 
-        println!("🎙️  Using audio device: {}", device.name()?);
+        println!("♪ Using audio device: {}", device.name()?);
 
         // Get supported configuration
         let supported_config = device
@@ -190,7 +190,7 @@ impl AudioCapture {
         };
 
         println!(
-            "📊 Audio config: {} Hz, {} channels",
+            "● Audio config: {} Hz, {} channels",
             stream_config.sample_rate.0, stream_config.channels
         );
 
@@ -324,7 +324,7 @@ impl AudioCapture {
         }
 
         self.stream.as_ref().unwrap().play()?;
-        println!("🎙️  Audio capture started");
+        println!("♪ Audio capture started");
         Ok(())
     }
 
@@ -332,7 +332,7 @@ impl AudioCapture {
     pub fn stop(&mut self) -> Result<()> {
         if let Some(stream) = &self.stream {
             stream.pause()?;
-            println!("⏹️  Audio capture stopped");
+            println!("■ Audio capture stopped");
         }
         Ok(())
     }
