@@ -79,34 +79,134 @@ TrustEdge implements **mutual authentication** using Ed25519 digital signatures 
 
 ## Authentication Architecture
 
-### Challenge-Response Protocol
+### How TrustEdge Secure Session Works
 
+The following diagram shows the complete security flow from initial connection through authenticated data transfer:
+
+```mermaid
+sequenceDiagram
+    participant C as Client App
+    participant CC as Client Certificate
+    participant S as Server
+    participant SC as Server Certificate
+    participant SM as Session Manager
+    
+    Note over C,SM: Phase 1: Certificate Preparation
+    
+    C->>CC: Check for client certificate
+    alt No client certificate exists
+        C->>CC: Generate Ed25519 key pair
+        C->>CC: Create self-signed certificate<br/>Identity: "Client App v1.0"
+        CC-->>C: Client certificate ready
+    end
+    
+    S->>SC: Check for server certificate
+    alt No server certificate exists
+        S->>SC: Generate Ed25519 key pair
+        S->>SC: Create self-signed certificate<br/>Identity: "Production Server"
+        SC-->>S: Server certificate ready
+    end
+    
+    Note over C,SM: Phase 2: Connection & Authentication
+    
+    C->>S: TCP Connection Request
+    S-->>C: Connection Established
+    
+    C->>S: Authentication Request<br/>{"type": "auth_request"}
+    
+    S->>S: Generate random challenge (32 bytes)
+    S->>S: Sign challenge with server private key
+    S->>C: Server Challenge + Server Certificate<br/>{"challenge": "...", "server_cert": {...}}
+    
+    C->>C: Verify server certificate signature
+    C->>C: Extract server public key
+    C->>C: Verify challenge signature
+    
+    alt Server authentication fails
+        C->>C: Reject connection
+        C-->>S: Authentication Failed
+    else Server authentication succeeds
+        C->>C: Sign server challenge with client key
+        C->>C: Generate client challenge (32 bytes)
+        C->>C: Sign client challenge with client key
+        C->>S: Client Response + Client Certificate<br/>{"challenge_response": "...", "client_challenge": "...", "client_cert": {...}}
+    end
+    
+    S->>S: Verify client certificate signature
+    S->>S: Extract client public key
+    S->>S: Verify challenge response signature
+    
+    alt Client authentication fails
+        S->>S: Reject connection
+        S-->>C: Authentication Failed
+    else Client authentication succeeds
+        S->>S: Sign client challenge with server key
+        S->>SM: Create new session
+        SM->>SM: Generate cryptographic session ID (64-bit)
+        SM->>SM: Set session timeout (default: 300s)
+        SM-->>S: Session created
+        S->>C: Session Established<br/>{"session_id": "0x...", "challenge_response": "...", "timeout": 300}
+    end
+    
+    C->>C: Verify server's client challenge response
+    C->>C: Store session ID
+    
+    Note over C,SM: Phase 3: Secure Data Transfer
+    
+    loop For each data chunk
+        C->>C: Encrypt data with AES-256-GCM
+        C->>C: Create signed manifest
+        C->>S: Send encrypted chunk<br/>Session ID: 0x...
+        S->>SM: Validate session ID
+        
+        alt Session invalid/expired
+            SM-->>S: Session invalid
+            S-->>C: Session Expired - Reconnect
+        else Session valid
+            SM-->>S: Session valid
+            S->>S: Decrypt and process chunk
+            S-->>C: Chunk received successfully
+        end
+    end
+    
+    Note over C,SM: Phase 4: Session Cleanup
+    
+    alt Normal completion
+        C->>S: Transfer complete
+        S->>SM: Mark session complete
+    else Timeout or error
+        SM->>SM: Session timeout (300s)
+        SM->>SM: Clean up expired session
+    end
 ```
-Client                           Server
-  |                                |
-  | 1. Connection Request          |
-  |------------------------------>|
-  |                                |
-  | 2. Server Challenge + Cert     |
-  |<-------------------------------|
-  |                                |
-  | 3. Client Response + Cert      |
-  |------------------------------>|
-  |                                |
-  | 4. Session ID + Confirmation   |
-  |<-------------------------------|
-  |                                |
-  | 5. Authenticated Data Transfer |
-  |<=============================>|
-```
+
+### Security Properties
+
+This authentication flow provides:
+
+1. **🔐 Mutual Authentication**: Both client and server prove their identities using Ed25519 signatures
+2. **🛡️ Identity Verification**: Certificates cryptographically bind identity strings to public keys  
+3. **🔄 Challenge-Response**: Prevents replay attacks with fresh random challenges
+4. **⏱️ Session Security**: Time-limited sessions with cryptographically secure IDs
+5. **🎯 Forward Security**: Each session uses unique identifiers, limiting exposure
+
+### Implementation References
+
+| Component | Source Code | Purpose |
+|-----------|-------------|---------|
+| **Authentication Flow** | [`src/auth.rs:server_authenticate()`](trustedge-audio/src/auth.rs) | Server-side authentication implementation |
+| **Challenge Generation** | [`src/auth.rs:client_authenticate()`](trustedge-audio/src/auth.rs) | Client-side authentication implementation |
+| **Certificate Management** | [`src/auth.rs:ClientCertificate`](trustedge-audio/src/auth.rs) | Certificate creation and validation |
+| **Session Management** | [`src/auth.rs:SessionManager`](trustedge-audio/src/auth.rs) | Session lifecycle and validation |
+| **Integration Tests** | [`tests/auth_integration.rs`](trustedge-audio/tests/auth_integration.rs) | Complete authentication test suite |
 
 ### Certificate Format
 
 TrustEdge certificates contain:
-- **Ed25519 Public Key**: For signature verification
-- **Identity String**: Human-readable client/server identity
+- **Ed25519 Public Key**: For signature verification (32 bytes)
+- **Identity String**: Human-readable client/server identity  
 - **Timestamp**: Certificate creation time
-- **Signature**: Self-signed with corresponding private key
+- **Signature**: Self-signed with corresponding private key (64 bytes)
 
 ---
 

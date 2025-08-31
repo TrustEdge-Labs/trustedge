@@ -198,6 +198,36 @@ Data Source → Raw Chunks → Metadata + Encryption → .trst Format
           Receiver → Decrypt + Metadata → Consumer Application
 ```
 
+### Security Architecture
+
+TrustEdge implements defense-in-depth with multiple security layers:
+
+```mermaid
+graph TD
+    A[Client App] -->|1. Mutual Auth| B[Authentication Layer]
+    B -->|2. Session ID| C[Session Management]
+    C -->|3. Encrypted Data| D[Transport Layer]
+    D -->|4. Chunked Transfer| E[Server]
+    
+    B --> F[Ed25519 Certificates]
+    B --> G[Challenge-Response]
+    C --> H[Cryptographic Sessions]
+    C --> I[Timeout Management]
+    D --> J[AES-256-GCM Encryption]
+    D --> K[Signed Manifests]
+    
+    style A fill:#e1f5fe
+    style E fill:#e8f5e8
+    style F fill:#fff3e0
+    style G fill:#fff3e0
+    style H fill:#f3e5f5
+    style I fill:#f3e5f5
+    style J fill:#ffebee
+    style K fill:#ffebee
+```
+
+**🔐 For complete security flow details, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md#how-trustedge-secure-session-works).**
+
 **Security Properties** (applies to all data types):
 1. **Per-Chunk Encryption**: Each chunk encrypted with AES-256-GCM
 2. **Signed Manifests**: Ed25519 signatures provide authenticity and provenance
