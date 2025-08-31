@@ -167,6 +167,8 @@ diff document.txt recovered.txt  # Should be identical
 
 **📖 For complete authentication setup, security considerations, and production deployment, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md).**
 
+> **💡 Credential Storage:** Server certificates are automatically generated at `./trustedge-server.key` and client certificates at `./trustedge-client.key`. Use `--server-key` and `--client-key` options to specify custom secure locations like `/opt/trustedge/certs/` or `~/.config/trustedge/`.
+
 **Legacy Server (no authentication):**
 ```bash
 # Basic server without authentication

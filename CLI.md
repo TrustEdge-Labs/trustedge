@@ -88,8 +88,35 @@ Complete command-line interface documentation for TrustEdge.
 | `--require-auth` | Enable mutual authentication (server/client) | `--require-auth` |
 | `--server-identity <ID>` | Server identity for certificate generation | `--server-identity "Production Server"` |
 | `--client-identity <ID>` | Client identity for certificate generation | `--client-identity "Mobile App v1.2"` |
+| `--server-key <PATH>` | Custom server certificate path | `--server-key /opt/trustedge/server.key` |
+| `--client-key <PATH>` | Custom client certificate path | `--client-key ~/.config/app/client.key` |
+| `--session-timeout <SECONDS>` | Session timeout in seconds [default: 300] | `--session-timeout 600` |
 
-**📖 For complete authentication documentation including all options, security considerations, and deployment examples, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md).**
+#### Default Credential Storage Locations
+
+**Server Certificates (Generated Automatically):**
+```bash
+# Default location (current working directory)
+./trustedge-server.key     # Private key file  
+./trustedge-server.cert    # Public certificate file
+
+# Custom location
+--server-key /opt/trustedge/production.key
+# Creates: production.key and production.cert
+```
+
+**Client Certificates (Generated Automatically):**
+```bash
+# Default location (current working directory)  
+./trustedge-client.key     # Private key file
+./trustedge-client.cert    # Public certificate file
+
+# Custom location
+--client-key ~/.config/trustedge/mobile.key  
+# Creates: mobile.key and mobile.cert
+```
+
+**📖 For complete authentication documentation including certificate management, security considerations, and deployment examples, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md).**
 
 ---
 
