@@ -485,7 +485,7 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
         // Store data type from first manifest
         if manifest_data_type.is_none() {
             manifest_data_type = Some(m.data_type.clone());
-            
+
             if args.verbose {
                 print_format_info(&m.data_type);
             }
@@ -577,13 +577,20 @@ fn inspect_envelope(args: &Args) -> Result<()> {
     println!("TrustEdge Archive Information:");
     println!("  File: {}", input.display());
     println!("  Format Version: {}", ver[0]);
-    println!("  Algorithm: {}", if fh.alg == 1 { "AES-256-GCM" } else { "Unknown" });
+    println!(
+        "  Algorithm: {}",
+        if fh.alg == 1 {
+            "AES-256-GCM"
+        } else {
+            "Unknown"
+        }
+    );
     println!("  Chunk Size: {} bytes", fh.chunk_size);
 
     // Read first record to get manifest info
     let rec: Record = deserialize_from(&mut r).context("read first record")?;
-    
-    // manifest contents 
+
+    // manifest contents
     let m: Manifest = bincode::deserialize(&rec.sm.manifest).context("manifest decode")?;
 
     print_manifest_info(&m);
@@ -593,7 +600,7 @@ fn inspect_envelope(args: &Args) -> Result<()> {
 
 fn print_manifest_info(manifest: &Manifest) {
     println!("  Sequence Start: {}", manifest.seq);
-    
+
     match &manifest.data_type {
         DataType::File { mime_type } => {
             println!("  Data Type: File");
@@ -604,16 +611,27 @@ fn print_manifest_info(manifest: &Manifest) {
             }
             println!("  Output Behavior: Original file format will be preserved during decryption");
         }
-        DataType::Audio { sample_rate, channels, format } => {
+        DataType::Audio {
+            sample_rate,
+            channels,
+            format,
+        } => {
             println!("  Data Type: Audio (Live Capture)");
             println!("  Sample Rate: {} Hz", sample_rate);
             println!("  Channels: {}", channels);
             println!("  Format: {:?}", format);
             println!("  Output Behavior: Raw PCM data (requires conversion for playback)");
-            println!("  Conversion Command: ffmpeg -f f32le -ar {} -ac {} -i output.raw output.wav", 
-                sample_rate, channels);
+            println!(
+                "  Conversion Command: ffmpeg -f f32le -ar {} -ac {} -i output.raw output.wav",
+                sample_rate, channels
+            );
         }
-        DataType::Video { width, height, fps, format } => {
+        DataType::Video {
+            width,
+            height,
+            fps,
+            format,
+        } => {
             println!("  Data Type: Video");
             println!("  Resolution: {}x{}", width, height);
             println!("  FPS: {}", fps);
@@ -641,14 +659,23 @@ fn print_format_info(data_type: &DataType) {
             }
             eprintln!("✅ Output: Original file format preserved");
         }
-        DataType::Audio { sample_rate, channels, format } => {
+        DataType::Audio {
+            sample_rate,
+            channels,
+            format,
+        } => {
             eprintln!("🎵 Input Type: Live Audio");
             eprintln!("📊 Sample Rate: {} Hz", sample_rate);
             eprintln!("📻 Channels: {}", channels);
             eprintln!("🔧 Format: {:?}", format);
             eprintln!("⚠️  Output: Raw PCM data (requires conversion)");
         }
-        DataType::Video { width, height, fps, format } => {
+        DataType::Video {
+            width,
+            height,
+            fps,
+            format,
+        } => {
             eprintln!("🎬 Input Type: Video");
             eprintln!("📐 Resolution: {}x{}", width, height);
             eprintln!("🎞️  FPS: {}", fps);
@@ -666,24 +693,36 @@ fn print_format_info(data_type: &DataType) {
 
 fn provide_completion_message(data_type: Option<&DataType>, total_bytes: usize, args: &Args) {
     eprintln!("✅ Decrypt complete. Wrote {} bytes.", total_bytes);
-    
+
     if let Some(data_type) = data_type {
         match data_type {
             DataType::File { mime_type } => {
-                eprintln!("📄 Output file preserves original format and should be directly usable.");
+                eprintln!(
+                    "📄 Output file preserves original format and should be directly usable."
+                );
                 if let Some(mime) = mime_type {
                     eprintln!("📋 File type: {}", mime);
                 }
             }
-            DataType::Audio { sample_rate, channels, format: _ } => {
+            DataType::Audio {
+                sample_rate,
+                channels,
+                format: _,
+            } => {
                 if args.force_raw {
                     eprintln!("⚠️  Raw PCM output (--force-raw specified)");
                 } else {
                     eprintln!("🎵 Live audio decrypted to raw PCM format");
                     eprintln!("🔧 To convert to playable audio:");
-                    eprintln!("   ffmpeg -f f32le -ar {} -ac {} -i {} output.wav", 
-                        sample_rate, channels, 
-                        args.out.as_ref().map(|p| p.display().to_string()).unwrap_or_else(|| "output.raw".to_string()));
+                    eprintln!(
+                        "   ffmpeg -f f32le -ar {} -ac {} -i {} output.wav",
+                        sample_rate,
+                        channels,
+                        args.out
+                            .as_ref()
+                            .map(|p| p.display().to_string())
+                            .unwrap_or_else(|| "output.raw".to_string())
+                    );
                 }
             }
             DataType::Video { .. } => {
@@ -702,10 +741,8 @@ fn provide_completion_message(data_type: Option<&DataType>, total_bytes: usize, 
 fn determine_data_type(input_source: &InputSource, args: &Args) -> DataType {
     match input_source {
         InputSource::File(path) => {
-            let mime_type = path
-                .extension()
-                .and_then(|ext| ext.to_str())
-                .map(|ext| match ext.to_lowercase().as_str() {
+            let mime_type = path.extension().and_then(|ext| ext.to_str()).map(|ext| {
+                match ext.to_lowercase().as_str() {
                     "pdf" => "application/pdf".to_string(),
                     "jpg" | "jpeg" => "image/jpeg".to_string(),
                     "png" => "image/png".to_string(),
@@ -732,14 +769,22 @@ fn determine_data_type(input_source: &InputSource, args: &Args) -> DataType {
                     "tar" => "application/x-tar".to_string(),
                     "gz" => "application/gzip".to_string(),
                     "7z" => "application/x-7z-compressed".to_string(),
-                    "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document".to_string(),
-                    "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".to_string(),
-                    "pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation".to_string(),
+                    "docx" => {
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            .to_string()
+                    }
+                    "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        .to_string(),
+                    "pptx" => {
+                        "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                            .to_string()
+                    }
                     "exe" => "application/x-executable".to_string(),
                     "bin" | "dat" => "application/octet-stream".to_string(),
                     _ => "application/octet-stream".to_string(), // Binary fallback
-                });
-            
+                }
+            });
+
             DataType::File { mime_type }
         }
         InputSource::LiveAudio => DataType::Audio {
