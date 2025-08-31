@@ -4,27 +4,17 @@ MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/johnzilla/trustedge
 -->
-# TrustEdge CL# Extract Audio Metadata from .trst (Live Audio Only):**
-Live audio captures store the original audio parameters in the encrypted envelope:
-```bash
-./target/release/trustedge-audio --decrypt --input audio.trst --out audio.raw --key-hex $KEY --verbose
-# Output shows: Sample Rate: 44100Hz, Channels: 1, Format: f32
-```
-
-**Format-Aware Capabilities:**
-- **Automatic MIME detection**: Recognizes 30+ file types including documents, images, audio, video
-- **Format preservation**: File inputs maintain original format perfectly
-- **Audio-aware output**: Live audio provides format-specific guidance and metadata
-- **Inspection tools**: View format information without decryption using `--inspect`nce
+# TrustEdge CLI Reference
 
 Complete command-line interface documentation for TrustEdge.
 
 ## Table of Contents
 - [CLI Options](#cli-options)
+- [Network Operations](#network-operations)
+- [Authentication](#authentication)
 - [Backend Management](#backend-management)
 - [Error Handling](#error-handling)
 - [Complete Workflows](#complete-workflows)
-- [Network Operations](#network-operations)
 
 ---
 
@@ -207,7 +197,118 @@ Live audio captures store the original audio parameters in the encrypted envelop
 # Output shows: Sample Rate: 44100Hz, Channels: 1, Format: f32
 ```
 
-### Connection Management Options (Client)
+---
+
+## Network Operations
+
+TrustEdge supports secure client-server operations with mutual authentication and robust connection handling.
+
+### Basic Network Usage
+
+**Start an authenticated server:**
+```bash
+./target/release/trustedge-server \
+  --require-auth \
+  --listen 127.0.0.1:8080 \
+  --verbose \
+  --decrypt \
+  --key-hex $(openssl rand -hex 32)
+```
+
+**Connect authenticated client:**
+```bash
+./target/release/trustedge-client \
+  --enable-auth \
+  --server 127.0.0.1:8080 \
+  --file document.txt \
+  --verbose \
+  --key-hex $(openssl rand -hex 32)
+```
+
+### Server Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `-l, --listen <ADDRESS>` | Address to listen on [default: 127.0.0.1:8080] | `--listen 0.0.0.0:9001` |
+| `-o, --output-dir <DIR>` | Directory to save received chunks | `--output-dir ./received` |
+| `--decrypt` | Decrypt received chunks and save plaintext | `--decrypt` |
+
+### Client Options  
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `-s, --server <ADDRESS>` | Server address to connect to [default: 127.0.0.1:8080] | `--server 192.168.1.100:8080` |
+| `-f, --file <FILE>` | File to send (will be processed into chunks) | `--file document.pdf` |
+| `--test-chunks <COUNT>` | Send synthetic encrypted chunks instead of real file | `--test-chunks 5` |
+| `--chunk-size <SIZE>` | Chunk size for file processing [default: 4096] | `--chunk-size 8192` |
+
+---
+
+## Authentication
+
+TrustEdge implements **Ed25519 mutual authentication** with automatic certificate management.
+
+### Authentication Workflow
+
+1. **Server generates certificate** (if --server-key not provided)
+2. **Client generates certificate** (if --client-cert not provided)  
+3. **Mutual challenge-response authentication** using Ed25519 signatures
+4. **Session established** with configurable timeout
+5. **Encrypted data transfer** over authenticated connection
+
+### Authentication Examples
+
+**Authenticated Server with Custom Identity:**
+```bash
+./target/release/trustedge-server \
+  --require-auth \
+  --server-identity "Production TrustEdge Server v1.0" \
+  --listen 0.0.0.0:8080 \
+  --verbose \
+  --decrypt \
+  --use-keyring \
+  --salt-hex $(openssl rand -hex 16)
+```
+
+**Authenticated Client with Existing Certificates:**
+```bash
+./target/release/trustedge-client \
+  --enable-auth \
+  --client-cert ./client.cert \
+  --server-cert ./server.cert \
+  --server 192.168.1.100:8080 \
+  --file sensitive-document.pdf \
+  --verbose
+```
+
+**Development Mode with Auto-Generated Certificates:**
+```bash
+# Server (generates server certificate automatically)
+./target/release/trustedge-server --require-auth --verbose
+
+# Client (generates client certificate automatically) 
+./target/release/trustedge-client \
+  --enable-auth \
+  --client-identity "Development Client" \
+  --server-cert "TrustEdge Server_server.cert" \
+  --file test.txt
+```
+
+### Authentication Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| **Server Options** | | |
+| `--require-auth` | Enable mutual authentication (server) | `--require-auth` |
+| `--server-identity <ID>` | Server identity for certificate generation [default: "TrustEdge Server"] | `--server-identity "Production Server"` |
+| `--server-key <PATH>` | Path to server signing key file (auto-generates if not found) | `--server-key /opt/server.key` |
+| **Client Options** | | |
+| `--enable-auth` | Enable authentication with server certificate verification (client) | `--enable-auth` |
+| `--client-cert <PATH>` | Path to client certificate file for authentication | `--client-cert ~/.config/client.cert` |
+| `--client-identity <ID>` | Client identity for certificate generation [default: "TrustEdge Client"] | `--client-identity "Mobile App v1.2"` |
+| `--server-cert <PATH>` | Path to server certificate file (for authentication) | `--server-cert /etc/trustedge/server.cert` |
+
+### Connection Management Options
 
 | Option | Description | Example |
 |--------|-------------|---------|
@@ -215,47 +316,36 @@ Live audio captures store the original audio parameters in the encrypted envelop
 | `--retry-attempts <COUNT>` | Number of connection retry attempts [default: 3] | `--retry-attempts 5` |
 | `--retry-delay <SECONDS>` | Delay between retry attempts [default: 2] | `--retry-delay 3` |
 
-### Network Options
+### Certificate Management
 
-| Option | Description | Example |
-|--------|-------------|---------|
-| `--server <ADDRESS>` | Server address for network mode (client) | `--server 127.0.0.1:8080` |
-| `--listen <ADDRESS>` | Address to listen on (server mode) | `--listen 127.0.0.1:8080` |
-| `--output-dir <DIR>` | Directory to save decrypted chunks (server mode) | `--output-dir ./chunks` |
+**Automatic Certificate Generation:**
+- Server: Creates `{server-identity}_server.cert` and `{server-identity}_server.key`
+- Client: Creates `{client-identity}_client.cert` and `{client-identity}_client.key`
 
-### Authentication Options
-
-| Option | Description | Example |
-|--------|-------------|---------|
-| `--require-auth` | Enable mutual authentication (server/client) | `--require-auth` |
-| `--server-identity <ID>` | Server identity for certificate generation | `--server-identity "Production Server"` |
-| `--client-identity <ID>` | Client identity for certificate generation | `--client-identity "Mobile App v1.2"` |
-| `--server-key <PATH>` | Custom server certificate path | `--server-key /opt/trustedge/server.key` |
-| `--client-key <PATH>` | Custom client certificate path | `--client-key ~/.config/app/client.key` |
-| `--session-timeout <SECONDS>` | Session timeout in seconds [default: 300] | `--session-timeout 600` |
-
-#### Default Credential Storage Locations
-
-**Server Certificates (Generated Automatically):**
+**Certificate File Naming Examples:**
 ```bash
-# Default location (current working directory)
-./trustedge-server.key     # Private key file  
-./trustedge-server.cert    # Public certificate file
+# Server with default identity "TrustEdge Server"  
+# Creates: "TrustEdge Server_server.cert" and "TrustEdge Server_server.key"
 
-# Custom location
---server-key /opt/trustedge/production.key
-# Creates: production.key and production.cert
+# Client with custom identity "Mobile App v1.2"
+# Creates: "Mobile App v1.2_client.cert" and "Mobile App v1.2_client.key"
+
+# Custom server identity "Production Server"
+# Creates: "Production Server_server.cert" and "Production Server_server.key"
 ```
 
-**Client Certificates (Generated Automatically):**
+**Using Existing Certificates:**
 ```bash
-# Default location (current working directory)  
-./trustedge-client.key     # Private key file
-./trustedge-client.cert    # Public certificate file
+# Server with existing certificate
+./target/release/trustedge-server \
+  --require-auth \
+  --server-key /etc/ssl/trustedge/production.key
 
-# Custom location
---client-key ~/.config/trustedge/mobile.key  
-# Creates: mobile.key and mobile.cert
+# Client with existing certificate  
+./target/release/trustedge-client \
+  --enable-auth \
+  --client-cert ~/.config/trustedge/mobile.cert \
+  --server-cert /etc/ssl/trustedge/production_server.cert
 ```
 
 **📖 For complete authentication documentation including certificate management, security considerations, and deployment examples, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md).**
