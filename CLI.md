@@ -150,35 +150,21 @@ $ trustedge-audio --backend matter --backend-config "device_id=12345"
 
 ### Common Error Scenarios
 
-#### Unsupported Backend
-```bash
-$ trustedge-audio --backend tpm
-Backend 'tpm' not yet implemented. Available: keyring. Future backends: tpm, hsm, matter. Use --list-backends to see all options
-```
+For comprehensive error handling, troubleshooting steps, and solutions, see **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**.
 
-#### Missing File
-```bash
-$ trustedge-audio --decrypt --input nonexistent.trst
-Error: open envelope. Caused by: No such file or directory (os error 2)
-```
+**Quick Reference - Most Common Issues:**
 
-#### Invalid Salt Format
-```bash
-$ trustedge-audio --salt-hex 'invalid'
-Error: salt_hex decode. Caused by: Odd number of digits
-```
+| Error Message | Cause | Quick Fix |
+|---------------|-------|-----------|
+| `No such file or directory` | File doesn't exist | Check file path with `ls -la` |
+| `Backend 'X' not yet implemented` | Unsupported backend | Use `--list-backends`, try `--backend keyring` |
+| `Odd number of digits` | Invalid salt format | Use `openssl rand -hex 16` for valid salt |
+| `bad magic` | Wrong file type | Ensure input is a `.trst` file |
+| `AES-GCM decrypt/verify failed` | Wrong key/passphrase | Verify key matches encryption key |
+| `Connection refused` | Server not running | Start server, check port and address |
+| `Session expired` | Authentication timeout | Reconnect with `--require-auth` |
 
-#### Wrong File Type for Decryption
-```bash
-$ trustedge-audio --decrypt --input input.mp3 --out output.wav --backend keyring --salt-hex "abcdef1234567890abcdef1234567890"
-Error: bad magic
-```
-
-#### Wrong Passphrase/Salt Combination
-```bash
-$ trustedge-audio --decrypt --input test_examples.trst --out output.txt --backend keyring --salt-hex "deadbeefdeadbeefdeadbeefdeadbeef" --use-keyring
-Error: AES-GCM decrypt/verify failed
-```
+**📖 For detailed diagnosis, solutions, and debug commands, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).**
 
 ---
 
@@ -514,31 +500,13 @@ $ trustedge-client \
 ```
 
 #### Authentication Failure Scenarios
-```bash
-# Server rejects unauthenticated clients
-$ trustedge-client \
-    --server 127.0.0.1:8080 \
-    --input data.wav
 
-❌ Error: Server requires authentication but client not configured for auth
-💡 Add --require-auth and --client-identity to connect to authenticated servers
+**📖 For complete authentication troubleshooting including certificate issues, session problems, and debug procedures, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#authentication-issues).**
 
-# Client certificate invalid
-$ trustedge-client \
-    --server 127.0.0.1:8080 \
-    --require-auth \
-    --client-identity "Invalid Client"
-
-❌ Error: Authentication failed - client certificate rejected by server
-💡 Check client certificate and server trust configuration
-
-# Session timeout
-$ trustedge-client --server 127.0.0.1:8080 --require-auth --client-identity "Client"
-# ... wait 5+ minutes without activity ...
-
-❌ Error: Session expired - please reconnect
-💡 Sessions expire after 300 seconds of inactivity by default
-```
+**Quick Reference:**
+- **Unauthenticated client**: Add `--require-auth --client-identity "App Name"`
+- **Certificate rejected**: Delete certificates and regenerate with `--verbose`
+- **Session expired**: Reconnect or increase server `--session-timeout`
 
 ---
 
