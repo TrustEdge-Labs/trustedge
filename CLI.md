@@ -60,6 +60,45 @@ Complete command-line interface documentation for TrustEdge.
 | `--chunk-duration-ms <MS>` | Duration of each audio chunk in milliseconds [default: 1000] | `--chunk-duration-ms 500` |
 | `--max-duration <SECONDS>` | Maximum capture duration in seconds (0 = unlimited) [default: 0] | `--max-duration 30` |
 
+#### Audio Device Selection and Formatting
+
+**To discover available devices, always run first:**
+```bash
+./target/release/trustedge-audio --list-audio-devices
+```
+
+**Common Device Name Formats:**
+
+```bash
+# Linux ALSA device names
+--audio-device "hw:CARD=PCH,DEV=0"          # Built-in audio
+--audio-device "hw:CARD=USB_AUDIO,DEV=0"    # USB microphone
+--audio-device "hw:CARD=Headset,DEV=0"      # Bluetooth headset
+--audio-device "default"                     # System default device
+
+# macOS device names
+--audio-device "Built-in Microphone"        # Internal mic
+--audio-device "USB Audio CODEC"            # USB microphone
+--audio-device "AirPods Pro"                # Bluetooth headset
+
+# Windows device names  
+--audio-device "Microphone (Realtek Audio)" # Built-in mic
+--audio-device "USB Audio Device"           # USB microphone
+--audio-device "Headset Microphone"         # USB/Bluetooth headset
+```
+
+**Audio Troubleshooting Quick Reference:**
+
+| Issue | Quick Check | Solution |
+|-------|-------------|----------|
+| `No audio devices found` | Check permissions | Run `--list-audio-devices` as current user |
+| `Device access denied` | Check system audio | Verify microphone permissions in OS settings |
+| `Silent audio capture` | Check device levels | Test with `arecord`/system audio tools |
+| `Invalid device name` | Check exact spelling | Copy device name exactly from `--list-audio-devices` |
+| `Audio choppy/distorted` | Check sample rates | Use `--sample-rate` matching device capability |
+
+**🔧 For detailed audio troubleshooting, device configuration, and system-specific setup, see [TESTING.md](TESTING.md#audio-system-testing).**
+
 **Note**: Audio features require building with `--features audio`. Install audio system dependencies first:
 - **Linux**: `sudo apt-get install libasound2-dev pkg-config`
 - **macOS**: Included with Xcode/Command Line Tools

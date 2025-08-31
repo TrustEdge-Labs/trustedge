@@ -14,6 +14,7 @@ Comprehensive error handling, common issues, and diagnostic procedures for Trust
 - [Configuration Issues](#configuration-issues)
 - [Network Problems](#network-problems)
 - [Authentication Issues](#authentication-issues)
+- [Audio System Issues](#audio-system-issues)
 - [Cryptographic Errors](#cryptographic-errors)
 - [File and Format Issues](#file-and-format-issues)
 - [Debug and Diagnostic Commands](#debug-and-diagnostic-commands)
@@ -211,6 +212,94 @@ rm *_identity.cert *.key
   --require-auth \
   --session-timeout 600  # 10 minutes
 ```
+
+---
+
+## Audio System Issues
+
+### Audio Device Problems
+
+#### `No audio input devices found`
+**Cause:** System audio drivers not available or TrustEdge built without audio features.
+
+**Solutions:**
+```bash
+# Verify audio features are enabled
+./target/release/trustedge-audio --help | grep -i audio
+
+# If missing, rebuild with audio features
+cargo build --release --features audio
+
+# Check system audio devices
+arecord --list-devices  # Linux
+system_profiler SPAudioDataType  # macOS
+```
+
+#### `Failed to open audio device: Permission denied`
+**Cause:** Insufficient permissions to access audio hardware.
+
+**Solutions:**
+```bash
+# Linux: Add user to audio group
+sudo usermod -a -G audio $USER
+# Logout and login required
+
+# Check current groups
+groups $USER
+
+# Test with PulseAudio
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "pulse" \
+  --max-duration 5
+```
+
+#### `Audio device "device_name" not found`
+**Cause:** Incorrect device name or device no longer available.
+
+**Solutions:**
+```bash
+# Always check available devices first
+./target/release/trustedge-audio --list-audio-devices
+
+# Copy device name exactly from the list
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
+  --max-duration 5
+
+# Use system default as fallback
+./target/release/trustedge-audio \
+  --live-capture \
+  --max-duration 5
+```
+
+#### Silent Audio Capture
+**Cause:** Microphone muted, wrong input levels, or incorrect device.
+
+**Solutions:**
+```bash
+# Check microphone levels (Linux)
+alsamixer  # Adjust capture levels
+
+# Test with system tools first
+arecord -d 3 test_system.wav  # Linux
+sox -d test_system.wav trim 0 3  # macOS/Linux
+
+# Use verbose output for debugging
+./target/release/trustedge-audio \
+  --live-capture \
+  --max-duration 5 \
+  --verbose
+
+# Try different sample rates
+./target/release/trustedge-audio \
+  --live-capture \
+  --sample-rate 44100 \
+  --max-duration 5
+```
+
+**📋 For comprehensive audio testing and system configuration, see [TESTING.md](TESTING.md#audio-system-testing).**
 
 ---
 

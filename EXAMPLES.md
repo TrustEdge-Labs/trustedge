@@ -579,6 +579,99 @@ cargo run --release --bin trustedge-client -- \
 
 ## Audio Pipeline Examples
 
+### Audio Device Discovery and Setup
+
+#### Discovering Available Audio Devices
+
+```bash
+# Always start by listing available devices
+./target/release/trustedge-audio --list-audio-devices
+
+# Example output:
+# Available audio input devices:
+#   - "hw:CARD=PCH,DEV=0" (Built-in Audio Analog Stereo)
+#   - "hw:CARD=USB_AUDIO,DEV=0" (USB Audio CODEC)
+#   - "hw:CARD=Headset,DEV=0" (Bluetooth Headset)
+#   - "default" (System Default)
+#   - "pulse" (PulseAudio System)
+```
+
+#### Platform-Specific Device Selection
+
+```bash
+# Linux: Use exact device names from --list-audio-devices
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
+  --max-duration 10 \
+  --envelope usb_mic_recording.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# macOS: Use descriptive device names
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "Built-in Microphone" \
+  --sample-rate 48000 \
+  --channels 2 \
+  --max-duration 15 \
+  --envelope builtin_stereo.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# Windows: Use system device names
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "Microphone (Realtek Audio)" \
+  --max-duration 10 \
+  --envelope realtek_recording.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# Universal: Use system default (works on all platforms)
+./target/release/trustedge-audio \
+  --live-capture \
+  --max-duration 10 \
+  --envelope default_device.trst \
+  --key-hex $(openssl rand -hex 32)
+```
+
+#### Audio Quality and Configuration
+
+```bash
+# High-quality stereo recording for music/podcasts
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
+  --sample-rate 48000 \
+  --channels 2 \
+  --chunk-duration-ms 500 \
+  --max-duration 300 \  # 5 minutes
+  --envelope hq_podcast.trst \
+  --use-keyring \
+  --salt-hex $(openssl rand -hex 16)
+
+# Voice recording optimized for speech
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "default" \
+  --sample-rate 22050 \
+  --channels 1 \
+  --chunk-duration-ms 1000 \
+  --max-duration 1800 \  # 30 minutes
+  --envelope voice_memo.trst \
+  --use-keyring \
+  --salt-hex $(openssl rand -hex 16)
+
+# Meeting recording with bluetooth headset
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "hw:CARD=Headset,DEV=0" \
+  --sample-rate 44100 \
+  --channels 1 \
+  --max-duration 3600 \  # 1 hour
+  --envelope meeting_recording.trst \
+  --use-keyring \
+  --salt-hex $(openssl rand -hex 16)
+```
+
 ### Real-time Audio Chunking
 
 ```bash
@@ -629,6 +722,53 @@ done
 # Concatenate chunks
 cat decrypted_chunk_*.wav > reconstructed_stream.wav
 ```
+
+### Audio Troubleshooting Examples
+
+#### Testing Audio Device Access
+
+```bash
+# Test if device is accessible
+if ./target/release/trustedge-audio --list-audio-devices | grep -q "USB_AUDIO"; then
+  echo "USB audio device found"
+  ./target/release/trustedge-audio \
+    --live-capture \
+    --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
+    --max-duration 3 \
+    --envelope test_usb.trst \
+    --key-hex $(openssl rand -hex 32)
+else
+  echo "USB audio device not found, using default"
+  ./target/release/trustedge-audio \
+    --live-capture \
+    --max-duration 3 \
+    --envelope test_default.trst \
+    --key-hex $(openssl rand -hex 32)
+fi
+```
+
+#### Silent Audio Diagnosis
+
+```bash
+# Capture with verbose output to diagnose issues
+./target/release/trustedge-audio \
+  --live-capture \
+  --max-duration 5 \
+  --envelope debug_capture.trst \
+  --key-hex $(openssl rand -hex 32) \
+  --verbose
+
+# Check captured file size (should be > header size)
+file_size=$(wc -c < debug_capture.trst)
+if [ $file_size -gt 1024 ]; then
+  echo "Audio captured successfully ($file_size bytes)"
+else
+  echo "Audio capture failed or silent (only $file_size bytes)"
+  echo "Check microphone levels and device access"
+fi
+```
+
+**🔧 For detailed audio troubleshooting and system configuration, see [TESTING.md](TESTING.md#audio-system-testing).**
 
 ---
 

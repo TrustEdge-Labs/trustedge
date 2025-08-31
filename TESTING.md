@@ -14,6 +14,7 @@ Comprehensive testing, validation, and verification procedures for TrustEdge.
 - [Manual Verification](#manual-verification)
 - [Performance Testing](#performance-testing)
 - [Security Testing](#security-testing)
+- [Audio System Testing](#audio-system-testing)
 
 ---
 
@@ -360,6 +361,307 @@ The CI pipeline runs:
 cargo install cargo-tarpaulin
 cargo tarpaulin --out html
 # Open tarpaulin-report.html to view coverage
+```
+
+---
+
+## Audio System Testing
+
+### Prerequisites for Audio Testing
+
+**Build with Audio Features:**
+```bash
+# Required: Build with audio support
+cargo build --release --features audio
+
+# Verify audio features are enabled
+./target/release/trustedge-audio --help | grep -i audio
+```
+
+**Install System Dependencies:**
+```bash
+# Linux (Ubuntu/Debian)
+sudo apt-get update
+sudo apt-get install libasound2-dev pkg-config alsa-utils
+
+# Verify ALSA installation
+arecord --list-devices
+
+# macOS (Homebrew - optional utilities)
+brew install sox  # For audio testing utilities
+
+# Windows
+# Audio libraries included with Windows SDK
+```
+
+### Device Discovery and Validation
+
+#### 1. List Available Audio Devices
+
+```bash
+# Always start with device discovery
+./target/release/trustedge-audio --list-audio-devices
+```
+
+**Expected Output Examples:**
+```
+Available audio input devices:
+  - "hw:CARD=PCH,DEV=0" (Built-in Audio Analog Stereo)
+  - "hw:CARD=USB_AUDIO,DEV=0" (USB Audio CODEC)
+  - "default" (System Default)
+  - "pulse" (PulseAudio System)
+```
+
+#### 2. Test Device Access
+
+```bash
+# Test with system default device
+./target/release/trustedge-audio \
+  --live-capture \
+  --max-duration 3 \
+  --envelope test_default_device.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# Test with specific device
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "hw:CARD=PCH,DEV=0" \
+  --max-duration 3 \
+  --envelope test_specific_device.trst \
+  --key-hex $(openssl rand -hex 32)
+```
+
+### Common Audio Issues and Diagnostics
+
+#### 1. No Audio Devices Found
+
+**Symptoms:**
+```
+Error: No audio input devices found
+```
+
+**Diagnostic Steps:**
+```bash
+# Check system audio devices
+arecord --list-devices  # Linux
+system_profiler SPAudioDataType  # macOS
+dxdiag  # Windows
+
+# Check permissions (Linux)
+groups $USER | grep audio
+ls -la /dev/snd/
+
+# Add user to audio group if needed
+sudo usermod -a -G audio $USER
+# Logout and login required
+```
+
+#### 2. Device Access Denied
+
+**Symptoms:**
+```
+Error: Failed to open audio device: Permission denied
+```
+
+**Solutions:**
+```bash
+# Linux: Check audio group membership
+sudo usermod -a -G audio $USER
+
+# macOS: Check microphone permissions
+# System Preferences → Security & Privacy → Privacy → Microphone
+# Enable for Terminal or your application
+
+# Test with PulseAudio (Linux)
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "pulse" \
+  --max-duration 5 \
+  --envelope test_pulse.trst \
+  --key-hex $(openssl rand -hex 32)
+```
+
+#### 3. Silent Audio Capture
+
+**Symptoms:** Audio captures but produces silent/empty audio
+
+**Diagnostic Steps:**
+```bash
+# Test with system audio tools first
+arecord -d 3 -f cd test_system_audio.wav  # Linux
+sox -d test_system_audio.wav trim 0 3     # macOS/Linux with sox
+
+# Check microphone levels
+alsamixer  # Linux - check capture levels
+# macOS: System Preferences → Sound → Input
+# Windows: Sound Settings → Input → Device Properties
+
+# Test with verbose output
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "default" \
+  --max-duration 5 \
+  --envelope test_levels.trst \
+  --key-hex $(openssl rand -hex 32) \
+  --verbose
+```
+
+#### 4. Invalid Device Name
+
+**Symptoms:**
+```
+Error: Audio device "wrong_name" not found
+```
+
+**Solutions:**
+```bash
+# Always check exact device names first
+./target/release/trustedge-audio --list-audio-devices
+
+# Copy device name exactly (with quotes)
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
+  --max-duration 5 \
+  --envelope test_correct_name.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# Common device name patterns:
+# Linux: "hw:CARD=CardName,DEV=0", "default", "pulse"
+# macOS: "Built-in Microphone", "USB Audio CODEC"
+# Windows: "Microphone (Realtek Audio)", "USB Audio Device"
+```
+
+#### 5. Audio Quality Issues
+
+**Symptoms:** Choppy, distorted, or poor quality audio
+
+**Solutions:**
+```bash
+# Check sample rate compatibility
+./target/release/trustedge-audio \
+  --live-capture \
+  --sample-rate 44100 \  # Try standard rates: 44100, 48000
+  --channels 1 \         # Start with mono
+  --chunk-duration-ms 1000 \  # Larger chunks for stability
+  --max-duration 10 \
+  --envelope test_quality.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# Test different configurations
+./target/release/trustedge-audio \
+  --live-capture \
+  --sample-rate 48000 \
+  --channels 2 \
+  --chunk-duration-ms 500 \
+  --max-duration 10 \
+  --envelope test_hifi.trst \
+  --key-hex $(openssl rand -hex 32)
+```
+
+### Audio Feature Testing Matrix
+
+| Test Case | Command | Expected Result |
+|-----------|---------|-----------------|
+| Device Discovery | `--list-audio-devices` | Lists available devices |
+| Default Device | `--live-capture --max-duration 3` | Captures 3 seconds |
+| Specific Device | `--audio-device "hw:CARD=PCH,DEV=0"` | Uses specified device |
+| High Quality | `--sample-rate 48000 --channels 2` | Stereo 48kHz capture |
+| Long Capture | `--max-duration 60` | 1-minute capture |
+| Unlimited Capture | `--max-duration 0` | Continues until Ctrl+C |
+
+### Platform-Specific Testing
+
+#### Linux (ALSA/PulseAudio)
+```bash
+# Test ALSA direct access
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "hw:CARD=PCH,DEV=0" \
+  --max-duration 5 \
+  --envelope test_alsa.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# Test PulseAudio integration
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "pulse" \
+  --max-duration 5 \
+  --envelope test_pulse.trst \
+  --key-hex $(openssl rand -hex 32)
+```
+
+#### macOS (Core Audio)
+```bash
+# Test built-in microphone
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "Built-in Microphone" \
+  --max-duration 5 \
+  --envelope test_builtin.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# Test USB audio device
+./target/release/trustedge-audio \
+  --live-capture \
+  --audio-device "USB Audio CODEC" \
+  --max-duration 5 \
+  --envelope test_usb.trst \
+  --key-hex $(openssl rand -hex 32)
+```
+
+#### Windows (WASAPI)
+```bash
+# Test default microphone
+./target/release/trustedge-audio.exe \
+  --live-capture \
+  --max-duration 5 \
+  --envelope test_windows.trst \
+  --key-hex $(openssl rand -hex 32)
+
+# Test specific device
+./target/release/trustedge-audio.exe \
+  --live-capture \
+  --audio-device "Microphone (Realtek Audio)" \
+  --max-duration 5 \
+  --envelope test_realtek.trst \
+  --key-hex $(openssl rand -hex 32)
+```
+
+### Audio Validation Testing
+
+#### 1. Round-trip Audio Test
+```bash
+# Capture audio
+./target/release/trustedge-audio \
+  --live-capture \
+  --max-duration 10 \
+  --envelope captured_audio.trst \
+  --key-out audio_key.hex
+
+# Decrypt and verify
+./target/release/trustedge-audio \
+  --decrypt \
+  --input captured_audio.trst \
+  --out recovered_audio.raw \
+  --key-hex $(cat audio_key.hex)
+
+# Check file size (should be > 0)
+ls -la recovered_audio.raw
+```
+
+#### 2. Multi-Device Testing
+```bash
+# Test all available devices
+for device in $(./target/release/trustedge-audio --list-audio-devices | grep -o '"[^"]*"'); do
+  echo "Testing device: $device"
+  ./target/release/trustedge-audio \
+    --live-capture \
+    --audio-device $device \
+    --max-duration 3 \
+    --envelope "test_${device//[^a-zA-Z0-9]/_}.trst" \
+    --key-hex $(openssl rand -hex 32) || echo "Failed: $device"
+done
 ```
 
 ---
