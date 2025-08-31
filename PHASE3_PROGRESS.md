@@ -7,6 +7,20 @@ GitHub: https://github.com/johnzilla/trustedge
 
 # TrustEdge Phase 3 Progress Tracking
 
+> **⚠️ DEPRECATION NOTICE**: This file is no longer actively maintained. 
+> 
+> **For current project status, please see:**
+> - **[GitHub Issues](https://github.com/johnzilla/trustedge/issues)** - All current tasks and bugs
+> - **[Issue #16: Progress Tracker](https://github.com/johnzilla/trustedge/issues/16)** - Overall progress tracking
+> - **[Phase 3 Issues](https://github.com/johnzilla/trustedge/issues?q=label%3Aphase-3+is%3Aopen)** - Current Phase 3 tasks
+> - **[Project Board](https://github.com/users/johnzilla/projects/2)** - Visual progress tracking
+>
+> This file is preserved for historical reference only.
+
+---
+
+## Historical Content (Preserved for Reference)
+
 This issue tracks the current status and progress of TrustEdge Phase 3 development.
 
 ## 🎯 Phase 3 Overview

@@ -1709,7 +1709,7 @@ split_and_encrypt_stream "live_audio.wav" "4096"
 ./scripts/project/check-status.sh
 
 # View current Phase 3 issues
-gh issue list --milestone "Phase 3: Network Operations"
+gh issue list --label "phase-3" --state open
 
 # View specific day milestone
 gh issue list --milestone "Day 10: Server Authentication"
