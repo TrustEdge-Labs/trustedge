@@ -106,6 +106,7 @@ Closes #issue-number
 ```
 
 **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+
 **Scopes**: `cli`, `server`, `client`, `crypto`, `format`, `docs`, `ci`
 
 **Examples**:
