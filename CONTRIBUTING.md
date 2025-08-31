@@ -129,6 +129,66 @@ Closes #issue-number
 4. **Documentation**: Review of updated docs
 5. **Security review**: For changes affecting security or crypto
 
+## 📄 Copyright and Licensing
+
+### Copyright Headers for Contributions
+
+**For external contributors**: When you submit a PR, you have several options for copyright headers:
+
+#### Option 1: Contributor Copyright (Recommended)
+```rust
+// Copyright (c) 2025 Your Name
+// Copyright (c) 2025 John Turner  
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+```
+
+#### Option 2: Assignment to Project
+```rust
+// Copyright (c) 2025 John Turner
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+```
+
+#### Option 3: Collective Copyright
+```rust
+// Copyright (c) 2025 TrustEdge Contributors
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+```
+
+### What We Recommend
+
+1. **For substantial contributions** (new files, major features): Use **Option 1** with your name first
+2. **For minor changes** (bug fixes, small improvements): Use **Option 2** or let maintainers add appropriate headers
+3. **When in doubt**: Use **Option 1** - you retain copyright while licensing under MPL-2.0
+
+### Legal Framework
+
+- **License**: All contributions are licensed under MPL-2.0
+- **Copyright retention**: Contributors can retain copyright on their work
+- **No CLA required**: We don't require a Contributor License Agreement
+- **Clean IP**: Ensure you have the right to contribute your code
+
+### For Maintainers
+
+When accepting external PRs:
+
+1. **Verify copyright headers** are appropriate for the contribution size
+2. **Respect contributor copyright** - don't change their copyright line without permission  
+3. **For major contributions**: Ensure Option 1 format is used
+4. **For collaborative files**: Consider using collective copyright (Option 3)
+5. **Document significant contributors** in project acknowledgments
+
 ## 🔒 Security Contributions
 
 ### Reporting Vulnerabilities
