@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 * ✅ A reader implemented from the spec (no repo code) can verify test vectors.
 * ✅ Deterministic test vectors with golden hash: `8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c`
@@ -731,6 +731,6 @@ trustedge-client --server 127.0.0.1:8080 --test-chunks 100 \
 
 **License**: This roadmap is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](https://mozilla.org/MPL/2.0/).
 
-**Project**: [TrustEdge](https://github.com/johnzilla/trustedge) — Privacy and trust at the edge.
+**Project**: [TrustEdge](https://github.com/TrustEdge-Labs/trustedge) — Privacy and trust at the edge.
 
 **Contributing**: See project repository for contribution guidelines and milestone tracking.

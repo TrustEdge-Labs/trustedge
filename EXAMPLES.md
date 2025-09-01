@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 # TrustEdge Examples
 
@@ -1729,7 +1729,7 @@ gh project view 2  # TrustEdge Development Board
 gh issue create --template bug-report
 
 # Check project board
-open https://github.com/users/johnzilla/projects/2
+open https://github.com/orgs/TrustEdge-Labs/projects/1
 ```
 
 ### ✅ Phase 3 Authentication Testing (Completed)

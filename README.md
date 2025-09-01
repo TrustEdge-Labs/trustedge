@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 
@@ -48,7 +48,7 @@ TrustEdge features:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Clone and build (file encryption only)
-git clone https://github.com/johnzilla/trustedge.git
+git clone https://github.com/TrustEdge-Labs/trustedge.git
 cd trustedge/trustedge-audio
 cargo build --release --no-default-features
 ```
@@ -348,13 +348,13 @@ graph TD
 - Example configuration files for deployment scenarios
 - Documentation improvements and tutorials
 
-See **[GitHub Issues](https://github.com/johnzilla/trustedge/issues)** for detailed tasks and **[Issue #16](https://github.com/johnzilla/trustedge/issues/16)** for progress tracking.
+See **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** for detailed tasks and **[Issue #16](https://github.com/TrustEdge-Labs/trustedge/issues/16)** for progress tracking.
 
 ### 📊 Project Tracking
-- **GitHub Project Board**: [TrustEdge Development](https://github.com/users/johnzilla/projects/2)
-- **Current Focus**: [Phase 4: Live Audio Capture](https://github.com/johnzilla/trustedge/issues?q=label%3APhase-3-LiveAudio+is%3Aopen)
-- **Progress Tracker**: [Issue #16](https://github.com/johnzilla/trustedge/issues/16)
-- **All Issues**: [View on GitHub](https://github.com/johnzilla/trustedge/issues)
+- **GitHub Project Board**: [TrustEdge Development](https://github.com/TrustEdge-Labs/projects/2)
+- **Current Focus**: [Phase 4: Live Audio Capture](https://github.com/TrustEdge-Labs/trustedge/issues?q=label%3APhase-3-LiveAudio+is%3Aopen)
+- **Progress Tracker**: [Issue #16](https://github.com/TrustEdge-Labs/trustedge/issues/16)
+- **All Issues**: [View on GitHub](https://github.com/TrustEdge-Labs/trustedge/issues)
 
 ---
 
@@ -473,9 +473,9 @@ We welcome contributions! Please see our comprehensive guidelines and project ma
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)** — Development setup and technical guidelines
 
 ### 🎯 **Project Management**
-- **[Project Board](https://github.com/users/johnzilla/projects/2)** — Visual progress tracking and task organization
-- **[GitHub Issues](https://github.com/johnzilla/trustedge/issues)** — Bug reports, feature requests, and tasks
-- **[Progress Tracker](https://github.com/johnzilla/trustedge/issues/16)** — Current development status
+- **[Project Board](https://github.com/TrustEdge-Labs/projects/2)** — Visual progress tracking and task organization
+- **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** — Bug reports, feature requests, and tasks
+- **[Progress Tracker](https://github.com/TrustEdge-Labs/trustedge/issues/16)** — Current development status
 
 **Note**: GitHub project boards require manual addition of issues. Use `./scripts/project/manage-board.sh` to add issues to the project board.
 
@@ -486,9 +486,9 @@ We welcome contributions! Please see our comprehensive guidelines and project ma
 - 🔒 **[Security Issues](./.github/ISSUE_TEMPLATE/security.yml)** — Report security concerns and improvements
 
 ### 🚀 **Getting Started**
-1. **Check existing work**: Browse [open issues](https://github.com/johnzilla/trustedge/issues) and [project board](https://github.com/users/johnzilla/projects/2)
+1. **Check existing work**: Browse [open issues](https://github.com/TrustEdge-Labs/trustedge/issues) and [project board](https://github.com/TrustEdge-Labs/projects/2)
 2. **Read the guides**: Review [CONTRIBUTING.md](./CONTRIBUTING.md) and [DEVELOPMENT.md](./DEVELOPMENT.md)
-3. **Pick an issue**: Start with issues labeled `good-first-issue` or current [Phase 4 tasks](https://github.com/johnzilla/trustedge/issues?q=label%3APhase-3-LiveAudio+is%3Aopen)
+3. **Pick an issue**: Start with issues labeled `good-first-issue` or current [Phase 4 tasks](https://github.com/TrustEdge-Labs/trustedge/issues?q=label%3APhase-3-LiveAudio+is%3Aopen)
 4. **Follow standards**: Use our [PR template](./.github/pull_request_template.md) and code quality requirements
 
 **Before Contributing:**
@@ -514,6 +514,6 @@ See **[LICENSE](./LICENSE)** for details.
 
 **License**: This documentation is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](https://mozilla.org/MPL/2.0/).
 
-**Project**: [TrustEdge](https://github.com/johnzilla/trustedge) — Privacy and trust at the edge.
+**Project**: [TrustEdge](https://github.com/TrustEdge-Labs/trustedge) — Privacy and trust at the edge.
 
 **Third-party Dependencies**: See **[Cargo.toml](./trustedge-audio/Cargo.toml)** for complete dependency information and licenses.
