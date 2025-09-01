@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 # Copyright Implementation Summary
@@ -38,7 +38,7 @@ Comprehensive copyright protection has been implemented across all source files 
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
 //
 // Project: trustedge — Privacy and trust at the edge.
-// GitHub: https://github.com/johnzilla/trustedge
+// GitHub: https://github.com/TrustEdge-Labs/trustedge
 //
 ```
 
@@ -50,7 +50,7 @@ Comprehensive copyright protection has been implemented across all source files 
 # Copyright (c) 2025 John Turner
 # MPL-2.0: https://mozilla.org/MPL/2.0/
 # Project: trustedge — Privacy and trust at the edge.
-# GitHub: https://github.com/johnzilla/trustedge
+# GitHub: https://github.com/TrustEdge-Labs/trustedge
 #
 ```
 
@@ -60,7 +60,7 @@ Comprehensive copyright protection has been implemented across all source files 
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 ```
 
@@ -78,7 +78,7 @@ GitHub: https://github.com/johnzilla/trustedge
 
 ### Project Attribution
 - **Project Name**: trustedge — Privacy and trust at the edge
-- **Repository**: https://github.com/johnzilla/trustedge
+- **Repository**: https://github.com/TrustEdge-Labs/trustedge
 - **Purpose**: Clear project identification and source attribution
 
 ## Verification Commands

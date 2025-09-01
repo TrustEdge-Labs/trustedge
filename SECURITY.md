@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 
@@ -76,7 +76,7 @@ We take security vulnerabilities seriously. Please follow responsible disclosure
 
 For **sensitive security vulnerabilities** that could be exploited:
 
-1. **GitHub Security Advisories**: [Create Private Advisory](https://github.com/johnzilla/trustedge/security/advisories/new)
+1. **GitHub Security Advisories**: [Create Private Advisory](https://github.com/TrustEdge-Labs/trustedge/security/advisories/new)
 2. **Direct Contact**: Email security concerns to security@[PLACEHOLDER] (planned)
 
 **Do not** disclose sensitive vulnerabilities publicly until we've had time to address them.

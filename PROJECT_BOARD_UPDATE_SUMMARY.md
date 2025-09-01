@@ -2,14 +2,14 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 # Project Board Management Update Summary - August 30, 2025
 
 ## 🎯 Problem Solved
 
-**Issue**: GitHub Issues tab showed more issues than the Project Board at https://github.com/users/johnzilla/projects/2
+**Issue**: GitHub Issues tab showed more issues than the Project Board at https://github.com/orgs/TrustEdge-Labs/projects/1
 
 **Root Cause**: GitHub project boards require manual addition of issues - they don't automatically include all repository issues.
 
@@ -65,7 +65,7 @@ Enhanced documentation across multiple files:
 - **Legacy Issues**: #1-9 (earlier development phases)
 - **Phase 3 Issues**: #11-16 (current focus)
 
-**Project Board**: https://github.com/users/johnzilla/projects/2
+**Project Board**: https://github.com/orgs/TrustEdge-Labs/projects/1
 - All Phase 3 issues now visible and manageable
 - Complete project visibility achieved
 
