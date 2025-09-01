@@ -5,7 +5,7 @@ Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
-# TrustEdge — Trustable Edge AI (Rust)
+# TrustEdge — Trustable Edge AI
 
 ---
 
