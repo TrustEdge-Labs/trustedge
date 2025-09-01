@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 # TrustEdge Troubleshooting Guide
@@ -703,7 +703,7 @@ If issues persist after following this guide:
 1. **Check logs**: Always run with `--verbose` for detailed output
 2. **Test minimal case**: Use simplest possible command that reproduces issue
 3. **Environment**: Note OS, Rust version, and TrustEdge version
-4. **Create issue**: Use [GitHub issue templates](https://github.com/johnzilla/trustedge/issues/new/choose)
+4. **Create issue**: Use [GitHub issue templates](https://github.com/TrustEdge-Labs/trustedge/issues/new/choose)
 
 ### Issue Report Template
 
