@@ -5,20 +5,13 @@ Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
-
 # TrustEdge — Trustable Edge AI (Rust)
-
-> Not another CRUD app. Learning Rust through **Trustable Edge AI** — privacy-preserving edge pipelines with **live audio capture** and data-agnostic encryption.
 
 ---
 
 ## Why This Project?
 
-Most people learning Rust start with CRUD web apps. This project stems from a question: "If I wanted to speak to a LLM, how could I make sure it was private?"
-
-That random thought and an urge to do something out of my comfort zone led to this project, TrustEdge. 
-
-TrustEdge is a learning journey in Rust that aligns with my background in IoT product development, security/PKI and edge systems. 
+**Trustable Edge AI** — privacy-preserving edge pipelines with **live audio capture** and data-agnostic encryption.
 
 TrustEdge features:
 
