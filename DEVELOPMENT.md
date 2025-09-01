@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 # TrustEdge Development Guide
 
@@ -23,19 +23,19 @@ Development information, roadmap, and contribution guidelines for TrustEdge.
 
 ### 📊 GitHub Project Organization
 
-**Project Board**: [TrustEdge Development](https://github.com/users/johnzilla/projects/2)
+**Project Board**: [TrustEdge Development](https://github.com/TrustEdge-Labs/projects/2)
 - Visual task tracking and progress monitoring
 - Kanban-style organization (Todo, In Progress, Done)
 - Integrated with GitHub issues and milestones
 - **Note**: Issues must be manually added to project boards
 
-**Issue Tracking**: [GitHub Issues](https://github.com/johnzilla/trustedge/issues)
+**Issue Tracking**: [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)
 - Structured issue templates for bugs, features, docs, and security
 - Comprehensive labeling system for organization
 - Milestone-based development tracking
 - All repository issues are listed here (whether on project board or not)
 
-**Development Phases**: [Milestones](https://github.com/johnzilla/trustedge/milestones)
+**Development Phases**: [Milestones](https://github.com/TrustEdge-Labs/trustedge/milestones)
 - Phase 3: Network Operations (Current)
 - Individual day-based milestones (Day 10-14)
 - Clear deliverables and acceptance criteria
@@ -71,7 +71,7 @@ gh issue edit <issue-number> --add-label "in-progress"
 
 ### 📋 Current Development Status
 
-See **[GitHub Issues](https://github.com/johnzilla/trustedge/issues)** for detailed tasks and **[Issue #16](https://github.com/johnzilla/trustedge/issues/16)** for progress tracking.
+See **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** for detailed tasks and **[Issue #16](https://github.com/TrustEdge-Labs/trustedge/issues/16)** for progress tracking.
 
 ---
 
@@ -308,13 +308,13 @@ git push origin feature/tpm-backend
 ### 🚀 Getting Started
 
 1. **Check Project Status**
-   - Visit the [Project Board](https://github.com/users/johnzilla/projects/2) for current priorities
-   - Review [GitHub Issues](https://github.com/johnzilla/trustedge/issues) for development status
-   - Check [open issues](https://github.com/johnzilla/trustedge/issues) for available tasks
+   - Visit the [Project Board](https://github.com/TrustEdge-Labs/projects/2) for current priorities
+   - Review [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for development status
+   - Check [open issues](https://github.com/TrustEdge-Labs/trustedge/issues) for available tasks
 
 2. **Choose an Issue**
    - Look for issues labeled `good-first-issue` for newcomers
-   - Check current [Phase 3 milestone](https://github.com/johnzilla/trustedge/milestone/1) for priority work
+   - Check current [Phase 3 milestone](https://github.com/TrustEdge-Labs/trustedge/milestone/1) for priority work
    - Assign yourself to issues you want to work on
 
 3. **Use Templates**

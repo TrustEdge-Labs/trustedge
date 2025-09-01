@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 # Contributing to TrustEdge
@@ -23,7 +23,7 @@ Thank you for your interest in contributing to TrustEdge! This document provides
 1. **Check existing work**: Search [issues](https://github.com/trustedge/trustedge/issues) and [PRs](https://github.com/trustedge/trustedge/pulls)
 2. **Read the docs**: Review [DEVELOPMENT.md](./DEVELOPMENT.md) for technical details
 3. **Review coding standards**: See [CODING_STANDARDS.md](./CODING_STANDARDS.md) for style guidelines
-4. **Check progress**: See [GitHub Issues](https://github.com/johnzilla/trustedge/issues) and [Issue #16](https://github.com/johnzilla/trustedge/issues/16) for current status
+4. **Check progress**: See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) and [Issue #16](https://github.com/TrustEdge-Labs/trustedge/issues/16) for current status
 5. **Understand the code**: Review the codebase structure and patterns
 
 ## 🐛 Reporting Issues
@@ -64,7 +64,7 @@ When requesting features:
 
 **Important**: GitHub project boards require manual addition of issues.
 
-- **View project board**: [TrustEdge Development](https://github.com/users/johnzilla/projects/2)
+- **View project board**: [TrustEdge Development](https://github.com/TrustEdge-Labs/projects/2)
 - **Add issues to board**: Use `./scripts/project/manage-board.sh`
 - **GitHub Issues vs Project Board**: All issues are in `/issues`, but only manually added ones appear on the project board
 
@@ -186,20 +186,55 @@ Closes #issue-number
 ### Legal Framework
 
 - **License**: All contributions are licensed under MPL-2.0 for open-source use
+- **DCO Required**: All commits must be signed-off with the Developer Certificate of Origin
 - **CLA Required**: Contributors must sign our CLA before code can be merged
 - **Copyright retention**: Contributors retain copyright on their original work
 - **Dual licensing**: CLA enables commercial licensing to sustain the project
 - **Clean IP**: Ensure you have the right to contribute your code
 
+---
+
+## Developer Certificate of Origin (DCO)
+
+All contributions to this repository must be accompanied by a sign-off indicating that you agree to the [Developer Certificate of Origin (DCO)](./DCO.md). This is a lightweight way for contributors to state that they have the right to submit their work.
+
+### How to Sign Your Commits
+
+You can do this by adding a `Signed-off-by` line to your Git commit messages:
+
+```bash
+git commit -s -m "Your commit message"
+```
+
+This will automatically add a line like:
+
+```
+Signed-off-by: Your Name <your.email@example.com>
+```
+
+### What the DCO Means
+
+The DCO is a simple statement that you, as a contributor, have the legal right to make your contribution. By signing off on your commits, you certify that:
+
+- You wrote the code or have the right to submit it under the project's license
+- You understand that the contribution and your sign-off are publicly recorded
+- You agree to the terms outlined in the [full DCO text](./DCO.md)
+
+### Why Use DCO?
+
+- **Industry standard**: Used by Linux kernel, Docker, and many major open source projects
+- **Simple process**: Just add `-s` to your git commits
+- **Legal clarity**: Provides clear rights and responsibilities
+- **No paperwork**: Handled entirely through Git
+
 ### For Maintainers
 
-When accepting external PRs:
+When reviewing PRs:
 
-1. **Verify CLA is signed** via the CLA Assistant bot status
-2. **Verify copyright headers** are appropriate for the contribution size
-3. **Respect contributor copyright** - don't change their copyright line without permission  
-4. **For major contributions**: Ensure Option 1 format is used
-5. **For collaborative files**: Consider using collective copyright (Option 3)
+1. **Verify DCO sign-off** is present on all commits
+2. **Check that email matches** the contributor's GitHub account
+3. **Ensure all commits in the PR are signed off**
+4. **Request sign-off** if missing before merging
 
 ---
 
@@ -255,7 +290,7 @@ We believe in transparency. If you have questions about:
 - Why the CLA is structured this way
 - Your copyright protections
 
-Please [open a discussion](https://github.com/johnzilla/trustedge/discussions) or reach out via [email](mailto:john@trustedge.dev). We're happy to explain our approach and reasoning.
+Please [open a discussion](https://github.com/TrustEdge-Labs/trustedge/discussions) or reach out via [email](mailto:john@trustedge.dev). We're happy to explain our approach and reasoning.
 
 ---
 
@@ -307,16 +342,16 @@ Help improve test coverage:
 **Current Focus**: Phase 3 - Network Operations & Authentication
 
 **High Priority Issues**:
-1. **[Day 10: Server Authentication](https://github.com/johnzilla/trustedge/issues/11)** - Implement server certificate validation and mutual TLS
-2. **[Day 11: Client Authentication](https://github.com/johnzilla/trustedge/issues/12)** - Client certificate and token-based authentication  
-3. **[Cross-platform Audio Capture](https://github.com/johnzilla/trustedge/issues/5)** - Integrate cpal for live audio streaming
-4. **[Day 12: Enhanced Security](https://github.com/johnzilla/trustedge/issues/13)** - Perfect Forward Secrecy and additional algorithms
+1. **[Day 10: Server Authentication](https://github.com/TrustEdge-Labs/trustedge/issues/11)** - Implement server certificate validation and mutual TLS
+2. **[Day 11: Client Authentication](https://github.com/TrustEdge-Labs/trustedge/issues/12)** - Client certificate and token-based authentication  
+3. **[Cross-platform Audio Capture](https://github.com/TrustEdge-Labs/trustedge/issues/5)** - Integrate cpal for live audio streaming
+4. **[Day 12: Enhanced Security](https://github.com/TrustEdge-Labs/trustedge/issues/13)** - Perfect Forward Secrecy and additional algorithms
 
 **Good First Issues**:
-- **[Community Engagement](https://github.com/johnzilla/trustedge/issues/8)** - Beta testing program setup
-- **[Example Configurations](https://github.com/johnzilla/trustedge/issues/9)** - Add deployment scenario examples
+- **[Community Engagement](https://github.com/TrustEdge-Labs/trustedge/issues/8)** - Beta testing program setup
+- **[Example Configurations](https://github.com/TrustEdge-Labs/trustedge/issues/9)** - Add deployment scenario examples
 
-**Track Progress**: [Phase 3 Progress Tracker](https://github.com/johnzilla/trustedge/issues/16)
+**Track Progress**: [Phase 3 Progress Tracker](https://github.com/TrustEdge-Labs/trustedge/issues/16)
 
 ## 💬 Communication
 
