@@ -64,7 +64,7 @@ async fn test_mutual_authentication() -> Result<()> {
         Some(client_cert.identity.clone())
     );
 
-    println!("✅ Mutual authentication test passed!");
+    println!("✔ Mutual authentication test passed!");
     println!("   Session ID: {}", hex::encode(session_id));
     println!("   Client: {}", client_cert.identity);
 
@@ -90,7 +90,7 @@ async fn test_certificate_generation_and_verification() -> Result<()> {
     // Verify server certificate is self-signed correctly
     server_cert.verify()?;
 
-    println!("✅ Certificate generation test passed!");
+    println!("✔ Certificate generation test passed!");
     println!("   Client identity: {}", client_cert.identity);
     println!("   Server identity: {}", server_cert.identity);
 
@@ -145,7 +145,7 @@ async fn test_session_management() -> Result<()> {
     updated_manager.remove_session(&session_id);
     assert_eq!(updated_manager.active_session_count(), 0);
 
-    println!("✅ Session management test passed!");
+    println!("✔ Session management test passed!");
     println!("   Session ID: {}", hex::encode(session_id));
 
     Ok(())
