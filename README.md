@@ -13,13 +13,6 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 **Trustable Edge AI** — privacy-preserving edge pipelines with ### 🧪 Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **32 automated tests** covering all aspects of the system:
-
-- **Unit Tests (7)**: Core functionality validation
-- **Authentication Tests (3)**: Certificate generation, mutual authentication, session management
-- **Roundtrip Tests (15)**: End-to-end encryption/decryption validation including comprehensive MIME type detection
-- **Network Integration Tests (7)**: Distributed encryption workflows with real network communicationre** and data-agnostic encryption.
-
 TrustEdge features:
 
 - **Data-agnostic encryption:** Works with files, live audio, sensor data, or any binary stream
@@ -35,6 +28,13 @@ TrustEdge features:
 - Crypto: `aes-gcm` (AEAD), 256-bit keys, 96-bit nonces
 - Audio: `cpal` library with cross-platform support (Linux/ALSA, Windows/WASAPI, macOS/CoreAudio)
 - Key Management: Pluggable backends (keyring, TPM, HSM planned)
+
+TrustEdge includes a comprehensive test suite with **32 automated tests** covering all aspects of the system:
+
+- **Unit Tests (7)**: Core functionality validation
+- **Authentication Tests (3)**: Certificate generation, mutual authentication, session management
+- **Roundtrip Tests (15)**: End-to-end encryption/decryption validation including comprehensive MIME type detection
+- **Network Integration Tests (7)**: Distributed encryption workflows with real network communicationre** and data-agnostic encryption.
 
 ---
 
