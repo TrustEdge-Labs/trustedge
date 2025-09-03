@@ -13,12 +13,15 @@ Utility scripts for TrustEdge project management, testing, and development workf
 
 ```
 scripts/
-├── project/          # Project management and GitHub utilities
+├── ci-check.sh            # Pre-commit CI validation script
+├── fix-copyright.sh       # Copyright header maintenance
+├── pre-commit.sh          # Git pre-commit hooks
+├── project/               # Project management and GitHub utilities
 │   ├── check-status.sh    # Check GitHub issues and project status
 │   ├── setup-github.sh    # Setup GitHub milestones, labels, and project
 │   ├── manage-board.sh    # Manage project board items and synchronization
 │   └── check-docs.sh      # Validate documentation status and consistency
-└── testing/          # Testing and validation scripts
+└── testing/               # Testing and validation scripts
     └── test-day9.sh       # Test Day 9 network resilience features
 ```
 
@@ -27,6 +30,9 @@ scripts/
 All scripts should be run from the project root directory:
 
 ```bash
+# Run pre-commit CI checks (prevents GitHub CI failures)
+./scripts/ci-check.sh
+
 # Check project status
 ./scripts/project/check-status.sh
 
@@ -44,6 +50,13 @@ All scripts should be run from the project root directory:
 ```
 
 ## 📋 Script Categories
+
+### Core Development
+Scripts for daily development workflows:
+
+- **ci-check.sh**: Pre-commit CI validation script that runs the exact same checks as GitHub CI to prevent failures
+- **fix-copyright.sh**: Automated copyright header maintenance
+- **pre-commit.sh**: Git pre-commit hooks for code quality
 
 ### Project Management (`project/`)
 Scripts for managing the GitHub project, issues, and documentation:
