@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 
@@ -10,22 +10,30 @@ GitHub: https://github.com/johnzilla/trustedge
 
 ## Summary
 
-Successfully implemented comprehensive encrypt/decrypt roundtrip testing for TrustEdge, expanding the test suite from basic unit tests to full workflow validation.
+Successfully implemented comprehensive encrypt/decrypt roundtrip testing for TrustEdge, expanding the test suite from basic unit tests to full workflow validation. **This has been superseded by the complete testing documentation in [TESTING.md](TESTING.md).**
 
-## What We Added
+## Current Status
 
-### New Test File: `tests/roundtrip_integration.rs`
+### Test File: `tests/roundtrip_integration.rs`
 
-**8 comprehensive roundtrip tests** that validate the complete encrypt/decrypt workflow:
+**14 comprehensive roundtrip tests** that validate the complete encrypt/decrypt workflow:
 
 1. **`test_small_file_roundtrip()`** - 1KB file validation
 2. **`test_medium_file_roundtrip()`** - 100KB file validation  
 3. **`test_text_file_roundtrip()`** - UTF-8 text with emoji support
 4. **`test_json_file_roundtrip()`** - JSON structure preservation
-5. **`test_binary_file_roundtrip()`** - Binary data with edge case patterns
-6. **`test_empty_file_roundtrip()`** - Zero-byte file handling
-7. **`test_inspect_encrypted_file()`** - Metadata inspection without decryption
-8. **`test_multiple_chunk_sizes()`** - Validation across 1KB, 4KB, 8KB chunk sizes
+5. **`test_pdf_file_roundtrip()`** - PDF format testing
+6. **`test_mp3_file_roundtrip()`** - Audio format testing
+7. **`test_unknown_format_roundtrip()`** - Unknown format handling
+8. **`test_binary_file_roundtrip()`** - Binary data with edge case patterns
+9. **`test_empty_file_roundtrip()`** - Zero-byte file handling
+10. **`test_inspect_encrypted_file()`** - Metadata inspection without decryption
+11. **`test_format_detection_accuracy()`** - MIME type validation
+12. **`test_byte_perfect_restoration()`** - Integrity verification
+13. **`test_multiple_chunk_sizes()`** - Validation across 1KB, 4KB, 8KB chunk sizes
+14. **`test_comprehensive_chunk_sizes()`** - Extended chunk testing
+
+**For complete testing documentation, see [TESTING.md](TESTING.md) which includes network integration tests and the full 31-test suite.**
 
 ## Test Coverage Expansion
 
@@ -37,8 +45,9 @@ Successfully implemented comprehensive encrypt/decrypt roundtrip testing for Tru
 **After:**
 - 7 unit tests (unchanged)
 - 3 authentication tests (unchanged) 
-- **8 NEW roundtrip integration tests**
-- **Total: 18 tests** (+80% increase)
+- **14 roundtrip integration tests** (expanded)
+- **7 network integration tests** (added)
+- **Total: 31 tests** (+210% increase from original 10)
 
 ## Validation Scope
 
@@ -68,19 +77,24 @@ Each roundtrip test validates:
 ## Results
 
 ```
-running 8 tests
+running 14 tests (roundtrip integration)
 ✔ Small file (1KB) roundtrip test passed!
 ✔ Medium file (100KB) roundtrip test passed!
 ✔ Text file roundtrip test passed!
 ✔ JSON file roundtrip test passed!
+✔ PDF file roundtrip test passed!
+✔ MP3 file roundtrip test passed!
+✔ Unknown format roundtrip test passed!
 ✔ Empty file roundtrip test passed!
 ✔ Binary file roundtrip test passed!
 ✔ Inspect encrypted file test passed!
+✔ Format detection accuracy test passed!
+✔ Byte-perfect restoration test passed!
 ✔ Chunk size 1024 test passed!
 ✔ Chunk size 4096 test passed!
 ✔ Chunk size 8192 test passed!
 
-test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+Full Test Suite: 31/31 passed (7 unit + 3 auth + 14 roundtrip + 7 network)
 ```
 
 ## Documentation Updates
