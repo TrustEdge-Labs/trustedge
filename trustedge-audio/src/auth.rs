@@ -219,8 +219,8 @@ pub struct ClientAuthResponse {
 pub struct ServerAuthConfirm {
     /// Session ID for this authenticated session
     pub session_id: [u8; SESSION_ID_SIZE],
-    /// Session timeout (seconds from now)
-    pub session_timeout: u64,
+    /// Session expiration time (absolute timestamp in seconds since UNIX epoch)
+    pub session_expires_at: u64,
     /// Server signature of session details
     #[serde(with = "serde_bytes")]
     pub session_signature: [u8; 64],
@@ -392,9 +392,7 @@ impl SessionManager {
 
     /// Create server authentication confirmation
     pub fn create_auth_confirm(&self, session: &SessionInfo) -> Result<ServerAuthConfirm> {
-        let timeout_secs = session.expires_at - session.created_at;
-
-        // Sign session details
+        // Sign session details using absolute expiration time
         let session_data = format!(
             "{}:{}:{}",
             hex::encode(session.session_id),
@@ -409,7 +407,7 @@ impl SessionManager {
 
         Ok(ServerAuthConfirm {
             session_id: session.session_id,
-            session_timeout: timeout_secs,
+            session_expires_at: session.expires_at,
             session_signature,
         })
     }
@@ -647,12 +645,12 @@ pub async fn client_authenticate(
         AuthMessageType::ServerConfirm => {
             let confirm: ServerAuthConfirm = response_msg.deserialize_payload()?;
 
-            // Verify session signature
+            // Verify session signature using same data format as server
             let session_data = format!(
                 "{}:{}:{}",
                 hex::encode(confirm.session_id),
                 hex::encode(client_signing_key.verifying_key().to_bytes()),
-                timestamp + confirm.session_timeout
+                confirm.session_expires_at
             );
 
             let server_verifying_key = VerifyingKey::from_bytes(&challenge.server_cert.public_key)?;
