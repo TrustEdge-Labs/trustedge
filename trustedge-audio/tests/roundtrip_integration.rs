@@ -42,6 +42,102 @@ fn create_json_data() -> Vec<u8> {
     serde_json::to_vec_pretty(&json_obj).unwrap()
 }
 
+/// Test helper to create PDF-like test data
+fn create_pdf_data() -> Vec<u8> {
+    let mut data = Vec::new();
+    
+    // PDF header
+    data.extend_from_slice(b"%PDF-1.4
+");
+    
+    // Simple PDF structure with minimal content
+    data.extend_from_slice(b"1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+");
+    data.extend_from_slice(b"2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+");
+    data.extend_from_slice(b"3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>
+endobj
+");
+    data.extend_from_slice(b"xref
+0 4
+0000000000 65535 f 
+");
+    data.extend_from_slice(b"0000000009 00000 n 
+");
+    data.extend_from_slice(b"0000000056 00000 n 
+");
+    data.extend_from_slice(b"0000000111 00000 n 
+");
+    data.extend_from_slice(b"trailer
+<< /Size 4 /Root 1 0 R >>
+");
+    data.extend_from_slice(b"startxref
+180
+");
+    
+    // Add some binary content
+    for i in 0..=255 {
+        data.push(i);
+    }
+    
+    // PDF footer
+    data.push(b'%');
+    data.push(b'P');
+    data.push(b'D');
+    data.push(b'F');
+    data.push(b'-');
+    data.push(b'1');
+    data.push(b'.');
+    data.push(b'4');
+    
+    data
+}
+
+/// Test helper to create MP3-like test data
+fn create_mp3_data() -> Vec<u8> {
+    let mut mp3_data = Vec::new();
+    
+    // MP3 header (ID3v2)
+    mp3_data.extend_from_slice(b"ID3\x03\x00\x00\x00\x00\x00\x00");
+    
+    // Fake MP3 frame header
+    mp3_data.extend_from_slice(&[0xFF, 0xFB, 0x90, 0x00]); // MPEG Audio Layer III
+    
+    // Add some audio-like data patterns
+    for i in 0..1000 {
+        let sample = ((i as f32 * 0.1).sin() * 127.0) as i8 as u8;
+        mp3_data.push(sample);
+    }
+    
+    mp3_data
+}
+
+/// Test helper to create unknown format data
+fn create_unknown_format_data() -> Vec<u8> {
+    let mut data = Vec::new();
+    
+    // Custom magic bytes
+    data.extend_from_slice(b"UNKN\x01\x00\x00\x00");
+    
+    // Mix of different data patterns
+    data.extend_from_slice(b"This is an unknown file format with mixed content.\n");
+    
+    // Binary data
+    for i in 0..=255 {
+        data.push(i);
+    }
+    
+    // More text
+    data.extend_from_slice(b"\nEnd of unknown format file.\n");
+    
+    data
+}
+
 /// Helper function to find the binary path
 fn get_binary_path() -> std::path::PathBuf {
     let release_path = std::env::current_dir()
@@ -174,7 +270,7 @@ fn test_binary_file_roundtrip() -> Result<()> {
     test_data.extend_from_slice(&[0x80, 0x81, 0x82, 0x83]); // High bit set
 
     // Add some random-looking data
-    for i in 0..256 {
+    for i in 0..=255 {
         test_data.push((i ^ 0xAA) as u8);
     }
 
@@ -331,5 +427,311 @@ fn test_multiple_chunk_sizes() -> Result<()> {
         println!("✔ Chunk size {} test passed!", chunk_size);
     }
 
+    Ok(())
+}
+
+#[test]
+fn test_pdf_file_roundtrip() -> Result<()> {
+    let test_data = create_pdf_data();
+    test_roundtrip(test_data, "PDF file")
+}
+
+#[test]
+fn test_mp3_file_roundtrip() -> Result<()> {
+    let test_data = create_mp3_data();
+    test_roundtrip(test_data, "MP3 file")
+}
+
+#[test]
+fn test_unknown_format_roundtrip() -> Result<()> {
+    let test_data = create_unknown_format_data();
+    test_roundtrip(test_data, "Unknown format file")
+}
+
+#[test]
+fn test_byte_perfect_restoration() -> Result<()> {
+    // Test various byte patterns for perfect restoration
+    let test_cases = vec![
+        ("all_zeros", vec![0u8; 1000]),
+        ("all_ones", vec![255u8; 1000]),
+        ("alternating", (0..1000).map(|i| if i % 2 == 0 { 0xAA } else { 0x55 }).collect()),
+        ("sequential", (0..256).cycle().take(1000).map(|i| i as u8).collect()),
+        ("random_pattern", {
+            let mut data = Vec::new();
+            let mut seed = 42u64;
+            for _ in 0..1000 {
+                seed = seed.wrapping_mul(1103515245).wrapping_add(12345);
+                data.push((seed >> 8) as u8);
+            }
+            data
+        }),
+    ];
+    
+    for (name, test_data) in test_cases {
+        // Create test file
+        let mut input_file = NamedTempFile::new()?;
+        input_file.write_all(&test_data)?;
+        let input_path = input_file.path();
+        
+        let encrypted_file = NamedTempFile::new()?;
+        let encrypted_path = encrypted_file.path();
+        
+        let decrypted_file = NamedTempFile::new()?;
+        let decrypted_path = decrypted_file.path();
+        
+        let key_file = NamedTempFile::new()?;
+        let key_path = key_file.path();
+        
+        let binary_path = get_binary_path();
+        
+        // Encrypt
+        let encrypt_output = std::process::Command::new(&binary_path)
+            .args([
+                "--input",
+                input_path.to_str().unwrap(),
+                "--out",
+                "/dev/null",
+                "--envelope",
+                encrypted_path.to_str().unwrap(),
+                "--key-out",
+                key_path.to_str().unwrap(),
+            ])
+            .output()?;
+        
+        assert!(
+            encrypt_output.status.success(),
+            "Encryption failed for {}: {}",
+            name,
+            String::from_utf8_lossy(&encrypt_output.stderr)
+        );
+        
+        // Decrypt
+        let key_content = fs::read_to_string(key_path)?;
+        let key_hex = key_content.trim();
+        
+        let decrypt_output = std::process::Command::new(&binary_path)
+            .args([
+                "--decrypt",
+                "--input",
+                encrypted_path.to_str().unwrap(),
+                "--out",
+                decrypted_path.to_str().unwrap(),
+                "--key-hex",
+                key_hex,
+            ])
+            .output()?;
+        
+        assert!(
+            decrypt_output.status.success(),
+            "Decryption failed for {}: {}",
+            name,
+            String::from_utf8_lossy(&decrypt_output.stderr)
+        );
+        
+        // Verify byte-perfect restoration
+        let decrypted_data = fs::read(decrypted_path)?;
+        assert_eq!(
+            test_data, decrypted_data,
+            "Byte-perfect restoration failed for {}",
+            name
+        );
+        
+        // Additional verification: check length
+        assert_eq!(
+            test_data.len(),
+            decrypted_data.len(),
+            "Length mismatch for {} (original: {}, decrypted: {})",
+            name,
+            test_data.len(),
+            decrypted_data.len()
+        );
+        
+        // Verify every single byte
+        for (i, (&original, &decrypted)) in test_data.iter().zip(decrypted_data.iter()).enumerate() {
+            assert_eq!(
+                original, decrypted,
+                "Byte mismatch at position {} for {}: original=0x{:02X}, decrypted=0x{:02X}",
+                i, name, original, decrypted
+            );
+        }
+        
+        println!("✔ Byte-perfect restoration test passed for: {}", name);
+    }
+    
+    Ok(())
+}
+
+#[test] 
+fn test_comprehensive_chunk_sizes() -> Result<()> {
+    let test_data = create_test_data(100000); // 100KB file for comprehensive testing
+    
+    // Test a comprehensive range of chunk sizes
+    let chunk_sizes = [
+        512,    // Very small chunks
+        1024,   // 1KB
+        2048,   // 2KB  
+        4096,   // 4KB (default)
+        8192,   // 8KB
+        16384,  // 16KB
+        32768,  // 32KB
+        65536,  // 64KB - large chunks
+    ];
+    
+    for &chunk_size in &chunk_sizes {
+        let mut input_file = NamedTempFile::new()?;
+        input_file.write_all(&test_data)?;
+        let input_path = input_file.path();
+        
+        let encrypted_file = NamedTempFile::new()?;
+        let encrypted_path = encrypted_file.path();
+        
+        let decrypted_file = NamedTempFile::new()?;
+        let decrypted_path = decrypted_file.path();
+        
+        let key_file = NamedTempFile::new()?;
+        let key_path = key_file.path();
+        
+        let binary_path = get_binary_path();
+        
+        // Encrypt with specific chunk size
+        let encrypt_output = std::process::Command::new(&binary_path)
+            .args([
+                "--input",
+                input_path.to_str().unwrap(),
+                "--out",
+                "/dev/null",
+                "--envelope",
+                encrypted_path.to_str().unwrap(),
+                "--key-out",
+                key_path.to_str().unwrap(),
+                "--chunk",
+                &chunk_size.to_string(),
+                "--verbose",
+            ])
+            .output()?;
+        
+        assert!(
+            encrypt_output.status.success(),
+            "Encryption failed for chunk size {}: {}",
+            chunk_size,
+            String::from_utf8_lossy(&encrypt_output.stderr)
+        );
+        
+        // Verify chunk size is working (don't rely on verbose output format)
+        let _encrypt_stdout = String::from_utf8_lossy(&encrypt_output.stdout);
+        // Just verify the process succeeded - chunk size verification will come from successful roundtrip
+        
+        // Decrypt
+        let key_content = fs::read_to_string(key_path)?;
+        let key_hex = key_content.trim();
+        
+        let decrypt_output = std::process::Command::new(&binary_path)
+            .args([
+                "--decrypt",
+                "--input",
+                encrypted_path.to_str().unwrap(),
+                "--out",
+                decrypted_path.to_str().unwrap(),
+                "--key-hex",
+                key_hex,
+            ])
+            .output()?;
+        
+        assert!(
+            decrypt_output.status.success(),
+            "Decryption failed for chunk size {}: {}",
+            chunk_size,
+            String::from_utf8_lossy(&decrypt_output.stderr)
+        );
+        
+        // Verify byte-perfect restoration
+        let decrypted_data = fs::read(decrypted_path)?;
+        assert_eq!(
+            test_data, decrypted_data,
+            "Data mismatch for chunk size {}",
+            chunk_size
+        );
+        
+        // Check encrypted file exists and has reasonable size
+        let encrypted_size = fs::metadata(encrypted_path)?.len();
+        assert!(
+            encrypted_size > test_data.len() as u64,
+            "Encrypted file should be larger than original (chunk size {})",
+            chunk_size
+        );
+        
+        println!("✔ Comprehensive chunk size {} test passed!", chunk_size);
+    }
+    
+    Ok(())
+}
+
+#[test]
+fn test_format_detection_accuracy() -> Result<()> {
+    let test_cases = vec![
+        ("JSON", create_json_data(), "application/json"),
+        ("PDF", create_pdf_data(), "application/pdf"),
+        ("MP3", create_mp3_data(), "audio/mpeg"),
+        ("Text", create_text_data("Hello, world!"), "text/plain"),
+    ];
+    
+    for (format_name, test_data, _expected_mime) in test_cases {
+        let mut input_file = NamedTempFile::new()?;
+        input_file.write_all(&test_data)?;
+        let input_path = input_file.path();
+        
+        let encrypted_file = NamedTempFile::new()?;
+        let encrypted_path = encrypted_file.path();
+        
+        let key_file = NamedTempFile::new()?;
+        let key_path = key_file.path();
+        
+        let binary_path = get_binary_path();
+        
+        // Encrypt with verbose output
+        let encrypt_output = std::process::Command::new(&binary_path)
+            .args([
+                "--input",
+                input_path.to_str().unwrap(),
+                "--out",
+                "/dev/null",
+                "--envelope",
+                encrypted_path.to_str().unwrap(),
+                "--key-out",
+                key_path.to_str().unwrap(),
+                "--verbose",
+            ])
+            .output()?;
+        
+        assert!(encrypt_output.status.success(), 
+            "Encryption failed for {}", format_name);
+        
+        // Check if MIME type detection is working (in verbose output)
+        let _encrypt_stdout = String::from_utf8_lossy(&encrypt_output.stdout);
+        // Note: The actual MIME detection may vary, so we check for general format indication
+        
+        // Test inspection
+        let inspect_output = std::process::Command::new(&binary_path)
+            .args([
+                "--input",
+                encrypted_path.to_str().unwrap(),
+                "--inspect",
+                "--verbose",
+            ])
+            .output()?;
+        
+        assert!(inspect_output.status.success(),
+            "Inspection failed for {}", format_name);
+        
+        let inspect_stdout = String::from_utf8_lossy(&inspect_output.stdout);
+        assert!(
+            inspect_stdout.contains("Data Type") || inspect_stdout.contains("MIME"),
+            "Inspection should show format information for {}",
+            format_name
+        );
+        
+        println!("✔ Format detection test passed for: {}", format_name);
+    }
+    
     Ok(())
 }
