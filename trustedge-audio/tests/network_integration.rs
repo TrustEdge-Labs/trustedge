@@ -107,7 +107,7 @@ async fn wait_for_server_ready(addr: SocketAddr, timeout_secs: u64) -> Result<()
     let timeout_duration = Duration::from_secs(timeout_secs);
 
     while start.elapsed() < timeout_duration {
-        if let Ok(_) = tokio::net::TcpStream::connect(addr).await {
+        if (tokio::net::TcpStream::connect(addr).await).is_ok() {
             return Ok(());
         }
         sleep(Duration::from_millis(100)).await;
@@ -348,7 +348,7 @@ async fn test_data_integrity() -> Result<()> {
     // Check if server output directory contains the decrypted file
     let output_files: Vec<_> = fs::read_dir(output_dir.path())?
         .filter_map(|entry| entry.ok())
-        .filter(|entry| entry.file_type().ok().map_or(false, |ft| ft.is_file()))
+        .filter(|entry| entry.file_type().ok().is_some_and(|ft| ft.is_file()))
         .collect();
 
     assert!(
