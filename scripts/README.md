@@ -16,6 +16,9 @@ scripts/
 ├── ci-check.sh            # Pre-commit CI validation script
 ├── fix-copyright.sh       # Copyright header maintenance
 ├── pre-commit.sh          # Git pre-commit hooks
+├── check_documentation.sh # Documentation validation and checking
+├── check_project_status.sh # Project status and health checking
+├── setup_github_project.sh # GitHub project setup and configuration
 ├── project/               # Project management and GitHub utilities
 │   ├── check-status.sh    # Check GitHub issues and project status
 │   ├── setup-github.sh    # Setup GitHub milestones, labels, and project
@@ -33,16 +36,19 @@ All scripts should be run from the project root directory:
 # Run pre-commit CI checks (prevents GitHub CI failures)
 ./scripts/ci-check.sh
 
-# Check project status
+# Check documentation status and validation
+./scripts/check_documentation.sh
+
+# Check project status and health
+./scripts/check_project_status.sh
+
+# Setup GitHub project (initial configuration)
+./scripts/setup_github_project.sh
+
+# Advanced project management
 ./scripts/project/check-status.sh
-
-# Setup GitHub project management
 ./scripts/project/setup-github.sh
-
-# Manage project board items
 ./scripts/project/manage-board.sh
-
-# Validate documentation
 ./scripts/project/check-docs.sh
 
 # Test network features
@@ -57,6 +63,9 @@ Scripts for daily development workflows:
 - **ci-check.sh**: Pre-commit CI validation script that runs the exact same checks as GitHub CI to prevent failures
 - **fix-copyright.sh**: Automated copyright header maintenance
 - **pre-commit.sh**: Git pre-commit hooks for code quality
+- **check_documentation.sh**: Documentation validation and consistency checking
+- **check_project_status.sh**: Project health monitoring and status reporting
+- **setup_github_project.sh**: Initial GitHub project setup and configuration
 
 ### Project Management (`project/`)
 Scripts for managing the GitHub project, issues, and documentation:
