@@ -118,10 +118,11 @@ async fn test_session_management() -> Result<()> {
         (result, server_manager_copy)
     });
 
-    tokio::time::sleep(Duration::from_millis(50)).await;
+    tokio::time::sleep(Duration::from_millis(200)).await;
 
-    // Client connection
-    let mut client_stream = TcpStream::connect(server_addr).await?;
+    // Client connection with timeout
+    let mut client_stream =
+        timeout(Duration::from_secs(5), TcpStream::connect(server_addr)).await??;
     let (session_id, _) = client_authenticate(
         &mut client_stream,
         client_cert.signing_key()?,
