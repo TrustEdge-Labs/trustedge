@@ -75,7 +75,7 @@ fn test_roundtrip(test_data: Vec<u8>, test_name: &str) -> Result<()> {
 
     // Encrypt the file
     let encrypt_output = std::process::Command::new(&binary_path)
-        .args(&[
+        .args([
             "--input",
             input_path.to_str().unwrap(),
             "--out",
@@ -101,7 +101,7 @@ fn test_roundtrip(test_data: Vec<u8>, test_name: &str) -> Result<()> {
 
     // Decrypt the file
     let decrypt_output = std::process::Command::new(&binary_path)
-        .args(&[
+        .args([
             "--decrypt",
             "--input",
             encrypted_path.to_str().unwrap(),
@@ -200,7 +200,7 @@ fn test_inspect_encrypted_file() -> Result<()> {
 
     // Encrypt
     let encrypt_output = std::process::Command::new(&binary_path)
-        .args(&[
+        .args([
             "--input",
             input_path.to_str().unwrap(),
             "--out",
@@ -220,7 +220,7 @@ fn test_inspect_encrypted_file() -> Result<()> {
 
     // Inspect the encrypted file
     let inspect_output = std::process::Command::new(&binary_path)
-        .args(&[
+        .args([
             "--input",
             encrypted_path.to_str().unwrap(),
             "--inspect",
@@ -276,7 +276,7 @@ fn test_multiple_chunk_sizes() -> Result<()> {
 
         // Encrypt with specific chunk size
         let encrypt_output = std::process::Command::new(&binary_path)
-            .args(&[
+            .args([
                 "--input",
                 input_path.to_str().unwrap(),
                 "--out",
@@ -302,7 +302,7 @@ fn test_multiple_chunk_sizes() -> Result<()> {
         let key_hex = key_content.trim();
 
         let decrypt_output = std::process::Command::new(&binary_path)
-            .args(&[
+            .args([
                 "--decrypt",
                 "--input",
                 encrypted_path.to_str().unwrap(),
