@@ -81,27 +81,41 @@ The test suite validates:
 - Session management
 - Mutual authentication flow
 
-**3. Roundtrip Integration Tests (8 tests)**
+**3. Roundtrip Integration Tests (14 tests)**
 - Small, medium, and large file roundtrips
 - Text and JSON format validation
 - Binary data integrity
 - Empty file handling
 - Metadata inspection
 - Multiple chunk size validation
+- Format-specific tests (PDF, MP3, unknown formats)
+- Byte-perfect restoration validation
+
+**4. Network Integration Tests (7 tests)**
+- Client-server data transfer validation
+- Multiple file type network transfer
+- Data integrity across network
+- Large file chunked transfer
+- Authentication workflow testing
+- Connection error handling
+- Empty file network transfer
+
+**Total: 31 tests** with comprehensive workflow validation
 
 ### Running Tests
 
 ```bash
-# Run all tests (18 total)
+# Run all tests (31 total)
 cargo test
 
 # Run tests with detailed output
 cargo test -- --nocapture
 
 # Run specific test suites
-cargo test --test roundtrip_integration    # Roundtrip tests
-cargo test --test auth_integration         # Authentication tests
-cargo test --lib                           # Unit tests only
+cargo test --test roundtrip_integration    # Roundtrip tests (14)
+cargo test --test auth_integration         # Authentication tests (3)
+cargo test --test network_integration      # Network tests (7)
+cargo test --lib                           # Unit tests only (7)
 
 # Run specific test modules
 cargo test backends::keyring
@@ -117,7 +131,7 @@ cargo test authentication                  # All auth tests
 
 ### Roundtrip Integration Tests
 
-The new comprehensive roundtrip test suite (`tests/roundtrip_integration.rs`) provides full workflow validation:
+The comprehensive roundtrip test suite (`tests/roundtrip_integration.rs`) provides full workflow validation with **14 tests**:
 
 **Test Coverage:**
 ```bash
@@ -126,10 +140,32 @@ cargo test test_small_file_roundtrip       # 1KB file validation
 cargo test test_medium_file_roundtrip      # 100KB file validation  
 cargo test test_text_file_roundtrip        # UTF-8 text with emoji
 cargo test test_json_file_roundtrip        # JSON structure preservation
+cargo test test_pdf_file_roundtrip         # PDF format testing
+cargo test test_mp3_file_roundtrip         # Audio format testing
+cargo test test_unknown_format_roundtrip   # Unknown format handling
 cargo test test_binary_file_roundtrip      # Binary data patterns
 cargo test test_empty_file_roundtrip       # Edge case: zero bytes
 cargo test test_inspect_encrypted_file     # Metadata validation
 cargo test test_multiple_chunk_sizes       # 1KB, 4KB, 8KB chunks
+cargo test test_format_detection_accuracy  # MIME type validation
+cargo test test_byte_perfect_restoration   # Integrity verification
+cargo test test_comprehensive_chunk_sizes  # Extended chunk testing
+```
+
+### Network Integration Tests
+
+The network integration test suite (`tests/network_integration.rs`) validates client-server workflows with **7 tests**:
+
+**Test Coverage:**
+```bash
+# Network test examples  
+cargo test test_basic_file_transfer        # Basic client-server transfer
+cargo test test_multiple_file_types        # Various file formats over network
+cargo test test_data_integrity             # End-to-end data integrity
+cargo test test_large_file_transfer        # Chunked large file transfer
+cargo test test_authenticated_transfer     # Authentication workflow
+cargo test test_connection_error_handling  # Error handling and timeouts
+cargo test test_empty_file_transfer        # Empty file edge cases
 ```
 
 **What Each Test Validates:**
@@ -137,7 +173,9 @@ cargo test test_multiple_chunk_sizes       # 1KB, 4KB, 8KB chunks
 - **Format Preservation**: MIME type detection and metadata handling
 - **CLI Interface**: Real binary execution with proper argument handling
 - **Error Handling**: Meaningful error messages on failure
-- **Performance**: Tests complete in <100ms total
+- **Network Protocol**: TCP communication and chunked transfer
+- **Authentication**: Certificate-based mutual authentication
+- **Performance**: Tests complete efficiently with proper resource cleanup
 
 **Sample Test Output:**
 ```
@@ -145,12 +183,26 @@ cargo test test_multiple_chunk_sizes       # 1KB, 4KB, 8KB chunks
 ✔ Medium file (100KB) roundtrip test passed!
 ✔ Text file roundtrip test passed!
 ✔ JSON file roundtrip test passed!
+✔ PDF file roundtrip test passed!
+✔ MP3 file roundtrip test passed!
+✔ Unknown format roundtrip test passed!
 ✔ Empty file roundtrip test passed!
 ✔ Binary file roundtrip test passed!
 ✔ Inspect encrypted file test passed!
+✔ Format detection accuracy test passed!
+✔ Byte-perfect restoration test passed!
 ✔ Chunk size 1024 test passed!
 ✔ Chunk size 4096 test passed!
 ✔ Chunk size 8192 test passed!
+
+Network Integration Tests:
+✔ Basic file transfer test passed!
+✔ Multiple file types test passed!
+✔ Data integrity test passed!
+✔ Large file transfer test passed!
+✔ Authentication test passed!
+✔ Connection error handling test passed!
+✔ Empty file transfer test passed!
 ```
 
 ---

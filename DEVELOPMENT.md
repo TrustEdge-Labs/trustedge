@@ -338,9 +338,12 @@ git push origin feature/tpm-backend
 
 2. **Quality Checks**
    ```bash
-   # Run all quality checks
+   # Run all quality checks (prevents CI failures)
+   ./scripts/ci-check.sh
+   
+   # Or run individual checks:
    cargo fmt --check
-   cargo clippy -- -D warnings
+   cargo clippy --all-targets --no-default-features -- -D warnings
    cargo test
    ./scripts/project/check-status.sh  # Check issue status
    ```

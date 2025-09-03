@@ -2,7 +2,7 @@
 Copyright (c) 2025 John Turner
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 
@@ -13,10 +13,11 @@ Successfully expanded the TrustEdge encryption test suite with comprehensive for
 
 ## Test Suite Expansion
 
-### Total Test Count: 24 tests
+### Total Test Count: 31 tests
 - **Unit Tests**: 7 tests (library functionality)
 - **Authentication Integration**: 3 tests (mutual auth, certificates, sessions)
-- **Roundtrip Integration**: 14 tests (encryption/decryption workflows)
+- **Roundtrip Integration**: 14 tests (encryption/decryption workflows) ⭐ **EXPANDED**
+- **Network Integration**: 7 tests (client-server data transfer) 🆕
 
 ### New Format-Specific Tests Added
 
@@ -113,17 +114,18 @@ All tests use the actual compiled `trustedge-audio` binary via `std::process::Co
 
 ### Test Results Summary
 ```
-Total: 24 tests
+Total: 31 tests
 ✅ Unit tests: 7/7 passed
 ✅ Auth integration: 3/3 passed  
 ✅ Roundtrip integration: 14/14 passed
+✅ Network integration: 7/7 passed
 ✅ Clippy compliance: PASSED
 ✅ Format verification: PASSED
 ✅ Byte-perfect restoration: PASSED
 ```
 
 ### Validation Achievements
-- **100% test success rate**: All 24 tests passing consistently
+- **100% test success rate**: All 31 tests passing consistently
 - **Zero clippy warnings**: Strict linting compliance maintained
 - **Comprehensive coverage**: All major file types and edge cases tested
 - **Production readiness**: Real CLI binary testing with proper error handling
