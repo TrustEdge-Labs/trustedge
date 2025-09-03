@@ -81,7 +81,7 @@ The test suite validates:
 - Session management
 - Mutual authentication flow
 
-**3. Roundtrip Integration Tests (14 tests)**
+**3. Roundtrip Integration Tests (15 tests)**
 - Small, medium, and large file roundtrips
 - Text and JSON format validation
 - Binary data integrity
@@ -89,6 +89,7 @@ The test suite validates:
 - Metadata inspection
 - Multiple chunk size validation
 - Format-specific tests (PDF, MP3, unknown formats)
+- Comprehensive MIME type detection (39 file formats)
 - Byte-perfect restoration validation
 
 **4. Network Integration Tests (7 tests)**
@@ -100,7 +101,7 @@ The test suite validates:
 - Connection error handling
 - Empty file network transfer
 
-**Total: 31 tests** with comprehensive workflow validation
+**Total: 32 tests** with comprehensive workflow validation
 
 ### Running Tests
 
