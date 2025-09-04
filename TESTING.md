@@ -71,18 +71,27 @@ The test suite validates:
 
 ### Test Categories
 
-**1. Unit Tests (20 tests)**
+**1. Unit Tests (53 tests)**
 - Audio configuration and chunk handling
-- Keyring backend functionality
-- Universal Backend system (13 tests)
+- Keyring backend functionality  
+- Universal Backend system
+- Software HSM backend (33 tests): Key generation, signing/verification, error handling, persistence, registry integration
 - Golden test vector validation
 
-**2. Authentication Integration Tests (3 tests)**
+**2. Software HSM Integration Tests (9 tests)**
+- Cross-session key persistence and metadata integrity
+- Universal Backend registry integration and capability testing
+- File-based signing workflows and document verification
+- CLI tool integration (software-hsm-demo lifecycle testing)
+- Error recovery and resilience (corruption, permissions, partial failures)
+- Performance and scale testing (large-scale key management)
+
+**3. Authentication Integration Tests (3 tests)**
 - Certificate generation and verification
 - Session management
 - Mutual authentication flow
 
-**3. Roundtrip Integration Tests (15 tests)**
+**4. Roundtrip Integration Tests (15 tests)**
 - Small, medium, and large file roundtrips
 - Text and JSON format validation
 - Binary data integrity
@@ -93,7 +102,7 @@ The test suite validates:
 - Comprehensive MIME type detection (39 file formats)
 - Byte-perfect restoration validation
 
-**4. Network Integration Tests (7 tests)**
+**5. Network Integration Tests (7 tests)**
 - Client-server data transfer validation
 - Multiple file type network transfer
 - Data integrity across network
@@ -102,7 +111,7 @@ The test suite validates:
 - Connection error handling
 - Empty file network transfer
 
-**5. Universal Backend Integration Tests (6 tests)**
+**6. Universal Backend Integration Tests (6 tests)**
 - End-to-end crypto workflows using Universal Backend
 - Capability-based backend selection
 - Registry management and backend discovery
@@ -110,23 +119,28 @@ The test suite validates:
 - Performance characteristics testing
 - Error handling and edge cases
 
-**Total: 51 tests** with comprehensive workflow validation
+**Total: 93 tests** with comprehensive workflow validation
 
 ### Running Tests
 
 ```bash
-# Run all tests (51 total)
+# Run all tests (93 total)
 cargo test
 
 # Run tests with detailed output
 cargo test -- --nocapture
 
 # Run specific test suites
+cargo test --test software_hsm_integration       # Software HSM integration tests (9)
 cargo test --test roundtrip_integration          # Roundtrip tests (15)
 cargo test --test auth_integration               # Authentication tests (3)
 cargo test --test network_integration            # Network tests (7)
 cargo test --test universal_backend_integration  # Universal Backend tests (6)
-cargo test --lib                                 # Unit tests only (20)
+cargo test --lib                                 # Unit tests only (53)
+
+# Software HSM specific tests
+cargo test software_hsm --lib                    # Software HSM unit tests only (33)
+cargo test software_hsm                          # All Software HSM tests (42 total)
 
 # Run specific test modules
 cargo test backends::keyring
