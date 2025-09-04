@@ -71,9 +71,10 @@ The test suite validates:
 
 ### Test Categories
 
-**1. Unit Tests (7 tests)**
+**1. Unit Tests (20 tests)**
 - Audio configuration and chunk handling
 - Keyring backend functionality
+- Universal Backend system (13 tests)
 - Golden test vector validation
 
 **2. Authentication Integration Tests (3 tests)**
@@ -101,22 +102,31 @@ The test suite validates:
 - Connection error handling
 - Empty file network transfer
 
-**Total: 32 tests** with comprehensive workflow validation
+**5. Universal Backend Integration Tests (6 tests)**
+- End-to-end crypto workflows using Universal Backend
+- Capability-based backend selection
+- Registry management and backend discovery
+- Multi-operation workflow validation
+- Performance characteristics testing
+- Error handling and edge cases
+
+**Total: 51 tests** with comprehensive workflow validation
 
 ### Running Tests
 
 ```bash
-# Run all tests (31 total)
+# Run all tests (51 total)
 cargo test
 
 # Run tests with detailed output
 cargo test -- --nocapture
 
 # Run specific test suites
-cargo test --test roundtrip_integration    # Roundtrip tests (14)
-cargo test --test auth_integration         # Authentication tests (3)
-cargo test --test network_integration      # Network tests (7)
-cargo test --lib                           # Unit tests only (7)
+cargo test --test roundtrip_integration          # Roundtrip tests (15)
+cargo test --test auth_integration               # Authentication tests (3)
+cargo test --test network_integration            # Network tests (7)
+cargo test --test universal_backend_integration  # Universal Backend tests (6)
+cargo test --lib                                 # Unit tests only (20)
 
 # Run specific test modules
 cargo test backends::keyring
@@ -132,7 +142,7 @@ cargo test authentication                  # All auth tests
 
 ### Roundtrip Integration Tests
 
-The comprehensive roundtrip test suite (`tests/roundtrip_integration.rs`) provides full workflow validation with **14 tests**:
+The comprehensive roundtrip test suite (`tests/roundtrip_integration.rs`) provides full workflow validation with **15 tests**:
 
 **Test Coverage:**
 ```bash
@@ -204,7 +214,45 @@ Network Integration Tests:
 ✔ Authentication test passed!
 ✔ Connection error handling test passed!
 ✔ Empty file transfer test passed!
+
+Universal Backend Integration Tests:
+✔ Universal Backend encrypt/decrypt workflow validated
+✔ Universal Backend capability-based selection validated
+✔ Universal Backend multiple operations workflow validated
+✔ Universal Backend error handling validated
+✔ Universal Backend performance test completed
+✔ Universal Backend registry management validated
 ```
+
+### Universal Backend Integration Tests
+
+The Universal Backend integration test suite (`tests/universal_backend_integration.rs`) validates the capability-based backend system with **6 tests**:
+
+**Test Coverage:**
+```bash
+# Universal Backend integration test examples
+cargo test test_universal_backend_encrypt_decrypt_workflow
+cargo test test_universal_backend_capability_based_selection
+cargo test test_universal_backend_multiple_operations_workflow
+cargo test test_universal_backend_error_handling
+cargo test test_universal_backend_performance_characteristics
+cargo test test_universal_backend_registry_management
+```
+
+**What Each Test Validates:**
+- **End-to-End Workflows**: Complete crypto operations through Universal Backend
+- **Capability Discovery**: Automatic backend selection based on operation requirements
+- **Registry Management**: Backend registration, discovery, and preference-based routing
+- **Multi-Operation Workflows**: Sequential operations with deterministic results
+- **Performance Validation**: Acceptable response times for crypto operations
+- **Error Handling**: Graceful handling of unsupported operations and edge cases
+
+**Key Features Tested:**
+- **Backend Selection**: Automatic choice of appropriate backend for each operation
+- **Operation Dispatch**: Enum-based operation routing with type safety
+- **Deterministic Results**: Consistent key derivation across multiple calls
+- **Resource Management**: Proper cleanup and resource handling
+- **Edge Cases**: Zero-byte salts, empty contexts, invalid parameters
 
 ---
 

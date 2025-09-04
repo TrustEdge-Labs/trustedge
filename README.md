@@ -364,7 +364,7 @@ graph TD
 - ✅ Comprehensive validation and error handling
 - ✅ Test vector validation for format stability
 - ✅ Production-ready network resilience features
-- ✅ **Comprehensive test suite with 45 tests covering all workflows**
+- ✅ **Comprehensive test suite with 51 tests covering all workflows**
 - ✅ **Format-specific validation (PDF, MP3, JSON, binary, text)**
 - ✅ **End-to-end network testing with real client-server communication**
 
@@ -392,11 +392,11 @@ graph TD
 
 ## Testing & Quality Assurance
 
-TrustEdge features comprehensive testing with **45 tests** covering all workflows:
+TrustEdge features comprehensive testing with **51 tests** covering all workflows:
 
 ### Test Suite Overview
 ```bash
-# Run complete test suite (45 tests)
+# Run complete test suite (51 tests)
 cargo test
 
 # Test execution summary:
@@ -404,9 +404,10 @@ cargo test
 ✅ Auth Integration:         3/3   passed (mutual authentication)  
 ✅ Roundtrip Integration:   15/15  passed (encryption/decryption workflows)
 ✅ Network Integration:      7/7   passed (client-server communication)
+✅ Universal Backend:        6/6   passed (capability-based backend workflows)
 ────────────────────────────────────────────────────────────────────────
-✅ Total Tests:             45/45  passed (100% success rate)
-✅ Total Execution:         ~10 seconds (efficient testing)
+✅ Total Tests:             51/51  passed (100% success rate)
+✅ Total Execution:         ~16 seconds (efficient testing)
 ```
 
 ### Validation Coverage
@@ -414,6 +415,7 @@ cargo test
 - **🌐 Network Protocol Testing**: Real client-server communication with authentication
 - **🔒 Security Testing**: Mutual authentication, session management, data integrity
 - **🔧 Universal Backend Testing**: Capability discovery, operation dispatch, backend registry
+- **🔗 Universal Backend Integration**: End-to-end workflows with capability-based selection
 - **⚡ Performance Testing**: Large file handling, chunked transfer, memory efficiency
 - **🎯 Edge Case Testing**: Empty files, unknown formats, connection errors
 - **🔍 CLI Testing**: Real binary execution with proper argument validation
@@ -424,9 +426,34 @@ cargo test
 ./scripts/ci-check.sh
 
 # Individual test suites
-cargo test --test network_integration      # Network testing
-cargo test --test roundtrip_integration    # Local workflows  
-cargo test --test auth_integration         # Authentication
+cargo test --test network_integration         # Network testing
+cargo test --test roundtrip_integration       # Local workflows  
+cargo test --test auth_integration            # Authentication
+cargo test --test universal_backend_integration # Universal Backend workflows
+```
+
+### Universal Backend Integration Tests
+The new Universal Backend integration tests validate real-world usage of the capability-based backend system:
+
+- **Workflow Integration**: End-to-end encrypt/decrypt workflows using Universal Backend
+- **Capability Selection**: Automatic backend selection based on operation requirements
+- **Registry Management**: Backend discovery, registration, and preference-based routing
+- **Performance Validation**: Multi-operation workflows with timing constraints
+- **Error Handling**: Graceful handling of unsupported operations and edge cases
+- **Deterministic Operations**: Verification of consistent key derivation across calls
+
+```bash
+# Run Universal Backend integration tests specifically
+cargo test --test universal_backend_integration
+
+# Expected output:
+# running 6 tests
+# test test_universal_backend_capability_based_selection ... ok
+# test test_universal_backend_encrypt_decrypt_workflow ... ok
+# test test_universal_backend_error_handling ... ok
+# test test_universal_backend_multiple_operations_workflow ... ok
+# test test_universal_backend_performance_characteristics ... ok
+# test test_universal_backend_registry_management ... ok
 ```
 
 **For detailed testing procedures, see [TESTING.md](./TESTING.md).**
