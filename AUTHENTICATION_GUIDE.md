@@ -622,6 +622,149 @@ chmod 700 "$(dirname $SERVER_KEY)" "$UPLOAD_DIR"
   --verbose 2>&1 | tee -a "$LOG_FILE"
 ```
 
+### Container Deployment
+
+#### Docker Deployment
+
+```dockerfile
+# Server container with authentication
+FROM rust:latest as builder
+COPY . /app
+WORKDIR /app
+RUN cargo build --release
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /app/target/release/trustedge-server /usr/local/bin/
+EXPOSE 8080
+CMD ["trustedge-server", "--require-auth", "--bind-addr", "0.0.0.0:8080"]
+```
+
+#### Kubernetes Configuration
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trustedge-certs
+  namespace: trustedge
+data:
+  server.cert: |
+    # Server certificate content will be generated automatically
+    # or pre-populated from existing certificate files
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: trustedge-secrets
+  namespace: trustedge
+type: Opaque
+data:
+  # Base64 encoded production salt and other sensitive configuration
+  production-salt: YWJjZGVmMTIzNDU2Nzg5MGFiY2RlZjEyMzQ1Njc4OTA=
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trustedge-server
+  namespace: trustedge
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: trustedge-server
+  template:
+    metadata:
+      labels:
+        app: trustedge-server
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+      - name: trustedge-server
+        image: trustedge:latest
+        args: 
+          - "--require-auth"
+          - "--bind-addr"
+          - "0.0.0.0:8080"
+          - "--server-identity"
+          - "TrustEdge-K8s-Production"
+          - "--session-timeout"
+          - "300"
+        ports:
+        - containerPort: 8080
+          name: trustedge
+        env:
+        - name: PRODUCTION_SALT
+          valueFrom:
+            secretKeyRef:
+              name: trustedge-secrets
+              key: production-salt
+        volumeMounts:
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+        - name: data
+          mountPath: /data
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      volumes:
+      - name: certs
+        configMap:
+          name: trustedge-certs
+          defaultMode: 0600
+      - name: data
+        persistentVolumeClaim:
+          claimName: trustedge-data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trustedge-service
+  namespace: trustedge
+spec:
+  selector:
+    app: trustedge-server
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: trustedge
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: trustedge-data
+  namespace: trustedge
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+```
+
 ### Monitoring and Alerting
 
 Monitor these authentication metrics:
@@ -675,4 +818,4 @@ For enterprise deployments, consider integrating with existing PKI:
 
 ---
 
-This completes the TrustEdge Authentication Guide. For additional questions or advanced use cases, refer to the [AUTHENTICATION.md](AUTHENTICATION.md) technical specification.
+This completes the TrustEdge Authentication Guide. For additional technical implementation details, refer to the source code in [`trustedge-audio/src/`](trustedge-audio/src/) and the integration tests in [`trustedge-audio/tests/auth_integration.rs`](trustedge-audio/tests/auth_integration.rs).
