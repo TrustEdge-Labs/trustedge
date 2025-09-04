@@ -12,6 +12,7 @@ Comprehensive error handling, common issues, and diagnostic procedures for Trust
 ## Table of Contents
 - [Common Error Messages](#common-error-messages)
 - [Configuration Issues](#configuration-issues)
+- [Universal Backend Issues](#universal-backend-issues)
 - [Network Problems](#network-problems)
 - [Authentication Issues](#authentication-issues)
 - [Audio System Issues](#audio-system-issues)
@@ -48,19 +49,24 @@ ls -la your_file.trst
 
 ### Backend Configuration
 
-#### `Backend 'tpm' not yet implemented`
+#### `Backend capability not available`
 **Error Example:**
 ```
-Backend 'tpm' not yet implemented. Available: keyring. Future backends: tpm, hsm, matter.
+Error: Operation not supported by available backends
+Available backends: keyring, universal_keyring
+Required capability: AdvancedHashing
 ```
 
 **Solution:**
 ```bash
-# List available backends
-./target/release/trustedge-audio --list-backends
+# List available backends with capabilities
+trustedge-audio --list-backends
 
-# Use supported backend
-./target/release/trustedge-audio --backend keyring
+# Check specific backend capabilities
+trustedge-audio --backend-info universal_keyring
+
+# Use backend with required capabilities
+trustedge-audio --backend-preference "hashing:universal_keyring"
 ```
 
 ### Salt Format Issues
@@ -83,6 +89,329 @@ Error: salt_hex decode. Caused by: Odd number of digits
 
 # Generate valid salt
 openssl rand -hex 16
+```
+
+---
+
+## Universal Backend Issues
+
+### Registry Initialization Failures
+
+#### `Failed to initialize Universal Backend Registry`
+
+**Error Example:**
+```
+Error: Backend registry initialization failed
+Caused by: universal_registry backend not available
+```
+
+**Cause:** The Universal Backend Registry failed to initialize properly, usually due to:
+- Missing backend dependencies
+- Insufficient system permissions
+- Corrupted backend configuration
+
+**Solution:**
+```bash
+# Check registry status
+trustedge-audio --list-backends
+
+# If empty or error, verify system dependencies
+# Linux: Check keyring service
+systemctl status gnome-keyring-daemon
+# or
+systemctl status kwallet
+
+# Reset registry configuration
+rm -rf ~/.config/trustedge/backend_registry.json
+
+# Force registry reinitialization
+trustedge-audio --backend-info universal_registry
+```
+
+#### `Backend registration failed: capability conflict`
+
+**Error Example:**
+```
+Error: Failed to register backend 'custom_backend'
+Caused by: Capability 'KeyDerivation' conflicts with existing backend 'universal_keyring'
+```
+
+**Cause:** Multiple backends trying to register the same capability with conflicting configurations.
+
+**Solution:**
+```bash
+# Check current backend registrations
+trustedge-audio --list-backends
+
+# Manually specify backend preferences to resolve conflicts
+trustedge-audio --backend-preference "keyderivation:universal_keyring"
+
+# Or use explicit backend selection
+trustedge-audio --backend-info universal_keyring
+```
+
+#### `Registry corruption detected`
+
+**Error Example:**
+```
+Error: Backend registry corrupted
+Caused by: Invalid registry state - checksum mismatch
+```
+
+**Cause:** Registry metadata file corruption, often from:
+- Improper shutdown during registry updates
+- Filesystem corruption
+- Concurrent access conflicts
+
+**Solution:**
+```bash
+# Backup current registry (if recoverable)
+cp ~/.config/trustedge/backend_registry.json ~/.config/trustedge/backend_registry.json.backup
+
+# Remove corrupted registry
+rm -rf ~/.config/trustedge/backend_registry.json
+
+# Force clean reinitialization
+trustedge-audio --list-backends --verbose
+
+# Verify registry health
+trustedge-audio --backend-info universal_registry
+```
+
+### Capability Mismatch Errors
+
+#### `Operation not supported by selected backend`
+
+**Error Example:**
+```
+Error: KeyDerivation operation failed
+Caused by: Backend 'basic_keyring' does not support capability 'AdvancedHashing'
+```
+
+**Cause:** Requested operation requires capabilities not available in the selected backend.
+
+**Solution:**
+```bash
+# Check which backends support the required capability
+trustedge-audio --list-backends | grep -A 5 "Capabilities.*Hashing"
+
+# Use a backend with the required capability
+trustedge-audio --backend-preference "hashing:universal_keyring"
+
+# Or let the registry auto-select
+trustedge-audio --show-operation-flow
+```
+
+#### `Capability version mismatch`
+
+**Error Example:**
+```
+Error: Backend capability version conflict
+Caused by: Required KeyDerivation v2.0, but backend provides v1.5
+```
+
+**Cause:** Backend provides an older version of the required capability.
+
+**Solution:**
+```bash
+# Check available capability versions
+trustedge-audio --backend-info universal_keyring | grep -A 10 "Capabilities"
+
+# Update to a backend with newer capability versions
+trustedge-audio --backend-preference "keyderivation:universal_keyring"
+
+# Check if system updates are available
+# Update TrustEdge to latest version for newest capabilities
+```
+
+#### `No backend available for operation`
+
+**Error Example:**
+```
+Error: Operation dispatch failed
+Caused by: No registered backend supports capability 'QuantumResistantHashing'
+```
+
+**Cause:** No currently registered backend supports the required capability.
+
+**Solution:**
+```bash
+# List all available backends and their capabilities
+trustedge-audio --list-backends
+
+# Check if a fallback capability can be used
+trustedge-audio --backend-preference "hashing:universal_keyring"
+
+# For future capabilities, check for TrustEdge updates
+# Some capabilities may require specific backend plugins
+```
+
+### Backend Selection Problems
+
+#### `Backend selection timeout`
+
+**Error Example:**
+```
+Error: Backend selection failed
+Caused by: Registry timeout after 30 seconds
+```
+
+**Cause:** Registry taking too long to select an appropriate backend, usually due to:
+- Backend health checks timing out
+- Network latency for remote backends
+- Heavy system load
+
+**Solution:**
+```bash
+# Check backend health status
+trustedge-audio --backend-info universal_registry | grep -A 20 "Health Monitoring"
+
+# Manually specify a known-good backend
+trustedge-audio --backend-preference "keyderivation:keyring"
+
+# Reduce timeout for testing
+trustedge-audio --backend-config "selection_timeout=10"
+
+# Check system resources
+top -p $(pgrep trustedge)
+```
+
+#### `Circular backend dependency detected`
+
+**Error Example:**
+```
+Error: Backend dependency resolution failed
+Caused by: Circular dependency: universal_keyring -> keyring -> universal_keyring
+```
+
+**Cause:** Backend configuration creates circular dependencies in capability routing.
+
+**Solution:**
+```bash
+# Check current backend routing configuration
+trustedge-audio --backend-info universal_registry | grep -A 15 "Operation Routing"
+
+# Reset to default routing preferences
+rm -rf ~/.config/trustedge/backend_preferences.json
+
+# Use explicit, non-circular preferences
+trustedge-audio --backend-preference "keyderivation:universal_keyring"
+trustedge-audio --backend-preference "storage:keyring"
+```
+
+#### `Backend performance degradation`
+
+**Error Example:**
+```
+Warning: Backend 'universal_keyring' performance below threshold
+Average latency: 2.5s (threshold: 1.0s)
+Switching to fallback backend 'keyring'
+```
+
+**Cause:** Selected backend is performing poorly, triggering automatic failover.
+
+**Diagnostic Steps:**
+```bash
+# Check detailed performance metrics
+trustedge-audio --backend-info universal_registry | grep -A 20 "Performance Analysis"
+
+# Monitor real-time performance
+trustedge-audio --backend-config "performance_monitoring=detailed" --verbose
+
+# Check system resources affecting the backend
+# Memory usage
+free -h
+# CPU usage
+top -p $(pgrep trustedge)
+# Disk I/O
+iostat -x 1 5
+```
+
+**Solutions:**
+```bash
+# Optimize backend configuration for performance
+trustedge-audio --backend-config "pbkdf2_iterations=100000"  # Reduce iterations
+trustedge-audio --backend-config "argon2_memory=32768"      # Reduce memory usage
+
+# Use performance-optimized backend preference
+trustedge-audio --backend-preference "keyderivation:keyring"  # Faster backend
+
+# Increase performance thresholds if acceptable
+trustedge-audio --backend-config "performance_threshold=2000"  # 2 second threshold
+```
+
+### Registry Maintenance and Recovery
+
+#### Emergency Backend Reset
+
+```bash
+# Complete registry reset (nuclear option)
+echo "Performing complete backend registry reset..."
+
+# 1. Stop any running TrustEdge processes
+pkill trustedge
+
+# 2. Backup current configuration
+mkdir -p ~/.config/trustedge/backup/$(date +%Y%m%d_%H%M%S)
+cp -r ~/.config/trustedge/*.json ~/.config/trustedge/backup/$(date +%Y%m%d_%H%M%S)/ 2>/dev/null || true
+
+# 3. Remove all registry files
+rm -rf ~/.config/trustedge/backend_registry.json
+rm -rf ~/.config/trustedge/backend_preferences.json
+rm -rf ~/.config/trustedge/backend_cache.json
+
+# 4. Reinitialize with defaults
+trustedge-audio --list-backends
+
+# 5. Verify registry health
+trustedge-audio --backend-info universal_registry
+```
+
+#### Registry Health Check Script
+
+```bash
+#!/bin/bash
+# Backend Health Check Script
+
+echo "🔍 TrustEdge Backend Health Check"
+echo "================================="
+
+# Check registry status
+echo "📊 Registry Status:"
+if trustedge-audio --list-backends >/dev/null 2>&1; then
+    echo "  ✅ Registry accessible"
+    
+    # Count registered backends
+    BACKEND_COUNT=$(trustedge-audio --list-backends 2>/dev/null | grep -c "✓.*Backend")
+    echo "  📊 Backends registered: $BACKEND_COUNT"
+    
+    # Check each backend health
+    echo "🔍 Backend Health:"
+    trustedge-audio --backend-info universal_registry | grep -A 5 "Backend Health"
+    
+    # Performance check
+    echo "⚡ Performance Check:"
+    START_TIME=$(date +%s%N)
+    trustedge-audio --backend-info keyring >/dev/null 2>&1
+    END_TIME=$(date +%s%N)
+    DURATION=$((($END_TIME - $START_TIME) / 1000000))  # Convert to milliseconds
+    
+    if [ $DURATION -lt 1000 ]; then
+        echo "  ✅ Backend response time: ${DURATION}ms (healthy)"
+    else
+        echo "  ⚠️  Backend response time: ${DURATION}ms (slow)"
+    fi
+    
+else
+    echo "  ❌ Registry inaccessible - requires attention"
+    echo "  💡 Try: trustedge-audio --list-backends --verbose"
+fi
+
+echo ""
+echo "🎯 Quick Fix Commands:"
+echo "  Reset registry: rm ~/.config/trustedge/backend_registry.json"
+echo "  Reinitialize: trustedge-audio --list-backends"
+echo "  Health check: trustedge-audio --backend-info universal_registry"
 ```
 
 ---

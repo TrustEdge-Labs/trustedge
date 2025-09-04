@@ -12,7 +12,7 @@ Complete command-line interface documentation for TrustEdge.
 - [CLI Options](#cli-options)
 - [Network Operations](#network-operations)
 - [Authentication](#authentication)
-- [Backend Management](#backend-management)
+- [Universal Backend Registry](#universal-backend-registry)
 - [Error Handling](#error-handling)
 - [Complete Workflows](#complete-workflows)
 
@@ -49,13 +49,15 @@ Complete command-line interface documentation for TrustEdge.
 | `--salt-hex <SALT_HEX>` | Salt for key derivation (32 hex chars = 16 bytes) | `--salt-hex "abcdef1234567890abcdef1234567890"` |
 | `--use-keyring` | Use key derived from keyring passphrase + salt instead of --key-hex | `--use-keyring` |
 
-### Backend Options
+### Universal Backend Options
 
 | Option | Description | Example |
 |--------|-------------|---------|
-| `--backend <BACKEND>` | Key management backend to use (keyring, tpm, hsm, matter) [default: keyring] | `--backend keyring` |
-| `--list-backends` | List available key management backends | `--list-backends` |
+| `--list-backends` | List all available backends with capabilities | `--list-backends` |
+| `--backend-info <NAME>` | Show detailed capabilities for a specific backend | `--backend-info universal_keyring` |
+| `--backend-preference <OP>:<BACKEND>` | Set backend preference for specific operations | `--backend-preference encryption:universal_keyring` |
 | `--backend-config <CONFIG>` | Backend-specific configuration (format: key=value) | `--backend-config "iterations=150000"` |
+| `--show-operation-flow` | Display which backends handle each operation | `--show-operation-flow` |
 
 ### Audio Capture Options
 
@@ -352,55 +354,154 @@ TrustEdge implements **Ed25519 mutual authentication** with automatic certificat
 
 ---
 
-## Backend Management
+## Universal Backend Registry
 
-### List Available Backends
+### List Available Backends with Capabilities
 
 ```bash
 $ trustedge-audio --list-backends
-Available key management backends:
-  ✓ keyring - OS keyring with PBKDF2 key derivation
-    Required config: passphrase, salt
+Universal Backend Registry:
 
-Usage examples:
-  --backend keyring --use-keyring --salt-hex <salt>
-  --backend tpm --backend-config device_path=/dev/tpm0
-  --backend hsm --backend-config pkcs11_lib=/usr/lib/libpkcs11.so
+📊 Registry Status:
+  ✓ 3 backends registered
+  ✓ Capability-based operation routing enabled
+  ✓ Auto-fallback configured
+
+🔧 Available Backends:
+
+  ✓ keyring (KeyringBackend)
+    Capabilities: [KeyDerivation, SecureStorage]
+    Priority: Normal
+    Config: iterations=100000, secure_enclave=true
+
+  ✓ universal_keyring (UniversalKeyringBackend) 
+    Capabilities: [KeyDerivation, Hashing, SecureStorage]
+    Priority: High
+    Config: pbkdf2_iterations=150000, argon2_memory=65536
+
+  ✓ universal_registry (UniversalRegistryBackend)
+    Capabilities: [OperationRouting, BackendSelection, Fallback]
+    Priority: System
+    Config: auto_fallback=true, performance_monitoring=enabled
+
+💡 Usage Examples:
+  Basic keyring:     --use-keyring --salt-hex <salt>
+  Universal routing: --backend-preference encryption:universal_keyring
+  Show flow:         --show-operation-flow
 ```
 
-### Backend Management Examples
+### Capability-Based Operation Examples
 
-#### Keyring Backend (Default)
+#### Automatic Backend Selection
 
 ```bash
-# Set up passphrase (one-time setup)
-$ trustedge-audio --set-passphrase "my_secure_passphrase_123"
-Passphrase stored in system keyring
-
-# Use keyring with salt for encryption
+# System automatically selects best backend for each operation
 $ trustedge-audio \
     --input document.txt \
     --out roundtrip.txt \
     --envelope encrypted.trst \
-    --backend keyring \
+    --use-keyring \
     --salt-hex "abcdef1234567890abcdef1234567890" \
-    --use-keyring
+    --show-operation-flow
 
-# Use specific backend configuration
-$ trustedge-audio --backend keyring --backend-config "iterations=150000"
+Operation Flow:
+  🔐 Key Derivation → universal_keyring (PBKDF2 + Argon2)
+  💾 Secure Storage → keyring (OS native)
+  🔄 Registry Management → universal_registry (routing)
 ```
 
-#### Future Backends (Planned)
+#### Manual Backend Preferences
 
 ```bash
-# TPM 2.0 backend (planned)
-$ trustedge-audio --backend tpm --backend-config "device_path=/dev/tpm0"
+# Set specific backend preferences for operations
+$ trustedge-audio \
+    --input sensitive.pdf \
+    --backend-preference "encryption:universal_keyring" \
+    --backend-preference "storage:keyring" \
+    --backend-config "pbkdf2_iterations=200000" \
+    --use-keyring
 
-# HSM backend (planned)  
-$ trustedge-audio --backend hsm --backend-config "pkcs11_lib=/usr/lib/libpkcs11.so"
+# Show detailed backend information
+$ trustedge-audio --backend-info universal_keyring
+Backend: universal_keyring (UniversalKeyringBackend)
 
-# Matter/Thread ecosystem (planned)
-$ trustedge-audio --backend matter --backend-config "device_id=12345"
+🎯 Capabilities:
+  ✓ KeyDerivation - PBKDF2 + Argon2 hybrid
+  ✓ Hashing - SHA-256, SHA-512, BLAKE3
+  ✓ SecureStorage - Memory-safe key handling
+
+⚙️  Configuration Options:
+  pbkdf2_iterations: 150000 (default) | Range: 100000-1000000
+  argon2_memory: 65536 (default) | Range: 32768-1048576
+  hash_algorithm: SHA256 (default) | Options: SHA256, SHA512, BLAKE3
+
+📈 Performance Characteristics:
+  Key derivation: ~150ms (secure profile)
+  Memory usage: ~64KB (bounded)
+  Platform support: All (cross-platform)
+```
+
+#### Registry Management Examples
+
+```bash
+# View current registry configuration
+$ trustedge-audio --backend-info universal_registry
+Registry Configuration:
+
+🎛️  Backend Priorities:
+  1. universal_keyring (High)    - Advanced crypto operations
+  2. keyring (Normal)            - Standard OS integration  
+  3. universal_registry (System) - Operation routing
+
+🔄 Operation Routing Rules:
+  KeyDerivation → universal_keyring (preferred) → keyring (fallback)
+  SecureStorage → keyring (preferred) → universal_keyring (fallback)
+  Hashing → universal_keyring (only)
+
+⚡ Performance Monitoring:
+  ✓ Operation timing enabled
+  ✓ Backend health checks enabled
+  ✓ Auto-fallback on errors enabled
+```
+
+### Advanced Backend Configuration
+
+#### High-Security Profile
+
+```bash
+# Maximum security configuration
+$ trustedge-audio \
+    --input classified.docx \
+    --backend-preference "encryption:universal_keyring" \
+    --backend-config "pbkdf2_iterations=500000" \
+    --backend-config "argon2_memory=1048576" \
+    --backend-config "hash_algorithm=BLAKE3" \
+    --use-keyring \
+    --verbose
+
+Security Profile: Maximum
+  🔐 Key Derivation: PBKDF2 (500K iterations) + Argon2 (1MB memory)
+  🏷️  Hashing: BLAKE3 (quantum-resistant)
+  💾 Storage: OS keyring with secure enclave
+  ⏱️  Estimated time: ~2-3 seconds (security vs speed trade-off)
+```
+
+#### Performance-Optimized Profile
+
+```bash
+# Speed-optimized configuration
+$ trustedge-audio \
+    --input large_dataset.bin \
+    --backend-preference "encryption:universal_keyring" \
+    --backend-config "pbkdf2_iterations=100000" \
+    --backend-config "argon2_memory=32768" \
+    --backend-config "hash_algorithm=SHA256" \
+    --use-keyring
+
+Performance Profile: Optimized
+  🚀 Key Derivation: PBKDF2 (100K iterations) + Argon2 (32KB memory)
+  ⚡ Hashing: SHA256 (hardware-accelerated)
+  📊 Estimated time: ~50ms (speed-optimized)
 ```
 
 ---
@@ -416,7 +517,7 @@ For comprehensive error handling, troubleshooting steps, and solutions, see **[T
 | Error Message | Cause | Quick Fix |
 |---------------|-------|-----------|
 | `No such file or directory` | File doesn't exist | Check file path with `ls -la` |
-| `Backend 'X' not yet implemented` | Unsupported backend | Use `--list-backends`, try `--backend keyring` |
+| `Backend capability not available` | Operation not supported by selected backend | Use `--list-backends`, check capabilities |
 | `Odd number of digits` | Invalid salt format | Use `openssl rand -hex 16` for valid salt |
 | `bad magic` | Wrong file type | Ensure input is a `.trst` file |
 | `AES-GCM decrypt/verify failed` | Wrong key/passphrase | Verify key matches encryption key |
