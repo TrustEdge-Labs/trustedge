@@ -26,6 +26,10 @@ path = "src/bin/trustedge-server.rs"
 name = "trustedge-client" 
 path = "src/bin/trustedge-client.rs"
 
+[[bin]]
+name = "software-hsm-demo"
+path = "src/bin/software-hsm-demo.rs"
+
 [dependencies]
 aead = "0.5"
 aes-gcm = "0.10.3"
@@ -39,8 +43,11 @@ ed25519-dalek = { version = "2", features = ["rand_core"] }
 hex = "0.4"
 keyring = "2.0"
 num-traits = "0.2"
+p256 = { version = "0.13", features = ["ecdsa", "pem"] }  # For ECDSA P-256
 pbkdf2 = "0.12"
+rand = "0.8"  # For key generation
 rand_core = "0.6"
+rsa = { version = "0.9", features = ["pem"] }  # For RSA operations
 serde = { version = "1.0", features = ["derive"] }
 serde_bytes = "0.11"
 serde_json = "1.0"  # For metadata saving

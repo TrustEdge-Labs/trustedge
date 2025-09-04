@@ -130,7 +130,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 * ✅ Complete CLI documentation with working examples for all key operations
 * ✅ Universal Backend system supports easy addition of new backend types
 * ✅ Capability-based operation dispatch with type safety and error handling
-* ✅ Comprehensive test coverage (45 tests including 13 Universal Backend tests)
+* ✅ Comprehensive test coverage (93 tests including 42 Software HSM tests)
 * 📋 Migration procedures tested across different backend combinations
 * 📋 Hardware backend implementations (YubiKey, TPM, HSM)
 
@@ -792,7 +792,7 @@ trustedge-client --server 127.0.0.1:8080 --test-chunks 100 \
 **🔐 Major Achievements**: 
 - Complete Ed25519 mutual authentication system with CLI integration (672-line implementation)
 - Full live audio capture pipeline with cross-platform cpal integration (504-line audio module)
-- Comprehensive testing infrastructure with 51 automated tests covering all workflows
+- Comprehensive testing infrastructure with 93 automated tests covering all workflows
 
 ---
 

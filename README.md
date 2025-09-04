@@ -38,9 +38,10 @@ TrustEdge features:
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **51 automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **93 automated tests** covering all aspects of the system:
 
-- **Unit Tests (20)**: Core functionality validation including Universal Backend system
+- **Unit Tests (53)**: Core functionality validation including Universal Backend system and Software HSM (33 Software HSM tests + 20 other tests)
+- **Software HSM Integration Tests (9)**: Cross-session persistence, CLI integration, file workflows, and error recovery
 - **Authentication Tests (3)**: Certificate generation, mutual authentication, session management
 - **Roundtrip Tests (15)**: End-to-end encryption/decryption validation including comprehensive MIME type detection
 - **Network Integration Tests (7)**: Distributed encryption workflows with real network communication
@@ -370,7 +371,7 @@ graph TD
 - ✅ Comprehensive validation and error handling
 - ✅ Test vector validation for format stability
 - ✅ Production-ready network resilience features
-- ✅ **Comprehensive test suite with 51 tests covering all workflows**
+- ✅ **Comprehensive test suite with 93 tests covering all workflows**
 - ✅ **Format-specific validation (PDF, MP3, JSON, binary, text)**
 - ✅ **End-to-end network testing with real client-server communication**
 
@@ -407,22 +408,23 @@ graph TD
 
 ## Testing & Quality Assurance
 
-TrustEdge features comprehensive testing with **51 tests** covering all workflows:
+TrustEdge features comprehensive testing with **93 tests** covering all workflows:
 
 ### Test Suite Overview
 ```bash
-# Run complete test suite (51 tests)
+# Run complete test suite (93 tests)
 cargo test
 
 # Test execution summary:
-✅ Unit Tests:              20/20  passed (library functionality + Universal Backend)
+✅ Unit Tests:              53/53  passed (library functionality + Universal Backend + Software HSM)
+✅ Software HSM Integration: 9/9   passed (cross-session persistence, CLI workflows, error recovery)
 ✅ Auth Integration:         3/3   passed (mutual authentication)  
 ✅ Roundtrip Integration:   15/15  passed (encryption/decryption workflows)
 ✅ Network Integration:      7/7   passed (client-server communication)
 ✅ Universal Backend:        6/6   passed (capability-based backend workflows)
 ────────────────────────────────────────────────────────────────────────
-✅ Total Tests:             51/51  passed (100% success rate)
-✅ Total Execution:         ~18 seconds (efficient testing)
+✅ Total Tests:             93/93  passed (100% success rate)
+✅ Total Execution:         ~25 seconds (efficient testing)
 ```
 
 ### Validation Coverage

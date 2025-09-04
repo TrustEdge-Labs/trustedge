@@ -10,6 +10,7 @@
 //!
 //! This module provides capability-based backend selection and management.
 
+use crate::backends::software_hsm::SoftwareHsmBackend;
 use crate::backends::universal::*;
 use crate::backends::universal_keyring::UniversalKeyringBackend;
 use anyhow::{anyhow, Result};
@@ -39,6 +40,11 @@ impl UniversalBackendRegistry {
         // Add keyring backend if available
         if let Ok(keyring_backend) = UniversalKeyringBackend::new() {
             registry.register_backend("keyring".to_string(), Box::new(keyring_backend));
+        }
+
+        // Add Software HSM backend if available
+        if let Ok(software_hsm_backend) = SoftwareHsmBackend::new() {
+            registry.register_backend("software_hsm".to_string(), Box::new(software_hsm_backend));
         }
 
         // Future: Add other backends
@@ -272,13 +278,13 @@ mod tests {
         let backend = registry.find_backend_for_operation(&derive_op);
         assert!(backend.is_some());
 
-        // Test signing (should find none)
+        // Test signing (should find Software HSM)
         let sign_op = CryptoOperation::Sign {
             data: vec![1, 2, 3],
             algorithm: SignatureAlgorithm::Ed25519,
         };
         let backend = registry.find_backend_for_operation(&sign_op);
-        assert!(backend.is_none());
+        assert!(backend.is_some());
     }
 
     #[test]
