@@ -27,7 +27,25 @@ pub use auth::{
     SESSION_ID_SIZE, SESSION_TIMEOUT,
 };
 pub use backends::{
-    BackendInfo, BackendRegistry, KeyBackend, KeyContext, KeyMetadata, KeyringBackend,
+    AsymmetricAlgorithm,
+    BackendCapabilities,
+    BackendInfo,
+    BackendPreferences,
+    BackendRegistry,
+    CryptoOperation,
+    CryptoResult,
+    HashAlgorithm,
+    KeyBackend,
+    KeyContext,
+    KeyDerivationContext,
+    KeyMetadata,
+    KeyringBackend,
+    SignatureAlgorithm,
+    SymmetricAlgorithm,
+    // Universal backend system (new)
+    UniversalBackend,
+    UniversalBackendRegistry,
+    UniversalKeyringBackend,
 };
 pub use format::*;
 

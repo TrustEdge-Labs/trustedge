@@ -103,14 +103,18 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
   - `--list-keys --show-metadata` - Key inventory
   - `--migrate-backend --from <source> --to <dest>` - Backend migration
 
-### 2.2 Modular Backend Architecture
-* [ ] **Abstract key management interfaces** for pluggable backends:
-  - Software keyring (current PBKDF2 implementation) 
-  - TPM 2.0 integration points
-  - HSM support framework
-  - Future Matter test CA/certificate workflows
-* [ ] **Backend registry system** for runtime backend selection
-* [ ] **Configuration management** for backend-specific parameters
+### 2.2 Universal Backend Architecture ✅ COMPLETED
+* ✅ **Capability-based Universal Backend system** for pluggable crypto operations:
+  - Enum-based operation dispatch (`CryptoOperation`/`CryptoResult`)
+  - Runtime capability discovery and backend selection
+  - Preference-based backend routing with fallbacks
+  - Type-safe operation validation and error handling
+* ✅ **Backend registry system** for runtime backend selection
+* ✅ **Comprehensive backend abstraction** supporting:
+  - ✅ Keyring backend (available)
+  - 📋 YubiKey PIV backend (Universal Backend ready)
+  - 📋 TPM 2.0 backend (Universal Backend ready)
+  - 📋 HSM/PKCS#11 backend (Universal Backend ready)
 
 ### 2.3 Migration & Error Handling
 * [ ] **Comprehensive migration documentation** with step-by-step guides:
@@ -123,10 +127,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
   - Network connectivity issues during key operations
 
 **Acceptance Criteria:**
-* Complete CLI documentation with working examples for all key operations
-* Modular backend system supports easy addition of new key sources
-* Migration procedures tested across different backend combinations
-* Error scenarios documented with actual CLI output examples
+* ✅ Complete CLI documentation with working examples for all key operations
+* ✅ Universal Backend system supports easy addition of new backend types
+* ✅ Capability-based operation dispatch with type safety and error handling
+* ✅ Comprehensive test coverage (45 tests including 13 Universal Backend tests)
+* 📋 Migration procedures tested across different backend combinations
+* 📋 Hardware backend implementations (YubiKey, TPM, HSM)
 
 ---
 
@@ -482,48 +488,117 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
-## Adding New Key Backends (Developer Guide)
+## Adding New Universal Backends (Developer Guide)
 
-### Backend Implementation Pattern
+### Universal Backend Implementation Pattern
 
-To add a new key management backend (e.g., TPM, HSM, or Matter certificates), implement the `KeyBackend` trait:
+To add a new backend (e.g., YubiKey, TPM, HSM), implement the `UniversalBackend` trait:
 
 ```rust
-use trustedge_audio::{KeyBackend, KeyContext, KeyMetadata};
+use trustedge_audio::backends::universal::{
+    UniversalBackend, BackendCapabilities, CryptoOperation, CryptoResult
+};
 
-struct YourBackend {
-    config: YourBackendConfig,
+struct YubiKeyBackend {
+    config: YubiKeyConfig,
 }
 
-impl KeyBackend for YourBackend {
-    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32]> {
-        // Your backend-specific key derivation logic
-        // Must be deterministic for the same key_id + context
+impl UniversalBackend for YubiKeyBackend {
+    fn name(&self) -> &'static str {
+        "yubikey"
     }
     
-    fn store_key(&self, key_id: &[u8; 16], key_data: &[u8; 32]) -> Result<()> {
-        // Store key securely in your backend
-        // Implement proper zeroization of sensitive data
+    fn capabilities(&self) -> BackendCapabilities {
+        BackendCapabilities {
+            derive_key: true,
+            compute_hash: true,
+            generate_nonce: true,
+            sign_data: true,      // YubiKey-specific capability
+            verify_signature: true, // YubiKey-specific capability
+        }
     }
     
-    fn rotate_key(&self, old_id: &[u8; 16], new_id: &[u8; 16]) -> Result<()> {
-        // Implement key rotation with rollback capability
-        // Ensure atomicity for production deployments
-    }
-    
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
-        // Return available keys with metadata
-        // Don't expose actual key material
+    fn perform_operation(&self, operation: CryptoOperation) -> anyhow::Result<CryptoResult> {
+        match operation {
+            CryptoOperation::DeriveKey { domain, purpose } => {
+                // YubiKey PIV slot-based key derivation
+                let key = self.derive_from_piv_slot(&domain, &purpose)?;
+                Ok(CryptoResult::DerivedKey(key))
+            }
+            CryptoOperation::ComputeHash { algorithm, data } => {
+                // Hardware-accelerated hashing if available
+                let hash = self.hardware_hash(&algorithm, &data)?;
+                Ok(CryptoResult::ComputedHash(hash))
+            }
+            // Add YubiKey-specific operations
+            _ => Err(anyhow::anyhow!("Operation not supported by YubiKey backend"))
+        }
     }
 }
 ```
 
+### Registering Your Backend
+
+```rust
+use trustedge_audio::backends::universal_registry::UniversalBackendRegistry;
+
+// Create registry with your backend
+let mut registry = UniversalBackendRegistry::new();
+registry.register_backend(Box::new(YubiKeyBackend::new(config)?));
+
+// Use with preference-based selection
+let preferences = BackendPreferences::default()
+    .prefer_backend("yubikey")
+    .fallback_to("keyring");
+    
+let backend = registry.select_backend_with_preferences(&preferences)?;
+```
+
+### Testing Your Backend
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_yubikey_capabilities() {
+        let backend = YubiKeyBackend::new(test_config()).unwrap();
+        let caps = backend.capabilities();
+        
+        assert!(caps.derive_key);
+        assert!(caps.sign_data);
+        assert!(caps.verify_signature);
+    }
+    
+    #[test]
+    fn test_yubikey_key_derivation() {
+        let backend = YubiKeyBackend::new(test_config()).unwrap();
+        let operation = CryptoOperation::DeriveKey {
+            domain: "audio".to_string(),
+            purpose: "encryption".to_string(),
+        };
+        
+        let result = backend.perform_operation(operation).unwrap();
+        match result {
+            CryptoResult::DerivedKey(key) => {
+                assert_eq!(key.len(), 32);
+                // Verify deterministic derivation
+            }
+            _ => panic!("Expected DerivedKey result"),
+        }
+    }
+}
+```
+
+**📖 For comprehensive documentation and examples, see [UNIVERSAL_BACKEND.md](UNIVERSAL_BACKEND.md).**
+
 ### Integration Steps
 
 1. **Add backend-specific dependencies** to `Cargo.toml`
-2. **Implement the KeyBackend trait** for your hardware/service
-3. **Add CLI argument parsing** for backend-specific options
-4. **Register backend** in the backend registry system
+2. **Implement the UniversalBackend trait** for your hardware/service
+3. **Add capability discovery** for your backend's supported operations
+4. **Register backend** in the Universal Backend registry system
 5. **Add integration tests** with mock hardware if needed
 6. **Document CLI usage** and migration procedures
 

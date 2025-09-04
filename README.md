@@ -11,30 +11,34 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Why This Project?
 
-**Trustable Edge AI** — privacy-preserving edge pipelines with ### 🧪 Testing & Quality Assurance
+**Trustable Edge AI** — privacy-preserving edge pipelines with **secure** and data-agnostic encryption.
 
 TrustEdge features:
 
 - **Data-agnostic encryption:** Works with files, live audio, sensor data, or any binary stream
 - **Live audio capture:** Real-time microphone input with configurable quality and device selection
 - **Provenance by design:** each chunk carries a signed manifest (C2PA-inspired) whose hash is bound into AEAD AAD; tampering breaks decryption
-* **Privacy by design & default**: encrypt at the edge, not just TLS in transit, audio chunks are encrypted with AES-256-GCM before leaving the device
-* **Rust at the edge**: safety + performance for streaming workloads  
+- **Privacy by design & default**: encrypt at the edge, not just TLS in transit, audio chunks are encrypted with AES-256-GCM before leaving the device
+- **Rust at the edge**: safety + performance for streaming workloads  
 - **Streaming-friendly:** fixed nonce discipline (prefix||counter) and per-chunk records
-* **Learning in public**: small, honest milestones → real, reviewable code
+- **Universal Backend System**: Capability-based crypto operations supporting keyring, TPM, HSM, and YubiKey backends
+- **Learning in public**: small, honest milestones → real, reviewable code
 
 **Technology Stack:**
 - Language: Rust (stable)
 - Crypto: `aes-gcm` (AEAD), 256-bit keys, 96-bit nonces
 - Audio: `cpal` library with cross-platform support (Linux/ALSA, Windows/WASAPI, macOS/CoreAudio)
-- Key Management: Pluggable backends (keyring, TPM, HSM planned)
+- Key Management: Universal Backend system with pluggable crypto operations
+- Authentication: Ed25519-based mutual authentication with session management
+
+## Testing & Quality Assurance
 
 TrustEdge includes a comprehensive test suite with **32 automated tests** covering all aspects of the system:
 
 - **Unit Tests (7)**: Core functionality validation
 - **Authentication Tests (3)**: Certificate generation, mutual authentication, session management
 - **Roundtrip Tests (15)**: End-to-end encryption/decryption validation including comprehensive MIME type detection
-- **Network Integration Tests (7)**: Distributed encryption workflows with real network communicationre** and data-agnostic encryption.
+- **Network Integration Tests (7)**: Distributed encryption workflows with real network communication
 
 ---
 
@@ -178,6 +182,81 @@ TrustEdge supports secure client-server communication with mutual authentication
 
 ---
 
+## Universal Backend System
+
+TrustEdge features a **capability-based Universal Backend system** that provides pluggable cryptographic operations across different hardware and software backends:
+
+### Backend Architecture
+
+```mermaid
+graph TD
+    A[TrustEdge Client] --> B[Universal Backend Registry]
+    B --> C[Backend Discovery]
+    C --> D{Available Backends}
+    
+    D --> E[Keyring Backend]
+    D --> F[YubiKey Backend]
+    D --> G[TPM Backend]
+    D --> H[HSM Backend]
+    
+    E --> I[OS Keyring]
+    F --> J[YubiKey PIV]
+    G --> K[TPM 2.0]
+    H --> L[PKCS#11]
+    
+    I --> M[Crypto Operations]
+    J --> M
+    K --> M
+    L --> M
+```
+
+### Key Features
+
+- **✅ Capability Discovery**: Automatic detection of backend capabilities
+- **✅ Operation Dispatch**: Enum-based operation routing with type safety
+- **✅ Preference-Based Selection**: Configurable backend preferences and fallbacks
+- **✅ Runtime Backend Detection**: Dynamic discovery of available backends
+- **✅ Pluggable Architecture**: Easy addition of new backends (YubiKey, TPM, HSM)
+
+### Supported Operations
+
+```rust
+// Core cryptographic operations across all backends
+pub enum CryptoOperation {
+    DeriveKey { domain: String, purpose: String },
+    ComputeHash { algorithm: String, data: Vec<u8> },
+    GenerateNonce { size: usize },
+    // Future: Sign, Verify, Encrypt, Decrypt (hardware backends)
+}
+```
+
+### Backend Status
+
+| Backend | Status | Operations | Notes |
+|---------|--------|------------|-------|
+| **Keyring** | ✅ Available | Key derivation, hashing, nonce generation | OS keyring integration |
+| **YubiKey** | 🔄 Planned | PIV operations, hardware signing | Requires YubiKey PIV |
+| **TPM** | 🔄 Planned | TPM 2.0 operations, attestation | Linux/Windows TPM support |
+| **HSM** | 🔄 Planned | PKCS#11 operations | Enterprise HSM integration |
+
+### Demo and Examples
+
+```bash
+# Run the Universal Backend demonstration
+cargo run --example universal_backend_demo
+
+# Expected output:
+# ✔ Available backends: keyring
+# ✔ Backend capabilities: DeriveKey, ComputeHash, GenerateNonce
+# ✔ Key derivation: Successfully derived key for audio.encryption
+# ✔ Hash computation: Successfully computed SHA-256 hash
+# ✔ Nonce generation: Successfully generated 12-byte nonce
+```
+
+**📖 For detailed Universal Backend documentation and implementation guides, see [UNIVERSAL_BACKEND.md](UNIVERSAL_BACKEND.md).**
+
+---
+
 ## How It Works
 
 TrustEdge uses a **data-agnostic architecture** with **format-aware decryption** that treats all input sources uniformly while preserving format information:
@@ -285,7 +364,7 @@ graph TD
 - ✅ Comprehensive validation and error handling
 - ✅ Test vector validation for format stability
 - ✅ Production-ready network resilience features
-- ✅ **Comprehensive test suite with 32 tests covering all workflows**
+- ✅ **Comprehensive test suite with 45 tests covering all workflows**
 - ✅ **Format-specific validation (PDF, MP3, JSON, binary, text)**
 - ✅ **End-to-end network testing with real client-server communication**
 
@@ -313,27 +392,28 @@ graph TD
 
 ## Testing & Quality Assurance
 
-TrustEdge features comprehensive testing with **32 tests** covering all workflows:
+TrustEdge features comprehensive testing with **45 tests** covering all workflows:
 
 ### Test Suite Overview
 ```bash
-# Run complete test suite (32 tests)
+# Run complete test suite (45 tests)
 cargo test
 
 # Test execution summary:
-✅ Unit Tests:              7/7   passed (library functionality)
-✅ Auth Integration:        3/3   passed (mutual authentication)  
-✅ Roundtrip Integration:  14/14  passed (encryption/decryption workflows)
-✅ Network Integration:     7/7   passed (client-server communication)
+✅ Unit Tests:              20/20  passed (library functionality + Universal Backend)
+✅ Auth Integration:         3/3   passed (mutual authentication)  
+✅ Roundtrip Integration:   15/15  passed (encryption/decryption workflows)
+✅ Network Integration:      7/7   passed (client-server communication)
 ────────────────────────────────────────────────────────────────────────
-✅ Total Tests:           31/31  passed (100% success rate)
-✅ Total Execution:       ~9 seconds (efficient testing)
+✅ Total Tests:             45/45  passed (100% success rate)
+✅ Total Execution:         ~10 seconds (efficient testing)
 ```
 
 ### Validation Coverage
 - **📄 Format-Specific Testing**: PDF, MP3, JSON, binary, text files with byte-perfect restoration
 - **🌐 Network Protocol Testing**: Real client-server communication with authentication
 - **🔒 Security Testing**: Mutual authentication, session management, data integrity
+- **🔧 Universal Backend Testing**: Capability discovery, operation dispatch, backend registry
 - **⚡ Performance Testing**: Large file handling, chunked transfer, memory efficiency
 - **🎯 Edge Case Testing**: Empty files, unknown formats, connection errors
 - **🔍 CLI Testing**: Real binary execution with proper argument validation
@@ -365,6 +445,8 @@ cargo test --test auth_integration         # Authentication
 **✅ Phase 2: Key Management (COMPLETED)**  
 - Pluggable backend architecture
 - Keyring integration with PBKDF2
+- **Universal Backend system with capability-based operations**
+- **YubiKey-ready architecture with enum-based dispatch**
 - Professional code quality standards
 
 **✅ Phase 3: Network Operations (COMPLETED)**
@@ -383,10 +465,11 @@ cargo test --test auth_integration         # Authentication
 - Live audio processing features
 - Enhanced streaming protocols
 
-**📋 Phase 5: Testing & Security Hardening (PLANNED)**
+**📋 Phase 5: Hardware Security & Advanced Backends (PLANNED)**
+- YubiKey PIV backend implementation (Universal Backend ready)
+- TPM 2.0 backend implementation (Universal Backend ready)
+- HSM/PKCS#11 backend implementation (Universal Backend ready)
 - Comprehensive testing, fuzzing & audit infrastructure
-- TPM backend implementation
-- Hardware security module support
 
 **📋 Phase 6: Community & Deployment (PLANNED)**
 - Community engagement and beta testing program
