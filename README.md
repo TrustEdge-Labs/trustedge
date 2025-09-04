@@ -33,12 +33,13 @@ TrustEdge features:
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **32 automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **51 automated tests** covering all aspects of the system:
 
-- **Unit Tests (7)**: Core functionality validation
+- **Unit Tests (20)**: Core functionality validation including Universal Backend system
 - **Authentication Tests (3)**: Certificate generation, mutual authentication, session management
 - **Roundtrip Tests (15)**: End-to-end encryption/decryption validation including comprehensive MIME type detection
 - **Network Integration Tests (7)**: Distributed encryption workflows with real network communication
+- **Universal Backend Integration Tests (6)**: End-to-end crypto workflows using capability-based backend selection
 
 ---
 
@@ -407,7 +408,7 @@ cargo test
 ✅ Universal Backend:        6/6   passed (capability-based backend workflows)
 ────────────────────────────────────────────────────────────────────────
 ✅ Total Tests:             51/51  passed (100% success rate)
-✅ Total Execution:         ~16 seconds (efficient testing)
+✅ Total Execution:         ~18 seconds (efficient testing)
 ```
 
 ### Validation Coverage
