@@ -20,9 +20,9 @@ coverage:
         base: auto
 
 ignore:
-  - "trustedge-audio/tests/"
-  - "trustedge-audio/src/bin/"
-  - "trustedge-audio/examples/"
+  - "tests/"
+  - "src/bin/"
+  - "examples/"
 
 comment:
   layout: "reach,diff,flags,tree"
