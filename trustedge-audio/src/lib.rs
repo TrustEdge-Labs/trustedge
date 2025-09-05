@@ -16,7 +16,7 @@ pub const NONCE_LEN: usize = 12;
 pub mod audio;
 pub mod auth;
 pub mod backends;
-pub mod format;                                                                     
+pub mod format;
 pub mod vectors;
 
 #[cfg(feature = "audio")]
