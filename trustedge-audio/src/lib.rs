@@ -7,6 +7,7 @@
 //
 /// lib.rs - Core library for privacy-preserving edge data processing
 //
+// --- IGNORE ---
 use serde::{Deserialize, Serialize};
 
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
