@@ -66,5 +66,14 @@ audio = ["cpal"]     # Audio capture feature (opt-in)
 [dev-dependencies]
 assert_cmd = "2"
 assert_fs = "1"
+criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
 predicates = "3"
 tempfile = "3"
+
+[[bench]]
+name = "crypto_benchmarks"
+harness = false
+
+[[bench]]
+name = "network_benchmarks"
+harness = false
