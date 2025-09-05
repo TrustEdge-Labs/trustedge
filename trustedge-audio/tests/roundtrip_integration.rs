@@ -818,7 +818,7 @@ fn test_comprehensive_mime_type_detection() -> Result<()> {
     ];
 
     println!(
-        "🔍 Testing comprehensive MIME type detection for {} formats...",
+        "● Testing comprehensive MIME type detection for {} formats...",
         test_cases.len()
     );
 
@@ -948,7 +948,7 @@ fn test_comprehensive_mime_type_detection() -> Result<()> {
         );
     }
 
-    println!("✅ Comprehensive MIME type detection test completed successfully!");
+    println!("✔ Comprehensive MIME type detection test completed successfully!");
     println!(
         "   Tested {} different file formats with byte-perfect preservation",
         test_cases.len()

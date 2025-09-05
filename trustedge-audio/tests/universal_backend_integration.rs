@@ -41,7 +41,7 @@ fn test_universal_backend_encrypt_decrypt_workflow() -> Result<()> {
 
     // Skip test if no backends available
     if backend_names.is_empty() {
-        println!("⚠️  No universal backends available, skipping test");
+        println!("⚠  No universal backends available, skipping test");
         return Ok(());
     }
 
@@ -90,13 +90,13 @@ fn test_universal_backend_encrypt_decrypt_workflow() -> Result<()> {
             }
             Err(e) => {
                 println!(
-                    "⚠️  Key derivation test skipped (keyring unavailable): {}",
+                    "⚠  Key derivation test skipped (keyring unavailable): {}",
                     e
                 );
             }
         }
     } else {
-        println!("⚠️  Backend doesn't support key derivation, skipping that test");
+        println!("⚠  Backend doesn't support key derivation, skipping that test");
     }
 
     // Test hashing (most backends should support this)
@@ -114,7 +114,7 @@ fn test_universal_backend_encrypt_decrypt_workflow() -> Result<()> {
         assert_eq!(data_hash.len(), 32, "SHA-256 hash should be 32 bytes");
         println!("✔ Hash operation successful");
     } else {
-        println!("⚠️  Backend doesn't support hashing");
+        println!("⚠  Backend doesn't support hashing");
     }
 
     println!("✔ Universal Backend encrypt/decrypt workflow validation completed");
@@ -128,7 +128,7 @@ fn test_universal_backend_capability_based_selection() -> Result<()> {
 
     // Skip test if no backends available
     if backend_names.is_empty() {
-        println!("⚠️  No universal backends available, skipping test");
+        println!("⚠  No universal backends available, skipping test");
         return Ok(());
     }
 
@@ -144,7 +144,7 @@ fn test_universal_backend_capability_based_selection() -> Result<()> {
             backend.backend_info().name
         );
     } else {
-        println!("⚠️  No backend found for key derivation, skipping assertion");
+        println!("⚠  No backend found for key derivation, skipping assertion");
         return Ok(());
     }
 
@@ -160,7 +160,7 @@ fn test_universal_backend_capability_based_selection() -> Result<()> {
             backend.backend_info().name
         );
     } else {
-        println!("⚠️  No backend found for hashing");
+        println!("⚠  No backend found for hashing");
     }
 
     println!("✔ Universal Backend capability-based selection validated");
@@ -174,7 +174,7 @@ fn test_universal_backend_multiple_operations_workflow() -> Result<()> {
 
     // Skip test if no backends available
     if backend_names.is_empty() {
-        println!("⚠️  No universal backends available, skipping test");
+        println!("⚠  No universal backends available, skipping test");
         return Ok(());
     }
 
@@ -213,7 +213,7 @@ fn test_universal_backend_multiple_operations_workflow() -> Result<()> {
         assert_eq!(data_hash.len(), 32, "SHA-256 hash should be 32 bytes");
         println!("✔ Hash operation successful");
     } else {
-        println!("⚠️  Backend doesn't support hash operations");
+        println!("⚠  Backend doesn't support hash operations");
     }
 
     // Test key derivation if supported (keyring backend)
@@ -253,13 +253,13 @@ fn test_universal_backend_multiple_operations_workflow() -> Result<()> {
                             println!("✔ Key derivation determinism verified");
                         }
                         Err(e) => {
-                            println!("⚠️  Key derivation determinism test skipped (keyring unavailable): {}", e);
+                            println!("⚠  Key derivation determinism test skipped (keyring unavailable): {}", e);
                         }
                     }
                 }
                 Err(e) => {
                     println!(
-                        "⚠️  Key derivation test skipped (keyring unavailable): {}",
+                        "⚠  Key derivation test skipped (keyring unavailable): {}",
                         e
                     );
                 }
@@ -278,7 +278,7 @@ fn test_universal_backend_error_handling() -> Result<()> {
 
     // Skip test if no backends available
     if backend_names.is_empty() {
-        println!("⚠️  No universal backends available, skipping test");
+        println!("⚠  No universal backends available, skipping test");
         return Ok(());
     }
 
@@ -310,7 +310,7 @@ fn test_universal_backend_performance_characteristics() -> Result<()> {
 
     // Skip test if no backends available
     if backend_names.is_empty() {
-        println!("⚠️  No universal backends available, skipping test");
+        println!("⚠  No universal backends available, skipping test");
         return Ok(());
     }
 
@@ -356,7 +356,7 @@ fn test_universal_backend_performance_characteristics() -> Result<()> {
                     }
                     Err(e) => {
                         // Keyring operation failed (likely service unavailable), skip and continue
-                        println!("⚠️  Keyring operation {} skipped: {}", i, e);
+                        println!("⚠  Keyring operation {} skipped: {}", i, e);
                         break; // Stop trying keyring operations since service is unavailable
                     }
                 }
@@ -423,16 +423,16 @@ fn test_universal_backend_registry_management() -> Result<()> {
                 },
                 Err(e) => {
                     println!(
-                        "⚠️  Registry keyring operation skipped (service unavailable): {}",
+                        "⚠  Registry keyring operation skipped (service unavailable): {}",
                         e
                     );
                 }
             }
         } else {
-            println!("⚠️  No backend found for key derivation operation");
+            println!("⚠  No backend found for key derivation operation");
         }
     } else {
-        println!("⚠️  Keyring backend unavailable, testing registry management only");
+        println!("⚠  Keyring backend unavailable, testing registry management only");
     }
 
     println!("✔ Universal Backend registry management validated");
