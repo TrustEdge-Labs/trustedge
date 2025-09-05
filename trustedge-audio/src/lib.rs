@@ -17,6 +17,7 @@ pub mod audio;
 pub mod auth;
 pub mod backends;
 pub mod format;
+pub mod transport;
 pub mod vectors;
 
 #[cfg(feature = "audio")]
@@ -49,6 +50,7 @@ pub use backends::{
     UniversalKeyringBackend,
 };
 pub use format::*;
+pub use transport::{Transport, TransportConfig, TransportFactory};
 
 /// Represents a chunk of data sent over the network, including encrypted data,
 /// a signed manifest, the nonce used for encryption, and a timestamp.

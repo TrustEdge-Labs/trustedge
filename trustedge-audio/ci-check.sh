@@ -5,28 +5,28 @@
 
 set -e
 
-echo "🔍 Running pre-commit CI checks..."
+echo "● Running pre-commit CI checks..."
 echo
 
-echo "📋 Step 1: Checking code formatting..."
+echo "■ Step 1: Checking code formatting..."
 cargo fmt --check
-echo "✅ Formatting check passed"
+echo "✔ Formatting check passed"
 echo
 
-echo "📋 Step 2: Running clippy with strict warnings..."
+echo "■ Step 2: Running clippy with strict warnings..."
 cargo clippy --all-targets --no-default-features -- -D warnings
-echo "✅ Clippy check passed"
+echo "✔ Clippy check passed"
 echo
 
-echo "📋 Step 3: Building all targets..."
+echo "■ Step 3: Building all targets..."
 cargo build --all-targets
-echo "✅ Build check passed"
+echo "✔ Build check passed"
 echo
 
-echo "📋 Step 4: Running all tests..."
+echo "■ Step 4: Running all tests..."
 cargo test
-echo "✅ Test check passed"
+echo "✔ Test check passed"
 echo
 
-echo "🎉 All CI checks passed! Safe to commit and push."
+echo "♪ All CI checks passed! Safe to commit and push."
 echo "   This should pass GitHub CI without issues."
