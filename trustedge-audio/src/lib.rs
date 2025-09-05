@@ -7,7 +7,7 @@
 //
 /// lib.rs - Core library for privacy-preserving edge data processing
 //
-// --- IGNORE ---
+// Provides audio capture, encryption, authentication, and key management.
 use serde::{Deserialize, Serialize};
 
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
@@ -16,7 +16,7 @@ pub const NONCE_LEN: usize = 12;
 pub mod audio;
 pub mod auth;
 pub mod backends;
-pub mod format;
+pub mod format;                                                                     
 pub mod vectors;
 
 #[cfg(feature = "audio")]
