@@ -14,6 +14,7 @@ Utility scripts for TrustEdge project management, testing, and development workf
 ```
 scripts/
 ├── ci-check.sh            # Pre-commit CI validation script
+├── fast-bench.sh          # Fast performance benchmarks for development
 ├── fix-copyright.sh       # Copyright header maintenance
 ├── pre-commit.sh          # Git pre-commit hooks
 ├── check_documentation.sh # Documentation validation and checking
@@ -61,6 +62,7 @@ All scripts should be run from the project root directory:
 Scripts for daily development workflows:
 
 - **ci-check.sh**: Pre-commit CI validation script that runs the exact same checks as GitHub CI to prevent failures
+- **fast-bench.sh**: Fast performance benchmarks for development (local-only, no CI integration)
 - **fix-copyright.sh**: Automated copyright header maintenance
 - **pre-commit.sh**: Git pre-commit hooks for code quality
 - **check_documentation.sh**: Documentation validation and consistency checking
@@ -79,6 +81,33 @@ Scripts for managing the GitHub project, issues, and documentation:
 Scripts for testing and validation:
 
 - **test-day9.sh**: Comprehensive testing of Day 9 network resilience features
+
+## 🚀 Performance Benchmarking
+
+### fast-bench.sh
+
+Quick performance benchmarks for local development (no CI integration).
+
+**Usage:**
+```bash
+# From project root
+./scripts/fast-bench.sh [crypto|network|all]
+
+# Examples
+./scripts/fast-bench.sh              # All benchmarks (~1 minute)
+./scripts/fast-bench.sh crypto       # Crypto only (~45 seconds) 
+./scripts/fast-bench.sh network      # Network only (~15 seconds)
+```
+
+**Features:**
+- **Fast execution** (~1 minute vs 15 minutes for full benchmarks)
+- **Local development only** (never runs in CI)
+- **Basic accuracy** (suitable for performance trend monitoring)
+- **Automatic environment setup** (sets BENCH_FAST=1)
+
+For full statistical accuracy, use `cargo bench` in the `trustedge-audio/` directory.
+
+## 🛠️ Adding New Scripts
 
 ## 🔧 Requirements
 
