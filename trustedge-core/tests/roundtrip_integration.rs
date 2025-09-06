@@ -128,13 +128,13 @@ fn create_unknown_format_data() -> Vec<u8> {
 fn get_binary_path() -> std::path::PathBuf {
     let release_path = std::env::current_dir()
         .unwrap()
-        .join("target/release/trustedge-audio");
+        .join("target/release/trustedge-core");
     if release_path.exists() {
         release_path
     } else {
         std::env::current_dir()
             .unwrap()
-            .join("target/debug/trustedge-audio")
+            .join("target/debug/trustedge-core")
     }
 }
 
@@ -744,7 +744,7 @@ fn test_comprehensive_mime_type_detection() -> Result<()> {
     let binary_path = std::env::current_dir()?
         .join("target")
         .join("debug")
-        .join("trustedge-audio");
+        .join("trustedge-core");
 
     // Comprehensive test cases with expected MIME types
     let test_cases = vec![

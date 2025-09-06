@@ -14,7 +14,7 @@
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::time::Duration;
-use trustedge_audio::{
+use trustedge_core::{
     BackendPreferences, CryptoOperation, HashAlgorithm, UniversalBackendRegistry,
 };
 

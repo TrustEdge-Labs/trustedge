@@ -2,7 +2,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: trustedge — Privacy and trust at the edge.
 
-/// trustedge_audio/src/format.rs
+/// trustedge_core/src/format.rs
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 

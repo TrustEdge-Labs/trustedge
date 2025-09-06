@@ -245,7 +245,7 @@ trait KeyBackend {
 **Migration Between Backends (Planned):**
 ```bash
 # Migrate from keyring to TPM
-trustedge-audio --migrate-backend \
+trustedge-core --migrate-backend \
   --from keyring --salt-hex <salt> \
   --to tpm --device-path /dev/tpm0 \
   --key-id <key-id>

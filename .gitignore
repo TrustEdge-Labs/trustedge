@@ -20,8 +20,8 @@ output/
 # Ignore all Cargo.lock files except in workspace roots
 **/Cargo.lock
 
-# Ignore output files in trustedge-audio/
-trustedge-audio/out.trst
-trustedge-audio/restored.mp3
-trustedge-audio/roundtrip*.mp3
-trustedge-audio/test*.txt
+# Ignore output files in trustedge-core/
+trustedge-core/out.trst
+trustedge-core/restored.mp3
+trustedge-core/roundtrip*.mp3
+trustedge-core/test*.txt

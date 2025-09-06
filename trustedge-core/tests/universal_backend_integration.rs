@@ -14,7 +14,7 @@
 use anyhow::Result;
 use std::io::Write;
 use tempfile::NamedTempFile;
-use trustedge_audio::{
+use trustedge_core::{
     backends::universal::{CryptoOperation, CryptoResult, HashAlgorithm, KeyDerivationContext},
     backends::universal_keyring::UniversalKeyringBackend,
     backends::universal_registry::{BackendPreferences, UniversalBackendRegistry},

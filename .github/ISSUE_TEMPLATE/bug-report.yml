@@ -27,7 +27,7 @@ body:
       label: Component
       description: Which component is affected?
       options:
-        - trustedge-audio (CLI)
+        - trustedge-core (CLI)
         - trustedge-server (Network server)
         - trustedge-client (Network client)
         - Key management/backends

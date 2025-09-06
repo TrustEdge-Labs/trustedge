@@ -26,7 +26,7 @@ cargo bench
 ```bash
 BENCH_FAST=1 cargo bench
 # OR
-../scripts/fast-bench.sh       # From trustedge-audio/
+../scripts/fast-bench.sh       # From trustedge-core/
 ./scripts/fast-bench.sh        # From project root
 ```
 - **Runtime**: ~1 minute total
@@ -43,7 +43,7 @@ cargo bench --bench network_benchmarks  # Network only (~5 min)
 
 # Fast benchmarks (quick checks)
 BENCH_FAST=1 cargo bench               # All fast (~1 min)
-../scripts/fast-bench.sh               # Same as above (from trustedge-audio/)
+../scripts/fast-bench.sh               # Same as above (from trustedge-core/)
 ./scripts/fast-bench.sh                # Same as above (from project root)
 ../scripts/fast-bench.sh crypto        # Fast crypto (~45s)
 ../scripts/fast-bench.sh network       # Fast network (~15s)

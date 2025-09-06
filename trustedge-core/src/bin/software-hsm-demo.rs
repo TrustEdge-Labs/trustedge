@@ -16,7 +16,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use trustedge_audio::backends::{
+use trustedge_core::backends::{
     software_hsm::{SoftwareHsmBackend, SoftwareHsmConfig},
     universal::{
         AsymmetricAlgorithm, CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend,

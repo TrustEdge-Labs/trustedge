@@ -54,7 +54,7 @@ This script runs the **exact same checks** as GitHub CI:
 **If it passes, GitHub CI will pass too!** No more double work.
 
 ### Script Location
-- ✅ Properly placed in `/scripts/ci-check.sh` (not in trustedge-audio)
+- ✅ Properly placed in `/scripts/ci-check.sh` (not in trustedge-core)
 - ✅ Documented in `scripts/README.md`
 - ✅ Executable and tested
 

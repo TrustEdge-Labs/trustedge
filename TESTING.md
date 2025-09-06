@@ -277,11 +277,11 @@ cargo test test_universal_backend_registry_management
 ```bash
 # Quick smoke test
 echo "test data" > input.txt
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input input.txt --out output.txt --envelope test.trst \
   --key-hex 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt --input test.trst --out decrypted.txt \
   --key-hex 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
@@ -298,19 +298,19 @@ echo "%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj" > test.pdf
 dd if=/dev/urandom bs=1024 count=1 of=test.bin 2>/dev/null
 
 # Test encryption with format detection
-./target/release/trustedge-audio --input test.json --envelope test_json.trst --key-out json.key --verbose
-./target/release/trustedge-audio --input test.pdf --envelope test_pdf.trst --key-out pdf.key --verbose
-./target/release/trustedge-audio --input test.bin --envelope test_bin.trst --key-out bin.key --verbose
+./target/release/trustedge-core --input test.json --envelope test_json.trst --key-out json.key --verbose
+./target/release/trustedge-core --input test.pdf --envelope test_pdf.trst --key-out pdf.key --verbose
+./target/release/trustedge-core --input test.bin --envelope test_bin.trst --key-out bin.key --verbose
 
 # Test inspection
-./target/release/trustedge-audio --input test_json.trst --inspect --verbose
-./target/release/trustedge-audio --input test_pdf.trst --inspect --verbose
-./target/release/trustedge-audio --input test_bin.trst --inspect --verbose
+./target/release/trustedge-core --input test_json.trst --inspect --verbose
+./target/release/trustedge-core --input test_pdf.trst --inspect --verbose
+./target/release/trustedge-core --input test_bin.trst --inspect --verbose
 
 # Test decryption with format awareness
-./target/release/trustedge-audio --decrypt --input test_json.trst --out restored.json --key-hex $(cat json.key) --verbose
-./target/release/trustedge-audio --decrypt --input test_pdf.trst --out restored.pdf --key-hex $(cat pdf.key) --verbose
-./target/release/trustedge-audio --decrypt --input test_bin.trst --out restored.bin --key-hex $(cat bin.key) --verbose
+./target/release/trustedge-core --decrypt --input test_json.trst --out restored.json --key-hex $(cat json.key) --verbose
+./target/release/trustedge-core --decrypt --input test_pdf.trst --out restored.pdf --key-hex $(cat pdf.key) --verbose
+./target/release/trustedge-core --decrypt --input test_bin.trst --out restored.bin --key-hex $(cat bin.key) --verbose
 
 # Verify format preservation
 diff test.json restored.json
@@ -347,7 +347,7 @@ file restored.pdf   # Should show PDF document
 # Test different file sizes
 for size in 100 1000 10000 100000; do
   dd if=/dev/urandom of=test_${size}.bin bs=1 count=$size
-  ./target/release/trustedge-audio \
+  ./target/release/trustedge-core \
     --input test_${size}.bin \
     --envelope test_${size}.trst \
     --key-hex $(openssl rand -hex 32)
@@ -358,8 +358,8 @@ done
 #### 2. Key Management Validation
 ```bash
 # Test keyring backend
-./target/release/trustedge-audio --set-passphrase "test_passphrase"
-./target/release/trustedge-audio \
+./target/release/trustedge-core --set-passphrase "test_passphrase"
+./target/release/trustedge-core \
   --input test.txt \
   --envelope keyring_test.trst \
   --backend keyring \
@@ -367,7 +367,7 @@ done
   --use-keyring
 
 # Verify decryption works
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input keyring_test.trst \
   --out keyring_decrypted.txt \
@@ -390,9 +390,9 @@ done
 **Quick Validation Tests:**
 ```bash
 # Test error reporting for common issues
-./target/release/trustedge-audio --decrypt --input nonexistent.trst    # File not found
-./target/release/trustedge-audio --salt-hex "invalid"                  # Invalid salt
-./target/release/trustedge-audio --backend nonexistent                 # Invalid backend
+./target/release/trustedge-core --decrypt --input nonexistent.trst    # File not found
+./target/release/trustedge-core --salt-hex "invalid"                  # Invalid salt
+./target/release/trustedge-core --backend nonexistent                 # Invalid backend
 ```
 
 ---
@@ -406,13 +406,13 @@ done
 dd if=/dev/urandom of=large_test.bin bs=1M count=100
 
 # Time encryption
-time ./target/release/trustedge-audio \
+time ./target/release/trustedge-core \
   --input large_test.bin \
   --envelope large_test.trst \
   --key-hex $(openssl rand -hex 32)
 
 # Time decryption
-time ./target/release/trustedge-audio \
+time ./target/release/trustedge-core \
   --decrypt \
   --input large_test.trst \
   --out large_decrypted.bin \
@@ -423,7 +423,7 @@ time ./target/release/trustedge-audio \
 
 ```bash
 # Monitor memory usage during processing
-/usr/bin/time -v ./target/release/trustedge-audio \
+/usr/bin/time -v ./target/release/trustedge-core \
   --input large_test.bin \
   --envelope large_test.trst \
   --key-hex $(openssl rand -hex 32)
@@ -435,7 +435,7 @@ time ./target/release/trustedge-audio \
 # Test different chunk sizes
 for chunk_size in 1024 4096 8192 16384 65536; do
   echo "Testing chunk size: $chunk_size"
-  time ./target/release/trustedge-audio \
+  time ./target/release/trustedge-core \
     --input test_1mb.bin \
     --envelope test_chunk_${chunk_size}.trst \
     --chunk $chunk_size \
@@ -454,7 +454,7 @@ done
 #### 1. Header Tampering Validation
 ```bash
 # Create valid envelope
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input test.txt \
   --envelope original.trst \
   --key-hex $(openssl rand -hex 32)
@@ -463,7 +463,7 @@ done
 dd if=/dev/urandom of=corrupted.trst bs=1 count=10 conv=notrunc
 
 # Verify detection (should fail)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input corrupted.trst \
   --out should_fail.txt \
@@ -477,7 +477,7 @@ dd if=/dev/urandom of=corrupted.trst bs=1 count=10 conv=notrunc
 dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 
 # Verify detection (should fail)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input original.trst \
   --out should_fail.txt \
@@ -490,13 +490,13 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 #### 1. Wrong Key Detection
 ```bash
 # Test cryptographic validation
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input test.txt \
   --envelope test.trst \
   --key-hex $(openssl rand -hex 32)
 
 # Verify wrong key detection (should fail)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input test.trst \
   --out should_fail.txt \
@@ -507,7 +507,7 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 #### 2. Salt Validation Tests
 ```bash
 # Test PBKDF2 validation (should fail)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input keyring_test.trst \
   --out should_fail.txt \
@@ -615,7 +615,7 @@ cargo tarpaulin --out html
 cargo build --release --features audio
 
 # Verify audio features are enabled
-./target/release/trustedge-audio --help | grep -i audio
+./target/release/trustedge-core --help | grep -i audio
 ```
 
 **Install System Dependencies:**
@@ -640,7 +640,7 @@ brew install sox  # For audio testing utilities
 
 ```bash
 # Always start with device discovery
-./target/release/trustedge-audio --list-audio-devices
+./target/release/trustedge-core --list-audio-devices
 ```
 
 **Expected Output Examples:**
@@ -656,14 +656,14 @@ Available audio input devices:
 
 ```bash
 # Test with system default device
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --max-duration 3 \
   --envelope test_default_device.trst \
   --key-hex $(openssl rand -hex 32)
 
 # Test with specific device
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "hw:CARD=PCH,DEV=0" \
   --max-duration 3 \
@@ -713,7 +713,7 @@ sudo usermod -a -G audio $USER
 # Enable for Terminal or your application
 
 # Test with PulseAudio (Linux)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "pulse" \
   --max-duration 5 \
@@ -737,7 +737,7 @@ alsamixer  # Linux - check capture levels
 # Windows: Sound Settings → Input → Device Properties
 
 # Test with verbose output
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "default" \
   --max-duration 5 \
@@ -756,10 +756,10 @@ Error: Audio device "wrong_name" not found
 **Solutions:**
 ```bash
 # Always check exact device names first
-./target/release/trustedge-audio --list-audio-devices
+./target/release/trustedge-core --list-audio-devices
 
 # Copy device name exactly (with quotes)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
   --max-duration 5 \
@@ -779,7 +779,7 @@ Error: Audio device "wrong_name" not found
 **Solutions:**
 ```bash
 # Check sample rate compatibility
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --sample-rate 44100 \  # Try standard rates: 44100, 48000
   --channels 1 \         # Start with mono
@@ -789,7 +789,7 @@ Error: Audio device "wrong_name" not found
   --key-hex $(openssl rand -hex 32)
 
 # Test different configurations
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --sample-rate 48000 \
   --channels 2 \
@@ -815,7 +815,7 @@ Error: Audio device "wrong_name" not found
 #### Linux (ALSA/PulseAudio)
 ```bash
 # Test ALSA direct access
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "hw:CARD=PCH,DEV=0" \
   --max-duration 5 \
@@ -823,7 +823,7 @@ Error: Audio device "wrong_name" not found
   --key-hex $(openssl rand -hex 32)
 
 # Test PulseAudio integration
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "pulse" \
   --max-duration 5 \
@@ -834,7 +834,7 @@ Error: Audio device "wrong_name" not found
 #### macOS (Core Audio)
 ```bash
 # Test built-in microphone
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "Built-in Microphone" \
   --max-duration 5 \
@@ -842,7 +842,7 @@ Error: Audio device "wrong_name" not found
   --key-hex $(openssl rand -hex 32)
 
 # Test USB audio device
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "USB Audio CODEC" \
   --max-duration 5 \
@@ -853,14 +853,14 @@ Error: Audio device "wrong_name" not found
 #### Windows (WASAPI)
 ```bash
 # Test default microphone
-./target/release/trustedge-audio.exe \
+./target/release/trustedge-core.exe \
   --live-capture \
   --max-duration 5 \
   --envelope test_windows.trst \
   --key-hex $(openssl rand -hex 32)
 
 # Test specific device
-./target/release/trustedge-audio.exe \
+./target/release/trustedge-core.exe \
   --live-capture \
   --audio-device "Microphone (Realtek Audio)" \
   --max-duration 5 \
@@ -873,7 +873,7 @@ Error: Audio device "wrong_name" not found
 #### 1. Round-trip Audio Test with Format Verification
 ```bash
 # Capture audio with known parameters
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --sample-rate 44100 \
   --channels 2 \
@@ -883,7 +883,7 @@ Error: Audio device "wrong_name" not found
   --verbose
 
 # Decrypt and verify (produces raw PCM f32le data)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input captured_audio.trst \
   --out recovered_audio.raw \
@@ -912,7 +912,7 @@ for sample_rate in 22050 44100 48000; do
     echo "Testing ${sample_rate}Hz, ${channels} channel(s)"
     
     # Capture with specific parameters
-    ./target/release/trustedge-audio \
+    ./target/release/trustedge-core \
       --live-capture \
       --sample-rate $sample_rate \
       --channels $channels \
@@ -922,7 +922,7 @@ for sample_rate in 22050 44100 48000; do
       --verbose
     
     # Decrypt to raw PCM
-    ./target/release/trustedge-audio \
+    ./target/release/trustedge-core \
       --decrypt \
       --input test_${sample_rate}_${channels}ch.trst \
       --out test_${sample_rate}_${channels}ch.raw \
@@ -945,7 +945,7 @@ done
 #### 3. Audio Metadata Verification
 ```bash
 # Capture with metadata logging
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --sample-rate 48000 \
   --channels 2 \
@@ -955,7 +955,7 @@ done
   --verbose 2>&1 | tee capture_log.txt
 
 # Decrypt with metadata extraction
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input metadata_test.trst \
   --out metadata_test.raw \
@@ -980,9 +980,9 @@ echo "PCM size: $pcm_size, Expected: $expected_size (tolerance: ±10%)"
 #### 2. Multi-Device Testing
 ```bash
 # Test all available devices
-for device in $(./target/release/trustedge-audio --list-audio-devices | grep -o '"[^"]*"'); do
+for device in $(./target/release/trustedge-core --list-audio-devices | grep -o '"[^"]*"'); do
   echo "Testing device: $device"
-  ./target/release/trustedge-audio \
+  ./target/release/trustedge-core \
     --live-capture \
     --audio-device $device \
     --max-duration 3 \

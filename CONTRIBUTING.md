@@ -57,7 +57,7 @@ When requesting features:
 
 1. **Install Rust**: Use the latest stable version
 2. **Clone the repo**: `git clone https://github.com/trustedge/trustedge.git`
-3. **Install dependencies**: `cd trustedge/trustedge-audio && cargo build`
+3. **Install dependencies**: `cd trustedge/trustedge-core && cargo build`
 4. **Run tests**: `cargo test` and `cargo clippy`
 
 ### Project Board Management

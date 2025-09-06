@@ -10,13 +10,13 @@
 
 set -e
 
-# Change to the trustedge-audio directory
+# Change to the trustedge-core directory
 SCRIPT_DIR="$(dirname "$0")"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-AUDIO_DIR="$PROJECT_ROOT/trustedge-audio"
+AUDIO_DIR="$PROJECT_ROOT/trustedge-core"
 
 if [[ ! -d "$AUDIO_DIR" ]]; then
-    echo "❌ Error: trustedge-audio directory not found at $AUDIO_DIR"
+    echo "❌ Error: trustedge-core directory not found at $AUDIO_DIR"
     exit 1
 fi
 
@@ -60,7 +60,7 @@ case "${1:-all}" in
         echo "  ./scripts/fast-bench.sh crypto"
         echo ""
         echo "For full statistical accuracy:"
-        echo "  cd trustedge-audio && cargo bench"
+        echo "  cd trustedge-core && cargo bench"
         exit 1
         ;;
 esac
@@ -68,4 +68,4 @@ esac
 echo ""
 echo "✅ Fast benchmarks completed!"
 echo "💡 For full statistical accuracy:"
-echo "   cd trustedge-audio && cargo bench"
+echo "   cd trustedge-core && cargo bench"

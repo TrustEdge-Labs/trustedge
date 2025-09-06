@@ -60,7 +60,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Clone and build (file encryption only)
 git clone https://github.com/TrustEdge-Labs/trustedge.git
-cd trustedge/trustedge-audio
+cd trustedge/trustedge-core
 cargo build --release --no-default-features
 ```
 
@@ -85,17 +85,17 @@ cargo build --release --features audio
 **Live Audio Capture (NEW!):**
 ```bash
 # Capture 10 seconds of live audio and encrypt it
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --envelope voice_note.trst \
   --key-out voice_key.hex \
   --max-duration 10
 
 # List available audio devices
-./target/release/trustedge-audio --list-audio-devices
+./target/release/trustedge-core --list-audio-devices
 
 # Capture with specific device and quality
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
   --sample-rate 48000 \
@@ -105,7 +105,7 @@ cargo build --release --features audio
   --max-duration 30
 
 # Decrypt captured audio (produces raw PCM audio data)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input voice_note.trst \
   --out recovered_audio.raw \
@@ -122,7 +122,7 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
 
 ```bash
 # Inspect encrypted data format without decrypting
-./target/release/trustedge-audio --input data.trst --inspect --verbose
+./target/release/trustedge-core --input data.trst --inspect --verbose
 
 # Example output:
 # TrustEdge Archive Information:
@@ -135,13 +135,13 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
 **Simple File Encryption:**
 ```bash
 # Encrypt file with random key
-./target/release/trustedge-audio 
+./target/release/trustedge-core 
   --input document.txt 
   --envelope document.trst 
   --key-out mykey.hex
 
 # Decrypt file with format-aware output
-./target/release/trustedge-audio 
+./target/release/trustedge-core 
   --decrypt 
   --input document.trst 
   --out recovered.txt 
@@ -161,8 +161,8 @@ diff document.txt recovered.txt  # Should be identical
 **Keyring-Based Encryption:**
 ```bash
 # One-time setup and basic keyring usage
-./target/release/trustedge-audio --set-passphrase "my secure passphrase"
-./target/release/trustedge-audio --input file.txt --envelope file.trst --use-keyring --salt-hex $(openssl rand -hex 16)
+./target/release/trustedge-core --set-passphrase "my secure passphrase"
+./target/release/trustedge-core --input file.txt --envelope file.trst --use-keyring --salt-hex $(openssl rand -hex 16)
 ```
 
 **🔧 For complete CLI options and key management backends, see [CLI.md](CLI.md#key-management-options).**
@@ -688,4 +688,4 @@ See **[LICENSE](./LICENSE)** for details.
 
 **Project**: [TrustEdge](https://github.com/TrustEdge-Labs/trustedge) — Privacy and trust at the edge.
 
-**Third-party Dependencies**: See **[Cargo.toml](./trustedge-audio/Cargo.toml)** for complete dependency information and licenses.
+**Third-party Dependencies**: See **[Cargo.toml](./trustedge-core/Cargo.toml)** for complete dependency information and licenses.

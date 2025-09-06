@@ -60,13 +60,13 @@ Required capability: AdvancedHashing
 **Solution:**
 ```bash
 # List available backends with capabilities
-trustedge-audio --list-backends
+trustedge-core --list-backends
 
 # Check specific backend capabilities
-trustedge-audio --backend-info universal_keyring
+trustedge-core --backend-info universal_keyring
 
 # Use backend with required capabilities
-trustedge-audio --backend-preference "hashing:universal_keyring"
+trustedge-core --backend-preference "hashing:universal_keyring"
 ```
 
 ### Salt Format Issues
@@ -113,7 +113,7 @@ Caused by: universal_registry backend not available
 **Solution:**
 ```bash
 # Check registry status
-trustedge-audio --list-backends
+trustedge-core --list-backends
 
 # If empty or error, verify system dependencies
 # Linux: Check keyring service
@@ -125,7 +125,7 @@ systemctl status kwallet
 rm -rf ~/.config/trustedge/backend_registry.json
 
 # Force registry reinitialization
-trustedge-audio --backend-info universal_registry
+trustedge-core --backend-info universal_registry
 ```
 
 #### `Backend registration failed: capability conflict`
@@ -141,13 +141,13 @@ Caused by: Capability 'KeyDerivation' conflicts with existing backend 'universal
 **Solution:**
 ```bash
 # Check current backend registrations
-trustedge-audio --list-backends
+trustedge-core --list-backends
 
 # Manually specify backend preferences to resolve conflicts
-trustedge-audio --backend-preference "keyderivation:universal_keyring"
+trustedge-core --backend-preference "keyderivation:universal_keyring"
 
 # Or use explicit backend selection
-trustedge-audio --backend-info universal_keyring
+trustedge-core --backend-info universal_keyring
 ```
 
 #### `Registry corruption detected`
@@ -172,10 +172,10 @@ cp ~/.config/trustedge/backend_registry.json ~/.config/trustedge/backend_registr
 rm -rf ~/.config/trustedge/backend_registry.json
 
 # Force clean reinitialization
-trustedge-audio --list-backends --verbose
+trustedge-core --list-backends --verbose
 
 # Verify registry health
-trustedge-audio --backend-info universal_registry
+trustedge-core --backend-info universal_registry
 ```
 
 ### Capability Mismatch Errors
@@ -193,13 +193,13 @@ Caused by: Backend 'basic_keyring' does not support capability 'AdvancedHashing'
 **Solution:**
 ```bash
 # Check which backends support the required capability
-trustedge-audio --list-backends | grep -A 5 "Capabilities.*Hashing"
+trustedge-core --list-backends | grep -A 5 "Capabilities.*Hashing"
 
 # Use a backend with the required capability
-trustedge-audio --backend-preference "hashing:universal_keyring"
+trustedge-core --backend-preference "hashing:universal_keyring"
 
 # Or let the registry auto-select
-trustedge-audio --show-operation-flow
+trustedge-core --show-operation-flow
 ```
 
 #### `Capability version mismatch`
@@ -215,10 +215,10 @@ Caused by: Required KeyDerivation v2.0, but backend provides v1.5
 **Solution:**
 ```bash
 # Check available capability versions
-trustedge-audio --backend-info universal_keyring | grep -A 10 "Capabilities"
+trustedge-core --backend-info universal_keyring | grep -A 10 "Capabilities"
 
 # Update to a backend with newer capability versions
-trustedge-audio --backend-preference "keyderivation:universal_keyring"
+trustedge-core --backend-preference "keyderivation:universal_keyring"
 
 # Check if system updates are available
 # Update TrustEdge to latest version for newest capabilities
@@ -237,10 +237,10 @@ Caused by: No registered backend supports capability 'QuantumResistantHashing'
 **Solution:**
 ```bash
 # List all available backends and their capabilities
-trustedge-audio --list-backends
+trustedge-core --list-backends
 
 # Check if a fallback capability can be used
-trustedge-audio --backend-preference "hashing:universal_keyring"
+trustedge-core --backend-preference "hashing:universal_keyring"
 
 # For future capabilities, check for TrustEdge updates
 # Some capabilities may require specific backend plugins
@@ -264,13 +264,13 @@ Caused by: Registry timeout after 30 seconds
 **Solution:**
 ```bash
 # Check backend health status
-trustedge-audio --backend-info universal_registry | grep -A 20 "Health Monitoring"
+trustedge-core --backend-info universal_registry | grep -A 20 "Health Monitoring"
 
 # Manually specify a known-good backend
-trustedge-audio --backend-preference "keyderivation:keyring"
+trustedge-core --backend-preference "keyderivation:keyring"
 
 # Reduce timeout for testing
-trustedge-audio --backend-config "selection_timeout=10"
+trustedge-core --backend-config "selection_timeout=10"
 
 # Check system resources
 top -p $(pgrep trustedge)
@@ -289,14 +289,14 @@ Caused by: Circular dependency: universal_keyring -> keyring -> universal_keyrin
 **Solution:**
 ```bash
 # Check current backend routing configuration
-trustedge-audio --backend-info universal_registry | grep -A 15 "Operation Routing"
+trustedge-core --backend-info universal_registry | grep -A 15 "Operation Routing"
 
 # Reset to default routing preferences
 rm -rf ~/.config/trustedge/backend_preferences.json
 
 # Use explicit, non-circular preferences
-trustedge-audio --backend-preference "keyderivation:universal_keyring"
-trustedge-audio --backend-preference "storage:keyring"
+trustedge-core --backend-preference "keyderivation:universal_keyring"
+trustedge-core --backend-preference "storage:keyring"
 ```
 
 #### `Backend performance degradation`
@@ -313,10 +313,10 @@ Switching to fallback backend 'keyring'
 **Diagnostic Steps:**
 ```bash
 # Check detailed performance metrics
-trustedge-audio --backend-info universal_registry | grep -A 20 "Performance Analysis"
+trustedge-core --backend-info universal_registry | grep -A 20 "Performance Analysis"
 
 # Monitor real-time performance
-trustedge-audio --backend-config "performance_monitoring=detailed" --verbose
+trustedge-core --backend-config "performance_monitoring=detailed" --verbose
 
 # Check system resources affecting the backend
 # Memory usage
@@ -330,14 +330,14 @@ iostat -x 1 5
 **Solutions:**
 ```bash
 # Optimize backend configuration for performance
-trustedge-audio --backend-config "pbkdf2_iterations=100000"  # Reduce iterations
-trustedge-audio --backend-config "argon2_memory=32768"      # Reduce memory usage
+trustedge-core --backend-config "pbkdf2_iterations=100000"  # Reduce iterations
+trustedge-core --backend-config "argon2_memory=32768"      # Reduce memory usage
 
 # Use performance-optimized backend preference
-trustedge-audio --backend-preference "keyderivation:keyring"  # Faster backend
+trustedge-core --backend-preference "keyderivation:keyring"  # Faster backend
 
 # Increase performance thresholds if acceptable
-trustedge-audio --backend-config "performance_threshold=2000"  # 2 second threshold
+trustedge-core --backend-config "performance_threshold=2000"  # 2 second threshold
 ```
 
 ### Registry Maintenance and Recovery
@@ -361,10 +361,10 @@ rm -rf ~/.config/trustedge/backend_preferences.json
 rm -rf ~/.config/trustedge/backend_cache.json
 
 # 4. Reinitialize with defaults
-trustedge-audio --list-backends
+trustedge-core --list-backends
 
 # 5. Verify registry health
-trustedge-audio --backend-info universal_registry
+trustedge-core --backend-info universal_registry
 ```
 
 #### Registry Health Check Script
@@ -378,21 +378,21 @@ echo "================================="
 
 # Check registry status
 echo "📊 Registry Status:"
-if trustedge-audio --list-backends >/dev/null 2>&1; then
+if trustedge-core --list-backends >/dev/null 2>&1; then
     echo "  ✅ Registry accessible"
     
     # Count registered backends
-    BACKEND_COUNT=$(trustedge-audio --list-backends 2>/dev/null | grep -c "✓.*Backend")
+    BACKEND_COUNT=$(trustedge-core --list-backends 2>/dev/null | grep -c "✓.*Backend")
     echo "  📊 Backends registered: $BACKEND_COUNT"
     
     # Check each backend health
     echo "🔍 Backend Health:"
-    trustedge-audio --backend-info universal_registry | grep -A 5 "Backend Health"
+    trustedge-core --backend-info universal_registry | grep -A 5 "Backend Health"
     
     # Performance check
     echo "⚡ Performance Check:"
     START_TIME=$(date +%s%N)
-    trustedge-audio --backend-info keyring >/dev/null 2>&1
+    trustedge-core --backend-info keyring >/dev/null 2>&1
     END_TIME=$(date +%s%N)
     DURATION=$((($END_TIME - $START_TIME) / 1000000))  # Convert to milliseconds
     
@@ -404,14 +404,14 @@ if trustedge-audio --list-backends >/dev/null 2>&1; then
     
 else
     echo "  ❌ Registry inaccessible - requires attention"
-    echo "  💡 Try: trustedge-audio --list-backends --verbose"
+    echo "  💡 Try: trustedge-core --list-backends --verbose"
 fi
 
 echo ""
 echo "🎯 Quick Fix Commands:"
 echo "  Reset registry: rm ~/.config/trustedge/backend_registry.json"
-echo "  Reinitialize: trustedge-audio --list-backends"
-echo "  Health check: trustedge-audio --backend-info universal_registry"
+echo "  Reinitialize: trustedge-core --list-backends"
+echo "  Health check: trustedge-core --backend-info universal_registry"
 ```
 
 ---
@@ -554,7 +554,7 @@ rm *_identity.cert *.key
 **Solutions:**
 ```bash
 # Verify audio features are enabled
-./target/release/trustedge-audio --help | grep -i audio
+./target/release/trustedge-core --help | grep -i audio
 
 # If missing, rebuild with audio features
 cargo build --release --features audio
@@ -577,7 +577,7 @@ sudo usermod -a -G audio $USER
 groups $USER
 
 # Test with PulseAudio
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "pulse" \
   --max-duration 5
@@ -589,16 +589,16 @@ groups $USER
 **Solutions:**
 ```bash
 # Always check available devices first
-./target/release/trustedge-audio --list-audio-devices
+./target/release/trustedge-core --list-audio-devices
 
 # Copy device name exactly from the list
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
   --max-duration 5
 
 # Use system default as fallback
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --max-duration 5
 ```
@@ -616,13 +616,13 @@ arecord -d 3 test_system.wav  # Linux
 sox -d test_system.wav trim 0 3  # macOS/Linux
 
 # Use verbose output for debugging
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --max-duration 5 \
   --verbose
 
 # Try different sample rates
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --sample-rate 44100 \
   --max-duration 5
@@ -638,7 +638,7 @@ sox -d test_system.wav trim 0 3  # macOS/Linux
 **Solutions:**
 ```bash
 # For live audio captures: Always use .raw extension for clarity
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input live_audio.trst \
   --out audio.raw \
@@ -652,7 +652,7 @@ sox -d test_system.wav trim 0 3  # macOS/Linux
 ffmpeg -f f32le -ar 44100 -ac 2 -i audio.raw audio.wav
 
 # For file inputs: Use original extension
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input music_file.trst \
   --out music_file.mp3 \
@@ -683,14 +683,14 @@ hexdump -C encrypted.trst | head -1
 # Should start with magic bytes
 
 # 2. Test with known good key
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input encrypted.trst \
   --out test.txt \
   --key-hex "known_good_key_64_hex_chars"
 
 # 3. Test passphrase/salt combination
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input encrypted.trst \
   --out test.txt \
@@ -707,7 +707,7 @@ hexdump -C encrypted.trst | head -1
 file suspicious_file.trst
 
 # Verify file wasn't corrupted
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input original_file.txt \
   --envelope new_envelope.trst \
   --key-hex $(openssl rand -hex 32)
@@ -725,7 +725,7 @@ file suspicious_file.trst
 **Diagnosis:**
 ```bash
 # Inspect file format detection
-./target/release/trustedge-audio --input file.trst --inspect --verbose
+./target/release/trustedge-core --input file.trst --inspect --verbose
 
 # Check original file extension and content
 file original_file.pdf  # Should show PDF document
@@ -738,7 +738,7 @@ hexdump -C original_file.pdf | head -2  # Check file headers
 # but will show as binary data. This is expected behavior.
 
 # To verify correct handling:
-./target/release/trustedge-audio --decrypt --input file.trst --out restored_file.pdf --key-hex $KEY
+./target/release/trustedge-core --decrypt --input file.trst --out restored_file.pdf --key-hex $KEY
 file restored_file.pdf  # Should match original type
 diff original_file.pdf restored_file.pdf  # Should be identical
 ```
@@ -754,7 +754,7 @@ diff original_file.pdf restored_file.pdf  # Should be identical
 **Verification:**
 ```bash
 # Check what MIME type was detected
-./target/release/trustedge-audio --input file.trst --inspect
+./target/release/trustedge-core --input file.trst --inspect
 
 # Expected output:
 # MIME Type: application/pdf  (for PDF files)
@@ -768,7 +768,7 @@ diff original_file.pdf restored_file.pdf  # Should be identical
 
 ```bash
 # Inspect encrypted archive
-./target/release/trustedge-audio --input suspicious_file.trst --inspect --verbose
+./target/release/trustedge-core --input suspicious_file.trst --inspect --verbose
 
 # Example output:
 # TrustEdge Archive Information:
@@ -793,7 +793,7 @@ hexdump -C file.trst | head -1
 
 # Test with known good file
 cp known_good.trst test_copy.trst
-./target/release/trustedge-audio --decrypt --input test_copy.trst
+./target/release/trustedge-core --decrypt --input test_copy.trst
 ```
 
 #### Record Tampering Detection
@@ -805,13 +805,13 @@ cp known_good.trst test_copy.trst
 echo "test data" > test.txt
 
 # Encrypt
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input test.txt \
   --envelope test.trst \
   --key-hex $(openssl rand -hex 32)
 
 # Verify encryption worked
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input test.trst \
   --out recovered.txt \
@@ -829,7 +829,7 @@ diff test.txt recovered.txt
 **Diagnosis:**
 ```bash
 # Check what type of data was originally encrypted
-./target/release/trustedge-audio --input file.trst --inspect
+./target/release/trustedge-core --input file.trst --inspect
 
 # For file inputs (MP3, WAV, etc.):
 # Data Type: File
@@ -846,11 +846,11 @@ diff test.txt recovered.txt
 **Solution:**
 ```bash
 # File inputs preserve format automatically
-./target/release/trustedge-audio --decrypt --input music.trst --out music.mp3 --key-hex $KEY
+./target/release/trustedge-core --decrypt --input music.trst --out music.mp3 --key-hex $KEY
 # Output: Playable MP3 file
 
 # Live audio requires conversion
-./target/release/trustedge-audio --decrypt --input live_capture.trst --out audio.raw --key-hex $KEY
+./target/release/trustedge-core --decrypt --input live_capture.trst --out audio.raw --key-hex $KEY
 ffmpeg -f f32le -ar 44100 -ac 1 -i audio.raw audio.wav
 ```
 
@@ -863,7 +863,7 @@ hexdump -C file.trst | head -1
 
 # Test with known good file
 cp known_good.trst test_copy.trst
-./target/release/trustedge-audio --decrypt --input test_copy.trst
+./target/release/trustedge-core --decrypt --input test_copy.trst
 ```
 
 #### Record Tampering Detection
@@ -875,13 +875,13 @@ cp known_good.trst test_copy.trst
 echo "test data" > test.txt
 
 # Encrypt
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input test.txt \
   --envelope test.trst \
   --key-hex $(openssl rand -hex 32)
 
 # Verify encryption worked
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input test.trst \
   --out recovered.txt \
@@ -913,7 +913,7 @@ Enable verbose output for detailed troubleshooting:
   --verbose
 
 # File encryption/decryption with format details
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input file.trst \
   --out restored.txt \
@@ -932,15 +932,15 @@ Enable verbose output for detailed troubleshooting:
 
 ```bash
 # Quick format check (no decryption)
-./target/release/trustedge-audio --input file.trst --inspect
+./target/release/trustedge-core --input file.trst --inspect
 
 # Detailed format inspection
-./target/release/trustedge-audio --input file.trst --inspect --verbose
+./target/release/trustedge-core --input file.trst --inspect --verbose
 
 # Compare multiple files
 for file in *.trst; do
   echo "=== $file ==="
-  ./target/release/trustedge-audio --input "$file" --inspect
+  ./target/release/trustedge-core --input "$file" --inspect
   echo
 done
 ```
@@ -958,7 +958,7 @@ Gather system information for bug reports:
 
 ```bash
 # TrustEdge version
-./target/release/trustedge-audio --version
+./target/release/trustedge-core --version
 
 # System information
 uname -a
@@ -987,12 +987,12 @@ rm -f *.trst *.hex *_identity.cert *.key
 echo "Hello TrustEdge Testing" > test_input.txt
 
 # Test basic encryption/decryption
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input test_input.txt \
   --envelope test.trst \
   --key-out test.key
 
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input test.trst \
   --out test_output.txt \

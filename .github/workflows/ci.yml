@@ -13,7 +13,7 @@ on:
 
 defaults:
   run:
-    working-directory: trustedge-audio
+    working-directory: trustedge-core
 
 jobs:
   rust:
@@ -29,7 +29,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
-            trustedge-audio -> target
+            trustedge-core -> target
 
       - name: fmt
         run: cargo fmt --all -- --check
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: trustedge-audio
+        working-directory: trustedge-core
     
     steps:
       - uses: actions/checkout@v4
@@ -75,7 +75,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
-            trustedge-audio -> target
+            trustedge-core -> target
         
       - name: Install audio dependencies
         run: |

@@ -6,16 +6,16 @@
 # Project: trustedge — Privacy and trust at the edge.
 #
 [package]
-name = "trustedge-audio"
+name = "trustedge-core"
 version = "0.1.7"
 edition = "2021"
 
 [lib]
-name = "trustedge_audio"
+name = "trustedge_core"
 path = "src/lib.rs"
 
 [[bin]]
-name = "trustedge-audio"
+name = "trustedge-core"
 path = "src/main.rs"
 
 [[bin]]
