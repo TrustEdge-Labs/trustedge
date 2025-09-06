@@ -3,7 +3,7 @@
 # TrustEdge Copyright Header Updater
 # Adds consistent copyright headers to all source files
 #
-# Copyright (c) 2025 John Turner
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
 # Project: trustedge — Privacy and trust at the edge.
 # GitHub: https://github.com/johnzilla/trustedge
@@ -21,7 +21,7 @@ NC='\033[0m' # No Color
 
 # Copyright information
 YEAR="2025"
-AUTHOR="John Turner"
+AUTHOR="TRUSTEDGE LABS LLC"
 LICENSE="MPL-2.0"
 LICENSE_URL="https://mozilla.org/MPL/2.0/"
 PROJECT="trustedge — Privacy and trust at the edge."
@@ -30,7 +30,7 @@ GITHUB_URL="https://github.com/johnzilla/trustedge"
 # Function to check if file already has copyright header
 has_copyright() {
     local file="$1"
-    head -n 15 "$file" | grep -i "copyright.*john turner" >/dev/null 2>&1
+    head -n 15 "$file" | grep -i "copyright.*trustedge labs llc" >/dev/null 2>&1
 }
 
 # Function to add copyright header to Rust files
@@ -170,4 +170,4 @@ echo "- All .sh files: Shell-style copyright headers"
 echo "- All .md files: HTML comment copyright headers"
 echo ""
 echo "🔍 To verify headers were added correctly:"
-echo "  grep -r \"Copyright.*John Turner\" . --include=\"*.rs\" --include=\"*.sh\" --include=\"*.md\""
+echo "  grep -r \"Copyright.*TRUSTEDGE LABS LLC\" . --include=\"*.rs\" --include=\"*.sh\" --include=\"*.md\""

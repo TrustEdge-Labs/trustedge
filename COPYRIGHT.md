@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2025 John Turner
+Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
@@ -75,7 +75,7 @@ git commit -m "my changes"  # Will fail if headers missing
 ### Rust Files (`.rs`)
 ```rust
 //
-// Copyright (c) 2025 John Turner
+// Copyright (c) 2025 TRUSTEDGE LABS LLC
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
 //
@@ -86,7 +86,7 @@ git commit -m "my changes"  # Will fail if headers missing
 ### Markdown Files (`.md`)
 ```markdown
 <!--
-Copyright (c) 2025 John Turner
+Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
@@ -95,7 +95,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ### YAML/TOML Files (`.yml`, `.yaml`, `.toml`)
 ```yaml
-# Copyright (c) 2025 John Turner
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
 # Project: trustedge — Privacy and trust at the edge.
 ```

@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2025 John Turner
+Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
@@ -186,7 +186,7 @@ TrustEdge aims to align with:
 
 *This document is part of the TrustEdge project documentation.*
 
-*Copyright (c) 2025 John Turner. Licensed under the Mozilla Public License 2.0 (MPL-2.0).*
+*Copyright (c) 2025 TRUSTEDGE LABS LLC. Licensed under the Mozilla Public License 2.0 (MPL-2.0).*
 *See LICENSE file for full license terms.*
 
 *For technical details, see [THREAT_MODEL.md](THREAT_MODEL.md), [PROTOCOL.md](PROTOCOL.md), and [FORMAT.md](FORMAT.md).*

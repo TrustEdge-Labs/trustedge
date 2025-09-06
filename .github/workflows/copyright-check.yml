@@ -1,4 +1,4 @@
-# Copyright (c) 2025 John Turner
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
 # Project: trustedge — Privacy and trust at the edge.
 
@@ -46,19 +46,19 @@ jobs:
             local header_type="$2"
             
             # Check for any valid copyright pattern
-            if ! head -10 "$file" | grep -qE "Copyright \(c\) 2025 (John Turner|.*Contributors|.*)" ; then
+            if ! head -10 "$file" | grep -qE "Copyright \(c\) 2025 (TRUSTEDGE LABS LLC|.*Contributors|.*)" ; then
                 echo -e "${RED}✖ Missing copyright header: $file${NC}"
                 
                 # Create appropriate header based on file type
                 case "$header_type" in
                     "rust")
-                        HEADER=$'//\n// Copyright (c) 2025 John Turner\n// This source code is subject to the terms of the Mozilla Public License, v. 2.0.\n// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/\n//\n// Project: trustedge — Privacy and trust at the edge.\n//\n\n'
+                        HEADER=$'//\n// Copyright (c) 2025 TRUSTEDGE LABS LLC\n// This source code is subject to the terms of the Mozilla Public License, v. 2.0.\n// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/\n//\n// Project: trustedge — Privacy and trust at the edge.\n//\n\n'
                         ;;
                     "markdown")
-                        HEADER=$'<!--\nCopyright (c) 2025 John Turner\nMPL-2.0: https://mozilla.org/MPL/2.0/\nProject: trustedge — Privacy and trust at the edge.\nGitHub: https://github.com/johnzilla/trustedge\n-->\n\n'
+                        HEADER=$'<!--\nCopyright (c) 2025 TRUSTEDGE LABS LLC\nMPL-2.0: https://mozilla.org/MPL/2.0/\nProject: trustedge — Privacy and trust at the edge.\nGitHub: https://github.com/johnzilla/trustedge\n-->\n\n'
                         ;;
                     "yaml")
-                        HEADER=$'# Copyright (c) 2025 John Turner\n# MPL-2.0: https://mozilla.org/MPL/2.0/\n# Project: trustedge — Privacy and trust at the edge.\n\n'
+                        HEADER=$'# Copyright (c) 2025 TRUSTEDGE LABS LLC\n# MPL-2.0: https://mozilla.org/MPL/2.0/\n# Project: trustedge — Privacy and trust at the edge.\n\n'
                         ;;
                 esac
                 
@@ -125,7 +125,7 @@ jobs:
         # Final check for any missing headers
         find . -name "*.rs" -o -name "*.md" -o -name "*.yml" -o -name "*.yaml" -o -name "*.toml" \
             -not -path "./target/*" -not -path "./.git/*" -not -name "CHANGELOG.md" | while read -r file; do
-            if ! head -10 "$file" | grep -qE "Copyright \(c\) 2025 (John Turner|.*Contributors|.*)" ; then
+            if ! head -10 "$file" | grep -qE "Copyright \(c\) 2025 (TRUSTEDGE LABS LLC|.*Contributors|.*)" ; then
                 echo "✖ Still missing copyright header: $file"
                 MISSING=$((MISSING + 1))
             fi

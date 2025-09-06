@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2025 John Turner
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
 # This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 # If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
 #
@@ -25,18 +25,18 @@ add_copyright_header() {
     local file="$1"
     local header_type="$2"
     
-    if ! head -10 "$file" | grep -q "Copyright (c) 2025 John Turner"; then
+    if ! head -10 "$file" | grep -q "Copyright (c) 2025 TRUSTEDGE LABS LLC"; then
         echo -e "${YELLOW}📝 Adding copyright header to: $file${NC}"
         
         case "$header_type" in
             "rust")
-                HEADER=$'//\n// Copyright (c) 2025 John Turner\n// This source code is subject to the terms of the Mozilla Public License, v. 2.0.\n// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/\n//\n// Project: trustedge — Privacy and trust at the edge.\n//\n\n'
+                HEADER=$'//\n// Copyright (c) 2025 TRUSTEDGE LABS LLC\n// This source code is subject to the terms of the Mozilla Public License, v. 2.0.\n// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/\n//\n// Project: trustedge — Privacy and trust at the edge.\n//\n\n'
                 ;;
             "markdown")
-                HEADER=$'<!--\nCopyright (c) 2025 John Turner\nMPL-2.0: https://mozilla.org/MPL/2.0/\nProject: trustedge — Privacy and trust at the edge.\nGitHub: https://github.com/johnzilla/trustedge\n-->\n\n'
+                HEADER=$'<!--\nCopyright (c) 2025 TRUSTEDGE LABS LLC\nMPL-2.0: https://mozilla.org/MPL/2.0/\nProject: trustedge — Privacy and trust at the edge.\nGitHub: https://github.com/TrustEdge-Labs/trustedge\n-->\n\n'
                 ;;
             "yaml")
-                HEADER=$'# Copyright (c) 2025 John Turner\n# MPL-2.0: https://mozilla.org/MPL/2.0/\n# Project: trustedge — Privacy and trust at the edge.\n\n'
+                HEADER=$'# Copyright (c) 2025 TRUSTEDGE LABS LLC\n# MPL-2.0: https://mozilla.org/MPL/2.0/\n# Project: trustedge — Privacy and trust at the edge.\n\n'
                 ;;
         esac
         
