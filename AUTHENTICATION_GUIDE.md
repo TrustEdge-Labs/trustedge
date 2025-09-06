@@ -194,11 +194,11 @@ This authentication flow provides:
 
 | Component | Source Code | Purpose |
 |-----------|-------------|---------|
-| **Authentication Flow** | [`src/auth.rs:server_authenticate()`](trustedge-audio/src/auth.rs) | Server-side authentication implementation |
-| **Challenge Generation** | [`src/auth.rs:client_authenticate()`](trustedge-audio/src/auth.rs) | Client-side authentication implementation |
-| **Certificate Management** | [`src/auth.rs:ClientCertificate`](trustedge-audio/src/auth.rs) | Certificate creation and validation |
-| **Session Management** | [`src/auth.rs:SessionManager`](trustedge-audio/src/auth.rs) | Session lifecycle and validation |
-| **Integration Tests** | [`tests/auth_integration.rs`](trustedge-audio/tests/auth_integration.rs) | Complete authentication test suite |
+| **Authentication Flow** | [`src/auth.rs:server_authenticate()`](trustedge-core/src/auth.rs) | Server-side authentication implementation |
+| **Challenge Generation** | [`src/auth.rs:client_authenticate()`](trustedge-core/src/auth.rs) | Client-side authentication implementation |
+| **Certificate Management** | [`src/auth.rs:ClientCertificate`](trustedge-core/src/auth.rs) | Certificate creation and validation |
+| **Session Management** | [`src/auth.rs:SessionManager`](trustedge-core/src/auth.rs) | Session lifecycle and validation |
+| **Integration Tests** | [`tests/auth_integration.rs`](trustedge-core/tests/auth_integration.rs) | Complete authentication test suite |
 
 ### Certificate Format
 
@@ -321,7 +321,7 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 └── config.json
 
 # Development Environment
-./trustedge-audio/
+./trustedge-core/
 ├── trustedge-server.key     # 600 developer:developer
 ├── trustedge-server.cert    # 644 developer:developer  
 ├── trustedge-client.key     # 600 developer:developer
@@ -818,4 +818,4 @@ For enterprise deployments, consider integrating with existing PKI:
 
 ---
 
-This completes the TrustEdge Authentication Guide. For additional technical implementation details, refer to the source code in [`trustedge-audio/src/`](trustedge-audio/src/) and the integration tests in [`trustedge-audio/tests/auth_integration.rs`](trustedge-audio/tests/auth_integration.rs).
+This completes the TrustEdge Authentication Guide. For additional technical implementation details, refer to the source code in [`trustedge-core/src/`](trustedge-core/src/) and the integration tests in [`trustedge-core/tests/auth_integration.rs`](trustedge-core/tests/auth_integration.rs).

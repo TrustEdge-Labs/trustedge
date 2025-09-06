@@ -31,7 +31,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 2. **CLI tools**
 
-   * `trustedge-audio` — local capture → encrypt → envelope; `--decrypt` verify/restore.
+   * `trustedge-core` — local capture → encrypt → envelope; `--decrypt` verify/restore.
    * `trustedge-client` / `trustedge-server` — reference network path with ACKs.
 
 3. **Reference Router / Gateway (stateless)**
@@ -659,11 +659,11 @@ mod tests {
 
 ```bash
 # Encrypt → envelope + plaintext
-trustedge-audio -i input.wav -o roundtrip.wav \
+trustedge-core -i input.wav -o roundtrip.wav \
   --chunk 8192 --envelope out.trst --use-keyring --salt-hex "$SALT"
 
 # Decrypt → verify + restore from envelope
-trustedge-audio --decrypt -i out.trst -o restored.wav \
+trustedge-core --decrypt -i out.trst -o restored.wav \
   --use-keyring --salt-hex "$SALT"
 
 # Network demo (TCP) - start server

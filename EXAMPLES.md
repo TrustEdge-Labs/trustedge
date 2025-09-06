@@ -120,9 +120,9 @@ echo "%PDF-1.4..." > document.pdf  # Minimal PDF
 echo "Binary data" > data.bin
 
 # Encrypt multiple file types
-./target/release/trustedge-audio --input config.json --envelope config.trst --key-out json.key --verbose
-./target/release/trustedge-audio --input document.pdf --envelope doc.trst --key-out pdf.key --verbose
-./target/release/trustedge-audio --input data.bin --envelope binary.trst --key-out bin.key --verbose
+./target/release/trustedge-core --input config.json --envelope config.trst --key-out json.key --verbose
+./target/release/trustedge-core --input document.pdf --envelope doc.trst --key-out pdf.key --verbose
+./target/release/trustedge-core --input data.bin --envelope binary.trst --key-out bin.key --verbose
 
 # Expected verbose output shows MIME detection:
 # ● Input: config.json (119 bytes)
@@ -134,7 +134,7 @@ echo "Binary data" > data.bin
 
 ```bash
 # Inspect encrypted archives to see format information
-./target/release/trustedge-audio --input config.trst --inspect --verbose
+./target/release/trustedge-core --input config.trst --inspect --verbose
 
 # Example output:
 # TrustEdge Archive Information:
@@ -146,7 +146,7 @@ echo "Binary data" > data.bin
 #   MIME Type: application/json
 #   Output Behavior: Original file format preserved
 
-./target/release/trustedge-audio --input doc.trst --inspect --verbose
+./target/release/trustedge-core --input doc.trst --inspect --verbose
 
 # Example output:
 # TrustEdge Archive Information:
@@ -190,7 +190,7 @@ graph TD
 
 ```bash
 # Decrypt with detailed format information
-./target/release/trustedge-audio --decrypt --input config.trst --out config_restored.json --key-hex $(cat json.key) --verbose
+./target/release/trustedge-core --decrypt --input config.trst --out config_restored.json --key-hex $(cat json.key) --verbose
 
 # Enhanced output shows format awareness:
 # ● Input Type: File
@@ -216,7 +216,7 @@ file config_restored.json              # Shows: JSON text data
 echo "Confidential business plan draft" > business_plan.txt
 
 # Encrypt with random key
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input business_plan.txt \
   --out roundtrip.txt \
   --envelope business_plan.trst \
@@ -227,7 +227,7 @@ diff business_plan.txt roundtrip.txt
 # (no output = success)
 
 # Later: decrypt the envelope
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input business_plan.trst \
   --out recovered_plan.txt \
@@ -238,7 +238,7 @@ diff business_plan.txt roundtrip.txt
 
 ```bash
 # Encrypt sensitive audio recording
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input confidential_meeting.wav \
   --envelope meeting_encrypted.trst \
   --backend keyring \
@@ -247,7 +247,7 @@ diff business_plan.txt roundtrip.txt
   --no-plaintext  # Don't keep unencrypted copy
 
 # Later: recover the audio
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input meeting_encrypted.trst \
   --out recovered_meeting.wav \
@@ -264,7 +264,7 @@ diff business_plan.txt roundtrip.txt
 
 ```bash
 # Quick voice note with system keyring
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --duration 30 \
   --envelope voice_note_$(date +%Y%m%d_%H%M%S).trst \
@@ -282,14 +282,14 @@ diff business_plan.txt roundtrip.txt
 
 ```bash
 # Professional audio recording with device selection
-./target/release/trustedge-audio --list-devices
+./target/release/trustedge-core --list-devices
 # Available audio input devices:
 #   0: Default (Built-in Microphone)
 #   1: USB Audio Interface [Professional Audio Device]
 #   2: Line In (Built-in Audio)
 
 # Record from professional interface
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --device 1 \
   --duration 1800 \
@@ -310,7 +310,7 @@ diff business_plan.txt roundtrip.txt
 
 ```bash
 # Record until file reaches size limit
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --max-size 52428800 \  # 50MB limit
   --sample-rate 44100 \
@@ -330,7 +330,7 @@ diff business_plan.txt roundtrip.txt
 
 ```bash
 # Decrypt the interview audio (produces raw PCM data)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input interview.trst \
   --out interview_decrypted.raw \
@@ -340,7 +340,7 @@ diff business_plan.txt roundtrip.txt
   --verbose
 
 # Check the metadata
-./target/release/trustedge-audio --inspect interview.trst
+./target/release/trustedge-core --inspect interview.trst
 # TrustEdge Archive Contents:
 #   Data Type: Audio
 #   Original Size: 52428800 bytes
@@ -442,7 +442,7 @@ kill -INT $(pgrep trustedge-server)
   --salt-hex "live_stream_salt_abcdef1234567890"
 
 # Terminal 2: Stream live audio to server
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --duration 300 \  # 5 minutes
   --sample-rate 44100 \
@@ -465,7 +465,7 @@ kill -INT $(pgrep trustedge-server)
 
 ```bash
 # Device 1: Conference room microphone
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --device 0 \
   --duration 3600 \  # 1 hour meeting
@@ -475,7 +475,7 @@ kill -INT $(pgrep trustedge-server)
   --key-out meeting_key.hex
 
 # Device 2: Personal recorder  
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --device 1 \
   --duration 3600 \
@@ -485,11 +485,11 @@ kill -INT $(pgrep trustedge-server)
   --key-hex $(cat meeting_key.hex)  # Use same key
 
 # Later: decrypt both with same key
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt --input meeting_room.trst --out room_audio.wav \
   --key-hex $(cat meeting_key.hex)
 
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt --input personal_notes.trst --out notes_audio.wav \
   --key-hex $(cat meeting_key.hex)
 ```
@@ -634,7 +634,7 @@ kill -INT $(pgrep trustedge-server)
 
 ```bash
 # Terminal 1: Start decrypting server
-cd trustedge-audio
+cd trustedge-core
 cargo run --release --bin trustedge-server -- \
   --port 8080 \
   --decrypt \
@@ -652,7 +652,7 @@ cargo run --release --bin trustedge-server -- \
 
 ```bash  
 # Terminal 2: Send encrypted chunks to server
-cd trustedge-audio
+cd trustedge-core
 cargo run --release --bin trustedge-client -- \
   --server 127.0.0.1:8080 \
   --input input.mp3 \
@@ -697,7 +697,7 @@ cargo run --release --bin trustedge-client -- \
 
 ```bash
 # Always start by listing available devices
-./target/release/trustedge-audio --list-audio-devices
+./target/release/trustedge-core --list-audio-devices
 
 # Example output:
 # Available audio input devices:
@@ -712,7 +712,7 @@ cargo run --release --bin trustedge-client -- \
 
 ```bash
 # Linux: Use exact device names from --list-audio-devices
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
   --max-duration 10 \
@@ -720,7 +720,7 @@ cargo run --release --bin trustedge-client -- \
   --key-hex $(openssl rand -hex 32)
 
 # macOS: Use descriptive device names
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "Built-in Microphone" \
   --sample-rate 48000 \
@@ -730,7 +730,7 @@ cargo run --release --bin trustedge-client -- \
   --key-hex $(openssl rand -hex 32)
 
 # Windows: Use system device names
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "Microphone (Realtek Audio)" \
   --max-duration 10 \
@@ -738,7 +738,7 @@ cargo run --release --bin trustedge-client -- \
   --key-hex $(openssl rand -hex 32)
 
 # Universal: Use system default (works on all platforms)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --max-duration 10 \
   --envelope default_device.trst \
@@ -749,7 +749,7 @@ cargo run --release --bin trustedge-client -- \
 
 ```bash
 # High-quality stereo recording for music/podcasts
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
   --sample-rate 48000 \
@@ -761,7 +761,7 @@ cargo run --release --bin trustedge-client -- \
   --salt-hex $(openssl rand -hex 16)
 
 # Voice recording optimized for speech
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "default" \
   --sample-rate 22050 \
@@ -773,7 +773,7 @@ cargo run --release --bin trustedge-client -- \
   --salt-hex $(openssl rand -hex 16)
 
 # Meeting recording with bluetooth headset
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --audio-device "hw:CARD=Headset,DEV=0" \
   --sample-rate 44100 \
@@ -788,7 +788,7 @@ cargo run --release --bin trustedge-client -- \
 
 ```bash
 # Process large audio file in chunks
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input podcast_episode.wav \
   --envelope podcast_encrypted.trst \
   --chunk 8192 \
@@ -809,7 +809,7 @@ for i in {1..10}; do
   dd if=stream_audio.wav of=chunk_${i}.wav bs=4096 skip=$((i-1)) count=1 2>/dev/null
   
   # Encrypt chunk
-  ./target/release/trustedge-audio \
+  ./target/release/trustedge-core \
     --input chunk_${i}.wav \
     --envelope chunk_${i}.trst \
     --backend keyring \
@@ -822,7 +822,7 @@ done
 
 # Later: reconstruct stream
 for i in {1..10}; do
-  ./target/release/trustedge-audio \
+  ./target/release/trustedge-core \
     --decrypt \
     --input chunk_${i}.trst \
     --out decrypted_chunk_${i}.wav \
@@ -841,9 +841,9 @@ cat decrypted_chunk_*.wav > reconstructed_stream.wav
 
 ```bash
 # Test if device is accessible
-if ./target/release/trustedge-audio --list-audio-devices | grep -q "USB_AUDIO"; then
+if ./target/release/trustedge-core --list-audio-devices | grep -q "USB_AUDIO"; then
   echo "USB audio device found"
-  ./target/release/trustedge-audio \
+  ./target/release/trustedge-core \
     --live-capture \
     --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
     --max-duration 3 \
@@ -851,7 +851,7 @@ if ./target/release/trustedge-audio --list-audio-devices | grep -q "USB_AUDIO"; 
     --key-hex $(openssl rand -hex 32)
 else
   echo "USB audio device not found, using default"
-  ./target/release/trustedge-audio \
+  ./target/release/trustedge-core \
     --live-capture \
     --max-duration 3 \
     --envelope test_default.trst \
@@ -863,7 +863,7 @@ fi
 
 ```bash
 # Capture with verbose output to diagnose issues
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --max-duration 5 \
   --envelope debug_capture.trst \
@@ -891,13 +891,13 @@ fi
 **File Inputs (Original Format Preserved):**
 ```bash
 # Encrypt any file type
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input music.mp3 \
   --envelope music.trst \
   --key-hex $KEY
 
 # Decrypt preserves original format
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input music.trst \
   --out music_recovered.mp3 \  # Will be playable MP3
@@ -912,7 +912,7 @@ fi
 **Live Audio Inputs (Raw PCM Output):**
 ```bash
 # Capture live audio
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --live-capture \
   --max-duration 10 \
   --envelope recording.trst \
@@ -920,7 +920,7 @@ fi
   --verbose
 
 # Decrypt outputs raw PCM data (not playable)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input recording.trst \
   --out audio.raw \  # Raw PCM data - requires conversion
@@ -996,7 +996,7 @@ KEY="$2"
 OUTPUT_NAME="${3:-converted_audio}"
 
 # Decrypt to raw PCM
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input "$TRST_FILE" \
   --out temp.raw \
@@ -1160,14 +1160,14 @@ rm /opt/trustedge/certificates/production-server.cert
 #### Development Environment
 ```bash
 # Dev environment with simple hex keys for testing
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --duration 10 \
   --envelope dev_test.trst \
   --key-hex "dev_key_1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
 
 # Quick verification
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt --input dev_test.trst --out dev_restored.wav \
   --key-hex "dev_key_1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
 ```
@@ -1175,9 +1175,9 @@ rm /opt/trustedge/certificates/production-server.cert
 #### Staging Environment  
 ```bash
 # Staging with keyring - more secure
-./target/release/trustedge-audio --set-passphrase "staging_passphrase_secure_123"
+./target/release/trustedge-core --set-passphrase "staging_passphrase_secure_123"
 
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --duration 60 \
   --sample-rate 48000 \
@@ -1191,7 +1191,7 @@ rm /opt/trustedge/certificates/production-server.cert
 #### Production Environment (Future)
 ```bash
 # Production with TPM (planned)
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --duration 1800 \
   --sample-rate 48000 \
@@ -1206,22 +1206,22 @@ rm /opt/trustedge/certificates/production-server.cert
 #### Mixed Content with Shared Keys
 ```bash
 # Generate master key for project
-MASTER_KEY=$(./target/release/trustedge-audio \
+MASTER_KEY=$(./target/release/trustedge-core \
   --audio-capture --duration 1 --key-out /dev/stdout | head -1)
 
 # Encrypt various data types with same key
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input project_docs.pdf \
   --envelope docs.trst \
   --key-hex $MASTER_KEY
 
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --audio-capture \
   --duration 300 \
   --envelope meeting_audio.trst \
   --key-hex $MASTER_KEY
 
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input sensor_data.json \
   --envelope sensor.trst \
   --key-hex $MASTER_KEY
@@ -1233,13 +1233,13 @@ echo "Encrypted project bundle with unified key management"
 #### Content Type Inspection
 ```bash
 # Check what's in encrypted files
-./target/release/trustedge-audio --inspect docs.trst
+./target/release/trustedge-core --inspect docs.trst
 # TrustEdge Archive Contents:
 #   Data Type: File
 #   Original Size: 2048576 bytes
 #   Encryption: AES-256-GCM
 
-./target/release/trustedge-audio --inspect meeting_audio.trst  
+./target/release/trustedge-core --inspect meeting_audio.trst  
 # TrustEdge Archive Contents:
 #   Data Type: Audio
 #   Original Size: 26460000 bytes
@@ -1248,7 +1248,7 @@ echo "Encrypted project bundle with unified key management"
 #   Channels: 1
 #   Encryption: AES-256-GCM
 
-./target/release/trustedge-audio --inspect sensor.trst
+./target/release/trustedge-core --inspect sensor.trst
 # TrustEdge Archive Contents:
 #   Data Type: File  
 #   Original Size: 15876 bytes
@@ -1264,13 +1264,13 @@ NEW_KEY=$(openssl rand -hex 32)
 echo $NEW_KEY > new_key.hex
 
 # Decrypt with old key, re-encrypt with new key
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --decrypt \
   --input old_data.trst \
   --out temp_plaintext.bin \
   --key-hex $(cat old_key.hex)
 
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input temp_plaintext.bin \
   --envelope new_data.trst \
   --key-hex $NEW_KEY
@@ -1290,7 +1290,7 @@ mv new_key.hex current_key.hex
 
 ```bash
 # List all registered backends with their capabilities
-$ trustedge-audio --list-backends
+$ trustedge-core --list-backends
 Universal Backend Registry:
 
 📊 Registry Status:
@@ -1331,7 +1331,7 @@ Universal Backend Registry:
 
 ```bash
 # Get comprehensive backend information
-$ trustedge-audio --backend-info universal_keyring
+$ trustedge-core --backend-info universal_keyring
 Backend: universal_keyring (UniversalKeyringBackend)
 
 🎯 Capabilities Matrix:
@@ -1371,7 +1371,7 @@ Backend: universal_keyring (UniversalKeyringBackend)
 
 ```bash
 # System automatically selects optimal backend for each operation
-$ trustedge-audio \
+$ trustedge-core \
     --input financial_report.pdf \
     --out decrypted_report.pdf \
     --envelope secure_report.trst \
@@ -1412,7 +1412,7 @@ Phase 3: Verification
 
 ```bash
 # Advanced workflow with explicit backend preferences
-$ trustedge-audio \
+$ trustedge-core \
     --input classified_document.docx \
     --envelope maximum_security.trst \
     --backend-preference "keyderivation:universal_keyring" \
@@ -1458,7 +1458,7 @@ Backend Routing:
 
 ```bash
 # Speed-optimized configuration for large files
-$ trustedge-audio \
+$ trustedge-core \
     --input large_dataset.tar.gz \
     --envelope speed_optimized.trst \
     --backend-preference "keyderivation:universal_keyring" \
@@ -1501,7 +1501,7 @@ Backend Configuration:
 
 ```bash
 # Runtime registry management and monitoring
-$ trustedge-audio --backend-info universal_registry
+$ trustedge-core --backend-info universal_registry
 Registry: universal_registry (UniversalRegistryBackend)
 
 🎛️  Registry Configuration:
@@ -1552,7 +1552,7 @@ Backend Priorities:
 
 ```bash
 # Optimize registry for specific workload patterns
-$ trustedge-audio \
+$ trustedge-core \
     --input batch_processing/ \
     --backend-preference "keyderivation:universal_keyring" \
     --backend-config "performance_monitoring=detailed" \
@@ -1594,7 +1594,7 @@ Real-time Metrics:
 
 ```bash
 # Comprehensive registry diagnostics
-$ trustedge-audio \
+$ trustedge-core \
     --backend-info universal_registry \
     --verbose
 
@@ -1666,7 +1666,7 @@ DATE=$(date +%Y%m%d)
 tar czf "backup_${DATE}.tar.gz" /home/user/documents
 
 # Encrypt backup
-./target/release/trustedge-audio \
+./target/release/trustedge-core \
   --input "backup_${DATE}.tar.gz" \
   --envelope "backup_${DATE}.trst" \
   --backend keyring \
@@ -1693,7 +1693,7 @@ import os
 def encrypt_file(input_path, output_path, salt_hex, use_keyring=True):
     """Encrypt a file using TrustEdge"""
     cmd = [
-        "./target/release/trustedge-audio",
+        "./target/release/trustedge-core",
         "--input", input_path,
         "--envelope", output_path,
         "--backend", "keyring",
@@ -1710,7 +1710,7 @@ def encrypt_file(input_path, output_path, salt_hex, use_keyring=True):
 def decrypt_file(input_path, output_path, salt_hex, use_keyring=True):
     """Decrypt a file using TrustEdge"""
     cmd = [
-        "./target/release/trustedge-audio",
+        "./target/release/trustedge-core",
         "--decrypt",
         "--input", input_path,
         "--out", output_path,
@@ -1756,7 +1756,7 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/trustedge-audio /usr/local/bin/
+COPY --from=builder /app/target/release/trustedge-core /usr/local/bin/
 COPY --from=builder /app/target/release/trustedge-server /usr/local/bin/
 
 # Setup for network mode
@@ -1804,7 +1804,7 @@ for size in "${SIZES[@]}"; do
     echo -n "  Chunk size ${chunk}: "
     start_time=$(date +%s.%N)
     
-    ./target/release/trustedge-audio \
+    ./target/release/trustedge-core \
       --input test_${size}.bin \
       --envelope test_${size}_${chunk}.trst \
       --chunk $chunk \
@@ -1833,7 +1833,7 @@ echo "Memory usage test..."
 dd if=/dev/urandom of=large_test.bin bs=1M count=100
 
 # Monitor memory usage
-/usr/bin/time -v ./target/release/trustedge-audio \
+/usr/bin/time -v ./target/release/trustedge-core \
   --input large_test.bin \
   --envelope large_test.trst \
   --chunk 8192 \
@@ -1858,7 +1858,7 @@ encrypt_with_fallback() {
   local output_file="$2"
   
   # Try keyring first
-  if ./target/release/trustedge-audio \
+  if ./target/release/trustedge-core \
       --input "$input_file" \
       --envelope "$output_file" \
       --backend keyring \
@@ -1870,7 +1870,7 @@ encrypt_with_fallback() {
   
   # Fallback to hex key
   echo "⚠ Keyring failed, using hex key fallback"
-  ./target/release/trustedge-audio \
+  ./target/release/trustedge-core \
     --input "$input_file" \
     --envelope "$output_file" \
     --key-hex $(openssl rand -hex 32) \
@@ -2013,7 +2013,7 @@ for hour in {00..23}; do
   echo "sensor_id=temp_01,timestamp=2024-08-29T${hour}:00:00Z,value=23.5,unit=celsius" > sensor_${hour}.json
   
   # Encrypt sensor data
-  ./target/release/trustedge-audio \
+  ./target/release/trustedge-core \
     --input sensor_${hour}.json \
     --envelope sensor_${hour}.trst \
     --backend keyring \
@@ -2026,7 +2026,7 @@ done
 
 # Later: decrypt and process
 for hour in {00..23}; do
-  ./target/release/trustedge-audio \
+  ./target/release/trustedge-core \
     --decrypt \
     --input sensor_${hour}.trst \
     --out processed_${hour}.json \
@@ -2040,7 +2040,7 @@ done
 
 ```bash
 # Simulate secure audio streaming setup
-./target/release/trustedge-audio --set-passphrase "secure_stream_key_2024"
+./target/release/trustedge-core --set-passphrase "secure_stream_key_2024"
 
 # Process audio stream in real-time chunks
 split_and_encrypt_stream() {
@@ -2051,7 +2051,7 @@ split_and_encrypt_stream() {
   split -b $chunk_size "$input_stream" chunk_
   
   for chunk in chunk_*; do
-    ./target/release/trustedge-audio \
+    ./target/release/trustedge-core \
       --input "$chunk" \
       --envelope "${chunk}.trst" \
       --backend keyring \

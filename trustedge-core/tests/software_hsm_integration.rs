@@ -17,7 +17,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
-use trustedge_audio::backends::{
+use trustedge_core::backends::{
     software_hsm::{SoftwareHsmBackend, SoftwareHsmConfig},
     universal::{
         AsymmetricAlgorithm, CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend,

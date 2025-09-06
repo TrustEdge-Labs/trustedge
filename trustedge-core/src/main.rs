@@ -22,13 +22,13 @@ use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 #[cfg(feature = "audio")]
-use trustedge_audio::AudioCapture;
+use trustedge_core::AudioCapture;
 #[cfg(feature = "audio")]
-use trustedge_audio::AudioConfig;
-use trustedge_audio::{BackendRegistry, KeyBackend, KeyContext, KeyringBackend};
+use trustedge_core::AudioConfig;
+use trustedge_core::{BackendRegistry, KeyBackend, KeyContext, KeyringBackend};
 use zeroize::Zeroize;
 
-use trustedge_audio::{
+use trustedge_core::{
     // helpers
     build_aad,
     write_stream_header,
@@ -126,7 +126,7 @@ impl InputReader for AudioInputReader {
 
 /// CLI Arguments
 #[derive(Parser, Debug)]
-#[command(name = "trustedge-audio", version, about)]
+#[command(name = "trustedge-core", version, about)]
 struct Args {
     /// Input file (opaque bytes)
     #[arg(short, long)]
@@ -411,14 +411,14 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     let stream_nonce_prefix: [u8; 4] = sh.header[50..54].try_into().unwrap();
 
     // turn Vec<u8> into the fixed array
-    let header_arr: [u8; trustedge_audio::HEADER_LEN] = sh
+    let header_arr: [u8; trustedge_core::HEADER_LEN] = sh
         .header
         .as_slice()
         .try_into()
         .context("stream header length != 58")?;
 
     // parse the 58-byte header into a FileHeader
-    let fh = trustedge_audio::FileHeader::from_bytes(&header_arr);
+    let fh = trustedge_core::FileHeader::from_bytes(&header_arr);
 
     // verify stored header hash matches recompute
     let hh = blake3::hash(&sh.header);
@@ -561,14 +561,14 @@ fn inspect_envelope(args: &Args) -> Result<()> {
     anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
 
     // turn Vec<u8> into the fixed array
-    let header_arr: [u8; trustedge_audio::HEADER_LEN] = sh
+    let header_arr: [u8; trustedge_core::HEADER_LEN] = sh
         .header
         .as_slice()
         .try_into()
         .context("stream header length != 58")?;
 
     // parse the 58-byte header into a FileHeader
-    let fh = trustedge_audio::FileHeader::from_bytes(&header_arr);
+    let fh = trustedge_core::FileHeader::from_bytes(&header_arr);
 
     // verify stored header hash matches recompute
     let hh = blake3::hash(&sh.header);

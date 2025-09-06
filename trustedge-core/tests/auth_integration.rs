@@ -12,7 +12,7 @@ use std::time::Duration;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::time::timeout;
 
-use trustedge_audio::auth::{
+use trustedge_core::auth::{
     client_authenticate, server_authenticate, ClientCertificate, SessionManager,
 };
 

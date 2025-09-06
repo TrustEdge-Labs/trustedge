@@ -75,7 +75,7 @@ Complete command-line interface documentation for TrustEdge.
 
 **To discover available devices, always run first:**
 ```bash
-./target/release/trustedge-audio --list-audio-devices
+./target/release/trustedge-core --list-audio-devices
 ```
 
 **Common Device Name Formats:**
@@ -134,7 +134,7 @@ Complete command-line interface documentation for TrustEdge.
 **Format Inspection:**
 ```bash
 # Inspect format without decryption
-./target/release/trustedge-audio --input data.trst --inspect --verbose
+./target/release/trustedge-core --input data.trst --inspect --verbose
 
 # Example output for a JSON file:
 # TrustEdge Archive Information:
@@ -156,7 +156,7 @@ Complete command-line interface documentation for TrustEdge.
 **Enhanced Decrypt Output:**
 ```bash
 # Decrypt with verbose format information
-./target/release/trustedge-audio --decrypt --input data.trst --out output --verbose
+./target/release/trustedge-core --decrypt --input data.trst --out output --verbose
 
 # Example output for files:
 # ● Input Type: File
@@ -195,7 +195,7 @@ play -t f32 -r 44100 -c 1 audio.raw
 **Extract Audio Metadata from .trst (Live Audio Only):**
 Live audio captures store the original audio parameters in the encrypted envelope:
 ```bash
-./target/release/trustedge-audio --decrypt --input audio.trst --out audio.raw --key-hex $KEY --verbose
+./target/release/trustedge-core --decrypt --input audio.trst --out audio.raw --key-hex $KEY --verbose
 # Output shows: Sample Rate: 44100Hz, Channels: 1, Format: f32
 ```
 
@@ -359,7 +359,7 @@ TrustEdge implements **Ed25519 mutual authentication** with automatic certificat
 ### List Available Backends with Capabilities
 
 ```bash
-$ trustedge-audio --list-backends
+$ trustedge-core --list-backends
 Universal Backend Registry:
 
 📊 Registry Status:
@@ -396,7 +396,7 @@ Universal Backend Registry:
 
 ```bash
 # System automatically selects best backend for each operation
-$ trustedge-audio \
+$ trustedge-core \
     --input document.txt \
     --out roundtrip.txt \
     --envelope encrypted.trst \
@@ -414,7 +414,7 @@ Operation Flow:
 
 ```bash
 # Set specific backend preferences for operations
-$ trustedge-audio \
+$ trustedge-core \
     --input sensitive.pdf \
     --backend-preference "encryption:universal_keyring" \
     --backend-preference "storage:keyring" \
@@ -422,7 +422,7 @@ $ trustedge-audio \
     --use-keyring
 
 # Show detailed backend information
-$ trustedge-audio --backend-info universal_keyring
+$ trustedge-core --backend-info universal_keyring
 Backend: universal_keyring (UniversalKeyringBackend)
 
 🎯 Capabilities:
@@ -445,7 +445,7 @@ Backend: universal_keyring (UniversalKeyringBackend)
 
 ```bash
 # View current registry configuration
-$ trustedge-audio --backend-info universal_registry
+$ trustedge-core --backend-info universal_registry
 Registry Configuration:
 
 🎛️  Backend Priorities:
@@ -470,7 +470,7 @@ Registry Configuration:
 
 ```bash
 # Maximum security configuration
-$ trustedge-audio \
+$ trustedge-core \
     --input classified.docx \
     --backend-preference "encryption:universal_keyring" \
     --backend-config "pbkdf2_iterations=500000" \
@@ -490,7 +490,7 @@ Security Profile: Maximum
 
 ```bash
 # Speed-optimized configuration
-$ trustedge-audio \
+$ trustedge-core \
     --input large_dataset.bin \
     --backend-preference "encryption:universal_keyring" \
     --backend-config "pbkdf2_iterations=100000" \
@@ -548,14 +548,14 @@ The CLI supports various encryption and network workflows. For detailed end-to-e
 
 ```bash
 # Basic file encryption
-./target/release/trustedge-audio --input file.txt --envelope file.trst --key-out key.hex
+./target/release/trustedge-core --input file.txt --envelope file.trst --key-out key.hex
 
 # Live audio capture (requires --features audio)
-./target/release/trustedge-audio --live-capture --envelope audio.trst --max-duration 10
+./target/release/trustedge-core --live-capture --envelope audio.trst --max-duration 10
 
 # Format-aware decryption with inspection
-./target/release/trustedge-audio --input file.trst --inspect --verbose
-./target/release/trustedge-audio --input file.trst --decrypt --out restored.txt --key-hex $(cat key.hex)
+./target/release/trustedge-core --input file.trst --inspect --verbose
+./target/release/trustedge-core --input file.trst --decrypt --out restored.txt --key-hex $(cat key.hex)
 ```
 
 For comprehensive step-by-step examples, see the respective documentation files listed above.

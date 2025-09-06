@@ -2,9 +2,9 @@
 # Order matters; the last matching rule wins. (No negation patterns in CODEOWNERS.)
 
 # Format & test vectors are “trust roots”
-/trustedge-audio/src/format.rs           @johnzilla
-/trustedge-audio/src/vectors.rs          @johnzilla
-/trustedge-audio/tests/**                @johnzilla
+/trustedge-core/src/format.rs           @johnzilla
+/trustedge-core/src/vectors.rs          @johnzilla
+/trustedge-core/tests/**                @johnzilla
 
 # CI and release workflows
 /.github/workflows/**                    @johnzilla

@@ -80,7 +80,7 @@ See **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** for 
 ### Core Components
 
 ```
-trustedge-audio/
+trustedge-core/
 ├── src/
 │   ├── lib.rs           # Main library interface
 │   ├── main.rs          # CLI application entry point
@@ -244,7 +244,7 @@ cargo install cargo-audit cargo-outdated
 ```bash
 # Clone repository
 git clone https://github.com/yourusername/trustedge.git
-cd trustedge/trustedge-audio
+cd trustedge/trustedge-core
 
 # Build project
 # Build with audio support
@@ -557,7 +557,7 @@ See [THREAT_MODEL.md](./THREAT_MODEL.md) for complete threat analysis.
    cargo bench
    
    # Memory usage profiling
-   valgrind --tool=massif ./target/release/trustedge-audio
+   valgrind --tool=massif ./target/release/trustedge-core
    ```
 
 ### Continuous Integration

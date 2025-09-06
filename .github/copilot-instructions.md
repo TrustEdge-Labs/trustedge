@@ -12,7 +12,7 @@ GitHub: https://github.com/johnzilla/trustedge
 
 **TrustEdge** is a privacy-preserving edge data encryption platform built in Rust with a modular architecture:
 
-- **Core Library** (`trustedge-audio/src/lib.rs`): Data-agnostic encryption with NetworkChunk abstraction
+- **Core Library** (`trustedge-core/src/lib.rs`): Data-agnostic encryption with NetworkChunk abstraction
 - **Universal Backend System** (`src/backends/`): Capability-based crypto operations (Software HSM, Keyring, future TPM/YubiKey)
 - **Transport Layer** (`src/transport/`): Async trait abstraction over TCP/QUIC for network operations
 - **Format Detection** (`src/format.rs`): MIME type detection and C2PA-inspired signed manifests
@@ -29,7 +29,7 @@ GitHub: https://github.com/johnzilla/trustedge
 
 ### Quality Checks (Run Before Every Commit)
 ```bash
-# Run from trustedge-audio/ directory
+# Run from trustedge-core/ directory
 ./ci-check.sh                    # Prevents GitHub CI failures
 ```
 

@@ -15,7 +15,7 @@ use tokio::signal;
 use tokio::sync::broadcast;
 
 // network payload type from lib.rs
-use trustedge_audio::{
+use trustedge_core::{
     build_aad, server_authenticate, KeyBackend, KeyContext, KeyringBackend, Manifest, NetworkChunk,
     SessionManager, SignedManifest, NONCE_LEN,
 };

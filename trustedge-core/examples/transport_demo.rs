@@ -9,7 +9,7 @@
 //
 /// Demonstrates how to use the transport abstraction with TCP and QUIC.
 use anyhow::Result;
-use trustedge_audio::{NetworkChunk, TransportConfig, TransportFactory};
+use trustedge_core::{NetworkChunk, TransportConfig, TransportFactory};
 
 #[tokio::main]
 async fn main() -> Result<()> {

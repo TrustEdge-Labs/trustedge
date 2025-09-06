@@ -8,8 +8,8 @@ set -e
 echo "🔍 Running pre-commit CI checks..."
 echo
 
-# Change to the trustedge-audio directory
-cd "$(dirname "$0")/../trustedge-audio"
+# Change to the trustedge-core directory
+cd "$(dirname "$0")/../trustedge-core"
 
 echo "📋 Step 1: Checking code formatting..."
 cargo fmt --check

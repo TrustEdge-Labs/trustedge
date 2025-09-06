@@ -105,7 +105,7 @@ Quick performance benchmarks for local development (no CI integration).
 - **Basic accuracy** (suitable for performance trend monitoring)
 - **Automatic environment setup** (sets BENCH_FAST=1)
 
-For full statistical accuracy, use `cargo bench` in the `trustedge-audio/` directory.
+For full statistical accuracy, use `cargo bench` in the `trustedge-core/` directory.
 
 ## 🛠️ Adding New Scripts
 
