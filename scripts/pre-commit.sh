@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2025 John Turner
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
 # This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 # If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
 #
@@ -24,7 +24,7 @@ MISSING_FILES=()
 # Function to check copyright header
 check_copyright() {
     local file="$1"
-    if ! head -10 "$file" | grep -q "Copyright (c) 2025 John Turner"; then
+    if ! head -10 "$file" | grep -q "Copyright (c) 2025 TRUSTEDGE LABS LLC"; then
         MISSING_FILES+=("$file")
         return 1
     fi

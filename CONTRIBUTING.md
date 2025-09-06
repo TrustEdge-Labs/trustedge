@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2025 John Turner
+Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
@@ -149,7 +149,7 @@ Closes #issue-number
 #### Option 1: Contributor Copyright (Recommended)
 ```rust
 // Copyright (c) 2025 Your Name
-// Copyright (c) 2025 John Turner  
+// Copyright (c) 2025 TRUSTEDGE LABS LLC  
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
@@ -159,7 +159,7 @@ Closes #issue-number
 
 #### Option 2: Assignment to Project
 ```rust
-// Copyright (c) 2025 John Turner
+// Copyright (c) 2025 TRUSTEDGE LABS LLC
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //

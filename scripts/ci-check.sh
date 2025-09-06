@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2025 John Turner
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
 # Pre-commit script to run the same checks as GitHub CI
 # This prevents the double work problem by catching issues locally
 

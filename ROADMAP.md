@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2025 John Turner
+Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
@@ -807,7 +807,7 @@ trustedge-client --server 127.0.0.1:8080 --test-chunks 100 \
 
 ## Legal & Attribution
 
-**Copyright** © 2025 John Turner. All rights reserved.
+**Copyright** © 2025 TRUSTEDGE LABS LLC. All rights reserved.
 
 **License**: This roadmap is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](https://mozilla.org/MPL/2.0/).
 
