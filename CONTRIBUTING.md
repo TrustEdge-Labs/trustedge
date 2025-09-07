@@ -20,7 +20,7 @@ Thank you for your interest in contributing to TrustEdge! This document provides
 
 ## 📋 Before You Start
 
-1. **Check existing work**: Search [issues](https://github.com/trustedge/trustedge/issues) and [PRs](https://github.com/trustedge/trustedge/pulls)
+1. **Check existing work**: Search [issues](https://github.com/TrustEdge-Labs/trustedge/issues) and [PRs](https://github.com/TrustEdge-Labs/trustedge/pulls)
 2. **Read the docs**: Review [DEVELOPMENT.md](./DEVELOPMENT.md) for technical details
 3. **Review coding standards**: See [CODING_STANDARDS.md](./CODING_STANDARDS.md) for style guidelines
 4. **Check progress**: See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) and [Issue #16](https://github.com/TrustEdge-Labs/trustedge/issues/16) for current status
@@ -56,7 +56,7 @@ When requesting features:
 ### Development Setup
 
 1. **Install Rust**: Use the latest stable version
-2. **Clone the repo**: `git clone https://github.com/trustedge/trustedge.git`
+2. **Clone the repo**: `git clone https://github.com/TrustEdge-Labs/trustedge.git`
 3. **Install dependencies**: `cd trustedge/trustedge-core && cargo build`
 4. **Run tests**: `cargo test` and `cargo clippy`
 
@@ -252,7 +252,7 @@ All code contributions to TrustEdge require signing our Contributor License Agre
 The CLA is **not** a copyright assignment. You will always own the copyright to your original contributions. Your name stays on your code, and you can use your contributions however you wish.
 
 #### 📜 **Project Gets Usage Rights**
-The CLA grants TrustEdge (John Turner) a broad, perpetual, and irrevocable license to:
+The CLA grants TrustEdge Labs LLC a broad, perpetual, and irrevocable license to:
 - Use your contribution in the open-source version
 - Modify and improve your contribution
 - Sublicense your contribution under different terms when necessary
@@ -280,7 +280,7 @@ Without the CLA, we couldn't offer commercial licenses, which would limit our ab
 
 ### 📋 CLA Document
 
-The full CLA document is available here: **[TrustEdge CLA](https://gist.github.com/johnzilla/0624a138cdabd17e9f5ae44607958922)** 
+The full CLA document is available here: **[TrustEdge CLA](https://github.com/TrustEdge-Labs/trustedge/blob/main/CLA.md)** 
 
 ### Questions About the CLA?
 
@@ -305,7 +305,7 @@ Please [open a discussion](https://github.com/TrustEdge-Labs/trustedge/discussio
 
 ### Reporting Vulnerabilities
 
-- **Sensitive issues**: Use [private security advisory](https://github.com/trustedge/trustedge/security/advisories/new)
+- **Sensitive issues**: Use [private security advisory](https://github.com/TrustEdge-Labs/trustedge/security/advisories/new)
 - **General security**: Use [security issue template](./.github/ISSUE_TEMPLATE/security.yml)
 - **Follow responsible disclosure**: Don't publish exploits publicly
 

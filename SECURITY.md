@@ -205,10 +205,10 @@ TrustEdge aims to align with:
 
 ## Contact Information
 
-**Security Team**: [To be updated with actual contacts]
-- **Lead**: John Turner (john@example.com)
-- **GPG Key**: [KEY_ID] (for encrypted communications)
-- **Security Advisory**: Subscribe to security@trustedge.example.com
+**Security Team**: TrustEdge Labs LLC Security Team
+- **Lead**: TrustEdge Labs LLC (security@trustedge-labs.com)
+- **GPG Key**: [To be provided] (for encrypted communications)
+- **Security Advisory**: Subscribe to security notifications via GitHub Security Advisories
 
 ---
 
