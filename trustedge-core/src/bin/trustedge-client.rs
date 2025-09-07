@@ -7,11 +7,13 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
+use futures_util::{SinkExt, StreamExt};
 use std::path::PathBuf;
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::{sleep, timeout};
+use tokio_util::codec::{Framed, LengthDelimitedCodec};
 
 use trustedge_core::{
     auth::{client_authenticate, load_server_cert, save_client_cert, ClientCertificate},
@@ -97,6 +99,14 @@ struct Args {
     /// Verbose logging
     #[arg(short, long)]
     verbose: bool,
+
+    /// Use hardened transport with framed codec
+    #[arg(long)]
+    hardened: bool,
+
+    /// Expect secure ACKs from server
+    #[arg(long)]
+    expect_secure_acks: bool,
 
     /// Path to client certificate file for authentication
     #[arg(long)]
@@ -275,23 +285,58 @@ async fn main() -> Result<()> {
         kb
     };
 
-    // Choose mode
-    if let Some(n) = args.test_chunks {
-        send_encrypted_test_chunks(&mut stream, n, args.chunk_size, &key_bytes, args.verbose)
+    // Choose mode and transport
+    if args.hardened {
+        // Use hardened framed transport
+        let codec = LengthDelimitedCodec::builder()
+            .max_frame_length(16 * 1024 * 1024) // 16MB max frame
+            .new_codec();
+        let mut framed = Framed::new(stream, codec);
+
+        if let Some(n) = args.test_chunks {
+            send_encrypted_test_chunks_hardened(
+                &mut framed,
+                n,
+                args.chunk_size,
+                &key_bytes,
+                args.verbose,
+                args.expect_secure_acks,
+            )
             .await?;
-    } else if let Some(ref file_path) = args.file {
-        send_encrypted_file(
-            &mut stream,
-            file_path,
-            &key_bytes,
-            args.chunk_size,
-            args.verbose,
-        )
-        .await?;
+        } else if let Some(ref file_path) = args.file {
+            send_encrypted_file_hardened(
+                &mut framed,
+                file_path,
+                &key_bytes,
+                args.chunk_size,
+                args.verbose,
+                args.expect_secure_acks,
+            )
+            .await?;
+        } else {
+            return Err(anyhow::anyhow!(
+                "Must specify either --file or --test-chunks"
+            ));
+        }
     } else {
-        return Err(anyhow::anyhow!(
-            "Must specify either --file or --test-chunks"
-        ));
+        // Use legacy transport
+        if let Some(n) = args.test_chunks {
+            send_encrypted_test_chunks(&mut stream, n, args.chunk_size, &key_bytes, args.verbose)
+                .await?;
+        } else if let Some(ref file_path) = args.file {
+            send_encrypted_file(
+                &mut stream,
+                file_path,
+                &key_bytes,
+                args.chunk_size,
+                args.verbose,
+            )
+            .await?;
+        } else {
+            return Err(anyhow::anyhow!(
+                "Must specify either --file or --test-chunks"
+            ));
+        }
     }
 
     println!("All chunks sent successfully!");
@@ -610,4 +655,263 @@ async fn read_ack(stream: &mut TcpStream) -> Result<String> {
         .context("read ACK data")?;
 
     String::from_utf8(ack_bytes).context("ACK is not valid UTF-8")
+}
+
+// --- Hardened Transport Functions -------------------------------------------
+
+async fn send_encrypted_test_chunks_hardened(
+    framed: &mut Framed<TcpStream, LengthDelimitedCodec>,
+    num_chunks: u64,
+    chunk_size: usize,
+    key_bytes: &[u8; 32],
+    verbose: bool,
+    expect_secure_acks: bool,
+) -> Result<()> {
+    println!(
+        "[SEND] Sending {} encrypted test chunks via hardened transport...",
+        num_chunks
+    );
+
+    let signing = SigningKey::generate(&mut OsRng);
+    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
+
+    // Real header (so server can lock invariants)
+    let (header_hash, nonce_prefix, key_id) = build_session_header(chunk_size)?;
+
+    for seq in 1..=num_chunks {
+        // Synthesize plaintext of up to chunk_size bytes
+        let mut pt = format!("This is encrypted test chunk #{seq}. ").into_bytes();
+        while pt.len() < chunk_size.min(2048) {
+            pt.extend_from_slice(b"padding...");
+        }
+
+        let nonce_bytes = make_nonce(nonce_prefix, seq);
+        let nonce = Nonce::from_slice(&nonce_bytes);
+
+        let pt_hash = blake3::hash(&pt);
+        let manifest = Manifest {
+            v: 1,
+            ts_ms: now_ms(),
+            seq,
+            header_hash,
+            pt_hash: *pt_hash.as_bytes(),
+            key_id,
+            ai_used: false,
+            model_ids: vec![],
+            data_type: trustedge_core::DataType::File { mime_type: None }, // Test data
+            chunk_len: pt.len() as u32, // Bind actual chunk length to AAD
+        };
+
+        let m_bytes = bincode::serialize(&manifest)?;
+        let sig: Signature = trustedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
+        let sm = SignedManifest {
+            manifest: m_bytes.clone(),
+            sig: sig.to_bytes().to_vec(),
+            pubkey: signing.verifying_key().to_bytes().to_vec(),
+        };
+
+        let aad = build_aad(
+            &header_hash,
+            seq,
+            &nonce_bytes,
+            blake3::hash(&m_bytes).as_bytes(),
+            manifest.chunk_len,
+        );
+        let ciphertext = cipher
+            .encrypt(
+                nonce,
+                Payload {
+                    msg: &pt,
+                    aad: &aad,
+                },
+            )
+            .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
+
+        let chunk =
+            NetworkChunk::new_with_nonce(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
+
+        // Send chunk with timeout using framed transport
+        timeout(
+            CHUNK_SEND_TIMEOUT,
+            send_chunk_hardened(framed, &chunk, verbose),
+        )
+        .await
+        .context("Chunk send timeout")?
+        .context("Failed to send chunk")?;
+
+        // Read ACK with timeout
+        let ack = timeout(ACK_READ_TIMEOUT, read_ack_hardened(framed))
+            .await
+            .context("ACK read timeout")?
+            .context("Failed to read ACK")?;
+
+        // Verify secure ACK if expected
+        if expect_secure_acks && ack.contains(":MAC:") && verbose {
+            println!("[SEC] Secure ACK received for chunk {}: {}", seq, ack);
+        }
+
+        if verbose {
+            println!("[OK] Test chunk {} acknowledged: {}", seq, ack);
+        } else {
+            print!("[SEC]");
+            use std::io::Write;
+            std::io::stdout().flush().ok();
+        }
+    }
+
+    if !verbose {
+        println!();
+    }
+    Ok(())
+}
+
+async fn send_encrypted_file_hardened(
+    framed: &mut Framed<TcpStream, LengthDelimitedCodec>,
+    file_path: &std::path::Path,
+    key_bytes: &[u8; 32],
+    chunk_size: usize,
+    verbose: bool,
+    expect_secure_acks: bool,
+) -> Result<()> {
+    use tokio::io::AsyncReadExt;
+
+    println!(
+        "[SEND] Sending encrypted file via hardened transport: {:?}",
+        file_path
+    );
+
+    let mut file = tokio::fs::File::open(file_path)
+        .await
+        .with_context(|| format!("Failed to open file: {:?}", file_path))?;
+
+    let signing = SigningKey::generate(&mut OsRng);
+    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
+
+    // Real header (so server can lock invariants)
+    let (header_hash, nonce_prefix, key_id) = build_session_header(chunk_size)?;
+
+    let mut seq = 1u64;
+    let mut buffer = vec![0u8; chunk_size];
+
+    loop {
+        let bytes_read = file
+            .read(&mut buffer)
+            .await
+            .context("Failed to read from file")?;
+
+        if bytes_read == 0 {
+            break; // End of file
+        }
+
+        let pt = &buffer[..bytes_read];
+        let nonce_bytes = make_nonce(nonce_prefix, seq);
+        let nonce = Nonce::from_slice(&nonce_bytes);
+
+        let pt_hash = blake3::hash(pt);
+        let manifest = Manifest {
+            v: 1,
+            ts_ms: now_ms(),
+            seq,
+            header_hash,
+            pt_hash: *pt_hash.as_bytes(),
+            key_id,
+            ai_used: false,
+            model_ids: vec![],
+            data_type: trustedge_core::DataType::File {
+                mime_type: Some("application/octet-stream".to_string()),
+            },
+            chunk_len: pt.len() as u32,
+        };
+
+        let m_bytes = bincode::serialize(&manifest)?;
+        let sig: Signature = trustedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
+        let sm = SignedManifest {
+            manifest: m_bytes.clone(),
+            sig: sig.to_bytes().to_vec(),
+            pubkey: signing.verifying_key().to_bytes().to_vec(),
+        };
+
+        let aad = build_aad(
+            &header_hash,
+            seq,
+            &nonce_bytes,
+            blake3::hash(&m_bytes).as_bytes(),
+            manifest.chunk_len,
+        );
+        let ciphertext = cipher
+            .encrypt(nonce, Payload { msg: pt, aad: &aad })
+            .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
+
+        let chunk =
+            NetworkChunk::new_with_nonce(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
+
+        // Send chunk with timeout using framed transport
+        timeout(
+            CHUNK_SEND_TIMEOUT,
+            send_chunk_hardened(framed, &chunk, verbose),
+        )
+        .await
+        .context("Chunk send timeout")?
+        .context("Failed to send chunk")?;
+
+        // Read ACK with timeout
+        let ack = timeout(ACK_READ_TIMEOUT, read_ack_hardened(framed))
+            .await
+            .context("ACK read timeout")?
+            .context("Failed to read ACK")?;
+
+        // Verify secure ACK if expected
+        if expect_secure_acks && ack.contains(":MAC:") && verbose {
+            println!("[SEC] Secure ACK received for chunk {}: {}", seq, ack);
+        }
+
+        if verbose {
+            println!("[OK] File chunk {} acknowledged: {}", seq, ack);
+        } else {
+            print!("[FILE]");
+            use std::io::Write;
+            std::io::stdout().flush().ok();
+        }
+
+        seq += 1;
+    }
+
+    if !verbose {
+        println!();
+    }
+    println!("[SEND] File transmission complete: {} chunks", seq - 1);
+    Ok(())
+}
+
+async fn send_chunk_hardened(
+    framed: &mut Framed<TcpStream, LengthDelimitedCodec>,
+    chunk: &NetworkChunk,
+    verbose: bool,
+) -> Result<()> {
+    let serialized = bincode::serialize(chunk).context("serialize NetworkChunk")?;
+
+    if verbose {
+        println!(
+            "[SEND] Sending chunk seq={}, {} bytes via hardened transport",
+            chunk.sequence,
+            serialized.len()
+        );
+    }
+
+    framed
+        .send(serialized.into())
+        .await
+        .context("Failed to send chunk via framed transport")?;
+
+    Ok(())
+}
+
+async fn read_ack_hardened(framed: &mut Framed<TcpStream, LengthDelimitedCodec>) -> Result<String> {
+    let frame = framed
+        .next()
+        .await
+        .ok_or_else(|| anyhow::anyhow!("Connection closed while waiting for ACK"))?
+        .context("Failed to receive ACK frame")?;
+
+    String::from_utf8(frame.to_vec()).context("ACK is not valid UTF-8")
 }

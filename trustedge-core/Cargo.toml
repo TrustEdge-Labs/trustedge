@@ -54,6 +54,8 @@ serde_bytes = "0.11"
 serde_json = "1.0"  # For metadata saving
 sha2 = "0.10"
 tokio = { version = "1.0", features = ["full"] }
+tokio-util = { version = "0.7", features = ["codec"] }  # For LengthDelimitedCodec
+futures-util = "0.3"  # For SinkExt and StreamExt
 zeroize = "1.7"
 
 # Network dependencies
