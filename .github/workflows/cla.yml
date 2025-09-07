@@ -26,8 +26,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # The path to the CLA document.
-          # Use the raw URL of the Gist you created in the previous step.
-          path-to-document: 'https://gist.githubusercontent.com/johnzilla/0624a138cdabd17e9f5ae44607958922/raw/d2bb1349dde5d4037bfd3032ca79c1b93974e8b3/TrustEdge-CLA.md'
+          # Use the raw URL of the CLA document in the repository.
+          path-to-document: 'https://github.com/TrustEdge-Labs/trustedge/blob/main/CLA.md'
 
           # The path where the signatures will be stored.
           path-to-signatures: 'signatures/cla.json'
@@ -46,7 +46,7 @@ jobs:
             
             To make sure we can accept your contribution, we need you to sign our Contributor License Agreement (CLA). By signing, you're confirming that you have the right to license your contribution to us and that you agree to the terms.
             
-            Please read the CLA here: https://gist.github.com/johnzilla/0624a138cdabd17e9f5ae44607958922
+            Please read the CLA here: https://github.com/TrustEdge-Labs/trustedge/blob/main/CLA.md
 
             You can sign the CLA by responding to this comment with the following sentence:
             

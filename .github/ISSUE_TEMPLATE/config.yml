@@ -5,11 +5,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: 🔒 Private Security Disclosure
-    url: https://github.com/trustedge/trustedge/security/advisories/new
+    url: https://github.com/TrustEdge-Labs/trustedge/security/advisories/new
     about: Report sensitive security vulnerabilities privately
   - name: 💬 Discussions
-    url: https://github.com/trustedge/trustedge/discussions
+    url: https://github.com/TrustEdge-Labs/trustedge/discussions
     about: Ask questions and discuss ideas with the community
   - name: 📖 Documentation
-    url: https://github.com/trustedge/trustedge/blob/main/README.md
+    url: https://github.com/TrustEdge-Labs/trustedge/blob/main/README.md
     about: Read the documentation before opening an issue
