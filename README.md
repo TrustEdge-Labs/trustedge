@@ -534,11 +534,12 @@ See **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** for 
 
 **Current Security Properties:**
 - AES-256-GCM authenticated encryption
-- Ed25519 digital signatures for provenance and authentication
+- Ed25519 digital signatures with domain separation for provenance and authentication
 - **Mutual authentication between clients and servers**
 - **Cryptographically secure session management**
 - PBKDF2 key derivation (100,000 iterations)
 - Comprehensive validation prevents tampering
+- Domain separation prevents cross-context signature reuse
 
 **Security Limitations:**
 - Demo/development keys (not production-ready)

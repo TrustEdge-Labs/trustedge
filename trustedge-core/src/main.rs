@@ -15,7 +15,7 @@ use aes_gcm::{
 use anyhow::{anyhow, Context, Result};
 use bincode::{deserialize_from, serialize_into};
 use clap::Parser;
-use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
+use ed25519_dalek::{Signature, SigningKey, VerifyingKey};
 use rand_core::RngCore;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
@@ -26,6 +26,7 @@ use trustedge_core::AudioCapture;
 #[cfg(feature = "audio")]
 use trustedge_core::AudioConfig;
 use trustedge_core::{BackendRegistry, KeyBackend, KeyContext, KeyringBackend};
+use trustedge_core::format;
 use zeroize::Zeroize;
 
 use trustedge_core::{
@@ -474,9 +475,9 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             .try_into()
             .context("pubkey length != 32")?;
         let sig_arr: [u8; 64] = rec.sm.sig.as_slice().try_into().context("sig len != 64")?;
-        VerifyingKey::from_bytes(&pubkey_arr)
-            .context("bad pubkey")?
-            .verify(&rec.sm.manifest, &Signature::from_bytes(&sig_arr))
+        let verifying_key = VerifyingKey::from_bytes(&pubkey_arr)
+            .context("bad pubkey")?;
+        format::verify_manifest_with_domain(&verifying_key, &rec.sm.manifest, &Signature::from_bytes(&sig_arr))
             .context("manifest signature verify failed")?;
 
         // manifest contents - deserialize first so we can use it for verification
@@ -993,7 +994,7 @@ fn main() -> Result<()> {
         };
 
         let m_bytes = bincode::serialize(&m).expect("manifest serialize");
-        let sig: Signature = signing.sign(&m_bytes);
+        let sig: Signature = format::sign_manifest_with_domain(&signing, &m_bytes);
         let sm = SignedManifest {
             manifest: m_bytes.clone(),
             sig: sig.to_bytes().to_vec(),
@@ -1042,9 +1043,9 @@ fn main() -> Result<()> {
             .try_into()
             .context("pubkey length != 32")?;
         let sig_arr: [u8; 64] = sm.sig.as_slice().try_into().context("sig len != 64")?;
-        VerifyingKey::from_bytes(&pubkey_arr)
-            .context("bad pubkey")?
-            .verify(&sm.manifest, &Signature::from_bytes(&sig_arr))
+        let verifying_key = VerifyingKey::from_bytes(&pubkey_arr)
+            .context("bad pubkey")?;
+        format::verify_manifest_with_domain(&verifying_key, &sm.manifest, &Signature::from_bytes(&sig_arr))
             .context("manifest signature verify failed")?;
 
         let aad_rx = build_aad(header_hash.as_bytes(), seq, &nonce_bytes, mhash.as_bytes());

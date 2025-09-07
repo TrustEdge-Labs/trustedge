@@ -24,13 +24,15 @@ TrustEdge is currently in active development. Security updates are provided for:
 
 ### Cryptographic Implementation
 
-TrustEdge implements privacy-preserving audio encryption with the following security properties:
+TrustEdge implements privacy-preserving edge data encryption with the following security properties:
 
 - **Encryption**: AES-256-GCM authenticated encryption
 - **Key Derivation**: PBKDF2 with configurable iterations
-- **Digital Signatures**: Ed25519 for manifest integrity
+- **Digital Signatures**: Ed25519 for manifest integrity with domain separation
 - **Hashing**: BLAKE3 for content verification
 - **Nonce Management**: Deterministic 12-byte nonces (4-byte random prefix + 8-byte counter)
+
+**Domain Separation**: Manifest signatures use cryptographic domain separation (`b"trustedge.manifest.v1"`) to prevent signature reuse across different contexts or protocols, ensuring signatures cannot be substituted from other systems.
 
 ### Known Limitations
 
@@ -44,10 +46,11 @@ TrustEdge implements privacy-preserving audio encryption with the following secu
 
 **✅ Implemented Security Features:**
 - AES-256-GCM authenticated encryption
-- Ed25519 digital signatures for provenance
+- Ed25519 digital signatures for provenance with domain separation
 - PBKDF2 key derivation with keyring integration
 - Connection timeouts and retry logic
 - Graceful shutdown handling
+- Domain separation prevents cross-context signature reuse
 
 **🔄 In Development (Phase 3):**
 - Server certificate validation and mutual TLS

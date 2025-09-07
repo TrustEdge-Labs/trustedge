@@ -75,6 +75,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 **✅ Phase 1: Core Foundation - COMPLETED:**
 * [x] Per-chunk encrypt/decrypt round-trip
 * [x] Signed manifest bound into AAD
+* [x] Domain separation for manifest signatures (`b"trustedge.manifest.v1"`)
 * [x] `.trst` envelope with preamble (`MAGIC="TRST"`, `VERSION=1`) and invariants
 * [x] Reference client/server with ACKs and network streaming
 * [x] Keyring-derived key support with PBKDF2

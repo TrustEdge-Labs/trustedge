@@ -396,6 +396,55 @@ fn generate_test_key() -> [u8; 32] {
 5. **Error Message Testing**: Verify error messages are helpful
 6. **Cross-Session Testing**: Test persistence across backend restarts
 
+## 🔐 Domain Separation Testing Pattern
+
+**Security Testing for Signature Domain Separation:**
+```rust
+#[test]
+fn test_domain_separation_prevents_cross_context_reuse() -> Result<()> {
+    let signing_key = SigningKey::generate(&mut rand_core::OsRng);
+    let verifying_key = signing_key.verifying_key();
+    let manifest_bytes = b"test manifest data";
+
+    // Sign with a different (malicious) domain prefix
+    let wrong_domain = b"malicious.manifest.v1";
+    let mut wrong_message = Vec::new();
+    wrong_message.extend_from_slice(wrong_domain);
+    wrong_message.extend_from_slice(manifest_bytes);
+    let malicious_signature = signing_key.sign(&wrong_message);
+
+    // Should fail verification with correct domain
+    let result = verify_manifest_with_domain(&verifying_key, manifest_bytes, &malicious_signature);
+    assert!(result.is_err(), "Signature with wrong domain should not verify");
+
+    Ok(())
+}
+
+#[test]
+fn test_domain_separation_tampered_prefix_fails() -> Result<()> {
+    let signature = sign_manifest_with_domain(&signing_key, manifest_bytes);
+    
+    // Manually create message with tampered domain prefix  
+    let tampered_domain = b"tampered.manifest.v1";
+    let mut tampered_message = Vec::new();
+    tampered_message.extend_from_slice(tampered_domain);
+    tampered_message.extend_from_slice(manifest_bytes);
+
+    // Direct verification with tampered domain should fail
+    let result = verifying_key.verify(&tampered_message, &signature);
+    assert!(result.is_err(), "Should not verify with tampered domain prefix");
+    
+    Ok(())
+}
+```
+
+**Key Domain Separation Test Cases:**
+- ✅ **Basic Functionality**: Domain-separated signatures verify correctly
+- ✅ **Raw Signature Prevention**: Non-domain signatures fail verification
+- ✅ **Cross-Context Prevention**: Different domain prefixes fail verification
+- ✅ **Tampered Prefix Detection**: Modified prefixes cause failures
+- ✅ **Determinism**: Same input produces identical signatures
+
 ## 🎯 Testing Checklist
 
 When adding new features:

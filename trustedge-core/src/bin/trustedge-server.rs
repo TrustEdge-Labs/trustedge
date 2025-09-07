@@ -26,7 +26,7 @@ use aes_gcm::{
     aead::{Aead, KeyInit, Payload},
     Aes256Gcm, Key, Nonce,
 };
-use ed25519_dalek::{Signature, Verifier, VerifyingKey};
+use ed25519_dalek::{Signature, VerifyingKey};
 
 // ---- CLI --------------------------------------------------------------------
 
@@ -510,7 +510,7 @@ async fn process_and_decrypt_chunk(
         .context("pubkey length != 32")?;
     let sig_arr: [u8; 64] = sm.sig.as_slice().try_into().context("sig length != 64")?;
     let vk = VerifyingKey::from_bytes(&pubkey_arr).context("bad pubkey")?;
-    vk.verify(&sm.manifest, &Signature::from_bytes(&sig_arr))
+    trustedge_core::format::verify_manifest_with_domain(&vk, &sm.manifest, &Signature::from_bytes(&sig_arr))
         .context("manifest signature verify failed")?;
 
     // Decode manifest

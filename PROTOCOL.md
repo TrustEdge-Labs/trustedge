@@ -93,7 +93,7 @@ These invariants are strictly enforced during decryption and help prevent record
 
 ### 2.2. Manifest
 
-The manifest is a bincode-encoded struct, signed with Ed25519:
+The manifest is a bincode-encoded struct, signed with Ed25519 using **domain separation**:
 
 ```
 struct Manifest {
@@ -109,9 +109,17 @@ struct Manifest {
 
 struct SignedManifest {
     manifest: Vec<u8>,       // bincode(Manifest)
-    sig: Vec<u8>,            // Ed25519 signature
+    sig: Vec<u8>,            // Ed25519 signature (domain-separated)
     pubkey: Vec<u8>,         // Ed25519 public key
 }
+```
+
+**Domain Separation**: Manifest signatures use domain separation to prevent signature reuse across different contexts. The signature is computed over:
+```
+signature = Ed25519.sign(b"trustedge.manifest.v1" || manifest_bytes)
+```
+
+This prevents cross-protocol signature attacks and ensures signatures are cryptographically bound to the TrustEdge manifest context.
 
 struct FileHeader {
     version: u8,             // File format version
