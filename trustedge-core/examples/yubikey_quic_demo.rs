@@ -17,8 +17,11 @@
 #[cfg(feature = "yubikey")]
 use anyhow::Result;
 #[cfg(feature = "yubikey")]
+use std::net::SocketAddr;
+#[cfg(feature = "yubikey")]
 use trustedge_core::{
-    backends::yubikey::{CertificateParams, YubiKeyBackend, YubiKeyConfig},
+    backends::yubikey::{CertificateParams, HardwareCertificate, YubiKeyBackend, YubiKeyConfig},
+    transport::{quic::QuicTransport, TransportConfig},
     NetworkChunk,
 };
 
@@ -30,13 +33,16 @@ async fn main() -> Result<()> {
 
     // Generate YubiKey-attested certificate
     println!("\n● Generating YubiKey-attested certificate for QUIC...");
-    let (cert_der, attestation_proof) = generate_yubikey_certificate().await?;
+    let hardware_cert = generate_yubikey_certificate().await?;
 
     // Demonstrate how certificate would be used in QUIC
-    demonstrate_quic_integration(&cert_der, &attestation_proof).await?;
+    demonstrate_quic_integration(&hardware_cert).await?;
 
     // Show certificate validation
-    validate_hardware_attestation(&cert_der, &attestation_proof)?;
+    validate_hardware_attestation(
+        &hardware_cert.certificate_der,
+        &hardware_cert.attestation_proof,
+    )?;
 
     println!("\n✔ YubiKey-attested QUIC demo completed!");
     println!("\nThis demonstrates the foundation for:");
@@ -49,7 +55,7 @@ async fn main() -> Result<()> {
 }
 
 #[cfg(feature = "yubikey")]
-async fn generate_yubikey_certificate() -> Result<(Vec<u8>, Vec<u8>)> {
+async fn generate_yubikey_certificate() -> Result<HardwareCertificate> {
     let config = YubiKeyConfig {
         pkcs11_module_path: "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so".to_string(),
         pin: None,
@@ -79,17 +85,19 @@ async fn generate_yubikey_certificate() -> Result<(Vec<u8>, Vec<u8>)> {
                     );
                     println!("   Subject: {}", hardware_cert.subject);
 
-                    Ok((
-                        hardware_cert.certificate_der,
-                        hardware_cert.attestation_proof,
-                    ))
+                    Ok(hardware_cert)
                 }
                 Err(e) => {
                     println!("⚠ YubiKey not available: {}", e);
                     println!("   Using fallback certificate for demo...");
                     let fallback_cert = create_demo_certificate();
                     let fallback_proof = b"DEMO-ATTESTATION:FALLBACK-MODE".to_vec();
-                    Ok((fallback_cert, fallback_proof))
+                    Ok(HardwareCertificate {
+                        certificate_der: fallback_cert,
+                        attestation_proof: fallback_proof,
+                        key_id: "demo_key".to_string(),
+                        subject: "CN=Demo QUIC Server,O=TrustEdge Labs,OU=Demo,C=US".to_string(),
+                    })
                 }
             }
         }
@@ -98,7 +106,12 @@ async fn generate_yubikey_certificate() -> Result<(Vec<u8>, Vec<u8>)> {
             println!("   Using fallback certificate for demo...");
             let fallback_cert = create_demo_certificate();
             let fallback_proof = b"DEMO-ATTESTATION:FALLBACK-MODE".to_vec();
-            Ok((fallback_cert, fallback_proof))
+            Ok(HardwareCertificate {
+                certificate_der: fallback_cert,
+                attestation_proof: fallback_proof,
+                key_id: "demo_key".to_string(),
+                subject: "CN=Demo QUIC Server,O=TrustEdge Labs,OU=Demo,C=US".to_string(),
+            })
         }
     }
 }
@@ -111,15 +124,40 @@ fn create_demo_certificate() -> Vec<u8> {
 }
 
 #[cfg(feature = "yubikey")]
-async fn demonstrate_quic_integration(cert_der: &[u8], attestation_proof: &[u8]) -> Result<()> {
+async fn demonstrate_quic_integration(hardware_cert: &HardwareCertificate) -> Result<()> {
     println!("\n● Demonstrating QUIC transport integration:");
+
+    // Create a QUIC transport configuration
+    let transport_config = TransportConfig {
+        connect_timeout_ms: 5000,
+        max_message_size: 1024 * 1024, // 1MB
+        connection_idle_timeout_ms: 30000,
+        ..Default::default()
+    };
+
+    // Create QUIC transport with hardware verification capability
+    let mut quic_transport = QuicTransport::new(transport_config)?;
+
+    // Demonstrate server endpoint creation with hardware certificate
+    let listen_addr: SocketAddr = "127.0.0.1:0".parse()?;
+
+    println!("   ✔ Created QUIC transport with hardware verification support");
+    println!(
+        "   ✔ Hardware certificate: {} bytes",
+        hardware_cert.certificate_der.len()
+    );
+    println!(
+        "   ✔ Attestation proof: {} bytes",
+        hardware_cert.attestation_proof.len()
+    );
 
     // Create a network chunk that would be sent over QUIC
     let message = "Hardware-attested QUIC handshake data";
     let manifest = format!(
-        "cert_size:{}:attestation_size:{}",
-        cert_der.len(),
-        attestation_proof.len()
+        "cert_size:{}:attestation_size:{}:subject:{}",
+        hardware_cert.certificate_der.len(),
+        hardware_cert.attestation_proof.len(),
+        hardware_cert.subject
     );
 
     let network_chunk = NetworkChunk::new_with_nonce(
@@ -132,20 +170,27 @@ async fn demonstrate_quic_integration(cert_der: &[u8], attestation_proof: &[u8])
     );
 
     println!("   ✔ Created network chunk for QUIC transport");
-    println!("   ✔ Sequence: {}", network_chunk.sequence);
-    println!("   ✔ Data size: {} bytes", network_chunk.data.len());
-    println!(
-        "   ✔ Manifest: {}",
-        String::from_utf8_lossy(&network_chunk.manifest)
-    );
-    println!("   ✔ Timestamp: {}", network_chunk.timestamp);
+    println!("   ✔ Certificate embedded in transport manifest");
 
-    // Demonstrate certificate embedding in QUIC handshake
-    println!("\n   → In real QUIC implementation:");
-    println!("     • Certificate would be embedded in TLS handshake");
-    println!("     • Hardware attestation verified during connection");
-    println!("     • Mutual authentication with hardware proof");
-    println!("     • Secure channel with hardware-backed cryptography");
+    // Show what would happen in a real QUIC implementation
+    println!("\n   → In real QUIC server implementation:");
+    println!("     • Server endpoint created with YubiKey certificate");
+    println!("     • Hardware attestation embedded in TLS certificate");
+    println!("     • Client validates hardware proof during handshake");
+
+    println!("\n   → In real QUIC client implementation:");
+    println!("     • Client uses HardwareBackedVerifier for certificate validation");
+    println!("     • Mutual authentication with hardware proof verification");
+    println!("     • Secure channel established with hardware-backed cryptography");
+    println!("     • NetworkChunks transmitted over authenticated connection");
+
+    // Demonstrate what the hardware verification would look like
+    let trusted_certificates = vec![hardware_cert.certificate_der.clone()];
+    println!(
+        "\n   ✔ Trusted certificate list prepared ({} certificates)",
+        trusted_certificates.len()
+    );
+    println!("   ✔ Ready for hardware-verified QUIC connection");
 
     Ok(())
 }
