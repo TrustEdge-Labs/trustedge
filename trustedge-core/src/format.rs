@@ -5,6 +5,7 @@
 /// trustedge_core/src/format.rs
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
+use ed25519_dalek::{SigningKey, VerifyingKey, Signature, Signer, Verifier};
 
 pub const NONCE_LEN: usize = 12;
 pub const AAD_LEN: usize = 32 + 8 + NONCE_LEN + 32;
@@ -13,6 +14,10 @@ pub const HEADER_LEN: usize = 58;
 pub const MAGIC: &[u8; 4] = b"TRST";
 pub const VERSION: u8 = 1;
 pub const ALG_AES_256_GCM: u8 = 1;
+
+/// Domain separation string for manifest signatures
+/// Prevents signature reuse across different contexts or protocols
+pub const MANIFEST_DOMAIN_SEP: &[u8] = b"trustedge.manifest.v1";
 
 /// FileHeader structure
 #[derive(Clone, Copy, Debug)]
@@ -172,4 +177,27 @@ pub fn read_preamble_and_header<R: std::io::Read>(r: &mut R) -> Result<StreamHea
     anyhow::ensure!(ver[0] == VERSION, "unsupported version");
     let sh: StreamHeader = bincode::deserialize_from(r).context("read stream header")?;
     Ok(sh)
+}
+
+/// Sign manifest bytes with domain separation
+/// This prevents signature reuse across different contexts or protocols
+pub fn sign_manifest_with_domain(signing_key: &SigningKey, manifest_bytes: &[u8]) -> Signature {
+    let mut message = Vec::with_capacity(MANIFEST_DOMAIN_SEP.len() + manifest_bytes.len());
+    message.extend_from_slice(MANIFEST_DOMAIN_SEP);
+    message.extend_from_slice(manifest_bytes);
+    signing_key.sign(&message)
+}
+
+/// Verify manifest signature with domain separation
+/// This prevents signature reuse across different contexts or protocols
+pub fn verify_manifest_with_domain(
+    verifying_key: &VerifyingKey, 
+    manifest_bytes: &[u8], 
+    signature: &Signature
+) -> Result<()> {
+    let mut message = Vec::with_capacity(MANIFEST_DOMAIN_SEP.len() + manifest_bytes.len());
+    message.extend_from_slice(MANIFEST_DOMAIN_SEP);
+    message.extend_from_slice(manifest_bytes);
+    verifying_key.verify(&message, signature)
+        .map_err(|e| anyhow::anyhow!("Domain-separated manifest signature verification failed: {}", e))
 }

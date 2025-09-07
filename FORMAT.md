@@ -112,10 +112,19 @@ struct Record {
 ```rust
 struct SignedManifest {
     manifest: Vec<u8>,          // bincode(Manifest)
-    sig: Vec<u8>,              // Ed25519 signature (64 bytes)
+    sig: Vec<u8>,              // Ed25519 signature (64 bytes, domain-separated)
     pubkey: Vec<u8>,           // Ed25519 public key (32 bytes)
 }
 ```
+
+**Signature Domain Separation**: The Ed25519 signature is computed with domain separation to prevent cross-context signature reuse:
+
+```
+signature_input = b"trustedge.manifest.v1" || manifest_bytes
+signature = Ed25519.sign(signature_input)
+```
+
+This ensures signatures are cryptographically bound to TrustEdge manifest context and cannot be reused in other protocols or systems.
 
 ### 4.2. Manifest
 
@@ -199,7 +208,11 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 3. **Manifest Sequence**: Manifest.seq must equal Record.seq
 4. **Header Hash Binding**: Manifest.header_hash must equal StreamHeader.header_hash
 5. **Key ID Binding**: Manifest.key_id must equal FileHeader.key_id
-6. **Signature**: Ed25519 signature must verify over Manifest bytes
+6. **Domain-Separated Signature**: Ed25519 signature must verify over domain-separated message:
+   ```
+   verify_input = b"trustedge.manifest.v1" || manifest_bytes
+   Ed25519.verify(verify_input, signature, public_key) == valid
+   ```
 7. **Public Key**: Must be valid Ed25519 public key (32 bytes)
 8. **Plaintext Hash**: After decryption, BLAKE3(plaintext) must equal Manifest.pt_hash
 
