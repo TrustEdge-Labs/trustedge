@@ -275,21 +275,18 @@ cargo run --example universal_backend_demo
 cargo run --bin software-hsm-demo -- generate-key my_key ed25519
 cargo run --bin software-hsm-demo -- sign my_key "Hello TrustEdge!"
 
-# Run YubiKey hardware backend demo (requires YubiKey + PKCS#11)
+# YubiKey hardware integration (RECOMMENDED - complete workflow)
+cargo run --example yubikey_demo --features yubikey
+
+# Advanced YubiKey operations (command-line interface)
 cargo run --bin yubikey-demo --features yubikey -- \
   -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
   -v capabilities
 
-# Hardware signing with YubiKey (requires PIN)
-cargo run --bin yubikey-demo --features yubikey -- \
-  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
-  -P YOUR_PIN -k "SIGN key" \
-  sign --data "Hardware root of trust!"
-
-# YubiKey X.509 certificate generation (NEW)
+# YubiKey X.509 certificate generation
 cargo run --example yubikey_certificate_demo --features yubikey
 
-# YubiKey certificate with QUIC transport integration (NEW)
+# YubiKey certificate with QUIC transport integration
 cargo run --example yubikey_quic_demo --features yubikey
 ```
 
