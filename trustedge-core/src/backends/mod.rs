@@ -34,7 +34,7 @@ pub use traits::*;
 pub use universal::*;
 pub use universal_keyring::UniversalKeyringBackend;
 pub use universal_registry::{BackendPreferences, UniversalBackendRegistry};
-pub use yubikey::{YubiKeyBackend, YubiKeyConfig};
+pub use yubikey::{CertificateParams, HardwareCertificate, YubiKeyBackend, YubiKeyConfig};
 
 use anyhow::Result;
 

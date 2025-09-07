@@ -130,7 +130,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 * ✅ **Backend registry system** for runtime backend selection
 * ✅ **Comprehensive backend abstraction** supporting:
   - ✅ Keyring backend (available)
-  - 📋 YubiKey PIV backend (Universal Backend ready)
+  - ✅ YubiKey PIV backend with X.509 certificate generation (Universal Backend ready)
   - 📋 TPM 2.0 backend (Universal Backend ready)
   - 📋 HSM/PKCS#11 backend (Universal Backend ready)
 

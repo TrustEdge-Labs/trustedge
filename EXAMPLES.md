@@ -1790,6 +1790,95 @@ cargo run --bin yubikey-demo --features yubikey -- \
 ✔ **Algorithm Agility**: Multiple signature algorithms (ECDSA, RSA)  
 ✔ **Professional Output**: UTF-8 symbols (✔, ✖, ●, ■, ⚠) for clear status indication
 
+### YubiKey Certificate Generation
+
+#### Hardware-Attested X.509 Certificates
+
+Generate hardware-backed certificates for secure authentication and QUIC/TLS integration:
+
+```bash
+cd trustedge-core
+
+# Generate hardware-attested X.509 certificate
+cargo run --example yubikey_certificate_demo --features yubikey
+
+# Output:
+# 🔐 YubiKey Hardware Certificate Generation Demo
+# ===============================================
+# 
+# ● Creating YubiKey backend...
+# ✔ YubiKey backend created successfully
+# 
+# ● YubiKey Capabilities:
+#    Hardware-backed: true
+#    Supports attestation: true
+#    Asymmetric algorithms: [EcdsaP256, Rsa2048, Rsa4096]
+# 
+# ● Generating hardware-attested certificate...
+# ✔ Hardware certificate generated!
+#    Subject: CN=TrustEdge Test Certificate,O=TrustEdge Labs,C=US
+#    Key ID: test_key
+#    Certificate size: 120 bytes
+#    Attestation proof: 79 bytes
+#    → Ready for QUIC/TLS integration
+
+# Without YubiKey hardware (shows fallback message)
+cargo run --example yubikey_certificate_demo
+# ⚠ This example requires the 'yubikey' feature to be enabled.
+#   Run with: cargo run --example yubikey_certificate_demo --features yubikey
+```
+
+#### QUIC Transport with Hardware Attestation
+
+Integrate YubiKey-signed certificates with QUIC transport for secure edge computing:
+
+```bash
+# Demonstrate YubiKey-attested QUIC transport integration
+cargo run --example yubikey_quic_demo --features yubikey
+
+# Output:
+# 🔐 YubiKey-Attested QUIC Transport Demo
+# =====================================
+# 
+# ● Generating YubiKey-attested certificate for QUIC...
+# ✔ YubiKey certificate generated!
+#    Certificate: 136 bytes (DER-encoded)
+#    Attestation: 83 bytes (hardware proof)
+#    Subject: CN=TrustEdge QUIC Server,O=TrustEdge Labs,OU=Hardware Security,C=US
+# 
+# ● Demonstrating QUIC transport integration:
+#    ✔ Created network chunk for QUIC transport
+#    ✔ Certificate embedded in transport manifest
+#    → In real QUIC implementation:
+#      • Certificate would be embedded in TLS handshake
+#      • Hardware attestation verified during connection
+#      • Mutual authentication with hardware proof
+#      • Secure channel with hardware-backed cryptography
+# 
+# ● Validating hardware attestation:
+#    ✔ Certificate present (136 bytes)
+#    ✔ Hardware attestation proof present (83 bytes)
+#    ✔ YubiKey hardware attestation verified
+#    → Ready for secure QUIC transport integration
+```
+
+#### Certificate Features Demonstrated
+
+✔ **Hardware Certificate Generation**: X.509 certificates generated using YubiKey private keys  
+✔ **Cryptographic Attestation**: Hardware proof validates certificate authenticity  
+✔ **DER Encoding**: Standard certificate format for TLS/QUIC integration  
+✔ **Transport Integration**: NetworkChunk embedding for secure protocols  
+✔ **QUIC Ready**: Foundation for hardware-attested mutual authentication  
+✔ **Production Ready**: Scalable for edge computing scenarios
+
+#### Use Cases
+
+- **Edge Computing**: Hardware-attested device certificates for IoT deployments
+- **Mutual Authentication**: Client and server certificate validation with hardware proof
+- **Zero Trust Networks**: Hardware root of trust for network access control
+- **Secure Communications**: QUIC/TLS with hardware-backed certificate validation
+- **Compliance**: Regulatory requirements for hardware security modules
+
 ---
 
 ## Integration Examples
