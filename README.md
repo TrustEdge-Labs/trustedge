@@ -41,14 +41,35 @@ TrustEdge features:
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **93 automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **144 automated tests** covering all aspects of the system:
 
-- **Unit Tests (53)**: Core functionality validation including Universal Backend system and Software HSM (33 Software HSM tests + 20 other tests)
+**Test Categories:**
+- **79 Unit Tests**: Core functionality validation including Universal Backend system, Software HSM, and Transport layer
+- **65 Integration Tests**: Cross-component validation and end-to-end workflows
+
+**Integration Test Breakdown:**
+- **YubiKey Integration Tests (8)**: Complete Phase 1-3 YubiKey hardware integration testing
+- **Transport Integration Tests (10)**: QUIC/TCP transport layer validation with NetworkChunk compatibility
 - **Software HSM Integration Tests (9)**: Cross-session persistence, CLI integration, file workflows, and error recovery
 - **Authentication Tests (3)**: Certificate generation, mutual authentication, session management
 - **Roundtrip Tests (15)**: End-to-end encryption/decryption validation including comprehensive MIME type detection
 - **Network Integration Tests (7)**: Distributed encryption workflows with real network communication
 - **Universal Backend Integration Tests (6)**: End-to-end crypto workflows using capability-based backend selection
+- **Domain Separation Tests (7)**: Security validation and cross-context attack prevention
+
+**Quality Assurance:**
+```bash
+# Complete test suite (all 144 tests)
+./ci-check.sh                    # Runs format, lint, build, and all tests
+
+# Test by category
+cargo test --lib                 # Unit tests (79)
+cargo test --test yubikey_integration     # YubiKey Phase 1-3 tests (8)
+cargo test --test transport_integration   # Transport layer tests (10)
+
+# Hardware feature testing
+cargo test --features yubikey    # Include YubiKey hardware tests
+```
 
 ---
 

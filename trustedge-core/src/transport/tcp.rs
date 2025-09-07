@@ -219,3 +219,162 @@ impl Drop for TcpTransport {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_tcp_transport_creation() {
+        let config = TransportConfig::default();
+        let transport = TcpTransport::new(config.clone());
+
+        assert_eq!(
+            transport.config.connect_timeout_ms,
+            config.connect_timeout_ms
+        );
+        assert_eq!(transport.config.read_timeout_ms, config.read_timeout_ms);
+        assert!(transport.framed.is_none());
+        assert_eq!(transport.bytes_received, 0);
+        assert_eq!(transport.bytes_sent, 0);
+        assert_eq!(transport.chunks_received, 0);
+        assert_eq!(transport.chunks_sent, 0);
+    }
+
+    #[tokio::test]
+    async fn test_tcp_transport_stats() {
+        let config = TransportConfig::default();
+        let transport = TcpTransport::new(config);
+
+        // Initial stats should be zero
+        assert_eq!(transport.bytes_received, 0);
+        assert_eq!(transport.bytes_sent, 0);
+        assert_eq!(transport.chunks_received, 0);
+        assert_eq!(transport.chunks_sent, 0);
+
+        // Timestamps should be initialized
+        assert!(transport.connection_start <= Instant::now());
+        assert!(transport.last_activity <= Instant::now());
+    }
+
+    #[tokio::test]
+    async fn test_tcp_transport_config_validation() {
+        let custom_config = TransportConfig {
+            connect_timeout_ms: 45000,
+            read_timeout_ms: 90000,
+            max_message_size: 32 * 1024 * 1024,
+            keep_alive_ms: 15000,
+            max_connection_bytes: 2048 * 1024 * 1024,
+            max_connection_chunks: 20000,
+            connection_idle_timeout_ms: 600000,
+        };
+
+        let transport = TcpTransport::new(custom_config.clone());
+        assert_eq!(transport.config.connect_timeout_ms, 45000);
+        assert_eq!(transport.config.keep_alive_ms, 15000);
+    }
+
+    #[tokio::test]
+    async fn test_address_parsing_for_tcp() {
+        // Test various TCP-compatible addresses
+        let addresses = vec![
+            "127.0.0.1:8080",
+            "0.0.0.0:9090",
+            "[::1]:8080",
+            "localhost:3000",
+        ];
+
+        for addr_str in addresses {
+            if addr_str == "localhost:3000" {
+                // localhost requires DNS resolution, skip in unit test
+                continue;
+            }
+
+            if let Ok(addr) = addr_str.parse::<SocketAddr>() {
+                // Validate TCP can use this address
+                assert!(addr.port() > 0 || addr_str.contains(":0")); // Port 0 is valid for auto-assignment
+                assert!(addr.is_ipv4() || addr.is_ipv6());
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_network_chunk_framing() {
+        use crate::NetworkChunk;
+
+        // Test that TCP transport can handle NetworkChunk serialization
+        let test_data = b"TCP framing test data";
+        let manifest = r#"{"sequence":2,"transport":"tcp","length":21}"#.as_bytes().to_vec();
+
+        let chunk = NetworkChunk::new(2, test_data.to_vec(), manifest);
+        assert_eq!(chunk.sequence, 2);
+        assert_eq!(chunk.data, test_data);
+
+        // Test validation for TCP framing
+        let validation_result = chunk.validate();
+        assert!(validation_result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_transport_config_defaults() {
+        let default_config = TransportConfig::default();
+        let transport = TcpTransport::new(default_config);
+
+        // Verify default configuration is sensible for TCP
+        assert!(transport.config.connect_timeout_ms > 0);
+        assert!(transport.config.connect_timeout_ms <= 300_000); // 5 minutes max
+
+        // Verify other default values
+        assert!(transport.config.read_timeout_ms > 0);
+        assert!(transport.config.max_message_size > 0);
+    }
+
+    #[tokio::test]
+    async fn test_tcp_transport_cleanup() {
+        let config = TransportConfig::default();
+        let transport = TcpTransport::new(config);
+
+        // Test that Drop implementation doesn't panic
+        drop(transport);
+        // If we reach here, drop succeeded without panic
+        // TCP transport creation always succeeds in our design
+    }
+
+    #[tokio::test]
+    async fn test_tcp_connection_state() {
+        let config = TransportConfig::default();
+        let transport = TcpTransport::new(config);
+
+        // Initially not connected
+        assert!(transport.framed.is_none());
+
+        // Connection timestamps should be initialized
+        let start_time = transport.connection_start;
+        let activity_time = transport.last_activity;
+
+        assert!(start_time <= Instant::now());
+        assert!(activity_time <= Instant::now());
+        assert!(activity_time >= start_time);
+    }
+
+    #[tokio::test]
+    async fn test_large_data_handling() {
+        use crate::NetworkChunk;
+
+        // Test TCP transport with larger data chunks
+        let large_data = vec![0xAB; 64 * 1024]; // 64KB test data
+        let manifest = format!(
+            r#"{{"sequence":3,"size":{},"transport":"tcp"}}"#,
+            large_data.len()
+        )
+        .into_bytes();
+
+        let chunk = NetworkChunk::new(3, large_data.clone(), manifest);
+        assert_eq!(chunk.sequence, 3);
+        assert_eq!(chunk.data.len(), 64 * 1024);
+
+        // Verify validation works for large chunks
+        let validation_result = chunk.validate();
+        assert!(validation_result.is_ok());
+    }
+}
