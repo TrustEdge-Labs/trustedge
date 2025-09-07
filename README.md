@@ -261,7 +261,7 @@ pub enum CryptoOperation {
 | Backend | Status | Operations | Notes |
 |---------|--------|------------|-------|
 | **Keyring** | ✅ Available | Key derivation, hashing, nonce generation | OS keyring integration |
-| **YubiKey** | ✅ Available | PIV operations, hardware signing, attestation | Requires PKCS#11 module |
+| **YubiKey** | ✅ Available | PIV operations, hardware signing, attestation, X.509 certificates | Requires PKCS#11 module |
 | **TPM** | 🔄 Planned | TPM 2.0 operations, attestation | Linux/Windows TPM support |
 | **HSM** | 🔄 Planned | PKCS#11 operations | Enterprise HSM integration |
 
@@ -285,6 +285,12 @@ cargo run --bin yubikey-demo --features yubikey -- \
   -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
   -P YOUR_PIN -k "SIGN key" \
   sign --data "Hardware root of trust!"
+
+# YubiKey X.509 certificate generation (NEW)
+cargo run --example yubikey_certificate_demo --features yubikey
+
+# YubiKey certificate with QUIC transport integration (NEW)
+cargo run --example yubikey_quic_demo --features yubikey
 ```
 
 **📖 For detailed Universal Backend documentation and implementation guides, see [UNIVERSAL_BACKEND.md](UNIVERSAL_BACKEND.md).**

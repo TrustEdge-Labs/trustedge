@@ -68,10 +68,16 @@ zeroize = "1.7"
 quinn = "0.11"
 rustls = "0.23"
 
+# X.509 certificate generation and validation
+x509-cert = { version = "0.2", features = ["builder"], optional = true }
+signature = { version = "2.2", optional = true }  # For X.509 certificate creation
+der = { version = "0.7", optional = true }        # For DER encoding/decoding
+spki = { version = "0.7", optional = true }       # For SubjectPublicKeyInfo
+
 [features]
 default = []         # No features by default (CI-friendly)
 audio = ["cpal"]     # Audio capture feature (opt-in)
-yubikey = ["pkcs11"] # YubiKey/PKCS#11 hardware support (opt-in)
+yubikey = ["pkcs11", "x509-cert", "der", "spki", "signature"] # YubiKey/PKCS#11 hardware support with X.509 (opt-in)
 
 [dev-dependencies]
 assert_cmd = "2"
