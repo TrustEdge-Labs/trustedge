@@ -51,15 +51,24 @@ pub struct TransportConfig {
     pub max_message_size: usize,
     /// Keep-alive interval in milliseconds (0 = disabled).
     pub keep_alive_ms: u64,
+    /// Maximum bytes per connection (0 = unlimited).
+    pub max_connection_bytes: u64,
+    /// Maximum chunks per connection (0 = unlimited).
+    pub max_connection_chunks: u64,
+    /// Connection idle timeout in milliseconds.
+    pub connection_idle_timeout_ms: u64,
 }
 
 impl Default for TransportConfig {
     fn default() -> Self {
         Self {
-            connect_timeout_ms: 10_000,         // 10 seconds
-            read_timeout_ms: 30_000,            // 30 seconds
-            max_message_size: 16 * 1024 * 1024, // 16 MB
-            keep_alive_ms: 0,                   // Disabled by default
+            connect_timeout_ms: 10_000,               // 10 seconds
+            read_timeout_ms: 30_000,                  // 30 seconds
+            max_message_size: 16 * 1024 * 1024,       // 16 MB
+            keep_alive_ms: 0,                         // Disabled by default
+            max_connection_bytes: 1024 * 1024 * 1024, // 1 GB per connection
+            max_connection_chunks: 10_000,            // 10k chunks per connection
+            connection_idle_timeout_ms: 300_000,      // 5 minutes
         }
     }
 }

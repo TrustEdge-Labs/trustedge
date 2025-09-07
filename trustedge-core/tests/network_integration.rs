@@ -171,6 +171,7 @@ fn run_client(
         "--key-hex",
         key_hex,
         "--verbose",
+        "--hardened", // Use hardened transport to match server protocol
     ]);
 
     if enable_auth {
@@ -460,6 +461,7 @@ async fn test_large_file_transfer() -> Result<()> {
             "--chunk-size",
             "1024", // Use small chunks to test chunking
             "--verbose",
+            "--hardened", // Use hardened transport to match server protocol
         ])
         .output()?;
 
