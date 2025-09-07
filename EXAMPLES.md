@@ -20,6 +20,7 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 - [Audio Pipeline Examples](#audio-pipeline-examples)
 - [Key Management Scenarios](#key-management-scenarios)
 - [Universal Backend Workflows](#universal-backend-workflows)
+- [Hardware Backend Demonstrations](#hardware-backend-demonstrations)
 - [Integration Examples](#integration-examples)
 - [Development and Project Management Examples](#development-and-project-management-examples)
 
@@ -1647,6 +1648,147 @@ Backend Health Status:
   3. For maximum security, consider increasing Argon2 memory parameter
   4. Registry overhead is minimal - no optimization needed
 ```
+
+---
+
+## Hardware Backend Demonstrations
+
+### Software HSM Backend Demo
+
+The Software HSM backend provides a pure Rust implementation of secure key management with persistent storage:
+
+```bash
+cd trustedge-core
+
+# Generate Ed25519 key pair
+cargo run --bin software-hsm-demo -- generate-key demo_key ed25519
+# Output: ✔ Key pair generated successfully!
+
+# List all available keys
+cargo run --bin software-hsm-demo -- list-keys
+# Output: Shows all keys with creation time and usage stats
+
+# Sign data with generated key
+cargo run --bin software-hsm-demo -- sign demo_key "Hello TrustEdge!"
+# Output: ✔ Signature generated: c6e5dd47e0f927ae...
+
+# Generate ECDSA P-256 key pair
+cargo run --bin software-hsm-demo -- generate-key secure_key ecdsa-p256
+
+# Get public key for sharing
+cargo run --bin software-hsm-demo -- get-public-key demo_key
+
+# Test Universal Backend registry integration
+cargo run --bin software-hsm-demo -- test-registry
+```
+
+### YubiKey Hardware Backend Demo
+
+The YubiKey backend provides true hardware root of trust using PKCS#11:
+
+#### Prerequisites Setup
+
+```bash
+# Ubuntu/Debian: Install OpenSC PKCS#11 module
+sudo apt install opensc-pkcs11
+
+# macOS: Install via Homebrew
+brew install opensc
+
+# Verify YubiKey detection
+lsusb | grep -i yubico
+# Output: Bus 003 Device 040: ID 1050:0407 Yubico.com Yubikey 4/5 OTP+U2F+CCID
+
+# Find PKCS#11 module path
+find /usr -name "*opensc-pkcs11*" 2>/dev/null
+# Typical paths:
+# Linux: /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so
+# macOS: /usr/local/lib/opensc-pkcs11.so
+```
+
+#### YubiKey Demo Commands
+
+```bash
+cd trustedge-core
+
+# Test basic connectivity (no PIN required)
+cargo run --bin yubikey-demo --features yubikey -- \
+  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
+  -v test
+
+# Output:
+# ■ TrustEdge YubiKey Demo - Hardware Root of Trust
+# ═══════════════════════════════════════════════════
+# ✔ YubiKey backend initialized successfully
+# ✔ YubiKey connectivity test passed!
+
+# Show hardware capabilities
+cargo run --bin yubikey-demo --features yubikey -- \
+  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
+  -v capabilities
+
+# Output shows:
+# ● Hardware Backed: ✔ YES
+# ● Supports Attestation: ✔ YES
+# ● Asymmetric Algorithms: EcdsaP256, Rsa2048, Rsa4096
+# ● Signature Algorithms: EcdsaP256, RsaPkcs1v15, RsaPss
+# ● Hash Algorithms: Sha256, Sha384, Sha512
+
+# List keys with PIN authentication
+cargo run --bin yubikey-demo --features yubikey -- \
+  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
+  -P YOUR_PIN -v list-keys
+
+# Hardware signing (requires PIN + key)
+cargo run --bin yubikey-demo --features yubikey -- \
+  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
+  -P YOUR_PIN \
+  -k "SIGN key" \
+  -v sign --data "Hardware root of trust signature!"
+
+# Output:
+# ✔ Signed 20 bytes with key 'SIGN key'
+# ✔ Signature generated successfully!
+# ● Signature length: 64 bytes
+
+# Get hardware attestation proof
+cargo run --bin yubikey-demo --features yubikey -- \
+  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
+  -P YOUR_PIN \
+  -v attest --challenge "TrustEdge Hardware Demo 2025"
+
+# Output:
+# ✔ Attestation proof generated!
+# ● Proof length: 32 bytes
+# ● Hardware attestation validates genuine YubiKey
+```
+
+#### Finding Your YubiKey Keys
+
+```bash
+# Method 1: Use PKCS#11 tools to discover keys
+pkcs11-tool --module /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
+  --login --pin YOUR_PIN --list-objects
+
+# Output shows available keys with labels like:
+# Private Key Object; EC
+#   label:      SIGN key
+#   ID:         02
+
+# Method 2: Use TrustEdge YubiKey demo
+cargo run --bin yubikey-demo --features yubikey -- \
+  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
+  -P YOUR_PIN -v list-keys
+```
+
+#### Security Features Demonstrated
+
+✔ **Hardware Root of Trust**: Cryptographic operations performed in secure hardware  
+✔ **PKCS#11 Standard**: Industry-standard hardware security interface  
+✔ **PIN Protection**: Multi-factor authentication for sensitive operations  
+✔ **Hardware Attestation**: Cryptographic proof of genuine hardware  
+✔ **Algorithm Agility**: Multiple signature algorithms (ECDSA, RSA)  
+✔ **Professional Output**: UTF-8 symbols (✔, ✖, ●, ■, ⚠) for clear status indication
 
 ---
 

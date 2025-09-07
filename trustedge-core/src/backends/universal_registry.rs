@@ -13,6 +13,8 @@
 use crate::backends::software_hsm::SoftwareHsmBackend;
 use crate::backends::universal::*;
 use crate::backends::universal_keyring::UniversalKeyringBackend;
+#[cfg(feature = "yubikey")]
+use crate::backends::yubikey::YubiKeyBackend;
 use anyhow::{anyhow, Result};
 use std::collections::HashMap;
 
@@ -47,10 +49,13 @@ impl UniversalBackendRegistry {
             registry.register_backend("software_hsm".to_string(), Box::new(software_hsm_backend));
         }
 
-        // Future: Add other backends
-        // if let Ok(yubikey_backend) = YubiKeyBackend::new() {
-        //     registry.register_backend("yubikey".to_string(), Box::new(yubikey_backend));
-        // }
+        // Add YubiKey backend if available and feature enabled
+        #[cfg(feature = "yubikey")]
+        {
+            if let Ok(yubikey_backend) = YubiKeyBackend::new() {
+                registry.register_backend("yubikey".to_string(), Box::new(yubikey_backend));
+            }
+        }
 
         Ok(registry)
     }
