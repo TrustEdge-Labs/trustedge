@@ -21,12 +21,12 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use trustedge_core::format;
 #[cfg(feature = "audio")]
 use trustedge_core::AudioCapture;
 #[cfg(feature = "audio")]
 use trustedge_core::AudioConfig;
 use trustedge_core::{BackendRegistry, KeyBackend, KeyContext, KeyringBackend};
-use trustedge_core::format;
 use zeroize::Zeroize;
 
 use trustedge_core::{
@@ -475,10 +475,13 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             .try_into()
             .context("pubkey length != 32")?;
         let sig_arr: [u8; 64] = rec.sm.sig.as_slice().try_into().context("sig len != 64")?;
-        let verifying_key = VerifyingKey::from_bytes(&pubkey_arr)
-            .context("bad pubkey")?;
-        format::verify_manifest_with_domain(&verifying_key, &rec.sm.manifest, &Signature::from_bytes(&sig_arr))
-            .context("manifest signature verify failed")?;
+        let verifying_key = VerifyingKey::from_bytes(&pubkey_arr).context("bad pubkey")?;
+        format::verify_manifest_with_domain(
+            &verifying_key,
+            &rec.sm.manifest,
+            &Signature::from_bytes(&sig_arr),
+        )
+        .context("manifest signature verify failed")?;
 
         // manifest contents - deserialize first so we can use it for verification
         let m: Manifest = bincode::deserialize(&rec.sm.manifest).context("manifest decode")?;
@@ -1043,10 +1046,13 @@ fn main() -> Result<()> {
             .try_into()
             .context("pubkey length != 32")?;
         let sig_arr: [u8; 64] = sm.sig.as_slice().try_into().context("sig len != 64")?;
-        let verifying_key = VerifyingKey::from_bytes(&pubkey_arr)
-            .context("bad pubkey")?;
-        format::verify_manifest_with_domain(&verifying_key, &sm.manifest, &Signature::from_bytes(&sig_arr))
-            .context("manifest signature verify failed")?;
+        let verifying_key = VerifyingKey::from_bytes(&pubkey_arr).context("bad pubkey")?;
+        format::verify_manifest_with_domain(
+            &verifying_key,
+            &sm.manifest,
+            &Signature::from_bytes(&sig_arr),
+        )
+        .context("manifest signature verify failed")?;
 
         let aad_rx = build_aad(header_hash.as_bytes(), seq, &nonce_bytes, mhash.as_bytes());
         let pt = cipher

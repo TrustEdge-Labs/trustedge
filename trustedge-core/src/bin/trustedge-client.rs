@@ -24,7 +24,7 @@ use aes_gcm::{
     aead::{Aead, KeyInit, OsRng, Payload},
     Aes256Gcm, Key, Nonce,
 };
-use ed25519_dalek::{Signature, Signer, SigningKey};
+use ed25519_dalek::{Signature, SigningKey};
 use rand_core::RngCore;
 
 /// Load client certificate from file  
@@ -348,7 +348,7 @@ async fn send_encrypted_file(
 
         // Sign & wrap
         let m_bytes = bincode::serialize(&manifest)?;
-        let sig: Signature = signing.sign(&m_bytes);
+        let sig: Signature = trustedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
         let sm = SignedManifest {
             manifest: m_bytes.clone(),
             sig: sig.to_bytes().to_vec(),
@@ -460,7 +460,7 @@ async fn send_encrypted_test_chunks(
         };
 
         let m_bytes = bincode::serialize(&manifest)?;
-        let sig: Signature = signing.sign(&m_bytes);
+        let sig: Signature = trustedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
         let sm = SignedManifest {
             manifest: m_bytes.clone(),
             sig: sig.to_bytes().to_vec(),
