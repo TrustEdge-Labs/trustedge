@@ -22,8 +22,9 @@ TrustEdge features:
 
 - **Data-agnostic encryption:** Works with files, live audio, sensor data, or any binary stream
 - **Live audio capture:** Real-time microphone input with configurable quality and device selection
+- **Algorithm agility:** Configurable cryptographic algorithms with forward-compatible headers supporting current and post-quantum cryptography
 - **Provenance by design:** each chunk carries a signed manifest (C2PA-inspired) whose hash is bound into AEAD AAD; tampering breaks decryption
-- **Privacy by design & default**: encrypt at the edge, not just TLS in transit, audio chunks are encrypted with AES-256-GCM before leaving the device
+- **Privacy by design & default**: encrypt at the edge, not just TLS in transit, audio chunks are encrypted with configurable AEAD algorithms before leaving the device
 - **Rust at the edge**: safety + performance for streaming workloads  
 - **Streaming-friendly:** fixed nonce discipline (prefix||counter) and per-chunk records
 - **Universal Backend System**: Capability-based crypto operations supporting keyring, TPM, HSM, and YubiKey backends
@@ -32,7 +33,7 @@ TrustEdge features:
 
 **Technology Stack:**
 - Language: Rust (stable)
-- Crypto: `aes-gcm` (AEAD), 256-bit keys, 96-bit nonces
+- Crypto: Algorithm agility with configurable AEAD (AES-256-GCM default, ChaCha20-Poly1305, AES-256-SIV), signature algorithms (Ed25519 default, ECDSA, RSA-PSS, post-quantum), hash functions (BLAKE3 default, SHA-2/3 family), and KDF options (PBKDF2-SHA256 default, Argon2id, Scrypt)
 - Audio: `cpal` library with cross-platform support (Linux/ALSA, Windows/WASAPI, macOS/CoreAudio)
 - Key Management: Universal Backend system with pluggable crypto operations
 - Authentication: Ed25519-based mutual authentication with session management

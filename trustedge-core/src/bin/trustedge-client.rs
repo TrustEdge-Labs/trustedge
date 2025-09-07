@@ -18,7 +18,7 @@ use tokio_util::codec::{Framed, LengthDelimitedCodec};
 use trustedge_core::{
     auth::{client_authenticate, load_server_cert, save_client_cert, ClientCertificate},
     build_aad, FileHeader, KeyBackend, KeyContext, KeyringBackend, Manifest, NetworkChunk,
-    SignedManifest, ALG_AES_256_GCM, NONCE_LEN,
+    SignedManifest, NONCE_LEN, VERSION,
 };
 
 // --- Cryptograph ---
@@ -597,8 +597,12 @@ fn build_session_header(chunk_size: usize) -> Result<([u8; 32], [u8; 4], [u8; 16
     device_id_hash.copy_from_slice(hasher.finalize().as_bytes());
 
     let header = FileHeader {
-        version: 1,
-        alg: ALG_AES_256_GCM,
+        version: VERSION,
+        aead_alg: trustedge_core::format::AeadAlgorithm::Aes256Gcm as u8,
+        sig_alg: trustedge_core::format::SignatureAlgorithm::Ed25519 as u8,
+        hash_alg: trustedge_core::format::HashAlgorithm::Blake3 as u8,
+        kdf_alg: trustedge_core::format::KdfAlgorithm::Pbkdf2Sha256 as u8,
+        reserved: [0; 3],
         key_id,
         device_id_hash,
         nonce_prefix,

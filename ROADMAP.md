@@ -78,7 +78,13 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 * [x] Per-chunk encrypt/decrypt round-trip
 * [x] Signed manifest bound into AAD
 * [x] Domain separation for manifest signatures (`b"trustedge.manifest.v1"`)
-* [x] `.trst` envelope with preamble (`MAGIC="TRST"`, `VERSION=1`) and invariants
+* [x] `.trst` envelope with preamble (`MAGIC="TRST"`, `VERSION=2`) and invariants
+* [x] **Algorithm agility implementation** with forward-compatible headers:
+  - [x] Four dedicated algorithm fields: `aead_alg`, `sig_alg`, `hash_alg`, `kdf_alg` 
+  - [x] Header expansion from 58 to 66 bytes with V1→V2 migration
+  - [x] Parse-time validation rejecting unknown algorithm IDs
+  - [x] Support for multiple AEAD, signature, hash, and KDF algorithms
+  - [x] Comprehensive round-trip testing with non-default algorithms
 * [x] Reference client/server with ACKs and network streaming
 * [x] Keyring-derived key support with PBKDF2
 * [x] Shared types/helpers centralized in the lib crate
@@ -698,11 +704,11 @@ trustedge-client --server 127.0.0.1:8080 --test-chunks 100 \
 ## Definition Snippets (v1)
 
 * **AAD layout:** `header_hash (32) || seq (8, BE) || nonce (12) || blake3(manifest) (32) || chunk_len (4, BE)` (88 bytes total)
-* **Preamble:** `MAGIC="TRST"`, `VERSION=1`
-* **Envelope:** `StreamHeader { v, header (58), header_hash (32) }` then repeated
+* **Preamble:** `MAGIC="TRST"`, `VERSION=2` (V1 legacy support)
+* **Envelope:** `StreamHeader { v, header (66), header_hash (32) }` then repeated
   `Record { seq, nonce, sm, ct }`
 * **Manifest:** Includes `key_id` field for key rotation support
-* **FileHeader:** 58 bytes with `key_id`, `device_id_hash`, `nonce_prefix`, and other metadata
+* **FileHeader:** 66 bytes with algorithm agility fields: `aead_alg`, `sig_alg`, `hash_alg`, `kdf_alg`, `key_id`, `device_id_hash`, `nonce_prefix`, and other metadata
 
 ---
 
