@@ -425,10 +425,20 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     let hh = blake3::hash(&sh.header);
     anyhow::ensure!(hh.as_bytes() == &sh.header_hash, "header_hash mismatch");
 
+    // Validate chunk size bounds from header
+    anyhow::ensure!(
+        fh.chunk_size > 0 && fh.chunk_size <= trustedge_core::format::MAX_CHUNK_SIZE,
+        "chunk_size {} exceeds maximum allowed size {}",
+        fh.chunk_size,
+        trustedge_core::format::MAX_CHUNK_SIZE
+    );
+
     // records
     let mut total_out = 0usize;
     let mut expected_seq: u64 = 1;
     let mut manifest_data_type: Option<DataType> = None;
+    let mut record_count: u64 = 0;
+    let mut stream_size_bytes: u64 = 0;
 
     // record loop
     loop {
@@ -443,6 +453,25 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
                 return Err(err).context("read record");
             }
         };
+
+        // DoS protection: Check record count limits
+        record_count = record_count
+            .checked_add(1)
+            .ok_or_else(|| anyhow!("record count overflow"))?;
+        anyhow::ensure!(
+            record_count <= trustedge_core::format::MAX_RECORDS_PER_STREAM,
+            "stream exceeds maximum record count: {} > {}",
+            record_count,
+            trustedge_core::format::MAX_RECORDS_PER_STREAM
+        );
+
+        // DoS protection: Check ciphertext size bounds
+        anyhow::ensure!(
+            rec.ct.len() <= (fh.chunk_size as usize + trustedge_core::format::AES_GCM_TAG_SIZE),
+            "ciphertext size {} exceeds chunk_size + tag_size ({})",
+            rec.ct.len(),
+            fh.chunk_size as usize + trustedge_core::format::AES_GCM_TAG_SIZE
+        );
 
         // envelope invariants
         anyhow::ensure!(
@@ -511,9 +540,23 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
         // ensure manifest seq matches record seq
         anyhow::ensure!(m.seq == rec.seq, "manifest.seq != record.seq");
 
+        // Validate chunk length bounds before decrypt
+        anyhow::ensure!(
+            m.chunk_len > 0 && m.chunk_len <= fh.chunk_size,
+            "manifest chunk_len {} exceeds header chunk_size {}",
+            m.chunk_len,
+            fh.chunk_size
+        );
+
         // decrypt
         let mh = blake3::hash(&rec.sm.manifest);
-        let aad = build_aad(&sh.header_hash, rec.seq, &rec.nonce, mh.as_bytes());
+        let aad = build_aad(
+            &sh.header_hash,
+            rec.seq,
+            &rec.nonce,
+            mh.as_bytes(),
+            m.chunk_len,
+        );
         let pt = cipher
             .decrypt(
                 Nonce::from_slice(&rec.nonce),
@@ -524,9 +567,28 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             )
             .map_err(|_| anyhow!("AES-GCM decrypt/verify failed"))?;
 
+        // Validate decrypted length matches manifest expectation
+        anyhow::ensure!(
+            pt.len() == m.chunk_len as usize,
+            "decrypted length {} != manifest chunk_len {}",
+            pt.len(),
+            m.chunk_len
+        );
+
         // pt hash
         let pt_hash_rx = blake3::hash(&pt);
         anyhow::ensure!(pt_hash_rx.as_bytes() == &m.pt_hash, "pt hash mismatch");
+
+        // DoS protection: Check cumulative stream size
+        stream_size_bytes = stream_size_bytes
+            .checked_add(pt.len() as u64)
+            .ok_or_else(|| anyhow!("stream size overflow"))?;
+        anyhow::ensure!(
+            stream_size_bytes <= trustedge_core::format::MAX_STREAM_SIZE_BYTES,
+            "stream exceeds maximum size: {} > {} bytes",
+            stream_size_bytes,
+            trustedge_core::format::MAX_STREAM_SIZE_BYTES
+        );
 
         // write
         w.write_all(&pt).context("write plaintext")?;
@@ -994,6 +1056,7 @@ fn main() -> Result<()> {
             ai_used: false,
             model_ids: vec![],
             data_type,
+            chunk_len: n as u32, // Bind actual chunk length to AAD
         };
 
         let m_bytes = bincode::serialize(&m).expect("manifest serialize");
@@ -1005,7 +1068,13 @@ fn main() -> Result<()> {
         };
 
         let mhash = blake3::hash(&m_bytes);
-        let aad = build_aad(header_hash.as_bytes(), seq, &nonce_bytes, mhash.as_bytes());
+        let aad = build_aad(
+            header_hash.as_bytes(),
+            seq,
+            &nonce_bytes,
+            mhash.as_bytes(),
+            m.chunk_len,
+        );
 
         let ct = cipher
             .encrypt(
@@ -1039,7 +1108,7 @@ fn main() -> Result<()> {
         }
 
         // verify manifest + round-trip decrypt (sanity)
-        let _m2: Manifest = bincode::deserialize(&sm.manifest).context("manifest decode")?;
+        let m2: Manifest = bincode::deserialize(&sm.manifest).context("manifest decode")?;
         let pubkey_arr: [u8; 32] = sm
             .pubkey
             .as_slice()
@@ -1054,7 +1123,13 @@ fn main() -> Result<()> {
         )
         .context("manifest signature verify failed")?;
 
-        let aad_rx = build_aad(header_hash.as_bytes(), seq, &nonce_bytes, mhash.as_bytes());
+        let aad_rx = build_aad(
+            header_hash.as_bytes(),
+            seq,
+            &nonce_bytes,
+            mhash.as_bytes(),
+            m2.chunk_len,
+        );
         let pt = cipher
             .decrypt(
                 Nonce::from_slice(&nonce_bytes),

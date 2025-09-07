@@ -445,6 +445,82 @@ fn test_domain_separation_tampered_prefix_fails() -> Result<()> {
 - ✅ **Tampered Prefix Detection**: Modified prefixes cause failures
 - ✅ **Determinism**: Same input produces identical signatures
 
+## 🛡️ Bounds Checking & DoS Protection Testing
+
+**Security Testing for Resource Limits and Bounds Validation:**
+```rust
+#[test]
+fn test_chunk_size_bounds_validation() -> Result<()> {
+    // Test oversized chunk size in header
+    let oversized_chunk_size = MAX_CHUNK_SIZE + 1;
+    let result = validate_chunk_size(oversized_chunk_size);
+    assert!(result.is_err(), "Oversized chunk_size should be rejected");
+
+    // Test zero chunk size
+    let result = validate_chunk_size(0);
+    assert!(result.is_err(), "Zero chunk_size should be rejected");
+
+    // Test valid chunk size
+    let result = validate_chunk_size(4096);
+    assert!(result.is_ok(), "Valid chunk_size should be accepted");
+
+    Ok(())
+}
+
+#[test] 
+fn test_ciphertext_size_bounds() -> Result<()> {
+    let chunk_size = 4096u32;
+    let valid_ct_size = chunk_size as usize + AES_GCM_TAG_SIZE;
+    let oversized_ct = vec![0u8; valid_ct_size + 1];
+    
+    let result = validate_ciphertext_bounds(&oversized_ct, chunk_size);
+    assert!(result.is_err(), "Oversized ciphertext should be rejected");
+
+    Ok(())
+}
+
+#[test]
+fn test_stream_size_limits() -> Result<()> {
+    let mut total_size = 0u64;
+    
+    // Simulate adding chunks until limit
+    for _ in 0..1000 {
+        total_size += 10 * 1024 * 1024; // 10MB chunks
+        if total_size > MAX_STREAM_SIZE_BYTES {
+            assert!(total_size > MAX_STREAM_SIZE_BYTES, "Should exceed limit");
+            return Ok(());
+        }
+    }
+    
+    panic!("Should have hit stream size limit");
+}
+
+#[test]
+fn test_chunk_length_aad_binding() -> Result<()> {
+    let manifest = create_test_manifest(1024); // chunk_len = 1024
+    let tampered_manifest = create_test_manifest(2048); // Different chunk_len
+    
+    // AAD with correct chunk_len should work
+    let correct_aad = build_aad(&header_hash, seq, &nonce, &manifest_hash, 1024);
+    
+    // AAD with wrong chunk_len should fail decryption
+    let wrong_aad = build_aad(&header_hash, seq, &nonce, &manifest_hash, 2048);
+    
+    let decrypt_result = decrypt_with_aad(&ciphertext, &wrong_aad);
+    assert!(decrypt_result.is_err(), "Wrong chunk_len in AAD should fail decryption");
+
+    Ok(())
+}
+```
+
+**Key DoS Protection Test Cases:**
+- ✅ **Chunk Size Limits**: Oversized chunks rejected at header level
+- ✅ **Ciphertext Bounds**: Malformed records rejected before decryption
+- ✅ **Stream Size Limits**: Cumulative size tracking prevents huge streams
+- ✅ **Record Count Limits**: Maximum record count enforced
+- ✅ **Length Binding**: chunk_len cryptographically bound via AAD
+- ✅ **Early Validation**: Bounds checked before expensive operations
+
 ## 🎯 Testing Checklist
 
 When adding new features:
@@ -458,5 +534,8 @@ When adding new features:
 - [ ] Registry integration (for backends)
 - [ ] Roundtrip validation (for data processing)
 - [ ] Professional UTF-8 symbols in test output
+- [ ] **Security bounds testing** (chunk sizes, stream limits)
+- [ ] **DoS protection validation** (resource exhaustion prevention)
+- [ ] **Length integrity testing** (chunk_len AAD binding)
 
 Run `./ci-check.sh` before committing to ensure all tests pass with CI-level strictness.

@@ -74,6 +74,9 @@ struct NetworkChunk {
 - Timestamp must not be more than 5 minutes in the future
 - Sequence numbers must be contiguous (no gaps or duplicates)
 - Nonce prefix must match session header prefix
+- Chunk length must be ≤ declared chunk_size and > 0
+- Ciphertext size must be ≤ chunk_size + 16 bytes (AES-GCM tag)
+- Stream limits: max 1,000,000 records, 10GB total size
 - All cryptographic validation must pass
 
 ### 2.1.1. Envelope File Format
@@ -105,6 +108,8 @@ struct Manifest {
     key_id: [u8; 16],        // Key identifier for rotation support
     ai_used: bool,           // Placeholder for AI usage
     model_ids: Vec<String>,  // Placeholder for model IDs
+    data_type: DataType,     // Data type and format metadata
+    chunk_len: u32,          // Expected plaintext length (cryptographically bound)
 }
 
 struct SignedManifest {
@@ -134,9 +139,15 @@ struct FileHeader {
 
 ### 2.2. Fields and AAD recipe
 
-- **AAD** = BLAKE3(header) || seq_be(8) || nonce(12) || BLAKE3(manifest_bytes)
+- **AAD** = BLAKE3(header) || seq_be(8) || nonce(12) || BLAKE3(manifest_bytes) || chunk_len_be(4)
 - **Nonce** = nonce_prefix(4) || seq_be(8) (unique per key/session)
 - **Record** = seq, nonce, signed_manifest { manifest_bytes, ed25519_sig, pubkey }, ct
+
+**Security Enhancements**:
+- Chunk length cryptographically bound via AAD prevents manipulation
+- Pre-decryption bounds checking (chunk_len ≤ chunk_size, ct.len() ≤ chunk_size + 16)
+- Post-decryption length validation (decrypted_len = chunk_len)
+- DoS protection: max 128MB chunks, 1M records, 10GB total per stream
 
 **Integrity check:** See above: nonce prefix, nonce counter, and manifest sequence integrity are enforced for every record.
 

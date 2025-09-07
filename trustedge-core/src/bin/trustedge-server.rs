@@ -552,9 +552,22 @@ async fn process_and_decrypt_chunk(
         "record nonce prefix != stream nonce_prefix"
     );
 
+    // Validate chunk length bounds before decrypt
+    anyhow::ensure!(
+        m.chunk_len > 0,
+        "manifest chunk_len must be > 0, got {}",
+        m.chunk_len
+    );
+
     // Build AAD and decrypt
     let mh = blake3::hash(&sm.manifest);
-    let aad = build_aad(&m.header_hash, chunk.sequence, &chunk.nonce, mh.as_bytes());
+    let aad = build_aad(
+        &m.header_hash,
+        chunk.sequence,
+        &chunk.nonce,
+        mh.as_bytes(),
+        m.chunk_len,
+    );
     let nonce = Nonce::from_slice(&chunk.nonce);
 
     let pt = cipher
@@ -566,6 +579,14 @@ async fn process_and_decrypt_chunk(
             },
         )
         .map_err(|_| anyhow!("AES-GCM decrypt/verify failed"))?;
+
+    // Validate decrypted length matches manifest expectation
+    anyhow::ensure!(
+        pt.len() == m.chunk_len as usize,
+        "decrypted length {} != manifest chunk_len {}",
+        pt.len(),
+        m.chunk_len
+    );
 
     // Verify plaintext hash
     let pt_hash_rx = blake3::hash(&pt);

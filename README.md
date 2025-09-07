@@ -27,6 +27,7 @@ TrustEdge features:
 - **Rust at the edge**: safety + performance for streaming workloads  
 - **Streaming-friendly:** fixed nonce discipline (prefix||counter) and per-chunk records
 - **Universal Backend System**: Capability-based crypto operations supporting keyring, TPM, HSM, and YubiKey backends
+- **DoS Protection & Bounds Checking**: Comprehensive resource limits and validation to prevent denial-of-service attacks
 - **Learning in public**: small, honest milestones → real, reviewable code
 
 **Technology Stack:**
@@ -35,6 +36,7 @@ TrustEdge features:
 - Audio: `cpal` library with cross-platform support (Linux/ALSA, Windows/WASAPI, macOS/CoreAudio)
 - Key Management: Universal Backend system with pluggable crypto operations
 - Authentication: Ed25519-based mutual authentication with session management
+- Security: Resource bounds enforcement, length integrity binding, domain separation
 
 ## Testing & Quality Assurance
 
