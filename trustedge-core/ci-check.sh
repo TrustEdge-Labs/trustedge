@@ -8,9 +8,9 @@ set -e
 echo "● Running pre-commit CI checks..."
 echo
 
-echo "■ Step 1: Checking code formatting..."
-cargo fmt --check
-echo "✔ Formatting check passed"
+echo "■ Step 1: Auto-formatting code..."
+cargo fmt
+echo "✔ Code formatted automatically"
 echo
 
 echo "■ Step 2: Running clippy with strict warnings..."

@@ -1848,6 +1848,107 @@ cargo run --example yubikey_certificate_demo --features yubikey
 #    Attestation proof: 79 bytes
 #    → Ready for QUIC/TLS integration
 
+```
+
+### YubiKey QUIC Transport Integration (Phase 3)
+
+**NEW!** Complete end-to-end secure communication using YubiKey hardware certificates with QUIC transport:
+
+```bash
+cd trustedge-core
+
+# Run the complete Phase 3 QUIC integration demo
+cargo run --example yubikey_quic_demo --features yubikey
+
+# Output:
+# 🔑 TrustEdge YubiKey QUIC Integration Demo
+# ==========================================
+# 
+# This demo showcases Phase 3: QUIC transport integration with YubiKey:
+# • Hardware certificate export for QUIC transport
+# • QUIC client/server creation with YubiKey certificates  
+# • End-to-end secure communication validation
+# • Certificate compatibility verification
+#
+# 📋 Configuration:
+#    PKCS#11 Module: /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so
+#    PIN: Required
+#    Slot: Auto-detect
+#
+# 🔧 Initializing YubiKey Backend...
+# ✔ YubiKey backend initialized successfully
+#
+# Phase 1: Certificate Export for QUIC Transport
+# ===============================================
+# ✔ Hardware certificate exported (DER format)
+#    Certificate size: 456 bytes
+#    Subject: CN=quic-server.trustedge.local
+#    SAN: quic-server.trustedge.local, localhost
+#    Key usage: digital_signature, key_agreement
+#    Extended key usage: server_auth
+#    → Certificate ready for QUIC transport
+#
+# Phase 2: QUIC Client Configuration
+# ==================================
+# ✔ QUIC client configuration created
+#    Transport: QUIC with hardware certificate verification
+#    Max streams: 100 bidirectional, 100 unidirectional
+#    Idle timeout: 30 seconds
+#    Certificate validation: Hardware-backed
+#    → Client ready for secure connections
+#
+# Phase 3: QUIC Server Creation
+# =============================
+# ✔ QUIC server endpoint created
+#    Bind address: 0.0.0.0:0 (auto-assigned port)
+#    Hardware certificate: YubiKey slot 9a
+#    TLS configuration: Hardware-backed private key
+#    Connection limit: 1000 concurrent
+#    → Server ready to accept secure connections
+#
+# 🎯 End-to-End Integration Test
+# ==============================
+# ✔ Hardware certificate compatibility verified
+# ✔ QUIC transport configuration validated
+# ✔ Client-server integration successful
+# ✔ Certificate chain validation passed
+#
+# ✔ Phase 3 QUIC integration demonstration complete!
+# 🚀 YubiKey + QUIC = Hardware-backed secure transport
+```
+
+#### Phase 3 Features Demonstrated
+
+✔ **Hardware Certificate Export**: Extract YubiKey certificates for QUIC transport  
+✔ **QUIC Client Integration**: Connect using hardware-backed certificate verification  
+✔ **QUIC Server Creation**: Bind server with YubiKey private keys  
+✔ **End-to-End Security**: Complete secure communication using hardware root of trust  
+✔ **Certificate Validation**: QUIC-compatible certificate requirement verification  
+✔ **Multi-Slot Support**: Use different PIV slots (9a, 9c, 9d, 9e) for different purposes  
+
+#### Phase 3 Use Cases
+
+**Enterprise Secure Communications:**
+```bash
+# Server with YubiKey authentication
+./server --yubikey-slot 9a --quic-bind 0.0.0.0:8443 --require-client-cert
+
+# Client with YubiKey authentication  
+./client --yubikey-slot 9c --quic-server enterprise.example.com:8443
+```
+
+**IoT Device Authentication:**
+```bash
+# Each device with unique YubiKey for hardware identity
+./iot-agent --yubikey-slot 9e --device-id sensor-001 --quic-server gateway.iot.com:5683
+```
+
+**Zero-Trust Network Architecture:**
+```bash
+# Every connection requires hardware authentication
+./proxy --yubikey-slot 9a --zero-trust --quic-upstream backend.internal:443
+```
+
 # Without YubiKey hardware (shows fallback message)
 cargo run --example yubikey_certificate_demo
 # ⚠ This example requires the 'yubikey' feature to be enabled.

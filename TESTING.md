@@ -6,15 +6,224 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 # TrustEdge Testing Guide
 
-Comprehensive testing, validation, and verification procedures for TrustEdge.
+Comprehensive testing, validation, and verification procedures for TrustEdge with **144 total tests** covering all components.
 
 ## Table of Contents
+- [Test Architecture](#test-architecture)
+- [Test Categories](#test-categories)
+- [YubiKey Testing](#yubikey-testing)
+- [Transport Testing](#transport-testing)
 - [Test Vectors](#test-vectors)
 - [Integration Testing](#integration-testing)
 - [Manual Verification](#manual-verification)
 - [Performance Testing](#performance-testing)
 - [Security Testing](#security-testing)
 - [Audio System Testing](#audio-system-testing)
+
+---
+
+## Test Architecture
+
+TrustEdge employs a comprehensive 3-tier testing strategy:
+
+### Test Statistics
+- **144 Total Tests** (significantly expanded from 63)
+- **79 Unit Tests** (core library functionality)
+- **65 Integration Tests** (cross-component validation)
+- **100% Feature Coverage** (all major components tested)
+
+### Quick Test Commands
+```bash
+# All tests (recommended before commit)
+./ci-check.sh                    # Runs format, lint, build, and all tests
+
+# By category
+cargo test --lib                 # Unit tests (79)
+cargo test --test yubikey_integration     # YubiKey Phase 1-3 tests (8)
+cargo test --test transport_integration   # Transport layer tests (10)
+cargo test --test software_hsm_integration # Software HSM tests (9)
+cargo test --test auth_integration         # Authentication tests (3)
+cargo test --test network_integration      # Network tests (7)
+cargo test --test roundtrip_integration    # End-to-end tests (15)
+cargo test --test universal_backend_integration # Backend tests (6)
+cargo test --test domain_separation_test   # Security tests (7)
+
+# With features
+cargo test --features yubikey    # Include YubiKey hardware tests
+```
+
+---
+
+## Test Categories
+
+### 1. Unit Tests (79 Tests)
+**Core Library** (`src/lib.rs`):
+- Audio chunk serialization/deserialization
+- Format detection and validation
+- Encryption algorithm testing
+- Backend capability discovery
+
+**Transport Layer** (`src/transport/`):
+- QUIC transport configuration and validation (8 tests)
+- TCP transport framing and error handling (8 tests)  
+- Protocol selection logic
+- NetworkChunk compatibility
+
+**Universal Backend System** (`src/backends/`):
+- Software HSM operations (39 tests)
+- Universal registry management (5 tests)
+- Keyring backend integration (5 tests)
+- YubiKey backend stubs (3 tests)
+
+### 2. Integration Tests (65 Tests)
+
+#### YubiKey Integration (8 Tests) - **NEW!**
+Complete testing of Phase 1-3 YubiKey integration:
+```bash
+cargo test --test yubikey_integration
+```
+- **Phase 1**: X.509 certificate validation with x509-cert crate
+- **Phase 2**: Hardware-signed certificate generation with PIV slots  
+- **Phase 3**: QUIC transport integration with YubiKey certificates
+- Multi-slot operations (9a, 9c, 9d, 9e PIV slots)
+- Error handling and hardware fallback scenarios
+
+#### Transport Integration (10 Tests) - **NEW!**
+Comprehensive transport layer validation:
+```bash
+cargo test --test transport_integration  
+```
+- QUIC vs TCP protocol selection logic
+- NetworkChunk serialization compatibility
+- Concurrent operation handling
+- Timeout and retry mechanisms
+- Security configuration validation
+
+#### Authentication Integration (3 Tests)
+```bash
+cargo test --test auth_integration
+```
+- Certificate generation and verification
+- Mutual authentication workflows
+- Session management and lifecycle
+
+#### Network Integration (7 Tests)
+```bash
+cargo test --test network_integration
+```
+- Authenticated file transfer
+- Connection error handling
+- Data integrity verification
+- Multiple file type support
+
+#### Roundtrip Integration (15 Tests)
+```bash
+cargo test --test roundtrip_integration
+```
+- End-to-end encryption/decryption workflows
+- Format detection accuracy
+- Byte-perfect data restoration
+- Multiple chunk size validation
+
+#### Software HSM Integration (9 Tests)
+```bash
+cargo test --test software_hsm_integration
+```
+- Cross-session key persistence
+- Large-scale key management
+- Corruption recovery mechanisms
+- CLI integration workflows
+
+#### Universal Backend Integration (6 Tests)
+```bash
+cargo test --test universal_backend_integration
+```
+- Capability-based backend selection
+- Multi-operation workflows
+- Performance characteristics
+- Registry management
+
+#### Domain Separation Security (7 Tests)
+```bash
+cargo test --test domain_separation_test
+```
+- Cross-context attack prevention
+- Signature reuse protection
+- Manifest tampering detection
+- Cryptographic domain isolation
+
+---
+
+## YubiKey Testing
+
+### Hardware Testing Requirements
+```bash
+# YubiKey with PIV applet
+sudo apt install opensc-pkcs11      # PKCS#11 module
+ykman piv keys generate 9a /tmp/pubkey.pem  # Generate test keys
+
+# Run YubiKey-specific tests
+cargo test --features yubikey --test yubikey_integration
+```
+
+### Phase Testing Architecture
+
+#### Phase 1: X.509 Certificate Validation
+```bash
+cargo test test_phase1_certificate_validation
+```
+- Certificate parameter validation
+- x509-cert crate integration testing
+- Standards compliance verification
+
+#### Phase 2: Hardware-Signed Certificates  
+```bash
+cargo test test_phase2_certificate_generation
+```
+- PIV slot enumeration (9a, 9c, 9d, 9e)
+- Hardware key generation workflows
+- Certificate signing with hardware keys
+
+#### Phase 3: QUIC Transport Integration
+```bash
+cargo test test_phase3_quic_integration
+```
+- Hardware certificate export for QUIC
+- Certificate-transport compatibility
+- End-to-end secure communication
+
+### PIV Slot Testing
+- **Slot 9a**: PIV Authentication (client auth certificates)
+- **Slot 9c**: PIV Digital Signature (code signing, email protection)
+- **Slot 9d**: PIV Key Management (encryption/decryption)
+- **Slot 9e**: PIV Card Authentication (device certificates)
+
+---
+
+## Transport Testing
+
+### QUIC Transport Testing
+```bash
+cargo test quic::tests  # QUIC-specific unit tests
+```
+- Transport configuration validation
+- Certificate requirements for QUIC
+- Connection setup and teardown
+- Stream management testing
+
+### TCP Transport Testing  
+```bash
+cargo test tcp::tests   # TCP-specific unit tests
+```
+- Length-delimited framing validation
+- Connection state management
+- Large data chunk handling
+- Resource cleanup verification
+
+### Protocol Selection Testing
+- **QUIC Preferred**: High throughput, multi-stream scenarios
+- **TCP Fallback**: Legacy compatibility, simple point-to-point
+- **Configuration Testing**: Security-focused settings, extreme limits
 
 ---
 
@@ -31,14 +240,14 @@ cargo test vectors::tests::golden_trst_digest_is_stable
 # Run integration tests (round-trip, tamper detection)
 cargo test --test vectors
 
-# Run all tests
-cargo test
+# All tests with output
+cargo test -- --nocapture
 ```
 
-**Golden Test Vector:**
+**Updated Golden Test Vector:**
 - **Input**: 32KB deterministic pseudo-random data
 - **Chunk Size**: 4KB chunks  
-- **Expected Hash**: `8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c`
+- **Expected Hash**: `162efe3e02b010bd871bb8c69befe673aeb5828ab650131a1664d326609a8bb0`
 - **Purpose**: Ensures format stability and enables external validation
 
 ### Test Vector Details

@@ -86,14 +86,68 @@ trustedge-core/
 │   ├── main.rs          # CLI application entry point
 │   ├── format.rs        # TrustEdge format with data type metadata
 │   ├── audio.rs         # Live audio capture implementation (feature-gated)
+│   ├── auth.rs          # Ed25519-based mutual authentication
 │   ├── vectors.rs       # Test vectors and validation
+│   ├── backends/        # Universal Backend System
+│   │   ├── mod.rs       # Backend module interface
+│   │   ├── universal.rs # Universal backend trait and registry
+│   │   ├── software_hsm.rs # Software HSM implementation (33 tests)
+│   │   ├── keyring.rs   # OS keyring integration
+│   │   └── yubikey.rs   # YubiKey hardware backend (Phase 1-3)
+│   ├── transport/       # Network transport abstraction
+│   │   ├── mod.rs       # Transport trait and configuration
+│   │   ├── tcp.rs       # TCP transport with length framing (8 tests)
+│   │   └── quic.rs      # QUIC transport with TLS (8 tests)
 │   └── bin/
 │       ├── trustedge-client.rs  # Network client
 │       ├── trustedge-server.rs  # Network server
-│       └── inspect-trst.rs      # Metadata inspection utility
-└── tests/
-    ├── cli_roundtrip.rs # End-to-end CLI tests
-    └── vectors.rs       # Test vector validation
+│       ├── inspect-trst.rs      # Metadata inspection utility
+│       └── software-hsm-demo.rs # Backend demonstration
+├── tests/               # Integration test suite (65 tests)
+│   ├── yubikey_integration.rs      # YubiKey Phase 1-3 tests (8)
+│   ├── transport_integration.rs   # Transport layer tests (10)
+│   ├── software_hsm_integration.rs # HSM integration tests (9)
+│   ├── auth_integration.rs         # Authentication tests (3)
+│   ├── network_integration.rs      # Network tests (7)
+│   ├── roundtrip_integration.rs    # End-to-end tests (15)
+│   ├── universal_backend_integration.rs # Backend tests (6)
+│   └── domain_separation_test.rs   # Security tests (7)
+└── examples/            # Comprehensive demonstration examples
+    ├── yubikey_quic_demo.rs       # Phase 3 QUIC integration demo
+    ├── yubikey_certificate_demo.rs # Certificate generation demo
+    ├── transport_demo.rs          # Transport abstraction demo
+    └── universal_backend_demo.rs  # Backend selection demo
+```
+
+### Testing Architecture
+
+**144 Total Tests** covering all system components:
+
+**Unit Tests (79):**
+- Core library functionality
+- Transport layer (QUIC/TCP) validation
+- Universal Backend system testing
+- Software HSM comprehensive coverage
+
+**Integration Tests (65):**
+- YubiKey hardware integration (Phase 1-3)
+- Transport layer end-to-end validation
+- Authentication and session management
+- Network communication workflows
+- Security and domain separation
+
+**Quality Assurance:**
+```bash
+# Complete test suite (all 144 tests)
+./ci-check.sh                    # CI pipeline validation
+
+# Test categories
+cargo test --lib                 # Unit tests (79)
+cargo test --test yubikey_integration     # YubiKey tests (8)
+cargo test --test transport_integration   # Transport tests (10)
+
+# Hardware feature testing
+cargo test --features yubikey    # Include YubiKey hardware tests
 ```
 
 ### Data-Agnostic Architecture
