@@ -34,7 +34,7 @@ mod tests {
         aead::{Aead, KeyInit, Payload},
         Aes256Gcm, Key,
     };
-    use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
+    use ed25519_dalek::{Signature, SigningKey, VerifyingKey};
 
     // ----------------------------
     // Fixed, test-only constants
@@ -69,9 +69,9 @@ mod tests {
 
     /// Replace this after first run (see test output).
     /// const GOLDEN_TRST_BLAKE3: &str = "<fill-me-after-first-run>";
-    /// after first run =
+    /// Updated for bounds checking enhancement (chunk_len in manifest + AAD)
     const GOLDEN_TRST_BLAKE3: &str =
-        "1891b8e45a0b2081728c6cf0ed71b32eb3bdd21ba47d413b4d16054de314098f";
+        "4c658188fa25fb7fd2baa1148566db86dbdf3581c0b7ebf9e5de876f4f8656f3";
 
     // ----------------------------
     // Helpers
@@ -162,19 +162,20 @@ mod tests {
                 model_ids: vec![],
                 key_id: TEST_KEY_ID,
                 data_type: crate::DataType::File { mime_type: None }, // Test data
+                chunk_len: pt.len() as u32, // Bind actual chunk length to AAD
             };
 
             let m_bytes = bincode::serialize(&m).expect("manifest serialize");
-            let sig: Signature = signing.sign(&m_bytes);
+            let sig: Signature = crate::format::sign_manifest_with_domain(&signing, &m_bytes);
             let sm = SignedManifest {
                 manifest: m_bytes.clone(),
                 sig: sig.to_bytes().to_vec(),
                 pubkey: verify.to_bytes().to_vec(),
             };
 
-            // AAD = [header_hash || seq || nonce || blake3(manifest)]
+            // AAD = [header_hash || seq || nonce || blake3(manifest) || chunk_len]
             let mh = blake3::hash(&m_bytes);
-            let aad = build_aad(&header_hash, seq, &nonce_bytes, mh.as_bytes());
+            let aad = build_aad(&header_hash, seq, &nonce_bytes, mh.as_bytes(), m.chunk_len);
 
             // Encrypt
             let ct = cipher

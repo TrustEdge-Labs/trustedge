@@ -344,6 +344,7 @@ async fn send_encrypted_file(
             ai_used: false,
             model_ids: vec![],
             data_type: trustedge_core::DataType::File { mime_type: None }, // Generic file data
+            chunk_len: bytes_read as u32, // Bind actual chunk length to AAD
         };
 
         // Sign & wrap
@@ -361,6 +362,7 @@ async fn send_encrypted_file(
             sequence,
             &nonce_bytes,
             blake3::hash(&m_bytes).as_bytes(),
+            manifest.chunk_len,
         );
 
         // Encrypt
@@ -457,6 +459,7 @@ async fn send_encrypted_test_chunks(
             ai_used: false,
             model_ids: vec![],
             data_type: trustedge_core::DataType::File { mime_type: None }, // Test data
+            chunk_len: pt.len() as u32, // Bind actual chunk length to AAD
         };
 
         let m_bytes = bincode::serialize(&manifest)?;
@@ -472,6 +475,7 @@ async fn send_encrypted_test_chunks(
             seq,
             &nonce_bytes,
             blake3::hash(&m_bytes).as_bytes(),
+            manifest.chunk_len,
         );
         let ciphertext = cipher
             .encrypt(

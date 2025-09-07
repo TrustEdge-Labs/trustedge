@@ -5,9 +5,10 @@ Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 * ✅ A reader implemented from the spec (no repo code) can verify test vectors.
-* ✅ Deterministic test vectors with golden hash: `8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c`
+* ✅ Deterministic test vectors with golden hash: `4c658188fa25fb7fd2baa1148566db86dbdf3581c0b7ebf9e5de876f4f8656f3`
 * ✅ Network stack: complete client/server with chunk validation and ACK protocol
 * ✅ Comprehensive validation: all security invariants enforced during processing
+* ✅ DoS protection: bounds checking for chunk sizes, record counts, and stream limits
 * [ ] Fuzz on `deserialize(Record)` doesn't crash (see M3).Privacy and trust at the edge.
 -->
 
@@ -53,7 +54,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 ## Architecture (snapshot)
 
 * **Edge/Producer**
-  Chunk → hash → sign manifest (Ed25519) → AAD = `{ header_hash || seq || nonce || blake3(manifest) }` → AES-GCM encrypt → emit `.trst` or network frame.
+  Chunk → hash → sign manifest (Ed25519) → AAD = `{ header_hash || seq || nonce || blake3(manifest) || chunk_len }` → AES-GCM encrypt → emit `.trst` or network frame.
 
 * **Transit/Router**
   Sees headers/sequences; can route/rate-limit; cannot read or forge.
@@ -66,6 +67,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 * **Confidentiality:** AES-256-GCM; unique nonce per key/session.
 * **Integrity & provenance:** Ed25519 over manifest + AAD binding.
 * **Replay resistance:** contiguous `seq`, checked nonce prefix.
+* **DoS protection:** Configurable limits on chunk sizes, record counts, and stream sizes.
 * **Privacy by default:** only minimal routable metadata is exposed.
 
 ---
@@ -83,9 +85,18 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 * [x] Format types consolidated in `src/format.rs`
 * [x] Key ID field added to manifest for rotation support
 * [x] Comprehensive validation: header consistency, sequence integrity, nonce verification
+* [x] Enhanced bounds checking: chunk size limits, record count limits, stream size limits
 * [x] Production-ready network stack with TCP client/server
 * [x] Deterministic test vectors with golden hash verification
 * [x] Integration testing with CLI and network protocol validation
+* [x] **Comprehensive bounds checking and DoS protection**:
+  - [x] Chunk size bounds enforcement (MAX_CHUNK_SIZE: 128MB)
+  - [x] Record count limits per stream (MAX_RECORDS_PER_STREAM: 1M)
+  - [x] Total stream size limits (MAX_STREAM_SIZE_BYTES: 10GB)
+  - [x] Enhanced AAD validation with chunk_len field (88-byte AAD)
+  - [x] Pre-decryption and post-decryption bounds validation
+  - [x] Sequence number consistency enforcement (m.seq == rec.seq)
+  - [x] Zero-copy validation where possible for performance
 
 ---
 
@@ -148,6 +159,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 * [x] **Connection timeouts and retry logic** with configurable parameters
 * [x] **Graceful server shutdown** with connection cleanup
 * [x] **Enhanced connection management** with session tracking
+* [x] **DoS protection implementation** with comprehensive bounds checking
+* [x] **Security-hardened AAD validation** with extended 88-byte AAD format
 
 ### 3.2 Ed25519 Mutual Authentication System ✅
 * [x] **Server authentication implementation** with identity certificates
@@ -684,7 +697,7 @@ trustedge-client --server 127.0.0.1:8080 --test-chunks 100 \
 
 ## Definition Snippets (v1)
 
-* **AAD layout:** `header_hash (32) || seq (8, BE) || nonce (12) || blake3(manifest) (32)`
+* **AAD layout:** `header_hash (32) || seq (8, BE) || nonce (12) || blake3(manifest) (32) || chunk_len (4, BE)` (88 bytes total)
 * **Preamble:** `MAGIC="TRST"`, `VERSION=1`
 * **Envelope:** `StreamHeader { v, header (58), header_hash (32) }` then repeated
   `Record { seq, nonce, sm, ct }`

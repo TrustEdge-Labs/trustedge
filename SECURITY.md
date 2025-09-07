@@ -51,6 +51,9 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 - Connection timeouts and retry logic
 - Graceful shutdown handling
 - Domain separation prevents cross-context signature reuse
+- **DoS Protection**: Resource bounds and limits enforcement
+- **Bounds Checking**: Comprehensive validation of chunk sizes and stream limits
+- **Length Integrity**: Cryptographic binding of chunk lengths via AAD
 
 **🔄 In Development (Phase 3):**
 - Server certificate validation and mutual TLS
@@ -61,7 +64,7 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 **📋 Planned Security Features:**
 - TPM and HSM key storage backends
 - Key rotation and revocation mechanisms
-- Rate limiting and DoS protection
+- Enhanced rate limiting and monitoring
 - Security audit logging
 
 ### Security Assumptions
@@ -70,6 +73,34 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 - Network transport provides confidentiality (HTTPS/TLS) - being enhanced
 - System entropy source is reliable for cryptographic operations
 - Dependencies (aes-gcm, ed25519-dalek, etc.) are trustworthy
+
+### DoS Protection & Resource Bounds
+
+TrustEdge implements comprehensive defense-in-depth against denial-of-service attacks:
+
+**Stream-Level Limits:**
+- Maximum chunk size: 128MB per chunk
+- Maximum records per stream: 1,000,000 records
+- Maximum total stream size: 10GB
+- Early rejection of oversized requests
+
+**Cryptographic Bounds:**
+- Chunk length cryptographically bound via AAD
+- Pre-decryption validation of expected sizes
+- Post-decryption length verification
+- Ciphertext size validation (≤ chunk_size + 16 bytes)
+
+**Memory Protection:**
+- Fixed-size buffers where possible
+- Streaming processing without full data buffering
+- Early termination on bounds violations
+- Resource cleanup on validation failures
+
+These protections prevent malicious actors from:
+- Exhausting server memory with oversized chunks
+- Creating arbitrarily large streams
+- Manipulating chunk lengths to cause buffer overruns
+- Bypassing validation through length field tampering
 
 ## Reporting a Vulnerability
 

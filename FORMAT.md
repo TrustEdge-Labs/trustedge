@@ -138,11 +138,15 @@ struct Manifest {
     key_id: [u8; 16],         // Must match FileHeader.key_id
     ai_used: bool,            // AI processing flag (placeholder)
     model_ids: Vec<String>,   // Model identifiers (placeholder)
+    data_type: DataType,      // Data type and format metadata
+    chunk_len: u32,           // Expected plaintext length (cryptographically bound via AAD)
 }
 ```
 
+**Security Enhancement**: The `chunk_len` field is cryptographically bound to the ciphertext via AAD, preventing length manipulation attacks and enabling early bounds checking before decryption.
+
 **Byte Order**: 
-- `seq`, `ts_ms`: Little-endian (bincode default)
+- `seq`, `ts_ms`, `chunk_len`: Little-endian (bincode default)
 - Nonce counter (last 8 bytes): **Big-endian** to match sequence
 
 ---
@@ -166,16 +170,22 @@ nonce = nonce_prefix(4) || sequence_be(8)
 ### 5.2. AAD (Additional Authenticated Data)
 
 ```
-AAD = header_hash(32) || seq_be(8) || nonce(12) || manifest_hash(32)
+AAD = header_hash(32) || seq_be(8) || nonce(12) || manifest_hash(32) || chunk_len_be(4)
 ```
 
-Total length: 84 bytes
+Total length: 88 bytes
 
 **Construction**:
 1. `header_hash`: StreamHeader.header_hash (32 bytes)
 2. `seq_be`: Record sequence as big-endian u64 (8 bytes)  
-3. `nonce`: Full 12-byte nonce (4 bytes)
+3. `nonce`: Full 12-byte nonce (4 bytes prefix + 8 bytes counter)
 4. `manifest_hash`: BLAKE3(SignedManifest.manifest) (32 bytes)
+5. `chunk_len_be`: Expected plaintext length as big-endian u32 (4 bytes)
+
+**Security Properties**:
+- Cryptographically binds chunk length to prevent manipulation
+- Enables pre-decryption validation of expected plaintext size
+- Provides early detection of malformed or oversized chunks
 
 ### 5.3. AES-GCM Encryption
 
@@ -200,6 +210,9 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 2. **Header Hash**: StreamHeader.header_hash must equal BLAKE3(StreamHeader.header)
 3. **Header Length**: FileHeader must be exactly 58 bytes
 4. **Sequence Contiguity**: Record sequences must start at 1 and increment by 1
+5. **Chunk Size Bounds**: FileHeader.chunk_size must be > 0 and ≤ 128MB
+6. **Stream Size Limits**: Total stream size must not exceed 10GB
+7. **Record Count Limits**: Maximum 1,000,000 records per stream
 
 ### 6.2. Record-Level Invariants
 
@@ -215,6 +228,9 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
    ```
 7. **Public Key**: Must be valid Ed25519 public key (32 bytes)
 8. **Plaintext Hash**: After decryption, BLAKE3(plaintext) must equal Manifest.pt_hash
+9. **Chunk Length Bounds**: Manifest.chunk_len must be > 0 and ≤ FileHeader.chunk_size
+10. **Ciphertext Size Bounds**: Record.ct.len() must be ≤ chunk_size + 16 (AES-GCM tag)
+11. **Decrypted Length Validation**: len(decrypted_plaintext) must equal Manifest.chunk_len
 
 ### 6.3. Cryptographic Invariants
 
@@ -249,6 +265,12 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 | `DecryptionFailure` | AES-GCM decrypt/auth failed | Reject record |
 | `PlaintextHashMismatch` | Decrypted hash ≠ manifest | Reject record |
 | `SequenceGap` | Non-contiguous sequence | Reject record |
+| `ChunkSizeExceeded` | chunk_size > MAX_CHUNK_SIZE | Reject stream |
+| `ChunkLengthInvalid` | chunk_len > chunk_size or = 0 | Reject record |
+| `CiphertextOversized` | ct.len() > chunk_size + 16 | Reject record |
+| `LengthMismatch` | decrypted_len ≠ chunk_len | Reject record |
+| `StreamSizeExceeded` | Total size > 10GB | Reject stream |
+| `RecordCountExceeded` | Records > 1,000,000 | Reject stream |
 
 ### 7.3. Failure Semantics
 

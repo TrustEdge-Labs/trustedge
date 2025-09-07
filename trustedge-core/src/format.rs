@@ -8,12 +8,18 @@ use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use serde::{Deserialize, Serialize};
 
 pub const NONCE_LEN: usize = 12;
-pub const AAD_LEN: usize = 32 + 8 + NONCE_LEN + 32;
+pub const AAD_LEN: usize = 32 + 8 + NONCE_LEN + 32 + 4; // Added 4 bytes for chunk_len
 pub const HEADER_LEN: usize = 58;
 
 pub const MAGIC: &[u8; 4] = b"TRST";
 pub const VERSION: u8 = 1;
 pub const ALG_AES_256_GCM: u8 = 1;
+
+// Security limits and bounds
+pub const MAX_CHUNK_SIZE: u32 = 128 * 1024 * 1024; // 128MB max chunk size
+pub const MAX_RECORDS_PER_STREAM: u64 = 1_000_000; // 1M records max per stream
+pub const MAX_STREAM_SIZE_BYTES: u64 = 10 * 1024 * 1024 * 1024; // 10GB max stream size
+pub const AES_GCM_TAG_SIZE: usize = 16; // AES-GCM authentication tag size
 
 /// Domain separation string for manifest signatures
 /// Prevents signature reuse across different contexts or protocols
@@ -112,7 +118,8 @@ pub struct Manifest {
     pub key_id: [u8; 16], // Added for key identification/rotation
     pub ai_used: bool,
     pub model_ids: Vec<String>,
-    pub data_type: DataType, // NEW: Data type and format metadata
+    pub data_type: DataType, // Data type and format metadata
+    pub chunk_len: u32,      // NEW: Expected plaintext length of this chunk (bound via AAD)
 }
 
 /// SignedManifest structure
@@ -141,11 +148,13 @@ pub struct Record {
 }
 
 /// Build Additional Authenticated Data (AAD) for encryption
+/// AAD = header_hash(32) || seq_be(8) || nonce(12) || manifest_hash(32) || chunk_len_be(4)
 pub fn build_aad(
     header_hash: &[u8; 32],
     seq: u64,
     nonce: &[u8; NONCE_LEN],
     manifest_hash: &[u8; 32],
+    chunk_len: u32,
 ) -> [u8; AAD_LEN] {
     let mut aad = [0u8; AAD_LEN];
     let mut off = 0;
@@ -156,6 +165,8 @@ pub fn build_aad(
     aad[off..off + NONCE_LEN].copy_from_slice(nonce);
     off += NONCE_LEN;
     aad[off..off + 32].copy_from_slice(manifest_hash);
+    off += 32;
+    aad[off..off + 4].copy_from_slice(&chunk_len.to_be_bytes());
     aad
 }
 
