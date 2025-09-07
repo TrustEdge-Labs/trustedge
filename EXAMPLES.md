@@ -1653,6 +1653,8 @@ Backend Health Status:
 
 ## Hardware Backend Demonstrations
 
+These examples showcase TrustEdge integration with different hardware security modules and backends.
+
 ### Software HSM Backend Demo
 
 The Software HSM backend provides a pure Rust implementation of secure key management with persistent storage:
@@ -1684,6 +1686,8 @@ cargo run --bin software-hsm-demo -- test-registry
 
 ### YubiKey Hardware Backend Demo
 
+**Quick Start**: For new users, we recommend starting with the [unified demo example](#option-1-unified-demo-recommended-for-new-users) which shows the complete YubiKey workflow in one command. Advanced users can use the [command-line interface](#option-2-command-line-interface-advanced-users) for specific operations.
+
 The YubiKey backend provides true hardware root of trust using PKCS#11:
 
 #### Prerequisites Setup
@@ -1708,36 +1712,69 @@ find /usr -name "*opensc-pkcs11*" 2>/dev/null
 
 #### YubiKey Demo Commands
 
+TrustEdge provides two ways to explore YubiKey integration:
+
+##### Option 1: Unified Demo (Recommended for New Users)
+
+The unified YubiKey demo showcases complete hardware integration - from key discovery to certificate generation to hardware signing:
+
 ```bash
 cd trustedge-core
 
+# Run the comprehensive YubiKey demonstration
+cargo run --example yubikey_demo --features yubikey
+
+# Output shows complete workflow:
+# ■ TrustEdge YubiKey Hardware Integration Demo
+# ═══════════════════════════════════════════
+# 
+# ● YubiKey Backend Capabilities:
+#    Hardware-backed: ✔ YES
+#    Supports attestation: ✔ YES
+#    Asymmetric algorithms: EcdsaP256, Rsa2048, Rsa4096
+#    Signature algorithms: EcdsaP256, RsaPkcs1v15, RsaPss
+#    Hash algorithms: Sha256, Sha384, Sha512
+# 
+# ● Scanning YubiKey PIV slots for existing keys...
+#    Slot 9A (PIV Authentication): ✔ Key found (ECC P-256)
+#    Slot 9C (Digital Signature): ✖ No key
+#    Slot 9D (Key Management): ✖ No key  
+#    Slot 9E (Card Authentication): ✔ Key found (ECC P-256)
+# 
+# ● Real Hardware Public Keys:
+#    Key 9A: 04b2c8...f7e9 (65 bytes, uncompressed)
+#    Key 9E: 04a1b7...d3c4 (65 bytes, uncompressed)
+# 
+# ● Generating X.509 certificates with real public keys...
+#    ✔ Certificate for 9A: 456 bytes (DER-encoded)
+#    ✔ Certificate for 9E: 443 bytes (DER-encoded)
+# 
+# ● Hardware signing demonstration...
+#    ✔ Hardware signature: 72 bytes (ECDSA P-256)
+#    ✔ Signature verification: PASSED
+# 
+# ✔ YubiKey integration demonstration complete!
+
+# Without YubiKey hardware (shows setup guidance)
+cargo run --example yubikey_demo
+# ⚠ This example requires the 'yubikey' feature to be enabled.
+#   Run with: cargo run --example yubikey_demo --features yubikey
+```
+
+##### Option 2: Command-Line Interface (Advanced Users)
+
+For advanced users who want specific control over YubiKey operations:
+
+```bash
 # Test basic connectivity (no PIN required)
 cargo run --bin yubikey-demo --features yubikey -- \
   -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
   -v test
 
-# Output:
-# ■ TrustEdge YubiKey Demo - Hardware Root of Trust
-# ═══════════════════════════════════════════════════
-# ✔ YubiKey backend initialized successfully
-# ✔ YubiKey connectivity test passed!
-
 # Show hardware capabilities
 cargo run --bin yubikey-demo --features yubikey -- \
   -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
   -v capabilities
-
-# Output shows:
-# ● Hardware Backed: ✔ YES
-# ● Supports Attestation: ✔ YES
-# ● Asymmetric Algorithms: EcdsaP256, Rsa2048, Rsa4096
-# ● Signature Algorithms: EcdsaP256, RsaPkcs1v15, RsaPss
-# ● Hash Algorithms: Sha256, Sha384, Sha512
-
-# List keys with PIN authentication
-cargo run --bin yubikey-demo --features yubikey -- \
-  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
-  -P YOUR_PIN -v list-keys
 
 # Hardware signing (requires PIN + key)
 cargo run --bin yubikey-demo --features yubikey -- \
@@ -1745,22 +1782,6 @@ cargo run --bin yubikey-demo --features yubikey -- \
   -P YOUR_PIN \
   -k "SIGN key" \
   -v sign --data "Hardware root of trust signature!"
-
-# Output:
-# ✔ Signed 20 bytes with key 'SIGN key'
-# ✔ Signature generated successfully!
-# ● Signature length: 64 bytes
-
-# Get hardware attestation proof
-cargo run --bin yubikey-demo --features yubikey -- \
-  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
-  -P YOUR_PIN \
-  -v attest --challenge "TrustEdge Hardware Demo 2025"
-
-# Output:
-# ✔ Attestation proof generated!
-# ● Proof length: 32 bytes
-# ● Hardware attestation validates genuine YubiKey
 ```
 
 #### Finding Your YubiKey Keys
@@ -1775,10 +1796,15 @@ pkcs11-tool --module /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
 #   label:      SIGN key
 #   ID:         02
 
-# Method 2: Use TrustEdge YubiKey demo
-cargo run --bin yubikey-demo --features yubikey -- \
-  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
-  -P YOUR_PIN -v list-keys
+# Method 2: Use TrustEdge unified YubiKey demo (recommended)
+cargo run --example yubikey_demo --features yubikey
+
+# The demo automatically scans all PIV slots and shows:
+# ● Scanning YubiKey PIV slots for existing keys...
+#    Slot 9A (PIV Authentication): ✔ Key found (ECC P-256)
+#    Slot 9C (Digital Signature): ✖ No key
+#    Slot 9D (Key Management): ✖ No key  
+#    Slot 9E (Card Authentication): ✔ Key found (ECC P-256)
 ```
 
 #### Security Features Demonstrated
