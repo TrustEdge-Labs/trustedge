@@ -4,8 +4,8 @@
 
 /// trustedge_core/src/format.rs
 use anyhow::{Context, Result};
+use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use serde::{Deserialize, Serialize};
-use ed25519_dalek::{SigningKey, VerifyingKey, Signature, Signer, Verifier};
 
 pub const NONCE_LEN: usize = 12;
 pub const AAD_LEN: usize = 32 + 8 + NONCE_LEN + 32;
@@ -191,13 +191,17 @@ pub fn sign_manifest_with_domain(signing_key: &SigningKey, manifest_bytes: &[u8]
 /// Verify manifest signature with domain separation
 /// This prevents signature reuse across different contexts or protocols
 pub fn verify_manifest_with_domain(
-    verifying_key: &VerifyingKey, 
-    manifest_bytes: &[u8], 
-    signature: &Signature
+    verifying_key: &VerifyingKey,
+    manifest_bytes: &[u8],
+    signature: &Signature,
 ) -> Result<()> {
     let mut message = Vec::with_capacity(MANIFEST_DOMAIN_SEP.len() + manifest_bytes.len());
     message.extend_from_slice(MANIFEST_DOMAIN_SEP);
     message.extend_from_slice(manifest_bytes);
-    verifying_key.verify(&message, signature)
-        .map_err(|e| anyhow::anyhow!("Domain-separated manifest signature verification failed: {}", e))
+    verifying_key.verify(&message, signature).map_err(|e| {
+        anyhow::anyhow!(
+            "Domain-separated manifest signature verification failed: {}",
+            e
+        )
+    })
 }

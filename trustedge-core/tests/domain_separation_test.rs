@@ -6,7 +6,7 @@
 //! Tests that domain separation prevents signature reuse across contexts
 
 use anyhow::Result;
-use ed25519_dalek::{SigningKey, Signer, Verifier};
+use ed25519_dalek::{Signer, SigningKey, Verifier};
 use trustedge_core::format::{
     sign_manifest_with_domain, verify_manifest_with_domain, MANIFEST_DOMAIN_SEP,
 };
@@ -38,7 +38,10 @@ fn test_domain_separation_prevents_raw_signature_reuse() -> Result<()> {
 
     // Attempting to verify domain-separated signature with raw signature should fail
     let result = verify_manifest_with_domain(&verifying_key, manifest_bytes, &raw_signature);
-    assert!(result.is_err(), "Raw signature should not verify with domain separation");
+    assert!(
+        result.is_err(),
+        "Raw signature should not verify with domain separation"
+    );
 
     println!("✔ Domain separation prevents raw signature reuse");
     Ok(())
@@ -59,7 +62,10 @@ fn test_domain_separation_prevents_cross_context_reuse() -> Result<()> {
 
     // Should fail verification with correct domain
     let result = verify_manifest_with_domain(&verifying_key, manifest_bytes, &malicious_signature);
-    assert!(result.is_err(), "Signature with wrong domain should not verify");
+    assert!(
+        result.is_err(),
+        "Signature with wrong domain should not verify"
+    );
 
     println!("✔ Domain separation prevents cross-context signature reuse");
     Ok(())
@@ -82,7 +88,10 @@ fn test_domain_separation_tampered_prefix_fails() -> Result<()> {
 
     // Direct verification with tampered domain should fail
     let result = verifying_key.verify(&tampered_message, &signature);
-    assert!(result.is_err(), "Signature should not verify with tampered domain prefix");
+    assert!(
+        result.is_err(),
+        "Signature should not verify with tampered domain prefix"
+    );
 
     println!("✔ Tampered domain prefix causes verification failure");
     Ok(())
@@ -101,7 +110,10 @@ fn test_domain_separation_different_manifests() -> Result<()> {
 
     // Try to verify signature1 against manifest2 (should fail)
     let result = verify_manifest_with_domain(&verifying_key, manifest2, &signature1);
-    assert!(result.is_err(), "Signature should not verify against different manifest");
+    assert!(
+        result.is_err(),
+        "Signature should not verify against different manifest"
+    );
 
     // Verify signature1 against correct manifest1 (should succeed)
     verify_manifest_with_domain(&verifying_key, manifest1, &signature1)?;
@@ -114,7 +126,10 @@ fn test_domain_separation_different_manifests() -> Result<()> {
 fn test_domain_string_content() {
     // Verify the domain separation string is what we expect
     assert_eq!(MANIFEST_DOMAIN_SEP, b"trustedge.manifest.v1");
-    println!("✔ Domain separation string is correct: {:?}", std::str::from_utf8(MANIFEST_DOMAIN_SEP).unwrap());
+    println!(
+        "✔ Domain separation string is correct: {:?}",
+        std::str::from_utf8(MANIFEST_DOMAIN_SEP).unwrap()
+    );
 }
 
 #[test]
@@ -128,7 +143,11 @@ fn test_signature_determinism_with_domain_separation() -> Result<()> {
     let sig2 = sign_manifest_with_domain(&signing_key, manifest_bytes);
 
     // Both signatures should be identical
-    assert_eq!(sig1.to_bytes(), sig2.to_bytes(), "Ed25519 signatures should be deterministic");
+    assert_eq!(
+        sig1.to_bytes(),
+        sig2.to_bytes(),
+        "Ed25519 signatures should be deterministic"
+    );
 
     // Both should verify correctly
     verify_manifest_with_domain(&verifying_key, manifest_bytes, &sig1)?;
