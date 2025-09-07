@@ -12,11 +12,13 @@
 //! This module provides a pluggable backend system for key management operations.
 //! Currently supports:
 //! - Keyring backend (PBKDF2 with OS keyring)
+//! - Software HSM backend (file-based key storage)
+//! - Universal backend registry system
+//! - YubiKey backend (PKCS#11 hardware tokens)
 //!
 //! Planned backends:
 //! - TPM 2.0 backend
-//! - HSM backend (PKCS#11)
-//! - Matter certificate backend
+//! - Hardware HSM backend (additional PKCS#11 devices)
 
 pub mod keyring;
 pub mod software_hsm;
@@ -24,6 +26,7 @@ pub mod traits;
 pub mod universal;
 pub mod universal_keyring;
 pub mod universal_registry;
+pub mod yubikey;
 
 pub use keyring::KeyringBackend;
 pub use software_hsm::SoftwareHsmBackend;
@@ -31,6 +34,7 @@ pub use traits::*;
 pub use universal::*;
 pub use universal_keyring::UniversalKeyringBackend;
 pub use universal_registry::{BackendPreferences, UniversalBackendRegistry};
+pub use yubikey::{YubiKeyBackend, YubiKeyConfig};
 
 use anyhow::Result;
 

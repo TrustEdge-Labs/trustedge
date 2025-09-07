@@ -250,7 +250,13 @@ cd trustedge/trustedge-core
 # Build with audio support
 cargo build --release --features audio
 
-# Build without audio (CI-compatible)
+# Build with YubiKey hardware support (requires PKCS#11)
+cargo build --release --features yubikey
+
+# Build with all features enabled
+cargo build --release --features audio,yubikey
+
+# Build without optional features (CI-compatible)
 cargo build --release
 
 # Run tests
@@ -258,6 +264,9 @@ cargo test
 
 # Test audio features specifically
 cargo test --features audio
+
+# Test YubiKey backend (stub implementation)
+cargo test --features yubikey
 
 # Check code quality
 cargo clippy -- -D warnings

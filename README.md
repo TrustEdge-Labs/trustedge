@@ -83,6 +83,22 @@ sudo apt-get install libasound2-dev pkg-config
 cargo build --release --features audio
 ```
 
+**YubiKey Hardware Support (Optional):**
+```bash
+# Install PKCS#11 module for YubiKey support
+# On Ubuntu/Debian:
+sudo apt install opensc-pkcs11
+
+# On macOS (via Homebrew):
+brew install opensc
+
+# Build with YubiKey hardware backend
+cargo build --release --features yubikey
+
+# Or build with all features
+cargo build --release --features audio,yubikey
+```
+
 ### Basic Usage
 
 **Live Audio Capture (NEW!):**
@@ -245,7 +261,7 @@ pub enum CryptoOperation {
 | Backend | Status | Operations | Notes |
 |---------|--------|------------|-------|
 | **Keyring** | ✅ Available | Key derivation, hashing, nonce generation | OS keyring integration |
-| **YubiKey** | 🔄 Planned | PIV operations, hardware signing | Requires YubiKey PIV |
+| **YubiKey** | ✅ Available | PIV operations, hardware signing, attestation | Requires PKCS#11 module |
 | **TPM** | 🔄 Planned | TPM 2.0 operations, attestation | Linux/Windows TPM support |
 | **HSM** | 🔄 Planned | PKCS#11 operations | Enterprise HSM integration |
 
@@ -255,12 +271,20 @@ pub enum CryptoOperation {
 # Run the Universal Backend demonstration
 cargo run --example universal_backend_demo
 
-# Expected output:
-# ✔ Available backends: keyring
-# ✔ Backend capabilities: DeriveKey, ComputeHash, GenerateNonce
-# ✔ Key derivation: Successfully derived key for audio.encryption
-# ✔ Hash computation: Successfully computed SHA-256 hash
-# ✔ Nonce generation: Successfully generated 12-byte nonce
+# Run Software HSM backend demo
+cargo run --bin software-hsm-demo -- generate-key my_key ed25519
+cargo run --bin software-hsm-demo -- sign my_key "Hello TrustEdge!"
+
+# Run YubiKey hardware backend demo (requires YubiKey + PKCS#11)
+cargo run --bin yubikey-demo --features yubikey -- \
+  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
+  -v capabilities
+
+# Hardware signing with YubiKey (requires PIN)
+cargo run --bin yubikey-demo --features yubikey -- \
+  -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so \
+  -P YOUR_PIN -k "SIGN key" \
+  sign --data "Hardware root of trust!"
 ```
 
 **📖 For detailed Universal Backend documentation and implementation guides, see [UNIVERSAL_BACKEND.md](UNIVERSAL_BACKEND.md).**

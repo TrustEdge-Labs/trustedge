@@ -1,12 +1,12 @@
 {
-  "test_formatted": {
-    "key_id": "test_formatted",
+  "test_ed25519": {
+    "key_id": "test_ed25519",
     "algorithm": "Ed25519",
-    "private_key_path": "./demo_keys/test_formatted_private.key",
-    "public_key_path": "./demo_keys/test_formatted_public.key",
-    "created_at": 1756950617,
-    "last_used": null,
-    "description": "Testing formatted code"
+    "private_key_path": "./demo_keys/test_ed25519_private.key",
+    "public_key_path": "./demo_keys/test_ed25519_public.key",
+    "created_at": 1756950233,
+    "last_used": 1756950566,
+    "description": "Test Ed25519 key for Software HSM demo"
   },
   "test_p256": {
     "key_id": "test_p256",
@@ -17,13 +17,22 @@
     "last_used": 1756950289,
     "description": "Test P-256 key for Software HSM demo"
   },
-  "test_ed25519": {
-    "key_id": "test_ed25519",
+  "test_formatted": {
+    "key_id": "test_formatted",
     "algorithm": "Ed25519",
-    "private_key_path": "./demo_keys/test_ed25519_private.key",
-    "public_key_path": "./demo_keys/test_ed25519_public.key",
-    "created_at": 1756950233,
-    "last_used": 1756950566,
-    "description": "Test Ed25519 key for Software HSM demo"
+    "private_key_path": "./demo_keys/test_formatted_private.key",
+    "public_key_path": "./demo_keys/test_formatted_public.key",
+    "created_at": 1756950617,
+    "last_used": null,
+    "description": "Testing formatted code"
+  },
+  "demo_key": {
+    "key_id": "demo_key",
+    "algorithm": "Ed25519",
+    "private_key_path": "./demo_keys/demo_key_private.key",
+    "public_key_path": "./demo_keys/demo_key_public.key",
+    "created_at": 1757266135,
+    "last_used": 1757266152,
+    "description": "Ed25519 key"
   }
 }
