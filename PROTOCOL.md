@@ -83,7 +83,7 @@ struct NetworkChunk {
 
 The `.trst` envelope file is a binary format containing:
 
-- **StreamHeader**: version, header bytes (58 bytes), header hash (BLAKE3)
+- **StreamHeader**: version, header bytes (66 bytes V2, 58 bytes V1), header hash (BLAKE3)
 - **Record(s)**: sequence number, nonce (12 bytes: 4-byte prefix + 8-byte counter), signed manifest (with Ed25519 signature), ciphertext (AES-GCM)
 
 All fields are bincode-encoded for compactness and speed.

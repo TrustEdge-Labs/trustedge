@@ -41,10 +41,9 @@ use trustedge_core::{
     Record,
     SignedManifest,
     StreamHeader,
-    ALG_AES_256_GCM,
+    // Constants
     HEADER_LEN,
     MAGIC,
-    // Constants
     NONCE_LEN,
     VERSION,
 };
@@ -409,7 +408,6 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     // stream header
     let sh: StreamHeader = deserialize_from(&mut r).context("read stream header")?;
     anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
-    let stream_nonce_prefix: [u8; 4] = sh.header[50..54].try_into().unwrap();
 
     // turn Vec<u8> into the fixed array
     let header_arr: [u8; trustedge_core::HEADER_LEN] = sh
@@ -418,8 +416,12 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
         .try_into()
         .context("stream header length != 58")?;
 
-    // parse the 58-byte header into a FileHeader
-    let fh = trustedge_core::FileHeader::from_bytes(&header_arr);
+    // parse the header into a FileHeader with validation
+    let fh = trustedge_core::FileHeader::from_bytes(&header_arr)
+        .context("failed to parse FileHeader")?;
+
+    // extract the nonce prefix from the parsed header
+    let stream_nonce_prefix = fh.nonce_prefix;
 
     // verify stored header hash matches recompute
     let hh = blake3::hash(&sh.header);
@@ -605,7 +607,7 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
 
 fn inspect_envelope(args: &Args) -> Result<()> {
     use std::fs::File;
-    use std::io::{BufReader, Read};
+    use std::io::BufReader;
 
     // io
     let input = args
@@ -614,16 +616,10 @@ fn inspect_envelope(args: &Args) -> Result<()> {
         .ok_or_else(|| anyhow!("--input is required for --inspect"))?;
     let mut r = BufReader::new(File::open(input).context("open envelope")?);
 
-    // preamble
-    let mut magic = [0u8; 4];
-    r.read_exact(&mut magic).context("read magic")?;
-    anyhow::ensure!(&magic == MAGIC, "bad magic");
-    let mut ver = [0u8; 1];
-    r.read_exact(&mut ver).context("read version")?;
-    anyhow::ensure!(ver[0] == VERSION, "unsupported version");
+    // Use the new version-aware header reading function
+    let sh = trustedge_core::read_preamble_and_header(&mut r)
+        .context("read preamble and stream header")?;
 
-    // stream header
-    let sh: StreamHeader = deserialize_from(&mut r).context("read stream header")?;
     anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
 
     // turn Vec<u8> into the fixed array
@@ -631,10 +627,11 @@ fn inspect_envelope(args: &Args) -> Result<()> {
         .header
         .as_slice()
         .try_into()
-        .context("stream header length != 58")?;
+        .context("stream header length mismatch")?;
 
-    // parse the 58-byte header into a FileHeader
-    let fh = trustedge_core::FileHeader::from_bytes(&header_arr);
+    // parse the header into a FileHeader with validation
+    let fh = trustedge_core::FileHeader::from_bytes(&header_arr)
+        .context("failed to parse FileHeader")?;
 
     // verify stored header hash matches recompute
     let hh = blake3::hash(&sh.header);
@@ -642,15 +639,49 @@ fn inspect_envelope(args: &Args) -> Result<()> {
 
     println!("TrustEdge Archive Information:");
     println!("  File: {}", input.display());
-    println!("  Format Version: {}", ver[0]);
-    println!(
-        "  Algorithm: {}",
-        if fh.alg == 1 {
-            "AES-256-GCM"
-        } else {
-            "Unknown"
-        }
-    );
+    println!("  Format Version: {}", fh.version);
+
+    // Display algorithm information
+    let aead_name = match trustedge_core::format::AeadAlgorithm::try_from(fh.aead_alg) {
+        Ok(trustedge_core::format::AeadAlgorithm::Aes256Gcm) => "AES-256-GCM",
+        Ok(trustedge_core::format::AeadAlgorithm::ChaCha20Poly1305) => "ChaCha20-Poly1305",
+        Ok(trustedge_core::format::AeadAlgorithm::Aes256Siv) => "AES-256-SIV",
+        Err(_) => "Unknown",
+    };
+
+    let sig_name = match trustedge_core::format::SignatureAlgorithm::try_from(fh.sig_alg) {
+        Ok(trustedge_core::format::SignatureAlgorithm::Ed25519) => "Ed25519",
+        Ok(trustedge_core::format::SignatureAlgorithm::EcdsaP256) => "ECDSA-P256",
+        Ok(trustedge_core::format::SignatureAlgorithm::EcdsaP384) => "ECDSA-P384",
+        Ok(trustedge_core::format::SignatureAlgorithm::RsaPss2048) => "RSA-PSS-2048",
+        Ok(trustedge_core::format::SignatureAlgorithm::RsaPss4096) => "RSA-PSS-4096",
+        Ok(trustedge_core::format::SignatureAlgorithm::Dilithium3) => "Dilithium3",
+        Ok(trustedge_core::format::SignatureAlgorithm::Falcon512) => "Falcon512",
+        Err(_) => "Unknown",
+    };
+
+    let hash_name = match trustedge_core::format::HashAlgorithm::try_from(fh.hash_alg) {
+        Ok(trustedge_core::format::HashAlgorithm::Blake3) => "BLAKE3",
+        Ok(trustedge_core::format::HashAlgorithm::Sha256) => "SHA-256",
+        Ok(trustedge_core::format::HashAlgorithm::Sha384) => "SHA-384",
+        Ok(trustedge_core::format::HashAlgorithm::Sha512) => "SHA-512",
+        Ok(trustedge_core::format::HashAlgorithm::Sha3_256) => "SHA3-256",
+        Ok(trustedge_core::format::HashAlgorithm::Sha3_512) => "SHA3-512",
+        Err(_) => "Unknown",
+    };
+
+    let kdf_name = match trustedge_core::format::KdfAlgorithm::try_from(fh.kdf_alg) {
+        Ok(trustedge_core::format::KdfAlgorithm::Pbkdf2Sha256) => "PBKDF2-SHA256",
+        Ok(trustedge_core::format::KdfAlgorithm::Argon2id) => "Argon2id",
+        Ok(trustedge_core::format::KdfAlgorithm::Scrypt) => "scrypt",
+        Ok(trustedge_core::format::KdfAlgorithm::Hkdf) => "HKDF",
+        Err(_) => "Unknown",
+    };
+
+    println!("  AEAD Algorithm: {}", aead_name);
+    println!("  Signature Algorithm: {}", sig_name);
+    println!("  Hash Algorithm: {}", hash_name);
+    println!("  KDF Algorithm: {}", kdf_name);
     println!("  Chunk Size: {} bytes", fh.chunk_size);
 
     // Read first record to get manifest info
@@ -937,8 +968,12 @@ fn main() -> Result<()> {
     device_id_hash.copy_from_slice(hasher.finalize().as_bytes());
 
     let header = FileHeader {
-        version: 1,
-        alg: ALG_AES_256_GCM,
+        version: VERSION,
+        aead_alg: trustedge_core::format::AeadAlgorithm::Aes256Gcm as u8,
+        sig_alg: trustedge_core::format::SignatureAlgorithm::Ed25519 as u8,
+        hash_alg: trustedge_core::format::HashAlgorithm::Blake3 as u8,
+        kdf_alg: trustedge_core::format::KdfAlgorithm::Pbkdf2Sha256 as u8,
+        reserved: [0; 3],
         key_id,
         device_id_hash,
         nonce_prefix,

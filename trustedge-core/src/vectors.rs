@@ -21,8 +21,9 @@ mod tests {
     use std::io::Write;
 
     use crate::{
-        build_aad, write_stream_header, FileHeader, Manifest, Record, SignedManifest, StreamHeader,
-        ALG_AES_256_GCM, HEADER_LEN, MAGIC, NONCE_LEN, VERSION,
+        build_aad,
+        format::{FileHeader, Manifest, Record, SignedManifest, StreamHeader},
+        write_stream_header, HEADER_LEN, MAGIC, NONCE_LEN, VERSION,
     };
 
     use bincode::serialize_into;
@@ -69,9 +70,9 @@ mod tests {
 
     /// Replace this after first run (see test output).
     /// const GOLDEN_TRST_BLAKE3: &str = "<fill-me-after-first-run>";
-    /// Updated for bounds checking enhancement (chunk_len in manifest + AAD)
+    /// Updated for algorithm agility enhancement (new 66-byte header format)
     const GOLDEN_TRST_BLAKE3: &str =
-        "4c658188fa25fb7fd2baa1148566db86dbdf3581c0b7ebf9e5de876f4f8656f3";
+        "162efe3e02b010bd871bb8c69befe673aeb5828ab650131a1664d326609a8bb0";
 
     // ----------------------------
     // Helpers
@@ -88,8 +89,12 @@ mod tests {
         let device_hash = *hasher.finalize().as_bytes();
 
         let fh = FileHeader {
-            version: 1,
-            alg: ALG_AES_256_GCM,
+            version: VERSION,
+            aead_alg: crate::format::AeadAlgorithm::Aes256Gcm as u8,
+            sig_alg: crate::format::SignatureAlgorithm::Ed25519 as u8,
+            hash_alg: crate::format::HashAlgorithm::Blake3 as u8,
+            kdf_alg: crate::format::KdfAlgorithm::Pbkdf2Sha256 as u8,
+            reserved: [0; 3],
             key_id: TEST_KEY_ID,
             device_id_hash: device_hash,
             nonce_prefix: TEST_NONCE_PREFIX,

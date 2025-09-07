@@ -5,10 +5,10 @@ Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
-# TrustEdge Format Specification v1.0
+# TrustEdge Format Specification v2.0
 
-**Version:** 1.0  
-**Date:** August 25, 2025  
+**Version:** 2.0  
+**Date:** September 6, 2025  
 **Status:** Draft
 
 > **Related Documentation**: For security considerations and vulnerability reporting, see [`SECURITY.md`](./SECURITY.md)
@@ -16,6 +16,11 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 ## Overview
 
 This document defines the binary format for TrustEdge `.trst` envelope files. The format provides authenticated encryption with provenance for chunked data streams, designed for privacy-preserving edge computing.
+
+**Version 2.0 Changes:**
+- **Algorithm Agility**: Header expanded from 58 to 66 bytes with dedicated algorithm fields
+- **Forward Compatibility**: Automatic V1→V2 migration with default algorithm mapping
+- **Parse-time Validation**: Reject unknown/unsupported algorithm IDs at parse time
 
 ---
 
@@ -39,18 +44,21 @@ A `.trst` file consists of:
 Offset | Size | Field   | Description
 -------|------|---------|----------------------------------
 0      | 4    | MAGIC   | Magic bytes: "TRST" (0x54525354)
-4      | 1    | VERSION | Format version: 0x01
+4      | 1    | VERSION | Format version: 0x02 (0x01 legacy)
 ```
 
 **Byte Order**: Fixed bytes, no endianness concerns.
 
 **Validation**:
 - MAGIC must exactly match `[0x54, 0x52, 0x53, 0x54]`
-- VERSION must be `0x01` for this specification
+- VERSION must be `0x01` (legacy) or `0x02` (current) for this specification
 
 **Failure Modes**:
 - **Invalid Magic**: Not a TrustEdge file, abort parsing
 - **Unsupported Version**: Future/unknown format, abort parsing
+
+**Version Migration**:
+- V1 files (58-byte headers) automatically migrate to V2 (66-byte headers) with default algorithms
 
 ---
 
@@ -60,21 +68,38 @@ The StreamHeader is bincode-encoded with the following structure:
 
 ```rust
 struct StreamHeader {
-    v: u8,                   // Stream format version (0x01)
-    header: Vec<u8>,         // File header bytes (58 bytes)
+    v: u8,                   // Stream format version (0x02, 0x01 legacy)
+    header: Vec<u8>,         // File header bytes (66 bytes V2, 58 bytes V1)
     header_hash: [u8; 32],   // BLAKE3 hash of header bytes
 }
 ```
 
-### 3.1. Embedded FileHeader (58 bytes)
+### 3.1. Embedded FileHeader (66 bytes V2, 58 bytes V1)
 
-The `header` field contains a 58-byte FileHeader with this layout:
+The `header` field contains a FileHeader with **algorithm agility**:
 
+**V2 Format (66 bytes) - Current:**
+```
+Offset | Size | Field         | Description
+-------|------|---------------|--------------------------------
+0      | 1    | version       | File format version (0x02)
+1      | 1    | aead_alg      | AEAD algorithm ID (1=AES-256-GCM, 2=ChaCha20-Poly1305, 3=AES-256-SIV)
+2      | 1    | sig_alg       | Signature algorithm ID (1=Ed25519, 2=ECDSA-P256, 3=ECDSA-P384, 4=RSA-PSS-2048, 5=RSA-PSS-4096, 6=Dilithium3, 7=Falcon512)
+3      | 1    | hash_alg      | Hash algorithm ID (1=BLAKE3, 2=SHA-256, 3=SHA-384, 4=SHA-512, 5=SHA3-256, 6=SHA3-512)
+4      | 1    | kdf_alg       | KDF algorithm ID (1=PBKDF2-SHA256, 2=Argon2id, 3=Scrypt, 4=HKDF)
+5      | 3    | reserved      | Reserved for future use (must be zero)
+8      | 16   | key_id        | Key identifier
+24     | 32   | device_id_hash| BLAKE3(device_id || salt)
+56     | 4    | nonce_prefix  | Random nonce prefix for session
+60     | 4    | chunk_size    | Chunk size in bytes (big-endian)
+```
+
+**V1 Format (58 bytes) - Legacy:**
 ```
 Offset | Size | Field         | Description
 -------|------|---------------|--------------------------------
 0      | 1    | version       | File format version (0x01)
-1      | 1    | alg           | Algorithm ID (0x01 = AES-256-GCM)
+1      | 1    | alg           | Algorithm ID (0x01 = AES-256-GCM only)
 2      | 16   | key_id        | Key identifier
 18     | 32   | device_id_hash| BLAKE3(device_id || salt)
 50     | 4    | nonce_prefix  | Random nonce prefix for session
@@ -84,13 +109,18 @@ Offset | Size | Field         | Description
 **Byte Order**: All multi-byte fields are **big-endian** except where noted.
 
 **Validation**:
-- `header` must be exactly 58 bytes
+- V2: `header` must be exactly 66 bytes, V1: `header` must be exactly 58 bytes
 - `header_hash` must equal `BLAKE3(header)`
 - FileHeader fields must pass individual validation (see below)
+- Algorithm IDs must be supported (parse-time validation)
 
 **Failure Modes**:
-- **Wrong Header Length**: Not 58 bytes, abort parsing
+- **Wrong Header Length**: Not 66 bytes (V2) or 58 bytes (V1), abort parsing
 - **Hash Mismatch**: Header corrupted or tampered, abort parsing
+- **Unsupported Algorithm**: Unknown algorithm ID, abort parsing
+
+**Algorithm Migration**:
+- V1 files automatically upgrade to V2 with: AEAD=AES-256-GCM, Signature=Ed25519, Hash=BLAKE3, KDF=PBKDF2-SHA256
 
 ---
 
@@ -206,15 +236,50 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 
 ### 6.1. Stream-Level Invariants
 
-1. **Magic and Version**: Must match expected values
+1. **Magic and Version**: Must match expected values (VERSION=0x02 current, 0x01 legacy)
 2. **Header Hash**: StreamHeader.header_hash must equal BLAKE3(StreamHeader.header)
-3. **Header Length**: FileHeader must be exactly 58 bytes
-4. **Sequence Contiguity**: Record sequences must start at 1 and increment by 1
-5. **Chunk Size Bounds**: FileHeader.chunk_size must be > 0 and ≤ 128MB
-6. **Stream Size Limits**: Total stream size must not exceed 10GB
-7. **Record Count Limits**: Maximum 1,000,000 records per stream
+3. **Header Length**: FileHeader must be exactly 66 bytes (V2) or 58 bytes (V1)
+4. **Algorithm Validation**: All algorithm IDs must be supported (parse-time validation)
+5. **Sequence Contiguity**: Record sequences must start at 1 and increment by 1
+6. **Chunk Size Bounds**: FileHeader.chunk_size must be > 0 and ≤ 128MB
+7. **Stream Size Limits**: Total stream size must not exceed 10GB
+8. **Record Count Limits**: Maximum 1,000,000 records per stream
 
-### 6.2. Record-Level Invariants
+### 6.2. Algorithm Validation
+
+**AEAD Algorithms (aead_alg field):**
+- 1 = AES-256-GCM (default)
+- 2 = ChaCha20-Poly1305  
+- 3 = AES-256-SIV (future quantum resistance)
+- Others = Unsupported, abort parsing
+
+**Signature Algorithms (sig_alg field):**
+- 1 = Ed25519 (default)
+- 2 = ECDSA-P256
+- 3 = ECDSA-P384  
+- 4 = RSA-PSS-2048
+- 5 = RSA-PSS-4096
+- 6 = Dilithium3 (post-quantum)
+- 7 = Falcon512 (post-quantum)
+- Others = Unsupported, abort parsing
+
+**Hash Algorithms (hash_alg field):**
+- 1 = BLAKE3 (default)
+- 2 = SHA-256
+- 3 = SHA-384
+- 4 = SHA-512
+- 5 = SHA3-256
+- 6 = SHA3-512
+- Others = Unsupported, abort parsing
+
+**KDF Algorithms (kdf_alg field):**
+- 1 = PBKDF2-SHA256 (default)
+- 2 = Argon2id
+- 3 = Scrypt
+- 4 = HKDF
+- Others = Unsupported, abort parsing
+
+### 6.3. Record-Level Invariants
 
 1. **Nonce Prefix**: Record.nonce[0..4] must equal FileHeader.nonce_prefix
 2. **Nonce Counter**: Record.nonce[4..12] must equal Record.seq (big-endian)
@@ -247,9 +312,10 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 | Error | Cause | Action |
 |-------|-------|--------|
 | `BadMagic` | MAGIC ≠ "TRST" | Abort, not a TrustEdge file |
-| `UnsupportedVersion` | VERSION ≠ 0x01 | Abort, format not supported |
-| `HeaderLengthMismatch` | Header ≠ 58 bytes | Abort, corrupted stream |
+| `UnsupportedVersion` | VERSION ∉ {0x01, 0x02} | Abort, format not supported |
+| `HeaderLengthMismatch` | Header ≠ 66 bytes (V2) or 58 bytes (V1) | Abort, corrupted stream |
 | `HeaderHashMismatch` | Hash verification failed | Abort, corrupted/tampered |
+| `UnsupportedAlgorithm` | Unknown algorithm ID | Abort, algorithm not supported |
 | `BincodeError` | Deserialization failed | Abort, corrupted data |
 
 ### 7.2. Validation Errors
