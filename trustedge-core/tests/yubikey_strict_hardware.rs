@@ -31,6 +31,7 @@ use trustedge_core::{AsymmetricAlgorithm, CryptoOperation, SignatureAlgorithm, U
 
 /// STRICT: YubiKey hardware MUST be present and working
 #[tokio::test]
+#[ignore] // Run only with --ignored flag when YubiKey hardware is present
 async fn test_strict_yubikey_hardware_required() -> Result<()> {
     let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
         .lock()
@@ -57,6 +58,7 @@ async fn test_strict_yubikey_hardware_required() -> Result<()> {
 
 /// STRICT: YubiKey backend MUST initialize successfully  
 #[tokio::test]
+#[ignore] // Run only with --ignored flag when YubiKey hardware is present
 async fn test_strict_yubikey_backend_initialization() -> Result<()> {
     let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
         .lock()
@@ -98,6 +100,7 @@ async fn test_strict_yubikey_backend_initialization() -> Result<()> {
 
 /// STRICT: PIV slots MUST be accessible
 #[tokio::test]
+#[ignore] // Run only with --ignored flag when YubiKey hardware is present
 async fn test_strict_piv_slots_accessible() -> Result<()> {
     let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
         .lock()
@@ -136,6 +139,7 @@ async fn test_strict_piv_slots_accessible() -> Result<()> {
 
 /// STRICT: PKCS#11 operations MUST work
 #[tokio::test]
+#[ignore] // Run only with --ignored flag when YubiKey hardware is present
 async fn test_strict_pkcs11_operations() -> Result<()> {
     let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
         .lock()
@@ -190,6 +194,7 @@ async fn test_strict_pkcs11_operations() -> Result<()> {
 
 /// STRICT: Operation support MUST be accurate
 #[tokio::test]
+#[ignore] // Run only with --ignored flag when YubiKey hardware is present
 async fn test_strict_operation_support() -> Result<()> {
     let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
         .lock()
@@ -259,6 +264,7 @@ async fn test_strict_operation_support() -> Result<()> {
 
 /// STRICT: Hardware capabilities MUST be correct
 #[tokio::test]
+#[ignore] // Run only with --ignored flag when YubiKey hardware is present
 async fn test_strict_hardware_capabilities() -> Result<()> {
     let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
         .lock()
