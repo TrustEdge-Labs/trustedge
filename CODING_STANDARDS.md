@@ -316,7 +316,7 @@ let mut buffer = Vec::new();
 ///
 /// # Example
 /// ```rust
-/// use trustedge_audio::{encrypt_file, generate_key};
+/// use trustedge_core::{encrypt_file, generate_key};
 /// 
 /// let key = generate_key()?;
 /// let result = encrypt_file("audio.mp3", &key)?;

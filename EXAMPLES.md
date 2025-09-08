@@ -990,7 +990,7 @@ play -t f32 -r 44100 -c 1 audio.raw repeat 3
 
 **Automated Conversion Scripts:**
 ```bash
-# Script: convert_trustedge_audio.sh
+# Script: convert_trustedge_core.sh
 #!/bin/bash
 TRST_FILE="$1"
 KEY="$2"
@@ -1022,8 +1022,8 @@ echo "Converted $TRST_FILE to ${OUTPUT_NAME}.wav and ${OUTPUT_NAME}.mp3"
 
 **Usage:**
 ```bash
-chmod +x convert_trustedge_audio.sh
-./convert_trustedge_audio.sh recording.trst $MY_KEY podcast_episode
+chmod +x convert_trustedge_core.sh
+./convert_trustedge_core.sh recording.trst $MY_KEY podcast_episode
 ```
 
 ---

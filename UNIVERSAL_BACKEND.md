@@ -147,7 +147,7 @@ let signature = yubikey.perform_operation(
 ### Basic Hash Operation
 
 ```rust
-use trustedge_audio::{UniversalBackendRegistry, CryptoOperation, HashAlgorithm};
+use trustedge_core::{UniversalBackendRegistry, CryptoOperation, HashAlgorithm};
 
 let registry = UniversalBackendRegistry::with_defaults()?;
 
@@ -168,7 +168,7 @@ if let CryptoResult::Hash(hash) = result {
 ### Key Derivation
 
 ```rust
-use trustedge_audio::{CryptoOperation, KeyDerivationContext};
+use trustedge_core::{CryptoOperation, KeyDerivationContext};
 
 let context = KeyDerivationContext::new(vec![1; 16]) // 16-byte salt
     .with_additional_data(b"app_context".to_vec())
@@ -207,7 +207,7 @@ if backends.is_empty() {
 ### Preference-Based Selection
 
 ```rust
-use trustedge_audio::BackendPreferences;
+use trustedge_core::BackendPreferences;
 
 // Prefer hardware-backed backends
 let prefs = BackendPreferences::hardware_preferred();
