@@ -39,7 +39,7 @@ fn main() -> anyhow::Result<()> {
         CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend,
     };
 
-    println!("🔑 TrustEdge YubiKey Integration Demo");
+    println!("● TrustEdge YubiKey Integration Demo");
     println!("===================================");
     println!();
     println!("This demo showcases complete YubiKey hardware integration:");
@@ -69,7 +69,7 @@ fn main() -> anyhow::Result<()> {
     println!("   Slot: {:?}", config.slot);
 
     // Initialize YubiKey backend
-    println!("\n🔧 Initializing YubiKey Backend...");
+    println!("\n● Initializing YubiKey Backend...");
     let backend = YubiKeyBackend::with_config(config)?;
     println!("   ✔ YubiKey backend initialized successfully");
 
@@ -111,10 +111,10 @@ fn main() -> anyhow::Result<()> {
 
     // Use the first available key for demonstration
     let (demo_slot, demo_pubkey) = &available_keys[0];
-    println!("\n🎯 Using slot {} for demonstration", demo_slot);
+    println!("\n● Using slot {} for demonstration", demo_slot);
 
     // Demonstrate hardware key extraction
-    println!("\n🔐 Hardware Key Extraction:");
+    println!("\n● Hardware Key Extraction:");
     println!(
         "   Extracting public key from YubiKey PIV slot {}...",
         demo_slot
@@ -193,13 +193,13 @@ fn main() -> anyhow::Result<()> {
         println!("   💡 All slots can be used for certificate generation");
     }
 
-    println!("\n🎉 YubiKey Demo Complete!");
+    println!("\n✔ YubiKey Demo Complete!");
     println!("✔ Hardware key extraction verified");
     println!("✔ Hardware signing operations successful");
     println!("✔ X.509 certificate generation completed");
     println!("✔ Certificate exported in standard DER format");
     println!();
-    println!("🚀 Your YubiKey is ready for TrustEdge integration!");
+    println!("● Your YubiKey is ready for TrustEdge integration!");
 
     Ok(())
 }
@@ -543,7 +543,7 @@ fn analyze_certificate(cert_der: &[u8]) -> anyhow::Result<()> {
 
 #[cfg(not(feature = "yubikey"))]
 fn main() {
-    println!("🔑 TrustEdge YubiKey Integration Demo");
+    println!("● TrustEdge YubiKey Integration Demo");
     println!("===================================");
     println!();
     println!("❌ YubiKey support not compiled in");
@@ -554,7 +554,7 @@ fn main() {
     println!("   • OpenSC PKCS#11 module (apt install opensc-pkcs11)");
     println!("   • Keys in PIV slots (use 'ykman piv' to generate)");
     println!();
-    println!("🚀 Complete YubiKey Integration Features:");
+    println!("● Complete YubiKey Integration Features:");
     println!("   • Hardware public key extraction from all PIV slots");
     println!("   • Real-time key scanning and availability detection");
     println!("   • Hardware-backed digital signatures with ECDSA-P256");

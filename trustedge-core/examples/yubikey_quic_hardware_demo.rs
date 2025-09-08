@@ -31,7 +31,7 @@ use trustedge_core::NetworkChunk;
 
 #[cfg(feature = "yubikey")]
 async fn run_demo() -> Result<()> {
-    println!("🔐 YubiKey Hardware Signing over QUIC Demo");
+    println!("● YubiKey Hardware Signing over QUIC Demo");
     println!("==========================================");
 
     // Step 1: Initialize YubiKey Hardware Backend
@@ -278,11 +278,11 @@ fn main() {
 #[cfg(feature = "yubikey")]
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("🚀 Starting YubiKey Hardware QUIC Demo...");
+    println!("● Starting YubiKey Hardware QUIC Demo...");
 
     match run_demo().await {
         Ok(_) => {
-            println!("\n🎉 Demo completed successfully!");
+            println!("\n✔ Demo completed successfully!");
             println!("   Real YubiKey hardware signing over QUIC verified.");
         }
         Err(e) => {
