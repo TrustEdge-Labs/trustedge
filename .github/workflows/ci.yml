@@ -45,6 +45,17 @@ jobs:
             echo "Audio libraries not available"
           fi
 
+      - name: Install YubiKey dependencies (if possible)
+        id: yubikey-deps
+        run: |
+          if sudo apt-get install -y libpcsclite-dev pkgconf; then
+            echo "yubikey-available=true" >> $GITHUB_OUTPUT
+            echo "YubiKey PCSC libraries installed successfully"
+          else
+            echo "yubikey-available=false" >> $GITHUB_OUTPUT
+            echo "YubiKey PCSC libraries not available"
+          fi
+
       - name: clippy (no audio)
         run: cargo clippy --all-targets --no-default-features -- -D warnings
 
@@ -52,12 +63,20 @@ jobs:
         if: steps.audio-deps.outputs.audio-available == 'true'
         run: cargo clippy --all-targets --features audio -- -D warnings
 
+      - name: clippy (with yubikey)
+        if: steps.yubikey-deps.outputs.yubikey-available == 'true'
+        run: cargo clippy --all-targets --features yubikey -- -D warnings
+
       - name: tests (no audio)
         run: cargo test --all --no-default-features --locked --verbose
 
       - name: tests (with audio)
         if: steps.audio-deps.outputs.audio-available == 'true'
         run: cargo test --all --features audio --locked --verbose
+
+      - name: tests (with yubikey)
+        if: steps.yubikey-deps.outputs.yubikey-available == 'true'
+        run: cargo test --all --features yubikey --locked --verbose
 
   coverage:
     name: Code Coverage
@@ -82,11 +101,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libasound2-dev pkg-config
           
+      - name: Install YubiKey dependencies (for all-features coverage)
+        run: |
+          sudo apt-get install -y libpcsclite-dev pkgconf
+          
       - name: Install cargo-tarpaulin
         uses: taiki-e/install-action@cargo-tarpaulin
         
       - name: Generate code coverage
-        run: cargo tarpaulin --verbose --all-features --workspace --timeout 120 --out xml --output-dir ./
+        run: cargo tarpaulin --verbose --features "audio,yubikey" --workspace --timeout 120 --out xml --output-dir ./
         
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
