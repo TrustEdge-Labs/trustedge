@@ -8,7 +8,6 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 # TrustEdge — Trustable Edge AI
 
 [![CI](https://github.com/TrustEdge-Labs/trustedge/workflows/CI/badge.svg)](https://github.com/TrustEdge-Labs/trustedge/actions)
-[![codecov](https://codecov.io/gh/TrustEdge-Labs/trustedge/branch/main/graph/badge.svg)](https://codecov.io/gh/TrustEdge-Labs/trustedge)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
 

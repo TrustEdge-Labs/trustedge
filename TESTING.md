@@ -804,14 +804,6 @@ The CI pipeline runs:
 - ✅ Cross-platform testing (Linux, macOS, Windows)
 - ✅ Multiple Rust versions (stable, beta, nightly)
 
-### Test Coverage
-```bash
-# Generate test coverage report (requires cargo-tarpaulin)
-cargo install cargo-tarpaulin
-cargo tarpaulin --out html
-# Open tarpaulin-report.html to view coverage
-```
-
 ---
 
 ## Audio System Testing
