@@ -13,10 +13,10 @@ use anyhow::Result;
 
 #[cfg(feature = "yubikey")]
 use {
-    std::net::SocketAddr,
     std::time::Instant,
     trustedge_core::backends::{YubiKeyBackend, YubiKeyConfig},
     trustedge_core::transport::{quic::QuicTransport, TransportConfig},
+    trustedge_core::SignatureAlgorithm,
 };
 
 #[tokio::main]
@@ -119,13 +119,13 @@ async fn demo_hardware_signing(yubikey_backend: &mut YubiKeyBackend) -> Result<(
     println!("   Testing real hardware cryptographic operations...");
 
     // Prompt for PIN if needed
-    if yubikey_backend.config.pin.is_none() {
+    if !yubikey_backend.is_pin_set() {
         use std::io::{self, Write};
         print!("   Enter YubiKey PIN: ");
         io::stdout().flush()?;
         let mut pin = String::new();
         io::stdin().read_line(&mut pin)?;
-        yubikey_backend.config.pin = Some(pin.trim().to_string());
+        yubikey_backend.set_pin(pin.trim().to_string());
     }
 
     let test_data = b"TrustEdge QUIC Integration Test Data";
@@ -134,7 +134,7 @@ async fn demo_hardware_signing(yubikey_backend: &mut YubiKeyBackend) -> Result<(
     println!("   ● Performing hardware signing operation...");
     let start_time = Instant::now();
 
-    match yubikey_backend.hardware_sign(key_id, test_data) {
+    match yubikey_backend.hardware_sign(key_id, test_data, SignatureAlgorithm::EcdsaP256) {
         Ok(signature) => {
             let duration = start_time.elapsed();
             println!(
@@ -144,7 +144,7 @@ async fn demo_hardware_signing(yubikey_backend: &mut YubiKeyBackend) -> Result<(
             );
 
             // Verify signature is different each time (proving real hardware operation)
-            match yubikey_backend.hardware_sign(key_id, test_data) {
+            match yubikey_backend.hardware_sign(key_id, test_data, SignatureAlgorithm::EcdsaP256) {
                 Ok(signature2) => {
                     if signature != signature2 {
                         println!("   ✔ Signatures are unique (proving real hardware randomness)");
@@ -181,7 +181,7 @@ async fn demo_quic_transport_setup() -> Result<()> {
         connection_idle_timeout_ms: 60000,
     };
 
-    let quic_transport = QuicTransport::new(transport_config)?;
+    let _quic_transport = QuicTransport::new(transport_config)?;
     println!("   ✔ QUIC transport initialized successfully");
     println!("   ✔ Transport ready for secure connections");
 
@@ -209,8 +209,8 @@ async fn demo_integration_patterns(yubikey_backend: &mut YubiKeyBackend) -> Resu
     println!("   2. YubiKey signs challenge for authentication");
 
     let start_time = Instant::now();
-    match yubikey_backend.hardware_sign(key_id, test_data) {
-        Ok(signature) => {
+    match yubikey_backend.hardware_sign(key_id, test_data, SignatureAlgorithm::EcdsaP256) {
+        Ok(_signature) => {
             let duration = start_time.elapsed();
             println!(
                 "   3. ✔ Hardware signature ready for QUIC handshake ({:.2}s)",

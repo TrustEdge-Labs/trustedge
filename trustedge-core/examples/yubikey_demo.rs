@@ -387,15 +387,13 @@ fn encode_validity_period(validity_days: u32) -> anyhow::Result<Vec<u8>> {
     let now = Utc::now();
     let not_after = now + Duration::days(validity_days as i64);
 
-    let mut validity = Vec::new();
-
-    // SEQUENCE
-    validity.push(0x30);
-    validity.push(0x1E); // Fixed length for UTCTime format
-
-    // Not Before (UTCTime)
-    validity.push(0x17); // UTCTime
-    validity.push(0x0D); // Length
+    let mut validity = vec![
+        0x30, // SEQUENCE
+        0x1E, // Fixed length for UTCTime format
+        // Not Before (UTCTime)
+        0x17, // UTCTime
+        0x0D, // Length
+    ];
     let not_before_str = now.format("%y%m%d%H%M%SZ").to_string();
     validity.extend_from_slice(not_before_str.as_bytes());
 

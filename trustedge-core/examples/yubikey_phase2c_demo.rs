@@ -319,8 +319,8 @@ fn verify_certificate_format(cert_der: &[u8]) -> anyhow::Result<()> {
                 .windows(5)
                 .any(|w| w == [0xA0, 0x03, 0x02, 0x01, 0x02]),
         ),
-        ("Contains serial", cert_der.iter().any(|&b| b == 0x02)), // INTEGER
-        ("DER encoded", cert_der.len() < 10000),                  // Reasonable size limit
+        ("Contains serial", cert_der.contains(&0x02)), // INTEGER
+        ("DER encoded", cert_der.len() < 10000),       // Reasonable size limit
     ];
 
     for (check_name, passed) in checks {

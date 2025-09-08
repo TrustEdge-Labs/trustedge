@@ -301,7 +301,7 @@ impl QuicTransport {
 
         println!("   ✔ YubiKey server endpoint created");
 
-        let mut transport = Self {
+        let transport = Self {
             config,
             endpoint: Some(endpoint),
             connection: None,
@@ -352,6 +352,32 @@ impl QuicTransport {
         println!("   ✔ YubiKey server endpoint ready");
 
         Ok(endpoint)
+    }
+
+    /// Accept incoming connections on the server endpoint
+    #[cfg(feature = "yubikey")]
+    pub async fn accept_connection(&self) -> Result<Connection> {
+        let endpoint = self
+            .endpoint
+            .as_ref()
+            .context("No endpoint available for accepting connections")?;
+
+        loop {
+            match endpoint.accept().await {
+                Some(incoming) => match incoming.await {
+                    Ok(connection) => {
+                        return Ok(connection);
+                    }
+                    Err(e) => {
+                        println!("    ⚠ Connection failed: {}", e);
+                        continue;
+                    }
+                },
+                None => {
+                    anyhow::bail!("Endpoint closed");
+                }
+            }
+        }
     }
 }
 
@@ -833,45 +859,43 @@ mod tests {
             use crate::backends::CertificateParams;
 
             let cert_params = CertificateParams {
-                subject_name: "CN=quic-test.example.com".to_string(),
+                subject: "CN=quic-test.example.com".to_string(),
                 validity_days: 365,
+                is_ca: false,
                 key_usage: vec!["digital_signature".to_string(), "key_agreement".to_string()],
-                extended_key_usage: vec!["server_auth".to_string()],
-                san_dns_names: vec!["quic-test.example.com".to_string()],
             };
 
             // QUIC requires proper certificate configuration
-            assert!(!cert_params.subject_name.is_empty());
+            assert!(!cert_params.subject.is_empty());
             assert!(cert_params.validity_days > 0);
             assert!(cert_params
-                .extended_key_usage
-                .contains(&"server_auth".to_string()));
-            assert!(!cert_params.san_dns_names.is_empty());
+                .key_usage
+                .contains(&"digital_signature".to_string()));
+            assert!(!cert_params.is_ca);
         }
     }
 
     #[cfg(feature = "yubikey")]
     #[tokio::test]
     async fn test_yubikey_integration_stubs() {
-        use crate::backends::{CertificateParams, YubiKeyBackend};
+        use crate::backends::CertificateParams;
 
         // Test certificate parameters for YubiKey integration
         let cert_params = CertificateParams {
-            subject_name: "CN=test.example.com".to_string(),
+            subject: "CN=test.example.com".to_string(),
             validity_days: 365,
+            is_ca: false,
             key_usage: vec!["digital_signature".to_string()],
-            extended_key_usage: vec!["server_auth".to_string()],
-            san_dns_names: vec!["test.example.com".to_string()],
         };
 
         // Validate certificate parameters
-        assert!(!cert_params.subject_name.is_empty());
+        assert!(!cert_params.subject.is_empty());
         assert!(cert_params.validity_days > 0);
         assert!(!cert_params.key_usage.is_empty());
         assert!(cert_params
-            .extended_key_usage
-            .contains(&"server_auth".to_string()));
-        assert!(!cert_params.san_dns_names.is_empty());
+            .key_usage
+            .contains(&"digital_signature".to_string()));
+        assert!(!cert_params.is_ca);
     }
 
     #[tokio::test]

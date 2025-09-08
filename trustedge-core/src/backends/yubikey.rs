@@ -324,6 +324,16 @@ impl YubiKeyBackend {
         Ok(())
     }
 
+    /// Check if PIN is configured
+    pub fn is_pin_set(&self) -> bool {
+        self.config.pin.is_some()
+    }
+
+    /// Set the PIN for authentication
+    pub fn set_pin(&mut self, pin: String) {
+        self.config.pin = Some(pin);
+    }
+
     /// Find key objects by ID or label
     fn find_key_by_id(&self, key_id: &str) -> Result<CK_OBJECT_HANDLE> {
         let pkcs11 = self
@@ -738,7 +748,10 @@ impl YubiKeyBackend {
         // Get EC parameters to determine curve
         let mut template = vec![CK_ATTRIBUTE::new(pkcs11::types::CKA_EC_PARAMS)];
 
-        if let Ok(_) = pkcs11.get_attribute_value(session, key_handle, &mut template) {
+        if pkcs11
+            .get_attribute_value(session, key_handle, &mut template)
+            .is_ok()
+        {
             if let Ok(ec_params) = template[0].get_bytes() {
                 // Parse OID from DER-encoded parameters
                 if ec_params.len() >= 8 {
@@ -946,7 +959,7 @@ impl YubiKeyBackend {
         Ok(spki_der)
     }
     /// Sign data using real YubiKey hardware
-    fn hardware_sign(
+    pub fn hardware_sign(
         &self,
         key_id: &str,
         data: &[u8],
@@ -1150,7 +1163,10 @@ impl UniversalBackend for YubiKeyBackend {
             // Get key attributes
             let mut attrs = vec![CK_ATTRIBUTE::new(CKA_ID), CK_ATTRIBUTE::new(CKA_LABEL)];
 
-            if let Ok(_) = pkcs11.get_attribute_value(session, handle, &mut attrs) {
+            if pkcs11
+                .get_attribute_value(session, handle, &mut attrs)
+                .is_ok()
+            {
                 let key_id = if attrs[0].ulValueLen > 0 && !attrs[0].pValue.is_null() {
                     let id_slice = unsafe {
                         std::slice::from_raw_parts(
@@ -1187,6 +1203,7 @@ impl UniversalBackend for YubiKeyBackend {
 
 // Certificate generation implementation for YubiKey
 #[cfg(feature = "yubikey")]
+#[allow(dead_code)]
 impl YubiKeyBackend {
     /// Generate a hardware-attested X.509 certificate using real YubiKey public key
     ///
@@ -2030,7 +2047,7 @@ impl YubiKeyBackend {
         // Use hash to create valid-looking coordinates
         key_bytes[1..33].copy_from_slice(&hash[0..32]);
         hasher = Sha256::new();
-        hasher.update(&hash);
+        hasher.update(hash);
         hasher.update(key_id.as_bytes());
         let hash2 = hasher.finalize();
         key_bytes[33..65].copy_from_slice(&hash2[0..32]);
@@ -2217,13 +2234,13 @@ impl YubiKeyBackend {
         let hash = hasher.finalize();
 
         // Create ASN.1 DER ECDSA signature structure
-        let mut sig_data = Vec::new();
-        sig_data.push(0x30); // SEQUENCE
-        sig_data.push(0x44); // Length for typical ECDSA signature
-
-        // r component
-        sig_data.push(0x02); // INTEGER
-        sig_data.push(0x20); // 32 bytes
+        let mut sig_data = vec![
+            0x30, // SEQUENCE
+            0x44, // Length for typical ECDSA signature
+            // r component
+            0x02, // INTEGER
+            0x20, // 32 bytes
+        ];
         sig_data.extend_from_slice(&hash[0..32]);
 
         // s component
@@ -2231,7 +2248,7 @@ impl YubiKeyBackend {
         sig_data.push(0x20); // 32 bytes
         let mut s_component = [0u8; 32];
         hasher = Sha256::new();
-        hasher.update(&hash);
+        hasher.update(hash);
         hasher.update(b"s-component");
         let s_hash = hasher.finalize();
         s_component.copy_from_slice(&s_hash[0..32]);
@@ -2276,7 +2293,7 @@ impl YubiKeyBackend {
 
         // Add IP address for local development
         san_names.push(GeneralName::IpAddress(
-            der::asn1::OctetString::new(&[127, 0, 0, 1]).context("Failed to create IP address")?,
+            der::asn1::OctetString::new([127, 0, 0, 1]).context("Failed to create IP address")?,
         ));
 
         Ok(SubjectAltName(san_names))
@@ -2290,10 +2307,7 @@ impl YubiKeyBackend {
         }
 
         // Try to find the private key handle for this key ID
-        match self.find_private_key_handle(key_id) {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        self.find_private_key_handle(key_id).is_ok()
     }
 
     /// Sign certificate with YubiKey hardware (Phase 2C implementation)
@@ -2329,7 +2343,7 @@ impl YubiKeyBackend {
         let hash = hasher.finalize();
 
         if self.config.verbose {
-            println!("   Certificate hash: {}", hex::encode(&hash));
+            println!("   Certificate hash: {}", hex::encode(hash));
         }
 
         // Initialize signing operation

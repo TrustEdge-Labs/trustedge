@@ -21,12 +21,6 @@ use trustedge_core::backends::{CertificateParams, YubiKeyBackend, YubiKeyConfig}
 #[cfg(feature = "yubikey")]
 use trustedge_core::transport::TransportConfig;
 
-#[cfg(feature = "yubikey")]
-use trustedge_core::UniversalBackend;
-
-#[cfg(feature = "yubikey")]
-use trustedge_core::backends::YubiKeyBackend;
-
 /// Test YubiKey backend initialization with various configurations
 #[tokio::test]
 async fn test_yubikey_backend_initialization() -> Result<()> {
@@ -81,28 +75,24 @@ async fn test_phase1_certificate_validation() -> Result<()> {
     {
         // Test certificate parameter validation
         let cert_params = CertificateParams {
-            subject_name: "CN=test-yubikey.example.com".to_string(),
+            subject: "CN=test-yubikey.example.com".to_string(),
             validity_days: 365,
+            is_ca: false,
             key_usage: vec!["digital_signature".to_string(), "key_agreement".to_string()],
-            extended_key_usage: vec!["server_auth".to_string(), "client_auth".to_string()],
-            san_dns_names: vec!["test-yubikey.example.com".to_string()],
         };
 
         // Validate parameters
-        assert!(!cert_params.subject_name.is_empty());
+        assert!(!cert_params.subject.is_empty());
         assert!(cert_params.validity_days > 0);
         assert!(!cert_params.key_usage.is_empty());
-        assert!(!cert_params.san_dns_names.is_empty());
+        assert!(!cert_params.is_ca);
 
         // Test certificate validation without hardware (API validation)
         // This tests the certificate parameter structure and validation logic
-        assert!(cert_params.subject_name.contains("CN="));
+        assert!(cert_params.subject.contains("CN="));
         assert!(cert_params
             .key_usage
             .contains(&"digital_signature".to_string()));
-        assert!(cert_params
-            .extended_key_usage
-            .contains(&"server_auth".to_string()));
     }
 
     Ok(())
@@ -115,18 +105,15 @@ async fn test_phase2_certificate_generation() -> Result<()> {
     {
         // Test certificate generation parameters
         let cert_params = CertificateParams {
-            subject_name: "CN=hardware-test.example.com".to_string(),
+            subject: "CN=hardware-test.example.com".to_string(),
             validity_days: 90,
+            is_ca: false,
             key_usage: vec!["digital_signature".to_string()],
-            extended_key_usage: vec!["server_auth".to_string()],
-            san_dns_names: vec!["hardware-test.example.com".to_string()],
         };
 
         // Validate certificate generation parameters
         assert_eq!(cert_params.validity_days, 90);
-        assert!(cert_params
-            .subject_name
-            .contains("hardware-test.example.com"));
+        assert!(cert_params.subject.contains("hardware-test.example.com"));
 
         // Test slot validation
         let slot_9a = "9a"; // PIV Authentication slot
@@ -167,18 +154,17 @@ async fn test_phase3_quic_integration() -> Result<()> {
 
         // Test QUIC-specific certificate requirements
         let quic_cert_params = CertificateParams {
-            subject_name: "CN=quic-server.example.com".to_string(),
+            subject: "CN=quic-server.example.com".to_string(),
             validity_days: 365,
+            is_ca: false,
             key_usage: vec!["digital_signature".to_string(), "key_agreement".to_string()],
-            extended_key_usage: vec!["server_auth".to_string()], // QUIC requires server_auth
-            san_dns_names: vec!["quic-server.example.com".to_string()],
         };
 
         // Validate QUIC certificate requirements
         assert!(quic_cert_params
-            .extended_key_usage
-            .contains(&"server_auth".to_string()));
-        assert!(!quic_cert_params.san_dns_names.is_empty());
+            .key_usage
+            .contains(&"digital_signature".to_string()));
+        assert!(!quic_cert_params.is_ca);
     }
 
     Ok(())
@@ -228,32 +214,30 @@ async fn test_certificate_quic_compatibility() -> Result<()> {
     {
         // Test certificate compatibility checking
         let server_cert_params = CertificateParams {
-            subject_name: "CN=quic-server.local".to_string(),
+            subject: "CN=quic-server.local".to_string(),
             validity_days: 365,
+            is_ca: false,
             key_usage: vec!["digital_signature".to_string(), "key_agreement".to_string()],
-            extended_key_usage: vec!["server_auth".to_string()],
-            san_dns_names: vec!["quic-server.local".to_string(), "localhost".to_string()],
         };
 
         let client_cert_params = CertificateParams {
-            subject_name: "CN=quic-client.local".to_string(),
+            subject: "CN=quic-client.local".to_string(),
             validity_days: 365,
+            is_ca: false,
             key_usage: vec!["digital_signature".to_string()],
-            extended_key_usage: vec!["client_auth".to_string()],
-            san_dns_names: vec!["quic-client.local".to_string()],
         };
 
         // Validate QUIC compatibility requirements
         assert!(server_cert_params
-            .extended_key_usage
-            .contains(&"server_auth".to_string()));
+            .key_usage
+            .contains(&"digital_signature".to_string()));
         assert!(client_cert_params
-            .extended_key_usage
-            .contains(&"client_auth".to_string()));
+            .key_usage
+            .contains(&"digital_signature".to_string()));
 
-        // QUIC requires SAN extensions
-        assert!(!server_cert_params.san_dns_names.is_empty());
-        assert!(!client_cert_params.san_dns_names.is_empty());
+        // Validate certificate parameters are not CA certificates
+        assert!(!server_cert_params.is_ca);
+        assert!(!client_cert_params.is_ca);
     }
 
     Ok(())
@@ -297,30 +281,28 @@ async fn test_multi_slot_operations() -> Result<()> {
 
         // Test slot-specific certificate parameters
         let auth_slot_cert = CertificateParams {
-            subject_name: "CN=yubikey-auth-9a".to_string(),
+            subject: "CN=yubikey-auth-9a".to_string(),
             validity_days: 365,
+            is_ca: false,
             key_usage: vec!["digital_signature".to_string(), "key_agreement".to_string()],
-            extended_key_usage: vec!["client_auth".to_string()],
-            san_dns_names: vec!["yubikey-auth.local".to_string()],
         };
 
         let signing_slot_cert = CertificateParams {
-            subject_name: "CN=yubikey-sign-9c".to_string(),
+            subject: "CN=yubikey-sign-9c".to_string(),
             validity_days: 365,
+            is_ca: false,
             key_usage: vec!["digital_signature".to_string()],
-            extended_key_usage: vec!["code_signing".to_string(), "email_protection".to_string()],
-            san_dns_names: vec!["yubikey-sign.local".to_string()],
         };
 
         // Validate slot-specific configurations
-        assert!(auth_slot_cert.subject_name.contains("9a"));
-        assert!(signing_slot_cert.subject_name.contains("9c"));
+        assert!(auth_slot_cert.subject.contains("9a"));
+        assert!(signing_slot_cert.subject.contains("9c"));
         assert!(auth_slot_cert
-            .extended_key_usage
-            .contains(&"client_auth".to_string()));
+            .key_usage
+            .contains(&"digital_signature".to_string()));
         assert!(signing_slot_cert
-            .extended_key_usage
-            .contains(&"code_signing".to_string()));
+            .key_usage
+            .contains(&"digital_signature".to_string()));
     }
 
     Ok(())

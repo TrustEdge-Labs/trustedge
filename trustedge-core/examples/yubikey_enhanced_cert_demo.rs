@@ -104,10 +104,10 @@ async fn main() -> Result<()> {
                 }
 
                 // Check for X.509 certificate markers
-                if der_bytes.iter().position(|&x| x == 0x06).is_some() {
+                if der_bytes.contains(&0x06) {
                     println!("   ✔ Contains ASN.1 OBJECT IDENTIFIER fields");
                 }
-                if der_bytes.iter().position(|&x| x == 0x03).is_some() {
+                if der_bytes.contains(&0x03) {
                     println!("   ✔ Contains BIT STRING fields (signature/public key)");
                 }
 

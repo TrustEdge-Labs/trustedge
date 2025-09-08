@@ -85,7 +85,7 @@ async fn run_demo() -> Result<()> {
     // Step 4: Test Hardware Signing Operations
     println!("\n● Step 4: Testing YubiKey hardware signing...");
 
-    let test_messages = vec![
+    let test_messages = [
         "Hello from YubiKey hardware!",
         "Cryptographic proof of possession",
         "End-to-end security verification",

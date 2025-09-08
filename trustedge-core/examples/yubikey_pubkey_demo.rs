@@ -123,7 +123,7 @@ fn demonstrate_extraction_format() {
     println!("\n● Demonstrating expected public key extraction format:");
 
     // Example of what a real ECDSA P-256 public key looks like in DER format
-    let example_ecdsa_der = vec![
+    let example_ecdsa_der = [
         0x30, 0x59, // SEQUENCE (89 bytes)
         0x30, 0x13, // SEQUENCE (19 bytes) - Algorithm Identifier
         0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01, // OID: ecPublicKey
@@ -131,8 +131,8 @@ fn demonstrate_extraction_format() {
         0x03, 0x42, 0x00, // BIT STRING (66 bytes)
         0x04, // Uncompressed point
         // 32 bytes X coordinate + 32 bytes Y coordinate would follow
-        0x01, 0x02, 0x03, 0x04, // ... (truncated for demo)
-    ];
+        0x01, 0x02, 0x03, 0x04,
+    ]; // ... (truncated for demo)
 
     println!("   Example ECDSA P-256 DER structure:");
     println!("   DER size: {} bytes", example_ecdsa_der.len());

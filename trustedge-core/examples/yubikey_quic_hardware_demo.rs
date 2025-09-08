@@ -1,5 +1,21 @@
+//
+// Copyright (c) 2025 TRUSTEDGE LABS LLC
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+
+
 /*
- * Copyright (c) 2025 TRUSTEDGE LABS LLC
+ * Copyri//! End-to-end authentication using YubiKey hardware
+
+#[cfg(feature = "yubikey")]
+use anyhow::{Context, Result};
+#[cfg(feature = "yubikey")]
+use env_logger;
+#[cfg(feature = "yubikey")]
+use std::sync::Arc;) 2025 TRUSTEDGE LABS LLC
  * MPL-2.0: https://mozilla.org/MPL/2.0/
  * Project: trustedge — Privacy and trust at the edge.
  */
@@ -15,15 +31,12 @@
 #[cfg(feature = "yubikey")]
 use anyhow::{Context, Result};
 #[cfg(feature = "yubikey")]
-use std::net::SocketAddr;
-#[cfg(feature = "yubikey")]
 use std::sync::Arc;
 #[cfg(feature = "yubikey")]
 use tokio::time::{sleep, Duration};
 #[cfg(feature = "yubikey")]
 use trustedge_core::backends::{
-    yubikey::{YubiKeyBackend, YubiKeyConfig},
-    CryptoOperation, SignatureAlgorithm, UniversalBackend,
+    CryptoOperation, SignatureAlgorithm, UniversalBackend, YubiKeyBackend, YubiKeyConfig,
 };
 #[cfg(feature = "yubikey")]
 use trustedge_core::transport::{quic::QuicTransport, Transport, TransportConfig};
@@ -39,8 +52,9 @@ async fn run_demo() -> Result<()> {
     println!("\n● Step 1: Initializing YubiKey hardware backend...");
 
     let config = YubiKeyConfig {
-        pkcs11_module_path: Some("/usr/lib/x86_64-linux-gnu/libykcs11.so".to_string()),
+        pkcs11_module_path: "/usr/lib/x86_64-linux-gnu/libykcs11.so".to_string(),
         pin: Some("123456".to_string()),
+        slot: None, // Auto-detect slot
         verbose: true,
     };
 
@@ -107,12 +121,21 @@ async fn run_demo() -> Result<()> {
         connect_timeout_ms: 5000,
         read_timeout_ms: 5000,
         max_message_size: 1024 * 1024,
-        bind_addr: Some("127.0.0.1:0".parse().unwrap()),
-        server_mode: true,
+        keep_alive_ms: 0,
+        max_connection_bytes: 0,
+        max_connection_chunks: 0,
+        connection_idle_timeout_ms: 30000,
     };
 
-    let mut server_transport =
-        QuicTransport::new(server_config).context("Failed to create server transport")?;
+    let server_bind_addr = "127.0.0.1:0".parse().unwrap();
+    let server_transport = QuicTransport::create_yubikey_server(
+        server_config,
+        server_bind_addr,
+        &yubikey_backend,
+        "authentication", // Use authentication slot
+    )
+    .await
+    .context("Failed to create YubiKey QUIC server")?;
 
     // Get the actual bound address
     let bound_addr = server_transport
@@ -140,8 +163,10 @@ async fn run_demo() -> Result<()> {
         connect_timeout_ms: 5000,
         read_timeout_ms: 5000,
         max_message_size: 1024 * 1024,
-        bind_addr: Some("127.0.0.1:0".parse().unwrap()),
-        server_mode: false,
+        keep_alive_ms: 0,
+        max_connection_bytes: 0,
+        max_connection_chunks: 0,
+        connection_idle_timeout_ms: 30000,
     };
 
     let mut client_transport =
@@ -160,7 +185,7 @@ async fn run_demo() -> Result<()> {
     // Step 6: Send YubiKey-Signed Messages over QUIC
     println!("\n● Step 6: Sending YubiKey-signed messages over QUIC...");
 
-    let messages = vec![
+    let messages = [
         "Message 1: YubiKey hardware authentication",
         "Message 2: Cryptographic proof of possession",
         "Message 3: End-to-end security verification",
@@ -217,42 +242,36 @@ async fn run_demo() -> Result<()> {
 #[cfg(feature = "yubikey")]
 async fn handle_quic_server(
     transport: Arc<QuicTransport>,
-    yubikey: Arc<YubiKeyBackend>,
+    _yubikey: Arc<YubiKeyBackend>,
 ) -> Result<()> {
     println!("  Server: Waiting for connections...");
 
     loop {
-        match transport.accept().await {
-            Ok(_connection) => {
+        match transport.accept_connection().await {
+            Ok(connection) => {
                 println!("  Server: ✔ Client connected");
 
-                // Handle incoming chunks
-                loop {
-                    match transport.receive_chunk().await {
-                        Ok(chunk) => {
-                            println!(
-                                "  Server: ← Received chunk {} ({} bytes)",
-                                chunk.sequence,
-                                chunk.data.len()
-                            );
+                // Accept a bidirectional stream
+                match connection.accept_bi().await {
+                    Ok((_send_stream, mut recv_stream)) => {
+                        println!("  Server: ✔ Bidirectional stream established");
 
-                            // Verify YubiKey signature in manifest
-                            let message = String::from_utf8_lossy(&chunk.data);
-                            println!("  Server: Message: {}", message);
-                            println!("  Server: Signature: {} bytes", chunk.manifest.len());
+                        // Read data from the stream
+                        match recv_stream.read_to_end(1024 * 1024).await {
+                            Ok(data) => {
+                                println!("  Server: ← Received {} bytes", data.len());
 
-                            // In a real implementation, we'd verify the signature here
-                            // For demo purposes, we'll just acknowledge receipt
-                            println!("  Server: ✔ Message processed");
+                                let message = String::from_utf8_lossy(&data);
+                                println!("  Server: Message: {}", message);
+                                println!("  Server: ✔ Message processed");
+                            }
+                            Err(e) => {
+                                println!("  Server: ⚠ Read error: {}", e);
+                            }
                         }
-                        Err(TransportError::ConnectionClosed) => {
-                            println!("  Server: Client disconnected");
-                            break;
-                        }
-                        Err(e) => {
-                            println!("  Server: ⚠ Receive error: {}", e);
-                            break;
-                        }
+                    }
+                    Err(e) => {
+                        println!("  Server: ⚠ Stream accept error: {}", e);
                     }
                 }
             }
@@ -273,8 +292,6 @@ fn main() {
 #[cfg(feature = "yubikey")]
 #[tokio::main]
 async fn main() -> Result<()> {
-    env_logger::init();
-
     println!("🚀 Starting YubiKey Hardware QUIC Demo...");
 
     match run_demo().await {
