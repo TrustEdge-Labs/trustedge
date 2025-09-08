@@ -25,3 +25,7 @@ trustedge-core/out.trst
 trustedge-core/restored.mp3
 trustedge-core/roundtrip*.mp3
 trustedge-core/test*.txt
+
+# Coverage files (no longer used)
+cobertura.xml
+tarpaulin-report.html
