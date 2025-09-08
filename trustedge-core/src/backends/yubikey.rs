@@ -14,8 +14,9 @@
 #[cfg(feature = "yubikey")]
 use pkcs11::{
     types::{
-        CKA_CLASS, CKA_ID, CKA_LABEL, CKF_SERIAL_SESSION, CKO_PRIVATE_KEY, CKS_RO_PUBLIC_SESSION,
-        CKU_USER, CK_ATTRIBUTE, CK_OBJECT_HANDLE, CK_SESSION_HANDLE, CK_SLOT_ID,
+        CKA_CLASS, CKA_ID, CKA_LABEL, CKF_SERIAL_SESSION, CKO_CERTIFICATE, CKO_PRIVATE_KEY,
+        CKS_RO_PUBLIC_SESSION, CKU_USER, CK_ATTRIBUTE, CK_OBJECT_HANDLE, CK_SESSION_HANDLE,
+        CK_SLOT_ID,
     },
     Ctx,
 };
@@ -1120,7 +1121,7 @@ impl UniversalBackend for YubiKeyBackend {
             ],
             hardware_backed: true,
             supports_key_derivation: false, // YubiKey stores keys, doesn't derive
-            supports_key_generation: false, // Keys are typically pre-generated
+            supports_key_generation: true,  // YubiKey supports key generation via PIV
             supports_attestation: true,
             max_key_size: Some(4096),
         }
@@ -1129,7 +1130,7 @@ impl UniversalBackend for YubiKeyBackend {
     fn backend_info(&self) -> BackendInfo {
         BackendInfo {
             name: "yubikey",
-            description: "YubiKey PKCS#11 hardware security token",
+            description: "YubiKey PKCS#11 hardware security module",
             version: "1.0.0",
             available: self.pkcs11.is_some(),
             config_requirements: vec!["pkcs11_module_path"],
@@ -1143,58 +1144,164 @@ impl UniversalBackend for YubiKeyBackend {
             .ok_or_else(|| anyhow!("PKCS#11 not initialized"))?;
         let session = self.session.ok_or_else(|| anyhow!("No active session"))?;
 
-        // Search for all private keys
-        let template = vec![CK_ATTRIBUTE::new(CKA_CLASS).with_ck_ulong(&CKO_PRIVATE_KEY)];
+        if self.config.verbose {
+            println!("● Enumerating YubiKey PIV key pairs...");
+        }
+
+        // YubiKey PIV cards don't expose private key objects for security.
+        // Instead, we search for certificates which represent usable key pairs.
+        let template = vec![CK_ATTRIBUTE::new(CKA_CLASS).with_ck_ulong(&CKO_CERTIFICATE)];
 
         pkcs11
             .find_objects_init(session, &template)
-            .context("Failed to initialize key listing")?;
+            .context("Failed to initialize certificate listing")?;
 
         let objects = pkcs11
             .find_objects(session, 100)
-            .context("Failed to list keys")?;
+            .context("Failed to list certificates")?;
 
         pkcs11
             .find_objects_final(session)
-            .context("Failed to finalize key listing")?;
+            .context("Failed to finalize certificate listing")?;
+
+        if self.config.verbose {
+            println!("● Found {} certificate objects", objects.len());
+        }
 
         let mut keys = Vec::new();
         for &handle in &objects {
-            // Get key attributes
-            let mut attrs = vec![CK_ATTRIBUTE::new(CKA_ID), CK_ATTRIBUTE::new(CKA_LABEL)];
+            if self.config.verbose {
+                println!("  ● Reading attributes for certificate handle: {}", handle);
+            }
 
-            if pkcs11
-                .get_attribute_value(session, handle, &mut attrs)
-                .is_ok()
-            {
-                let key_id = if attrs[0].ulValueLen > 0 && !attrs[0].pValue.is_null() {
-                    let id_slice = unsafe {
-                        std::slice::from_raw_parts(
-                            attrs[0].pValue as *const u8,
-                            attrs[0].ulValueLen as usize,
+            // Step 1: Get attribute sizes
+            let mut size_attrs = vec![CK_ATTRIBUTE::new(CKA_ID), CK_ATTRIBUTE::new(CKA_LABEL)];
+
+            let (piv_slot, description) =
+                match pkcs11.get_attribute_value(session, handle, &mut size_attrs) {
+                    Ok(_) => {
+                        if self.config.verbose {
+                            println!("    ✔ Attribute size reading successful");
+                            println!("      ID attr: len={}", size_attrs[0].ulValueLen);
+                            println!("      Label attr: len={}", size_attrs[1].ulValueLen);
+                        }
+
+                        // Step 2: Read actual attribute values with proper memory allocation
+
+                        // Allocate and read ID attribute if present
+                        if size_attrs[0].ulValueLen > 0 {
+                            let id_data = vec![0u8; size_attrs[0].ulValueLen as usize];
+                            let mut id_attrs = vec![CK_ATTRIBUTE::new(CKA_ID).with_bytes(&id_data)];
+
+                            if pkcs11
+                                .get_attribute_value(session, handle, &mut id_attrs)
+                                .is_ok()
+                            {
+                                if self.config.verbose {
+                                    println!("      Certificate ID bytes: {:?}", id_data);
+                                }
+
+                                // Map PKCS#11 certificate ID to PIV slot
+                                match id_data.as_slice() {
+                                    [0x02] => {
+                                        ("9c".to_string(), "PIV Digital Signature (9c)".to_string())
+                                    }
+                                    [0x01] => {
+                                        ("9a".to_string(), "PIV Authentication (9a)".to_string())
+                                    }
+                                    [0x03] => {
+                                        ("9d".to_string(), "PIV Key Management (9d)".to_string())
+                                    }
+                                    [0x04] => (
+                                        "9e".to_string(),
+                                        "PIV Card Authentication (9e)".to_string(),
+                                    ),
+                                    _ => (
+                                        hex::encode(&id_data),
+                                        format!("Unmapped PIV ID: {:?}", id_data),
+                                    ),
+                                }
+                            } else {
+                                if self.config.verbose {
+                                    println!("      ⚠ Failed to read ID attribute value");
+                                }
+                                (format!("cert_{}", handle), "ID read failed".to_string())
+                            }
+                        } else if size_attrs[1].ulValueLen > 0 {
+                            // Try label if ID not available
+                            let label_data = vec![0u8; size_attrs[1].ulValueLen as usize];
+                            let mut label_attrs =
+                                vec![CK_ATTRIBUTE::new(CKA_LABEL).with_bytes(&label_data)];
+
+                            if pkcs11
+                                .get_attribute_value(session, handle, &mut label_attrs)
+                                .is_ok()
+                            {
+                                let label = String::from_utf8_lossy(&label_data).to_string();
+
+                                if self.config.verbose {
+                                    println!("      Certificate label: '{}'", label);
+                                }
+
+                                // Try to map common YubiKey certificate labels to PIV slots
+                                if label.contains("Digital Signature") {
+                                    ("9c".to_string(), "PIV Digital Signature (9c)".to_string())
+                                } else if label.contains("Authentication")
+                                    && !label.contains("Card")
+                                {
+                                    ("9a".to_string(), "PIV Authentication (9a)".to_string())
+                                } else if label.contains("Key Management") {
+                                    ("9d".to_string(), "PIV Key Management (9d)".to_string())
+                                } else if label.contains("Card Authentication") {
+                                    ("9e".to_string(), "PIV Card Authentication (9e)".to_string())
+                                } else {
+                                    (label.clone(), format!("YubiKey: {}", label))
+                                }
+                            } else {
+                                if self.config.verbose {
+                                    println!("      ⚠ Failed to read label attribute value");
+                                }
+                                (format!("cert_{}", handle), "Label read failed".to_string())
+                            }
+                        } else {
+                            if self.config.verbose {
+                                println!("      ⚠ No ID or label attributes found");
+                            }
+                            (format!("cert_{}", handle), "No attributes".to_string())
+                        }
+                    }
+                    Err(e) => {
+                        if self.config.verbose {
+                            println!("    ⚠ Attribute size reading failed: {:?}", e);
+                        }
+                        (
+                            format!("cert_{}", handle),
+                            "Attribute reading failed".to_string(),
                         )
-                    };
-                    hex::encode(id_slice)
-                } else if attrs[1].ulValueLen > 0 && !attrs[1].pValue.is_null() {
-                    let label_slice = unsafe {
-                        std::slice::from_raw_parts(
-                            attrs[1].pValue as *const u8,
-                            attrs[1].ulValueLen as usize,
-                        )
-                    };
-                    String::from_utf8_lossy(label_slice).to_string()
-                } else {
-                    format!("key_{}", handle)
+                    }
                 };
 
-                keys.push(KeyMetadata {
-                    key_id: key_id.as_bytes().try_into().unwrap_or([0u8; 16]),
-                    description: format!("YubiKey key: {}", key_id),
-                    created_at: 0, // Would need to read from certificate
-                    last_used: None,
-                    backend_data: handle.to_le_bytes().to_vec(),
-                });
+            if self.config.verbose {
+                println!("      → Mapped to: {} ({})", piv_slot, description);
             }
+
+            // Convert PIV slot string to fixed-size array for KeyMetadata
+            let mut key_id_bytes = [0u8; 16];
+            let piv_bytes = piv_slot.as_bytes();
+            let copy_len = std::cmp::min(piv_bytes.len(), 16);
+            key_id_bytes[..copy_len].copy_from_slice(&piv_bytes[..copy_len]);
+
+            keys.push(KeyMetadata {
+                key_id: key_id_bytes,
+                description,
+                created_at: 0, // Would need to parse certificate for actual creation time
+                last_used: None,
+                backend_data: handle.to_le_bytes().to_vec(),
+            });
+        }
+
+        if self.config.verbose {
+            println!("✔ Enumerated {} usable key pairs", keys.len());
         }
 
         Ok(keys)
