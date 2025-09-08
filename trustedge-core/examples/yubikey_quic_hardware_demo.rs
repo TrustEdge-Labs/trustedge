@@ -6,27 +6,22 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-
-/*
- * Copyri//! End-to-end authentication using YubiKey hardware
+/// End-to-end authentication using YubiKey hardware
 
 #[cfg(feature = "yubikey")]
 use anyhow::{Context, Result};
 #[cfg(feature = "yubikey")]
 use env_logger;
 #[cfg(feature = "yubikey")]
-use std::sync::Arc;) 2025 TRUSTEDGE LABS LLC
- * MPL-2.0: https://mozilla.org/MPL/2.0/
- * Project: trustedge — Privacy and trust at the edge.
- */
+use std::sync::Arc;
 
-//! YubiKey Hardware Signing over QUIC Demo
-//!
-//! This example demonstrates:
-//! 1. Real YubiKey hardware connection and status
-//! 2. Hardware-backed signing operations using PIV slots
-//! 3. QUIC transport with YubiKey-signed messages
-//! 4. End-to-end authentication using YubiKey hardware
+/// YubiKey Hardware Signing over QUIC Demo
+///
+/// This example demonstrates:
+/// 1. Real YubiKey hardware connection and status
+/// 2. Hardware-backed signing operations using PIV slots
+/// 3. QUIC transport with YubiKey-signed messages
+/// 4. End-to-end authentication using YubiKey hardware
 
 #[cfg(feature = "yubikey")]
 use anyhow::{Context, Result};
