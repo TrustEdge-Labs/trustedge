@@ -5,50 +5,48 @@
 //
 /// Project: trustedge — Privacy and trust at the edge.
 //
-/// examples/yubikey_quic_demo.rs - Phase 3: YubiKey QUIC Transport Integration Demo
+/// examples/yubikey_quic_demo.rs - YubiKey Hardware with QUIC Transport Demo
 //
-/// This example demonstrates the complete integration of YubiKey hardware certificates
-/// with QUIC transport for secure, hardware-backed network communication.
+/// This example demonstrates using real YubiKey hardware signing operations
+/// combined with QUIC transport for network communication.
 use anyhow::Result;
 
 #[cfg(feature = "yubikey")]
 use {
     std::net::SocketAddr,
-    trustedge_core::backends::{CertificateParams, YubiKeyBackend, YubiKeyConfig},
+    std::time::Instant,
+    trustedge_core::backends::{YubiKeyBackend, YubiKeyConfig},
     trustedge_core::transport::{quic::QuicTransport, TransportConfig},
 };
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("🔑 TrustEdge YubiKey QUIC Integration Demo");
-    println!("==========================================");
+    println!("YubiKey + QUIC Transport Demo");
+    println!("=============================");
     println!();
 
     #[cfg(not(feature = "yubikey"))]
     {
-        println!("❌ YubiKey support not compiled in");
-        println!("💡 Run with: cargo run --example yubikey_quic_demo --features yubikey");
+        println!("✖ YubiKey support not compiled in");
+        println!("● Run with: cargo run --example yubikey_quic_demo --features yubikey");
         println!();
-        println!("📋 Requirements:");
+        println!("● Requirements:");
         println!("   • YubiKey with PIV applet");
         println!("   • OpenSC PKCS#11 module (apt install opensc-pkcs11)");
         println!("   • Keys in PIV slots (use 'ykman piv' to generate)");
         println!();
-        println!("🚀 Phase 3 QUIC Integration Features:");
-        println!("   • Hardware-signed certificate export for QUIC transport");
-        println!("   • QUIC client connections with YubiKey certificate verification");
-        println!("   • QUIC server creation with hardware-backed certificates");
-        println!("   • End-to-end secure communication using YubiKey hardware");
-        println!("   • Certificate validation and QUIC compatibility checks");
+        println!("● Demo Features:");
+        println!("   • Real YubiKey hardware signing operations");
+        println!("   • QUIC transport for network communication");
+        println!("   • Demonstration of hardware + network integration patterns");
     }
 
     #[cfg(feature = "yubikey")]
     {
-        println!("This demo showcases Phase 3: QUIC transport integration with YubiKey:");
-        println!("• Hardware certificate export for QUIC transport");
-        println!("• QUIC client/server creation with YubiKey certificates");
-        println!("• End-to-end secure communication validation");
-        println!("• Certificate compatibility verification");
+        println!("This demo shows real YubiKey hardware integration with QUIC transport:");
+        println!("• Hardware-based cryptographic operations using real YubiKey device");
+        println!("• QUIC transport layer for secure network communication");
+        println!("• Integration patterns for hardware security + network protocols");
         println!();
 
         demo_yubikey_quic_integration().await?;
@@ -59,7 +57,7 @@ async fn main() -> Result<()> {
 
 #[cfg(feature = "yubikey")]
 async fn demo_yubikey_quic_integration() -> Result<()> {
-    println!("📋 Configuration:");
+    println!("● Configuration:");
     let config = YubiKeyConfig::default();
     println!("   PKCS#11 Module: {}", config.pkcs11_module_path);
     println!(
@@ -73,85 +71,94 @@ async fn demo_yubikey_quic_integration() -> Result<()> {
     println!("   Slot: {:?}", config.slot);
     println!();
 
-    println!("🔧 Initializing YubiKey Backend...");
-    let yubikey_backend = match YubiKeyBackend::new() {
+    println!("● Initializing YubiKey Backend...");
+    let mut yubikey_backend = match YubiKeyBackend::new() {
         Ok(backend) => {
             println!("✔ YubiKey backend initialized successfully");
             backend
         }
         Err(e) => {
-            println!("❌ Failed to initialize YubiKey backend: {}", e);
+            println!("✖ Failed to initialize YubiKey backend: {}", e);
             println!();
-            println!("💡 Troubleshooting:");
+            println!("● Troubleshooting:");
             println!("   • Ensure YubiKey is inserted and PIV applet is enabled");
             println!("   • Install OpenSC: apt install opensc-pkcs11");
-            println!("   • Generate keys: ykman piv keys generate 9a /tmp/pubkey.pem");
+            println!("   • Generate keys: ykman piv keys generate 9c /tmp/pubkey.pem");
             println!(
                 "   • Check PKCS#11 module path: {}",
                 config.pkcs11_module_path
             );
-            println!();
-            println!("🔄 Demonstrating Phase 3 architecture without hardware...");
-            demo_phase3_architecture().await?;
-            return Ok(());
+            return Err(e);
         }
     };
 
     println!();
-    println!("🔍 Phase 3 Demo: QUIC Transport Integration");
-    println!("===========================================");
+    println!("● Demo: YubiKey Hardware + QUIC Transport Integration");
+    println!("=====================================================");
 
-    // Demo 1: Certificate export for QUIC
-    demo_certificate_export(&yubikey_backend).await?;
+    // Demo 1: YubiKey hardware signing capabilities
+    demo_hardware_signing(&mut yubikey_backend).await?;
 
-    // Demo 2: QUIC client configuration
-    demo_quic_client_config(&yubikey_backend).await?;
+    // Demo 2: QUIC transport setup
+    demo_quic_transport_setup().await?;
 
-    // Demo 3: QUIC server creation
-    demo_quic_server_creation(&yubikey_backend).await?;
-
-    // Demo 4: End-to-end integration test
-    demo_end_to_end_integration(&yubikey_backend).await?;
+    // Demo 3: Integration patterns
+    demo_integration_patterns(&mut yubikey_backend).await?;
 
     println!();
-    println!("✔ Phase 3 YubiKey QUIC Integration Demo Complete!");
-    println!("   All hardware certificate + QUIC transport features validated");
+    println!("✔ YubiKey + QUIC Integration Demo Complete!");
+    println!("   Real hardware operations + network transport demonstrated");
 
     Ok(())
 }
 
 #[cfg(feature = "yubikey")]
-async fn demo_certificate_export(yubikey_backend: &YubiKeyBackend) -> Result<()> {
+async fn demo_hardware_signing(yubikey_backend: &mut YubiKeyBackend) -> Result<()> {
     println!();
-    println!("● Demo 1: Certificate Export for QUIC Transport");
-    println!("   Testing hardware certificate export and validation...");
+    println!("● Demo 1: YubiKey Hardware Signing Operations");
+    println!("   Testing real hardware cryptographic operations...");
 
-    let key_id = "9a"; // PIV Authentication key slot
-    let cert_params = CertificateParams {
-        subject: "CN=trustedge-quic-demo".to_string(),
-        validity_days: 30,
-        is_ca: false,
-        key_usage: vec!["digitalSignature".to_string()],
-    };
+    // Prompt for PIN if needed
+    if yubikey_backend.config.pin.is_none() {
+        use std::io::{self, Write};
+        print!("   Enter YubiKey PIN: ");
+        io::stdout().flush()?;
+        let mut pin = String::new();
+        io::stdin().read_line(&mut pin)?;
+        yubikey_backend.config.pin = Some(pin.trim().to_string());
+    }
 
-    // Export certificate for QUIC
-    match yubikey_backend.export_certificate_for_quic(key_id, cert_params.clone()) {
-        Ok(cert_der) => {
+    let test_data = b"TrustEdge QUIC Integration Test Data";
+    let key_id = "02"; // PIV slot 9C mapped to PKCS#11 object ID 02
+
+    println!("   ● Performing hardware signing operation...");
+    let start_time = Instant::now();
+
+    match yubikey_backend.hardware_sign(key_id, test_data) {
+        Ok(signature) => {
+            let duration = start_time.elapsed();
             println!(
-                "   ✔ Certificate exported successfully ({} bytes)",
-                cert_der.len()
+                "   ✔ Hardware signature generated ({} bytes, {:.2}s)",
+                signature.len(),
+                duration.as_secs_f64()
             );
 
-            // Validate for QUIC compatibility
-            match yubikey_backend.validate_certificate_for_quic(&cert_der) {
-                Ok(true) => println!("   ✔ Certificate validated for QUIC transport"),
-                Ok(false) => println!("   ⚠ Certificate not compatible with QUIC"),
-                Err(e) => println!("   ❌ Certificate validation error: {}", e),
+            // Verify signature is different each time (proving real hardware operation)
+            match yubikey_backend.hardware_sign(key_id, test_data) {
+                Ok(signature2) => {
+                    if signature != signature2 {
+                        println!("   ✔ Signatures are unique (proving real hardware randomness)");
+                    } else {
+                        println!("   ⚠ Signatures identical (unexpected for ECDSA)");
+                    }
+                }
+                Err(e) => println!("   ⚠ Second signature failed: {}", e),
             }
         }
         Err(e) => {
-            println!("   ❌ Certificate export failed: {}", e);
-            println!("   💡 This is expected without proper YubiKey setup");
+            println!("   ✖ Hardware signing failed: {}", e);
+            println!("   ● This may indicate PIN locked or hardware communication issues");
+            return Err(e);
         }
     }
 
@@ -159,10 +166,10 @@ async fn demo_certificate_export(yubikey_backend: &YubiKeyBackend) -> Result<()>
 }
 
 #[cfg(feature = "yubikey")]
-async fn demo_quic_client_config(yubikey_backend: &YubiKeyBackend) -> Result<()> {
+async fn demo_quic_transport_setup() -> Result<()> {
     println!();
-    println!("● Demo 2: QUIC Client Configuration");
-    println!("   Testing QUIC client setup with YubiKey certificates...");
+    println!("● Demo 2: QUIC Transport Setup");
+    println!("   Testing QUIC transport configuration...");
 
     let transport_config = TransportConfig {
         connect_timeout_ms: 5000,
@@ -174,120 +181,62 @@ async fn demo_quic_client_config(yubikey_backend: &YubiKeyBackend) -> Result<()>
         connection_idle_timeout_ms: 60000,
     };
 
-    let mut quic_transport = QuicTransport::new(transport_config)?;
-    println!("   ✔ QUIC transport created");
+    let quic_transport = QuicTransport::new(transport_config)?;
+    println!("   ✔ QUIC transport initialized successfully");
+    println!("   ✔ Transport ready for secure connections");
 
-    // Demo connecting with YubiKey certificate (will fail without server)
-    let demo_addr: SocketAddr = "127.0.0.1:9999".parse()?;
-    let key_id = "9a";
+    // Test basic transport capabilities
+    println!("   ● Transport configuration:");
+    println!("     - Connect timeout: 5000ms");
+    println!("     - Max message size: 1MB");
+    println!("     - Keep alive: 30s");
+    println!("     - Connection idle timeout: 60s");
 
-    println!("   ● Attempting QUIC connection with YubiKey certificate...");
-    match quic_transport
-        .connect_with_yubikey_certificate(demo_addr, "localhost", yubikey_backend, key_id)
-        .await
-    {
-        Ok(_) => println!("   ✔ QUIC connection established with YubiKey certificate"),
+    Ok(())
+}
+
+#[cfg(feature = "yubikey")]
+async fn demo_integration_patterns(yubikey_backend: &mut YubiKeyBackend) -> Result<()> {
+    println!();
+    println!("● Demo 3: Integration Patterns for Hardware + Network");
+    println!("   Demonstrating how YubiKey operations can enhance QUIC security...");
+
+    let test_data = b"QUIC session initialization data";
+    let key_id = "02";
+
+    println!("   ● Integration Workflow Example:");
+    println!("   1. Client generates session challenge data");
+    println!("   2. YubiKey signs challenge for authentication");
+
+    let start_time = Instant::now();
+    match yubikey_backend.hardware_sign(key_id, test_data) {
+        Ok(signature) => {
+            let duration = start_time.elapsed();
+            println!(
+                "   3. ✔ Hardware signature ready for QUIC handshake ({:.2}s)",
+                duration.as_secs_f64()
+            );
+            println!("   4. Signature can be embedded in QUIC transport authentication");
+            println!("   5. Remote peer verifies hardware-backed authentication");
+        }
         Err(e) => {
-            println!("   ⚠ Connection failed (expected without server): {}", e);
-            println!("   ✔ YubiKey certificate integration validated");
+            println!("   3. ✖ Hardware signing failed: {}", e);
+            return Err(e);
         }
     }
 
-    Ok(())
-}
-
-#[cfg(feature = "yubikey")]
-async fn demo_quic_server_creation(yubikey_backend: &YubiKeyBackend) -> Result<()> {
     println!();
-    println!("● Demo 3: QUIC Server Creation");
-    println!("   Testing QUIC server setup with YubiKey certificates...");
+    println!("   ● Security Benefits:");
+    println!("   • Hardware-backed identity verification");
+    println!("   • Non-repudiation of QUIC session establishment");
+    println!("   • Protection against software key compromise");
+    println!("   • Compliance with hardware security requirements");
 
-    let transport_config = TransportConfig {
-        connect_timeout_ms: 5000,
-        read_timeout_ms: 10000,
-        max_message_size: 1024 * 1024,
-        keep_alive_ms: 30000,
-        max_connection_bytes: 0,
-        max_connection_chunks: 0,
-        connection_idle_timeout_ms: 60000,
-    };
-
-    let bind_addr: SocketAddr = "127.0.0.1:0".parse()?; // Use any available port
-    let key_id = "9a";
-
-    println!("   ● Creating QUIC server with YubiKey certificate...");
-    match QuicTransport::create_yubikey_server(transport_config, bind_addr, yubikey_backend, key_id)
-        .await
-    {
-        Ok(_server) => {
-            println!("   ✔ QUIC server created with YubiKey certificate");
-            println!("   ✔ Server ready for hardware-backed connections");
-        }
-        Err(e) => {
-            println!("   ⚠ Server creation failed (expected): {}", e);
-            println!("   ✔ YubiKey server integration architecture validated");
-        }
-    }
-
-    Ok(())
-}
-
-#[cfg(feature = "yubikey")]
-async fn demo_end_to_end_integration(_yubikey_backend: &YubiKeyBackend) -> Result<()> {
     println!();
-    println!("● Demo 4: End-to-End Integration Architecture");
-    println!("   Demonstrating complete YubiKey + QUIC workflow...");
-
-    println!("   ✔ Phase 1: x509-cert integration and validation ✓");
-    println!("   ✔ Phase 2: Hardware-signed certificates ✓");
-    println!("   ✔ Phase 3: QUIC transport integration ✓");
-    println!();
-    println!("   🔗 Complete Integration Pipeline:");
-    println!("   1. YubiKey hardware key extraction");
-    println!("   2. Hardware-signed X.509 certificate generation");
-    println!("   3. Certificate validation with x509-cert crate");
-    println!("   4. QUIC transport configuration with hardware certificates");
-    println!("   5. Secure connection establishment and validation");
-    println!();
-    println!("   🎯 Production Ready Features:");
-    println!("   • Real hardware signing with ECDSA-P256");
-    println!("   • Standards-compliant X.509 certificate generation");
-    println!("   • QUIC transport security with hardware-backed certificates");
-    println!("   • Comprehensive error handling and fallback mechanisms");
-
-    Ok(())
-}
-
-#[cfg(feature = "yubikey")]
-async fn demo_phase3_architecture() -> Result<()> {
-    println!("🏗️ Phase 3 Architecture Demonstration");
-    println!("=====================================");
-    println!();
-    println!("This demo shows the complete YubiKey QUIC integration architecture:");
-    println!();
-    println!("📱 YubiKey Hardware Layer:");
-    println!("   • PIV applet with ECDSA-P256 key pairs");
-    println!("   • PKCS#11 interface for hardware operations");
-    println!("   • Hardware-backed digital signatures");
-    println!();
-    println!("🔐 Certificate Generation (Phase 1 + 2):");
-    println!("   • Real public key extraction from YubiKey hardware");
-    println!("   • X.509 certificate generation with x509-cert validation");
-    println!("   • Hardware signing with real YubiKey private keys");
-    println!();
-    println!("🌐 QUIC Transport Integration (Phase 3):");
-    println!("   • Certificate export for QUIC transport layer");
-    println!("   • Hardware-backed certificate verification");
-    println!("   • Secure QUIC connections with YubiKey certificates");
-    println!("   • End-to-end encrypted communication");
-    println!();
-    println!("🔄 Integration Workflow:");
-    println!("   1. YubiKey.export_certificate_for_quic()");
-    println!("   2. QuicTransport.connect_with_yubikey_certificate()");
-    println!("   3. Hardware certificate validation in TLS handshake");
-    println!("   4. Secure communication with hardware-backed identity");
-    println!();
-    println!("✔ Architecture validated - Ready for hardware testing!");
-
+    println!("   ● Implementation Notes:");
+    println!("   • YubiKey signatures provide strong authentication");
+    println!("   • QUIC transport ensures fast, secure communication");
+    println!("   • Integration enables hardware security + network performance");
+    println!("   • Real hardware timing: ~1.5s per signature operation");
     Ok(())
 }

@@ -39,7 +39,7 @@ TrustEdge employs a comprehensive 3-tier testing strategy:
 
 # By category
 cargo test --lib                 # Unit tests (79)
-cargo test --test yubikey_integration     # YubiKey Phase 1-3 tests (8)
+cargo test --test yubikey_integration     # YubiKey hardware tests
 cargo test --test transport_integration   # Transport layer tests (10)
 cargo test --test software_hsm_integration # Software HSM tests (9)
 cargo test --test auth_integration         # Authentication tests (3)
@@ -78,7 +78,7 @@ cargo test --features yubikey    # Include YubiKey hardware tests
 ### 2. Integration Tests (65 Tests)
 
 #### YubiKey Integration (8 Tests) - **NEW!**
-Complete testing of Phase 1-3 YubiKey integration:
+Complete testing of YubiKey hardware integration:
 ```bash
 cargo test --test yubikey_integration
 ```

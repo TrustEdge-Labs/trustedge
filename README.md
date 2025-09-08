@@ -27,7 +27,8 @@ TrustEdge features:
 - **Privacy by design & default**: encrypt at the edge, not just TLS in transit, audio chunks are encrypted with configurable AEAD algorithms before leaving the device
 - **Rust at the edge**: safety + performance for streaming workloads  
 - **Streaming-friendly:** fixed nonce discipline (prefix||counter) and per-chunk records
-- **Universal Backend System**: Capability-based crypto operations supporting keyring, TPM, HSM, and YubiKey backends
+- **Universal Backend System**: Capability-based crypto operations supporting Software HSM, Keyring, and **YubiKey hardware** backends
+- **YubiKey Hardware Integration**: Full PKCS#11 support for YubiKey PIV operations with real hardware signing and authentication
 - **DoS Protection & Bounds Checking**: Comprehensive resource limits and validation to prevent denial-of-service attacks
 - **Learning in public**: small, honest milestones → real, reviewable code
 
@@ -48,7 +49,7 @@ TrustEdge includes a comprehensive test suite with **144 automated tests** cover
 - **65 Integration Tests**: Cross-component validation and end-to-end workflows
 
 **Integration Test Breakdown:**
-- **YubiKey Integration Tests (8)**: Complete Phase 1-3 YubiKey hardware integration testing
+- **YubiKey Hardware Integration Tests (8)**: Real hardware PIV operations, PKCS#11 signing, and certificate workflows
 - **Transport Integration Tests (10)**: QUIC/TCP transport layer validation with NetworkChunk compatibility
 - **Software HSM Integration Tests (9)**: Cross-session persistence, CLI integration, file workflows, and error recovery
 - **Authentication Tests (3)**: Certificate generation, mutual authentication, session management
@@ -59,16 +60,17 @@ TrustEdge includes a comprehensive test suite with **144 automated tests** cover
 
 **Quality Assurance:**
 ```bash
-# Complete test suite (all 144 tests)
+# Complete test suite (all 79 tests)
 ./ci-check.sh                    # Runs format, lint, build, and all tests
 
 # Test by category
 cargo test --lib                 # Unit tests (79)
-cargo test --test yubikey_integration     # YubiKey Phase 1-3 tests (8)
+cargo test --test yubikey_integration     # YubiKey hardware tests (8)
 cargo test --test transport_integration   # Transport layer tests (10)
 
 # Hardware feature testing
 cargo test --features yubikey    # Include YubiKey hardware tests
+cargo run --example yubikey_hardware_signing_demo --features yubikey  # Interactive YubiKey demo
 ```
 
 ---

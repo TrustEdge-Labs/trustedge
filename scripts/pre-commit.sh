@@ -17,7 +17,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${YELLOW}🔍 Checking copyright headers before commit...${NC}"
+echo -e "${YELLOW}● Checking copyright headers before commit...${NC}"
 
 MISSING_FILES=()
 
@@ -38,7 +38,7 @@ while IFS= read -r file; do
         case "$file" in
             *.rs|*.md|*.yml|*.yaml|*.toml)
                 if ! check_copyright "$file"; then
-                    echo -e "${RED}❌ Missing copyright header: $file${NC}"
+                    echo -e "${RED}✖ Missing copyright header: $file${NC}"
                     MISSING_COUNT=$((MISSING_COUNT + 1))
                 fi
                 ;;
@@ -48,10 +48,10 @@ done < <(git diff --cached --name-only --diff-filter=ACM)
 
 # If any files are missing headers, block the commit
 if [ $MISSING_COUNT -gt 0 ]; then
-    echo -e "${RED}❌ Commit blocked: $MISSING_COUNT files missing copyright headers${NC}"
-    echo -e "${YELLOW}💡 Run 'make fix-copyright' to automatically add headers${NC}"
+    echo -e "${RED}✖ Commit blocked: $MISSING_COUNT files missing copyright headers${NC}"
+    echo -e "${YELLOW}● Run 'make fix-copyright' to automatically add headers${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}✅ All files have proper copyright headers${NC}"
+echo -e "${GREEN}✔ All files have proper copyright headers${NC}"
 exit 0

@@ -16,7 +16,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${YELLOW}🔧 Adding copyright headers to all source files...${NC}"
+echo -e "${YELLOW}● Adding copyright headers to all source files...${NC}"
 
 FIXED=0
 
@@ -74,9 +74,9 @@ find . -name "*.toml" -not -path "./.git/*" | while read -r file; do
 done
 
 if [ $FIXED -gt 0 ]; then
-    echo -e "${GREEN}✅ Added copyright headers to $FIXED files${NC}"
+    echo -e "${GREEN}✔ Added copyright headers to $FIXED files${NC}"
 else
-    echo -e "${GREEN}✅ All files already have copyright headers${NC}"
+    echo -e "${GREEN}✔ All files already have copyright headers${NC}"
 fi
 
-echo -e "${GREEN}🎉 Copyright header check complete!${NC}"
+echo -e "${GREEN}♪ Copyright header check complete!${NC}"
