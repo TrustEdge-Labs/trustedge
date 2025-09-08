@@ -66,9 +66,10 @@ fn main() -> Result<()> {
 
     // Certificate generation parameters
     let cert_params = CertificateParams {
-        subject: "CN=TrustEdge Test Certificate,O=TrustEdge Labs,C=US".to_string(),
+        subject: "CN=YubiKey Demo Certificate".to_string(),
         validity_days: 365,
         is_ca: false,
+        key_usage: vec!["digital_signature".to_string()],
     };
 
     println!("\n● Generating hardware-attested certificate...");

@@ -15,7 +15,21 @@ echo
 
 echo "■ Step 2: Running clippy with strict warnings..."
 cargo clippy --all-targets --no-default-features -- -D warnings
-echo "✔ Clippy check passed"
+echo "✔ Clippy check passed (no features)"
+
+# Test with audio feature if available
+if cargo check --features audio --quiet 2>/dev/null; then
+    echo "■ Step 2b: Running clippy with audio feature..."
+    cargo clippy --all-targets --features audio -- -D warnings
+    echo "✔ Clippy check passed (audio feature)"
+fi
+
+# Test with yubikey feature if available
+if cargo check --features yubikey --quiet 2>/dev/null; then
+    echo "■ Step 2c: Running clippy with yubikey feature..."
+    cargo clippy --all-targets --features yubikey -- -D warnings
+    echo "✔ Clippy check passed (yubikey feature)"
+fi
 echo
 
 echo "■ Step 3: Building all targets..."
