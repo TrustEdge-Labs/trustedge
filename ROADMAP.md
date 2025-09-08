@@ -546,7 +546,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 To add a new backend (e.g., YubiKey, TPM, HSM), implement the `UniversalBackend` trait:
 
 ```rust
-use trustedge_audio::backends::universal::{
+use trustedge_core::backends::universal::{
     UniversalBackend, BackendCapabilities, CryptoOperation, CryptoResult
 };
 
@@ -591,7 +591,7 @@ impl UniversalBackend for YubiKeyBackend {
 ### Registering Your Backend
 
 ```rust
-use trustedge_audio::backends::universal_registry::UniversalBackendRegistry;
+use trustedge_core::backends::universal_registry::UniversalBackendRegistry;
 
 // Create registry with your backend
 let mut registry = UniversalBackendRegistry::new();
@@ -688,7 +688,7 @@ mod tests {
 ## Risks & Mitigations
 
 * **Nonce misuse** → Strict prefix+counter enforcement; tests preventing reuse; fail-closed.
-* **Spec drift** → Single source of truth in `trustedge_audio` crate; doc + vectors.
+* **Spec drift** → Single source of truth in `trustedge_core` crate; doc + vectors.
 * **Key loss** → Documented key derivation and rotation; warn loud in CLIs.
 * **DoS via malformed input** → Length checks, fuzzing, non-allocating decode paths where possible.
 
