@@ -33,7 +33,9 @@ use trustedge_core::{AsymmetricAlgorithm, CryptoOperation, SignatureAlgorithm, U
 #[tokio::test]
 #[ignore] // Run only with --ignored flag when hardware is present
 async fn test_hardware_initialization() -> Result<()> {
-    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX.lock().unwrap();
+    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
 
     let env = YubikeyTestEnvironment::detect();
 

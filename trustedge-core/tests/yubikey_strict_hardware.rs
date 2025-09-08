@@ -32,7 +32,12 @@ use trustedge_core::{AsymmetricAlgorithm, CryptoOperation, SignatureAlgorithm, U
 /// STRICT: YubiKey hardware MUST be present and working
 #[tokio::test]
 async fn test_strict_yubikey_hardware_required() -> Result<()> {
-    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX.lock().unwrap();
+    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| {
+            // Handle poisoned mutex (happens when previous test panicked)
+            poisoned.into_inner()
+        });
 
     let env = YubikeyTestEnvironment::detect();
 
@@ -53,7 +58,9 @@ async fn test_strict_yubikey_hardware_required() -> Result<()> {
 /// STRICT: YubiKey backend MUST initialize successfully  
 #[tokio::test]
 async fn test_strict_yubikey_backend_initialization() -> Result<()> {
-    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX.lock().unwrap();
+    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
 
     let env = YubikeyTestEnvironment::detect();
 
@@ -92,7 +99,9 @@ async fn test_strict_yubikey_backend_initialization() -> Result<()> {
 /// STRICT: PIV slots MUST be accessible
 #[tokio::test]
 async fn test_strict_piv_slots_accessible() -> Result<()> {
-    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX.lock().unwrap();
+    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
 
     let env = YubikeyTestEnvironment::detect();
 
@@ -128,7 +137,9 @@ async fn test_strict_piv_slots_accessible() -> Result<()> {
 /// STRICT: PKCS#11 operations MUST work
 #[tokio::test]
 async fn test_strict_pkcs11_operations() -> Result<()> {
-    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX.lock().unwrap();
+    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
 
     let env = YubikeyTestEnvironment::detect();
 
@@ -180,7 +191,9 @@ async fn test_strict_pkcs11_operations() -> Result<()> {
 /// STRICT: Operation support MUST be accurate
 #[tokio::test]
 async fn test_strict_operation_support() -> Result<()> {
-    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX.lock().unwrap();
+    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
 
     let env = YubikeyTestEnvironment::detect();
 
@@ -247,7 +260,9 @@ async fn test_strict_operation_support() -> Result<()> {
 /// STRICT: Hardware capabilities MUST be correct
 #[tokio::test]
 async fn test_strict_hardware_capabilities() -> Result<()> {
-    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX.lock().unwrap();
+    let _lock = YUBIKEY_HARDWARE_TEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
 
     let env = YubikeyTestEnvironment::detect();
 
