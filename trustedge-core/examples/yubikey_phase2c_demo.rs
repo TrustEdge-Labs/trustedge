@@ -31,11 +31,11 @@ fn main() -> anyhow::Result<()> {
         CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend,
     };
 
-    println!("🔑 YubiKey Phase 2C Demo: Real Hardware Certificate Signing");
+    println!("● YubiKey Phase 2C Demo: Real Hardware Certificate Signing");
     println!("================================================");
 
     // Phase 2C: Real hardware-backed certificate signing
-    println!("\n🔐 Phase 2C: Hardware Certificate Signing");
+    println!("\n● Phase 2C: Hardware Certificate Signing");
     println!("Testing complete certificate generation with YubiKey hardware signing...");
 
     // Configure YubiKey backend for verbose operation
@@ -167,10 +167,10 @@ fn main() -> anyhow::Result<()> {
     }
 
     // Test signature verification (if possible)
-    println!("\n🔐 Testing Certificate Signature:");
+    println!("\n● Testing Certificate Signature:");
     test_certificate_signature(test_key_id, &backend)?;
 
-    println!("\n🎉 Phase 2C Complete!");
+    println!("\n✔ Phase 2C Complete!");
     println!("✔ Real hardware signing demonstrated successfully");
     println!("✔ Complete certificate generation pipeline working");
     println!("✔ YubiKey private key operations validated");
@@ -330,7 +330,7 @@ fn verify_certificate_format(cert_der: &[u8]) -> anyhow::Result<()> {
 
     let all_passed = checks.iter().all(|(_, passed)| *passed);
     if all_passed {
-        println!("   🎉 Certificate format validation passed!");
+        println!("   ✔ Certificate format validation passed!");
     } else {
         println!("   ⚠ Some format checks failed - certificate may be malformed");
     }
@@ -379,7 +379,7 @@ fn test_certificate_signature(
 
 #[cfg(not(feature = "yubikey"))]
 fn main() {
-    println!("🔑 YubiKey Phase 2C Demo");
+    println!("● YubiKey Phase 2C Demo");
     println!("========================");
     println!();
     println!("❌ YubiKey support not compiled in");
@@ -390,7 +390,7 @@ fn main() {
     println!("   • OpenSC PKCS#11 module");
     println!("   • Pre-generated keys in PIV slots");
     println!();
-    println!("🚀 Phase 2C provides:");
+    println!("● Phase 2C provides:");
     println!("   • Real hardware-backed certificate signing");
     println!("   • Complete X.509 certificate generation");
     println!("   • PKCS#11 private key operations");

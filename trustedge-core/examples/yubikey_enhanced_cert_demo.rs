@@ -14,7 +14,7 @@ use anyhow::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("🔐 Enhanced YubiKey X.509 Certificate Generation Demo");
+    println!("● Enhanced YubiKey X.509 Certificate Generation Demo");
     println!("====================================================");
     println!();
 
@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
         println!("❌ YubiKey support not compiled in");
         println!("💡 Run with: cargo run --example yubikey_enhanced_cert_demo --features yubikey");
         println!();
-        println!("🎯 Enhanced Features:");
+        println!("● Enhanced Features:");
         println!("   • Complete X.509 DER certificate structure (not placeholder)");
         println!("   • Real YubiKey public key integration when hardware available");
         println!("   • Standards-compliant fallback certificates when hardware unavailable");
@@ -61,7 +61,7 @@ async fn main() -> Result<()> {
             ],
         };
 
-        println!("🔑 Generating X.509 certificate with enhanced features...");
+        println!("● Generating X.509 certificate with enhanced features...");
         println!("   Subject: {}", cert_params.subject);
         println!("   Validity: {} days", cert_params.validity_days);
         println!();
@@ -126,7 +126,7 @@ async fn main() -> Result<()> {
                 println!("   • Compatibility: Full X.509/QUIC/TLS support");
 
                 println!();
-                println!("🎯 Enhanced Features Demonstrated:");
+                println!("● Enhanced Features Demonstrated:");
                 println!("   ✔ No more placeholder certificate structures");
                 println!("   ✔ Complete X.509 compliance for all scenarios");
                 println!("   ✔ Real YubiKey public key integration when available");
@@ -141,7 +141,7 @@ async fn main() -> Result<()> {
         }
 
         println!();
-        println!("✨ Enhancement Summary:");
+        println!("● Enhancement Summary:");
         println!("   The YubiKey backend now generates complete, standards-compliant");
         println!("   X.509 certificates with proper DER encoding, whether using real");
         println!("   YubiKey hardware or enhanced fallback mode. This replaces the");

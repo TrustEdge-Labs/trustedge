@@ -21,7 +21,7 @@ use trustedge_core::backends::yubikey::{YubiKeyBackend, YubiKeyConfig};
 #[cfg(feature = "yubikey")]
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("🔐 YubiKey Public Key Extraction Demo");
+    println!("● YubiKey Public Key Extraction Demo");
     println!("=====================================");
     println!("Phase 1: Real Public Key Extraction from YubiKey PIV Slots");
 
@@ -142,7 +142,7 @@ fn demonstrate_extraction_format() {
 
 #[cfg(not(feature = "yubikey"))]
 fn main() {
-    println!("🔐 YubiKey Public Key Extraction Demo");
+    println!("● YubiKey Public Key Extraction Demo");
     println!("=====================================");
     println!();
     println!("⚠ This example requires the 'yubikey' feature to be enabled.");

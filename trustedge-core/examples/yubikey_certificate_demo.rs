@@ -24,7 +24,7 @@ use trustedge_core::{
 
 #[cfg(feature = "yubikey")]
 fn main() -> Result<()> {
-    println!("🔐 YubiKey Hardware Certificate Generation Demo");
+    println!("● YubiKey Hardware Certificate Generation Demo");
     println!("===============================================");
 
     // Create YubiKey backend configuration
@@ -152,7 +152,7 @@ fn demonstrate_certificate_usage(cert: &HardwareCertificate) -> Result<()> {
 
 #[cfg(not(feature = "yubikey"))]
 fn main() {
-    println!("🔐 YubiKey Hardware Certificate Generation Demo");
+    println!("● YubiKey Hardware Certificate Generation Demo");
     println!("===============================================");
     println!();
     println!("⚠ This example requires the 'yubikey' feature to be enabled.");

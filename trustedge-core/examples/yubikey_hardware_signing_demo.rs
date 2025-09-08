@@ -34,7 +34,7 @@ use trustedge_core::backends::{
 
 #[cfg(feature = "yubikey")]
 async fn run_demo() -> Result<()> {
-    println!("🔐 YubiKey Hardware Signing Demo");
+    println!("● YubiKey Hardware Signing Demo");
     println!("================================");
 
     // Step 1: Get the correct PIN
