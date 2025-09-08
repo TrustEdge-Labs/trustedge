@@ -93,7 +93,7 @@ trustedge-core/
 │   │   ├── universal.rs # Universal backend trait and registry
 │   │   ├── software_hsm.rs # Software HSM implementation (33 tests)
 │   │   ├── keyring.rs   # OS keyring integration
-│   │   └── yubikey.rs   # YubiKey hardware backend (Phase 1-3)
+│   │   └── yubikey.rs   # YubiKey hardware backend (PKCS#11)
 │   ├── transport/       # Network transport abstraction
 │   │   ├── mod.rs       # Transport trait and configuration
 │   │   ├── tcp.rs       # TCP transport with length framing (8 tests)
@@ -104,7 +104,7 @@ trustedge-core/
 │       ├── inspect-trst.rs      # Metadata inspection utility
 │       └── software-hsm-demo.rs # Backend demonstration
 ├── tests/               # Integration test suite (65 tests)
-│   ├── yubikey_integration.rs      # YubiKey Phase 1-3 tests (8)
+│   ├── yubikey_integration.rs      # YubiKey hardware tests
 │   ├── transport_integration.rs   # Transport layer tests (10)
 │   ├── software_hsm_integration.rs # HSM integration tests (9)
 │   ├── auth_integration.rs         # Authentication tests (3)
@@ -130,7 +130,7 @@ trustedge-core/
 - Software HSM comprehensive coverage
 
 **Integration Tests (65):**
-- YubiKey hardware integration (Phase 1-3)
+- YubiKey hardware integration (PKCS#11)
 - Transport layer end-to-end validation
 - Authentication and session management
 - Network communication workflows
@@ -138,7 +138,7 @@ trustedge-core/
 
 **Quality Assurance:**
 ```bash
-# Complete test suite (all 144 tests)
+# Complete test suite (all 79 tests)
 ./ci-check.sh                    # CI pipeline validation
 
 # Test categories

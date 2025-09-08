@@ -16,16 +16,16 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 AUDIO_DIR="$PROJECT_ROOT/trustedge-core"
 
 if [[ ! -d "$AUDIO_DIR" ]]; then
-    echo "❌ Error: trustedge-core directory not found at $AUDIO_DIR"
+    echo "✖ Error: trustedge-core directory not found at $AUDIO_DIR"
     exit 1
 fi
 
 cd "$AUDIO_DIR"
 
-echo "🚀 TrustEdge Fast Benchmarks (Local Development)"
+echo "● TrustEdge Fast Benchmarks (Local Development)"
 echo "=============================================="
-echo "📁 Working directory: $AUDIO_DIR"
-echo "💡 Note: These are quick checks, not statistically rigorous"
+echo "● Working directory: $AUDIO_DIR"
+echo "● Note: These are quick checks, not statistically rigorous"
 echo "   For full accuracy, run: cargo bench"
 echo ""
 
@@ -34,16 +34,16 @@ export BENCH_FAST=1
 
 case "${1:-all}" in
     "crypto")
-        echo "📊 Running crypto benchmarks (fast mode)..."
+        echo "● Running crypto benchmarks (fast mode)..."
         cargo bench --bench crypto_benchmarks
         ;;
     "network")
-        echo "🌐 Running network benchmarks (fast mode)..."
+        echo "● Running network benchmarks (fast mode)..."
         cargo bench --bench network_benchmarks
         ;;
     "all")
-        echo "📊 Running all benchmarks (fast mode)..."
-        echo "⏱️  Expected runtime: ~45 seconds"
+        echo "● Running all benchmarks (fast mode)..."
+        echo "● Expected runtime: ~45 seconds"
         echo ""
         cargo bench
         ;;
@@ -66,6 +66,6 @@ case "${1:-all}" in
 esac
 
 echo ""
-echo "✅ Fast benchmarks completed!"
-echo "💡 For full statistical accuracy:"
+echo "✔ Fast benchmarks completed!"
+echo "● For full statistical accuracy:"
 echo "   cd trustedge-core && cargo bench"

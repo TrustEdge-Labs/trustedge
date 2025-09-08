@@ -43,11 +43,11 @@ update_file() {
         
         # Verify the change
         if ! grep -q "trustedge-audio" "$file"; then
-            echo -e "${GREEN}  ✅ Successfully updated${NC}"
+            echo -e "${GREEN}  ✔ Successfully updated${NC}"
             rm "${file}.bak"  # Remove backup on success
             UPDATED_FILES=$((UPDATED_FILES + 1))
         else
-            echo -e "${RED}  ❌ Update failed, restoring backup${NC}"
+            echo -e "${RED}  ✖ Update failed, restoring backup${NC}"
             mv "${file}.bak" "$file"
         fi
     fi
@@ -92,10 +92,10 @@ update_file "./trustedge-core/SOFTWARE_HSM_TEST_REPORT.md" "Software HSM test re
 update_file "./trustedge-core/ci-check.sh" "Core CI check script"
 
 echo ""
-echo -e "${GREEN}✅ Documentation update complete!${NC}"
-echo -e "${CYAN}📊 Total files updated: $UPDATED_FILES${NC}"
+echo -e "${GREEN}✔ Documentation update complete!${NC}"
+echo -e "${CYAN}● Total files updated: $UPDATED_FILES${NC}"
 echo ""
-echo -e "${BLUE}📋 Summary of Changes:${NC}"
+echo -e "${BLUE}● Summary of Changes:${NC}"
 echo -e "  • Directory: trustedge-audio/ → trustedge-core/"
 echo -e "  • Package: trustedge-audio → trustedge-core"
 echo -e "  • Library: trustedge_audio → trustedge_core"

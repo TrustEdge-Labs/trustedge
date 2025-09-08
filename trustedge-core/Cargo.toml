@@ -52,6 +52,7 @@ num-traits = "0.2"
 p256 = { version = "0.13", features = ["ecdsa", "pem"] }  # For ECDSA P-256
 pbkdf2 = "0.12"
 pkcs11 = { version = "0.5", optional = true }  # For YubiKey/PKCS#11 support
+yubikey = { version = "0.7", optional = true, features = ["untested"] }  # Real YubiKey hardware integration
 rand = "0.8"  # For key generation
 rand_core = "0.6"
 rsa = { version = "0.9", features = ["pem"] }  # For RSA operations
@@ -77,7 +78,7 @@ spki = { version = "0.7", optional = true }       # For SubjectPublicKeyInfo
 [features]
 default = []         # No features by default (CI-friendly)
 audio = ["cpal"]     # Audio capture feature (opt-in)
-yubikey = ["pkcs11", "x509-cert", "der", "spki", "signature"] # YubiKey/PKCS#11 hardware support with X.509 (opt-in)
+yubikey = ["pkcs11", "dep:yubikey", "x509-cert", "der", "spki", "signature"] # YubiKey hardware support with real hardware integration
 
 [dev-dependencies]
 assert_cmd = "2"

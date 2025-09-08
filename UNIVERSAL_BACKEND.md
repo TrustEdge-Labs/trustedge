@@ -75,11 +75,65 @@ pub trait UniversalBackend: Send + Sync {
 
 ## Current Backends
 
-### OS Keyring Backend (`UniversalKeyringBackend`)
+### 1. Software HSM Backend (`SoftwareHsmBackend`)
+
+**Capabilities:**
+- ✔ Symmetric encryption/decryption (AES-256-GCM)
+- ✔ Asymmetric key generation (Ed25519, ECDSA P-256, RSA 2048/4096)
+- ✔ Digital signing (Ed25519, ECDSA, RSA-PSS/PKCS1v15)
+- ✔ Key derivation (PBKDF2, Argon2id)
+- ✔ Cross-session persistence with encrypted storage
+- ✖ Hardware attestation (software-only backend)
+
+**Use Cases:**
+- Development and testing
+- Software-only deployments
+- High-performance symmetric operations
+
+### 2. YubiKey Hardware Backend (`YubiKeyBackend`)
+
+**Capabilities:**
+- ✔ Hardware-backed signing (ECDSA P-256, RSA 2048/4096)
+- ✔ Real YubiKey PIV operations via PKCS#11
+- ✔ Hardware attestation
+- ✔ PIN-protected private key operations
+- ✔ X.509 certificate generation and management
+- ✖ Symmetric encryption (hardware keys for signing only)
+
+**Hardware Requirements:**
+- YubiKey with PIV applet enabled
+- PKCS#11 libraries (OpenSC)
+- System dependencies: `libpcsclite-dev`
+
+**Example:**
+```rust
+use trustedge_core::backends::yubikey::{YubiKeyBackend, YubiKeyConfig};
+
+let config = YubiKeyConfig {
+    pkcs11_module_path: "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so".to_string(),
+    pin: Some("123456".to_string()),
+    slot: None, // Auto-detect
+    verbose: true,
+};
+
+let yubikey = YubiKeyBackend::with_config(config)?;
+
+// Real hardware signing
+let signature = yubikey.perform_operation(
+    "9c", // PIV slot 9C (SIGNATURE)
+    CryptoOperation::Sign {
+        data: b"message".to_vec(),
+        algorithm: SignatureAlgorithm::EcdsaP256,
+    },
+)?;
+```
+
+### 3. OS Keyring Backend (`UniversalKeyringBackend`)
 
 **Capabilities:**
 - ✔ Key derivation using PBKDF2
-- ✔ Hash operations (SHA-256, SHA-384, SHA-512)
+- ✔ Hash operations (SHA-256, SHA-384, SHA-512, BLAKE3)
+- ✔ OS keyring integration for credential storage
 - ✖ Digital signing (software-only backend)
 - ✖ Hardware attestation
 

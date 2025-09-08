@@ -1722,43 +1722,45 @@ The unified YubiKey demo showcases complete hardware integration - from key disc
 cd trustedge-core
 
 # Run the comprehensive YubiKey demonstration
+cargo run --example yubikey_hardware_signing_demo --features yubikey
+
+# Interactive demonstration with PIN entry:
+# 🔐 YubiKey Hardware Signing Demo
+# ================================
+# 
+# ● Step 1: Enter your YubiKey PIN...
+# YubiKey PIN: [enter your PIN]
+# 
+# ● Step 2: Initializing YubiKey hardware backend...
+# ● Initializing YubiKey backend with real hardware integration...
+# ✔ YubiKey hardware connected (Serial: 26476598)
+# ✔ Using PKCS#11 slot: 0
+# ● Attempting PIN authentication...
+# ✔ Authenticated with PIN
+# ✔ YubiKey backend initialized successfully
+# 
+# ● Step 3: Checking YubiKey hardware status...
+#   Backend: yubikey - YubiKey PKCS#11 hardware security token
+#   Available: true
+#   Hardware: true
+# 
+# ● Step 4: Testing YubiKey hardware signing...
+#   Message 1: Hello from YubiKey hardware!
+#     Testing with EcdsaP256:
+#       ✔ Hardware signature: 64 bytes
+#       ✔ Signature preview: 6afb06c272e83cf18f4a10f9
+#       ✔ Signatures differ (proof of fresh computation)
+# 
+# ● Step 6: YubiKey performance test...
+#   Performing 5 signing operations...
+#   ✔ Completed 5/5 operations in 7.29s
+#   ✔ Average time per signature: 1.45s
+# 
+# 🎉 YubiKey Hardware Demo completed successfully!
+#    Real hardware cryptographic operations verified.
+
+# Alternative unified demo (older interface)
 cargo run --example yubikey_demo --features yubikey
-
-# Output shows complete workflow:
-# ■ TrustEdge YubiKey Hardware Integration Demo
-# ═══════════════════════════════════════════
-# 
-# ● YubiKey Backend Capabilities:
-#    Hardware-backed: ✔ YES
-#    Supports attestation: ✔ YES
-#    Asymmetric algorithms: EcdsaP256, Rsa2048, Rsa4096
-#    Signature algorithms: EcdsaP256, RsaPkcs1v15, RsaPss
-#    Hash algorithms: Sha256, Sha384, Sha512
-# 
-# ● Scanning YubiKey PIV slots for existing keys...
-#    Slot 9A (PIV Authentication): ✔ Key found (ECC P-256)
-#    Slot 9C (Digital Signature): ✖ No key
-#    Slot 9D (Key Management): ✖ No key  
-#    Slot 9E (Card Authentication): ✔ Key found (ECC P-256)
-# 
-# ● Real Hardware Public Keys:
-#    Key 9A: 04b2c8...f7e9 (65 bytes, uncompressed)
-#    Key 9E: 04a1b7...d3c4 (65 bytes, uncompressed)
-# 
-# ● Generating X.509 certificates with real public keys...
-#    ✔ Certificate for 9A: 456 bytes (DER-encoded)
-#    ✔ Certificate for 9E: 443 bytes (DER-encoded)
-# 
-# ● Hardware signing demonstration...
-#    ✔ Hardware signature: 72 bytes (ECDSA P-256)
-#    ✔ Signature verification: PASSED
-# 
-# ✔ YubiKey integration demonstration complete!
-
-# Without YubiKey hardware (shows setup guidance)
-cargo run --example yubikey_demo
-# ⚠ This example requires the 'yubikey' feature to be enabled.
-#   Run with: cargo run --example yubikey_demo --features yubikey
 ```
 
 ##### Option 2: Command-Line Interface (Advanced Users)

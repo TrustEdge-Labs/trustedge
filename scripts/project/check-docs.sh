@@ -36,19 +36,19 @@ check_file_status() {
         local age_days=$(( (current_time - last_modified) / 86400 ))
         
         if [ $age_days -lt 7 ]; then
-            echo -e "${GREEN}✅${NC} $description - Recent (${age_days} days old)"
+            echo -e "${GREEN}✔${NC} $description - Recent (${age_days} days old)"
         elif [ $age_days -lt 30 ]; then
             echo -e "${YELLOW}⚠️${NC}  $description - Moderate (${age_days} days old)"
         else
-            echo -e "${RED}❌${NC} $description - Old (${age_days} days old)"
+            echo -e "${RED}✖${NC} $description - Old (${age_days} days old)"
         fi
     else
-        echo -e "${RED}❌${NC} $description - Missing file: $file"
+        echo -e "${RED}✖${NC} $description - Missing file: $file"
     fi
 }
 
 echo ""
-echo "📋 Core Documentation Files:"
+echo "● Core Documentation Files:"
 echo "----------------------------"
 check_file_status "README.md" "Main README"
 check_file_status "CONTRIBUTING.md" "Contribution Guidelines"
@@ -60,7 +60,7 @@ check_file_status "SECURITY.md" "Security Policy"
 check_file_status "PHASE3_PROGRESS.md" "Phase 3 Progress"
 
 echo ""
-echo "🔧 Project Management Files:"
+echo "● Project Management Files:"
 echo "----------------------------"
 check_file_status ".github/ISSUE_TEMPLATE/bug-report.yml" "Bug Report Template"
 check_file_status ".github/ISSUE_TEMPLATE/feature-request.yml" "Feature Request Template"

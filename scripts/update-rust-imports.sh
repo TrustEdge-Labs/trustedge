@@ -32,13 +32,13 @@ find trustedge-core -name "*.rs" -type f | while read -r file; do
         
         # Verify the change
         if grep -q "trustedge_core" "$file" && ! grep -q "trustedge_audio" "$file"; then
-            echo -e "${GREEN}  ✅ Successfully updated${NC}"
+            echo -e "${GREEN}  ✔ Successfully updated${NC}"
             rm "${file}.bak"  # Remove backup on success
         else
-            echo -e "${RED}  ❌ Update failed, restoring backup${NC}"
+            echo -e "${RED}  ✖ Update failed, restoring backup${NC}"
             mv "${file}.bak" "$file"
         fi
     fi
 done
 
-echo -e "${GREEN}✅ Rust import updates complete!${NC}"
+echo -e "${GREEN}✔ Rust import updates complete!${NC}"
