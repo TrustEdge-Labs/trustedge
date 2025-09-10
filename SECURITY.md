@@ -206,7 +206,7 @@ TrustEdge aims to align with:
 ## Contact Information
 
 **Security Team**: TrustEdge Labs LLC Security Team
-- **Lead**: TrustEdge Labs LLC (security@trustedge-labs.com)
+- **Lead**: TrustEdge Labs LLC (security@trustedgelabs.com)
 - **GPG Key**: [To be provided] (for encrypted communications)
 - **Security Advisory**: Subscribe to security notifications via GitHub Security Advisories
 

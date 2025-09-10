@@ -33,7 +33,7 @@ TrustEdge offers commercial licensing and enterprise support for organizations r
 ## Enterprise Inquiry Process
 
 ### **Step 1: Initial Contact**
-**Email:** [enterprise@trustedge-labs.com](mailto:enterprise@trustedge-labs.com)
+**Email:** [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com)
 
 **Please include:**
 - Organization name and industry
@@ -168,7 +168,7 @@ TrustEdge offers commercial licensing and enterprise support for organizations r
 ## Getting Started
 
 ### **Immediate Next Steps**
-1. **Contact us** at [enterprise@trustedge-labs.com](mailto:enterprise@trustedge-labs.com)
+1. **Contact us** at [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com)
 2. **Schedule** a technical discovery call
 3. **Receive** a custom evaluation environment
 4. **Test** TrustEdge in your specific use case
@@ -183,4 +183,4 @@ TrustEdge offers commercial licensing and enterprise support for organizations r
 ---
 
 **Ready to secure your edge computing infrastructure?**  
-**Contact our enterprise team today: [enterprise@trustedge-labs.com](mailto:enterprise@trustedge-labs.com)**
+**Contact our enterprise team today: [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com)**
