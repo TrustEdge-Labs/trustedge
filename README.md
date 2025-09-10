@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 [![CI](https://github.com/TrustEdge-Labs/trustedge/workflows/CI/badge.svg)](https://github.com/TrustEdge-Labs/trustedge/actions)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-[![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedge-labs.com)
+[![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
 [![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v0.2.0)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
@@ -26,7 +26,7 @@ TrustEdge is available under MPL-2.0 for open source use. Commercial licenses ar
 - **Legal indemnification** and warranty protection
 - **Advanced enterprise features** (TPM integration, enhanced monitoring, compliance reporting)
 
-**Contact:** [enterprise@trustedge-labs.com](mailto:enterprise@trustedge-labs.com) for commercial licensing inquiries.
+**Contact:** [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com) for commercial licensing inquiries.
 
 ---
 

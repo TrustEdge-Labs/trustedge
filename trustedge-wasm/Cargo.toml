@@ -2,7 +2,7 @@
 name = "trustedge-wasm"
 version = "0.1.0"
 edition = "2021"
-authors = ["TrustEdge Labs <dev@trustedge-labs.com>"]
+authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
 description = "WebAssembly bindings for TrustEdge cryptographic operations"
 license = "MPL-2.0"
 repository = "https://github.com/trustedge-labs/trustedge"
