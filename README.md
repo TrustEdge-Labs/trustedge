@@ -26,7 +26,7 @@ TrustEdge is available under MPL-2.0 for open source use. Commercial licenses ar
 - **Legal indemnification** and warranty protection
 - **Advanced enterprise features** (TPM integration, enhanced monitoring, compliance reporting)
 
-**Contact:** [enterprise@trustedge-labs.com](mailto:enterprise@trustedge-labs.com) for commercial licensing inquiries.
+**Contact:** [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com) for commercial licensing inquiries.
 
 ---
 
