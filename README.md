@@ -10,6 +10,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![CI](https://github.com/TrustEdge-Labs/trustedge/workflows/CI/badge.svg)](https://github.com/TrustEdge-Labs/trustedge/actions)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v0.2.0)
+[![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 ---
 
@@ -38,6 +40,14 @@ TrustEdge features:
 - Key Management: Universal Backend system with pluggable crypto operations
 - Authentication: Ed25519-based mutual authentication with session management
 - Security: Resource bounds enforcement, length integrity binding, domain separation
+
+## 🎉 What's New in 0.2.0
+
+**Major Features:**
+- 🔐 **YubiKey Hardware Integration** - Real PKCS#11 support with hardware signing operations
+- 🏗️ **Universal Backend Architecture** - Pluggable crypto backends (Software HSM, Keyring, YubiKey)
+- 🌐 **Production Transport Layer** - Real TCP operations with concurrent connection support
+- 🧪 **Comprehensive Test Overhaul** - 204 real functional tests (eliminated all fake/stub tests)
 
 ## Testing & Quality Assurance
 
