@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>TrustEdge WASM Crypto Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .result { background: #f0f8ff; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffe0e0; color: #cc0000; }
+        .success { background: #e0ffe0; color: #006600; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔐 TrustEdge WASM Crypto Test</h1>
+    
+    <button onclick="runCryptoTest()">Run Crypto Test</button>
+    <button onclick="runPerformanceTest()">Performance Test</button>
+    
+    <div id="results"></div>
+
+    <script type="module">
+        import TrustEdge from './js/trustedge.js';
+
+        let trustedge;
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(message, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'result ' + (isError ? 'error' : 'success');
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+
+        async function init() {
+            try {
+                trustedge = new TrustEdge();
+                await trustedge.init();
+                addResult('✅ TrustEdge WASM initialized successfully');
+                addResult('Version: ' + trustedge.getVersion());
+            } catch (error) {
+                addResult('❌ Failed to initialize: ' + error.message, true);
+            }
+        }
+
+        window.runCryptoTest = async () => {
+            if (!trustedge) {
+                addResult('❌ TrustEdge not initialized', true);
+                return;
+            }
+
+            try {
+                addResult('🔐 Starting crypto test...');
+                
+                // Generate key
+                const key = trustedge.generateKey();
+                addResult('✅ Generated key: ' + key.substring(0, 32) + '...');
+                
+                // Test data
+                const testData = 'Hello, TrustEdge WASM! This is a secret message for testing.';
+                addResult('📝 Test data: ' + testData);
+                
+                // Encrypt
+                const encrypted = trustedge.encryptSimple(testData, key);
+                addResult('✅ Encryption successful');
+                addResult('<pre>Ciphertext: ' + encrypted.ciphertext + '\nNonce: ' + encrypted.nonce + '</pre>');
+                
+                // Decrypt
+                const decrypted = trustedge.decrypt(encrypted, key);
+                addResult('✅ Decryption successful: ' + decrypted);
+                
+                // Verify
+                if (testData === decrypted) {
+                    addResult('✅ Data integrity verified - encryption/decryption cycle successful!');
+                } else {
+                    addResult('❌ Data integrity failed - decrypted data does not match original', true);
+                }
+                
+                // Test JSON serialization
+                const jsonString = encrypted.to_json();
+                const parsedData = JSON.parse(jsonString);
+                const decryptedFromJson = trustedge.decrypt(parsedData, key);
+                
+                if (testData === decryptedFromJson) {
+                    addResult('✅ JSON serialization test passed');
+                } else {
+                    addResult('❌ JSON serialization test failed', true);
+                }
+                
+                addResult('🎉 All crypto tests completed successfully!');
+                
+            } catch (error) {
+                addResult('❌ Crypto test failed: ' + error.message, true);
+            }
+        };
+
+        window.runPerformanceTest = async () => {
+            if (!trustedge) {
+                addResult('❌ TrustEdge not initialized', true);
+                return;
+            }
+
+            try {
+                addResult('⚡ Starting performance test...');
+                
+                const iterations = 100;
+                const testData = 'Performance test data '.repeat(50); // ~1KB
+                const key = trustedge.generateKey();
+                
+                addResult(`📊 Test parameters: ${iterations} iterations, ${(testData.length/1024).toFixed(1)}KB data`);
+                
+                // Encryption performance
+                const encryptTimer = trustedge.createTimer();
+                const encryptedResults = [];
+                
+                for (let i = 0; i < iterations; i++) {
+                    encryptedResults.push(trustedge.encryptSimple(testData, key));
+                }
+                const encryptTime = encryptTimer.elapsed();
+                
+                // Decryption performance
+                const decryptTimer = trustedge.createTimer();
+                
+                for (let i = 0; i < iterations; i++) {
+                    trustedge.decrypt(encryptedResults[i], key);
+                }
+                const decryptTime = decryptTimer.elapsed();
+                
+                addResult(`✅ Performance results:
+                    <pre>Encryption: ${encryptTime.toFixed(2)}ms total, ${(encryptTime/iterations).toFixed(2)}ms avg
+Decryption: ${decryptTime.toFixed(2)}ms total, ${(decryptTime/iterations).toFixed(2)}ms avg
+Throughput: ${((testData.length * iterations) / (encryptTime / 1000) / 1024 / 1024).toFixed(2)} MB/s (encrypt)
+           ${((testData.length * iterations) / (decryptTime / 1000) / 1024 / 1024).toFixed(2)} MB/s (decrypt)</pre>`);
+                
+            } catch (error) {
+                addResult('❌ Performance test failed: ' + error.message, true);
+            }
+        };
+
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>

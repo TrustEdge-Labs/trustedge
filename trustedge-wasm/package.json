@@ -1,0 +1,77 @@
+{
+  "name": "@trustedge/wasm",
+  "version": "0.1.0",
+  "description": "WebAssembly bindings for TrustEdge cryptographic operations",
+  "main": "js/trustedge-node.js",
+  "browser": "js/trustedge.js",
+  "types": "js/trustedge.d.ts",
+  "files": [
+    "pkg/",
+    "pkg-node/",
+    "pkg-bundler/",
+    "js/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "wasm-pack build --target web --out-dir pkg",
+    "build:nodejs": "wasm-pack build --target nodejs --out-dir pkg-node",
+    "build:bundler": "wasm-pack build --target bundler --out-dir pkg-bundler",
+    "test": "python3 -m http.server 8080",
+    "clean": "rm -rf pkg pkg-node pkg-bundler"
+  },
+  "keywords": [
+    "cryptography",
+    "wasm",
+    "webassembly",
+    "encryption",
+    "aes",
+    "security",
+    "trustedge"
+  ],
+  "author": "TrustEdge Labs <dev@trustedge-labs.com>",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trustedge-labs/trustedge.git",
+    "directory": "trustedge-wasm"
+  },
+  "homepage": "https://github.com/trustedge-labs/trustedge#readme",
+  "bugs": {
+    "url": "https://github.com/trustedge-labs/trustedge/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "node": "./js/trustedge-node.js",
+      "browser": "./js/trustedge.js",
+      "import": "./js/trustedge.js",
+      "types": "./js/trustedge.d.ts"
+    },
+    "./web": {
+      "import": "./js/trustedge.js",
+      "types": "./js/trustedge.d.ts"
+    },
+    "./node": {
+      "import": "./js/trustedge-node.js",
+      "types": "./js/trustedge.d.ts"
+    },
+    "./pkg": "./pkg/trustedge_wasm.js",
+    "./pkg-node": "./pkg-node/trustedge_wasm.js",
+    "./pkg-bundler": "./pkg-bundler/trustedge_wasm.js",
+    "./pkg/*": "./pkg/*",
+    "./pkg-node/*": "./pkg-node/*",
+    "./pkg-bundler/*": "./pkg-bundler/*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

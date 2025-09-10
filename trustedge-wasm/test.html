@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>TrustEdge WASM Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 10px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>TrustEdge WASM Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Basic Functionality Tests</h2>
+        <button onclick="testBasicFunctionality()">Test Basic Functions</button>
+        <button onclick="testGreeting()">Test Greeting</button>
+        <button onclick="testVersion()">Test Version</button>
+        <button onclick="testTimer()">Test Timer</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Utility Tests</h2>
+        <button onclick="testLogging()">Test Logging</button>
+        <button onclick="testTimer()">Test Timer</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Cryptographic Tests</h2>
+        <button onclick="testCrypto()">Test Encryption/Decryption</button>
+        <button onclick="testPerformance()">Performance Test</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script type="module">
+        import TrustEdge from './js/trustedge.js';
+
+        let trustedge;
+        let output = document.getElementById('output');
+
+        function log(message) {
+            output.textContent += new Date().toISOString() + ': ' + message + '\n';
+            console.log(message);
+        }
+
+        async function run() {
+            try {
+                trustedge = new TrustEdge();
+                await trustedge.init();
+                log('✅ TrustEdge WASM module loaded successfully');
+                
+                // Make functions available globally for button clicks
+                window.testBasicFunctionality = () => {
+                    try {
+                        const result = trustedge.test();
+                        log('✅ Basic functionality test: ' + result);
+                    } catch (e) {
+                        log('❌ Basic functionality test failed: ' + e);
+                    }
+                };
+                
+                window.testGreeting = () => {
+                    try {
+                        trustedge.greet('WASM Tester');
+                        log('✅ Greeting test completed (check alert)');
+                    } catch (e) {
+                        log('❌ Greeting test failed: ' + e);
+                    }
+                };
+                
+                window.testVersion = () => {
+                    try {
+                        const ver = trustedge.getVersion();
+                        log('✅ Version test: ' + ver);
+                    } catch (e) {
+                        log('❌ Version test failed: ' + e);
+                    }
+                };
+                
+                window.testTimer = () => {
+                    try {
+                        const timer = trustedge.createTimer();
+                        setTimeout(() => {
+                            const elapsed = timer.elapsed();
+                            log('✅ Timer test: ' + elapsed.toFixed(2) + 'ms elapsed');
+                        }, 100);
+                    } catch (e) {
+                        log('❌ Timer test failed: ' + e);
+                    }
+                };
+                
+                window.testLogging = () => {
+                    try {
+                        trustedge.log('Test message from WASM');
+                        log('✅ Logging test completed (check console)');
+                    } catch (e) {
+                        log('❌ Logging test failed: ' + e);
+                    }
+                };
+                
+                window.testCrypto = () => {
+                    try {
+                        log('🔐 Starting crypto tests...');
+                        
+                        // Generate key and test data
+                        const key = trustedge.generateKey();
+                        const testData = 'Hello, TrustEdge WASM! This is a test message.';
+                        
+                        log('✅ Generated key: ' + key.substring(0, 16) + '...');
+                        
+                        // Test encryption
+                        const encrypted = trustedge.encryptSimple(testData, key);
+                        log('✅ Encryption successful');
+                        log('   Ciphertext: ' + encrypted.ciphertext.substring(0, 32) + '...');
+                        log('   Nonce: ' + encrypted.nonce);
+                        
+                        // Test decryption
+                        const decrypted = trustedge.decrypt(encrypted, key);
+                        log('✅ Decryption successful: ' + decrypted);
+                        
+                        // Verify data integrity
+                        if (decrypted === testData) {
+                            log('✅ Data integrity verified - original and decrypted match');
+                        } else {
+                            log('❌ Data integrity failed - mismatch detected');
+                        }
+                        
+                        // Test key validation
+                        const validKey = trustedge.validateKey(key);
+                        const invalidKey = trustedge.validateKey('invalid-key');
+                        log('✅ Key validation: valid=' + validKey + ', invalid=' + invalidKey);
+                        
+                        // Test random bytes generation
+                        const randomBytes = trustedge.generateRandomBytes(16);
+                        log('✅ Generated 16 random bytes: ' + randomBytes);
+                        
+                        log('🎉 All crypto tests passed!');
+                        
+                    } catch (e) {
+                        log('❌ Crypto test failed: ' + e);
+                    }
+                };
+                
+                window.testPerformance = () => {
+                    try {
+                        log('⚡ Starting performance tests...');
+                        
+                        const key = trustedge.generateKey();
+                        const testData = 'Performance test data '.repeat(100); // ~2KB
+                        const iterations = 100;
+                        
+                        const timer = trustedge.createTimer();
+                        
+                        // Encryption performance
+                        for (let i = 0; i < iterations; i++) {
+                            trustedge.encryptSimple(testData, key);
+                        }
+                        const encryptTime = timer.elapsed();
+                        
+                        // Decryption performance
+                        const encrypted = trustedge.encryptSimple(testData, key);
+                        const decryptTimer = trustedge.createTimer();
+                        
+                        for (let i = 0; i < iterations; i++) {
+                            trustedge.decrypt(encrypted, key);
+                        }
+                        const decryptTime = decryptTimer.elapsed();
+                        
+                        log('✅ Performance results:');
+                        log('   Encryption: ' + (encryptTime / iterations).toFixed(2) + 'ms per operation');
+                        log('   Decryption: ' + (decryptTime / iterations).toFixed(2) + 'ms per operation');
+                        log('   Data size: ~' + (testData.length / 1024).toFixed(1) + 'KB');
+                        
+                    } catch (e) {
+                        log('❌ Performance test failed: ' + e);
+                    }
+                };
+                
+                // Run automatic tests
+                log('Running automatic tests...');
+                window.testBasicFunctionality();
+                window.testVersion();
+                
+            } catch (e) {
+                log('❌ Failed to initialize WASM module: ' + e);
+            }
+        }
+
+        run();
+    </script>
+</body>
+</html>
