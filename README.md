@@ -41,15 +41,23 @@ TrustEdge features:
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **144 automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **204 automated tests** covering all aspects of the system:
 
 **Test Categories:**
 - **79 Unit Tests**: Core functionality validation including Universal Backend system, Software HSM, and Transport layer
-- **65 Integration Tests**: Cross-component validation and end-to-end workflows
+- **125 Integration Tests**: Cross-component validation and end-to-end workflows
 
 **Integration Test Breakdown:**
-- **YubiKey Hardware Integration Tests (8)**: Real hardware PIV operations, PKCS#11 signing, and certificate workflows
-- **Transport Integration Tests (10)**: QUIC/TCP transport layer validation with NetworkChunk compatibility
+- **YubiKey Hardware Integration Tests (65)**: Real hardware PIV operations, PKCS#11 signing, certificate workflows, and hardware detection across multiple test suites
+  - YubiKey Integration Tests (8): Core hardware integration
+  - YubiKey Hardware Tests (10): Real hardware operations
+  - YubiKey Real Operations (10): Production hardware workflows
+  - YubiKey Simulation Tests (11): Hardware simulation and fallback
+  - YubiKey Strict Hardware (10): Hardware-only validation
+  - YubiKey PIV Analysis (7): PIV protocol analysis
+  - YubiKey Certificate Debug (5): Certificate workflow debugging
+  - YubiKey Hardware Detection (4): Hardware detection and availability
+- **Transport Integration Tests (13)**: QUIC/TCP transport layer validation with NetworkChunk compatibility, concurrent connections, and multi-chunk streaming
 - **Software HSM Integration Tests (9)**: Cross-session persistence, CLI integration, file workflows, and error recovery
 - **Authentication Tests (3)**: Certificate generation, mutual authentication, session management
 - **Roundtrip Tests (15)**: End-to-end encryption/decryption validation including comprehensive MIME type detection
@@ -59,13 +67,13 @@ TrustEdge includes a comprehensive test suite with **144 automated tests** cover
 
 **Quality Assurance:**
 ```bash
-# Complete test suite (all 79 tests)
+# Complete test suite (all 204 tests)
 ./ci-check.sh                    # Runs format, lint, build, and all tests
 
 # Test by category
 cargo test --lib                 # Unit tests (79)
 cargo test --test yubikey_integration     # YubiKey hardware tests (8)
-cargo test --test transport_integration   # Transport layer tests (10)
+cargo test --test transport_integration   # Transport layer tests (13)
 
 # Hardware feature testing
 cargo test --features yubikey    # Include YubiKey hardware tests
@@ -460,31 +468,36 @@ graph TD
 
 ## Testing & Quality Assurance
 
-TrustEdge features comprehensive testing with **93 tests** covering all workflows:
+TrustEdge features comprehensive testing with **204 tests** covering all workflows:
 
 ### Test Suite Overview
 ```bash
-# Run complete test suite (93 tests)
+# Run complete test suite (204 tests)
 cargo test
 
 # Test execution summary:
-✅ Unit Tests:              53/53  passed (library functionality + Universal Backend + Software HSM)
-✅ Software HSM Integration: 9/9   passed (cross-session persistence, CLI workflows, error recovery)
-✅ Auth Integration:         3/3   passed (mutual authentication)  
-✅ Roundtrip Integration:   15/15  passed (encryption/decryption workflows)
-✅ Network Integration:      7/7   passed (client-server communication)
-✅ Universal Backend:        6/6   passed (capability-based backend workflows)
+✅ Unit Tests:               79/79  passed (library functionality + Universal Backend + Software HSM)
+✅ Software HSM Integration:  9/9   passed (cross-session persistence, CLI workflows, error recovery)
+✅ Auth Integration:          3/3   passed (mutual authentication)  
+✅ Roundtrip Integration:    15/15  passed (encryption/decryption workflows)
+✅ Network Integration:       7/7   passed (client-server communication)
+✅ Universal Backend:         6/6   passed (capability-based backend workflows)
+✅ Transport Integration:    13/13  passed (TCP/QUIC transport, concurrent connections, chunking)
+✅ Domain Separation:         7/7   passed (security validation and cross-context attack prevention)
+✅ YubiKey Integration:      65/65  passed (hardware PIV operations, certificate workflows, detection)
 ────────────────────────────────────────────────────────────────────────
-✅ Total Tests:             93/93  passed (100% success rate)
-✅ Total Execution:         ~25 seconds (efficient testing)
+✅ Total Tests:            204/204 passed (100% success rate)
+✅ Total Execution:         ~45 seconds (comprehensive testing including hardware)
 ```
 
 ### Validation Coverage
 - **📄 Format-Specific Testing**: PDF, MP3, JSON, binary, text files with byte-perfect restoration
 - **🌐 Network Protocol Testing**: Real client-server communication with authentication
-- **🔒 Security Testing**: Mutual authentication, session management, data integrity
+- **🔒 Security Testing**: Mutual authentication, session management, data integrity, domain separation
 - **🔧 Universal Backend Testing**: Capability discovery, operation dispatch, backend registry
 - **🔗 Universal Backend Integration**: End-to-end workflows with capability-based selection
+- **🚀 Transport Layer Testing**: TCP/QUIC protocols, concurrent connections, multi-chunk streaming, timeouts
+- **🔑 YubiKey Hardware Testing**: Real hardware PIV operations, certificate workflows, hardware detection
 - **⚡ Performance Testing**: Large file handling, chunked transfer, memory efficiency
 - **🎯 Edge Case Testing**: Empty files, unknown formats, connection errors
 - **🔍 CLI Testing**: Real binary execution with proper argument validation
@@ -495,10 +508,14 @@ cargo test
 ./scripts/ci-check.sh
 
 # Individual test suites
-cargo test --test network_integration         # Network testing
-cargo test --test roundtrip_integration       # Local workflows  
-cargo test --test auth_integration            # Authentication
-cargo test --test universal_backend_integration # Universal Backend workflows
+cargo test --test network_integration         # Network testing (7 tests)
+cargo test --test roundtrip_integration       # Local workflows (15 tests)
+cargo test --test auth_integration            # Authentication (3 tests)
+cargo test --test universal_backend_integration # Universal Backend workflows (6 tests)
+cargo test --test transport_integration       # Transport layer testing (13 tests)
+cargo test --test software_hsm_integration    # Software HSM testing (9 tests)
+cargo test --test domain_separation_test      # Security validation (7 tests)
+cargo test --test yubikey_integration         # YubiKey hardware testing (8 tests)
 ```
 
 ### Universal Backend Integration Tests
