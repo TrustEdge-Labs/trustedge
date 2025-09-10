@@ -290,7 +290,7 @@ We believe in transparency. If you have questions about:
 - Why the CLA is structured this way
 - Your copyright protections
 
-Please [open a discussion](https://github.com/TrustEdge-Labs/trustedge/discussions) or reach out via [email](mailto:john@trustedge.dev). We're happy to explain our approach and reasoning.
+Please [open a discussion](https://github.com/TrustEdge-Labs/trustedge/discussions) or reach out via [email](mailto:contact@trustedgelabs.com). We're happy to explain our approach and reasoning.
 
 ---
 
