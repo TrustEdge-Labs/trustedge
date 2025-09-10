@@ -1,0 +1,46 @@
+[package]
+name = "trustedge-wasm"
+version = "0.1.0"
+edition = "2021"
+authors = ["TrustEdge Labs <dev@trustedge-labs.com>"]
+description = "WebAssembly bindings for TrustEdge cryptographic operations"
+license = "MPL-2.0"
+repository = "https://github.com/trustedge-labs/trustedge"
+keywords = ["cryptography", "wasm", "encryption", "security", "aes"]
+categories = ["cryptography", "wasm", "web-programming"]
+
+[features]
+default = ["wee_alloc"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+serde_json = "1.0"
+getrandom = { version = "0.2", features = ["js"] }
+aes-gcm = "0.10"
+rand = "0.8"
+base64 = "0.22"
+
+# Console logging for debugging
+console_error_panic_hook = "0.1"
+wee_alloc = { version = "0.4", optional = true }
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "console",
+  "Performance",
+  "Window",
+]
+
+[profile.release]
+# Optimize for size
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>TrustEdge WASM - Basic Usage Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .example-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .input-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #3182ce;
+        }
+        button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .result {
+            background-color: #f0fff4;
+            border: 1px solid #9ae6b4;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error {
+            background-color: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.loading {
+            background-color: #bee3f8;
+            color: #2b6cb0;
+        }
+        .status.ready {
+            background-color: #c6f6d5;
+            color: #2f855a;
+        }
+        .status.error {
+            background-color: #fed7d7;
+            color: #c53030;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 TrustEdge WASM - Basic Usage Example</h1>
+        
+        <div id="status" class="status loading">Loading TrustEdge WASM module...</div>
+        
+        <div class="example-section">
+            <h2>1. Key Generation</h2>
+            <p>Generate a secure 256-bit encryption key:</p>
+            <div class="code-block">
+const key = trustedge.generateKey();
+console.log('Generated key:', key);
+            </div>
+            <button onclick="generateKey()">Generate New Key</button>
+            <div class="input-group">
+                <label>Generated Key:</label>
+                <input type="text" id="generatedKey" readonly placeholder="Click 'Generate New Key' to create a key">
+            </div>
+        </div>
+
+        <div class="example-section">
+            <h2>2. Data Encryption</h2>
+            <p>Encrypt text data using AES-256-GCM:</p>
+            <div class="code-block">
+const encrypted = trustedge.encryptSimple(data, key);
+console.log('Encrypted:', encrypted);
+            </div>
+            <div class="input-group">
+                <label>Data to Encrypt:</label>
+                <textarea id="plaintext" placeholder="Enter text to encrypt...">Hello, TrustEdge! This is a secret message that will be encrypted using AES-256-GCM.</textarea>
+            </div>
+            <div class="input-group">
+                <label>Encryption Key:</label>
+                <input type="text" id="encryptKey" placeholder="Use generated key or paste your own">
+            </div>
+            <button onclick="encryptData()">Encrypt Data</button>
+            <div id="encryptResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="example-section">
+            <h2>3. Data Decryption</h2>
+            <p>Decrypt the encrypted data back to plaintext:</p>
+            <div class="code-block">
+const decrypted = trustedge.decrypt(encryptedData, key);
+console.log('Decrypted:', decrypted);
+            </div>
+            <div class="input-group">
+                <label>Encrypted Data (JSON):</label>
+                <textarea id="encryptedData" placeholder="Paste encrypted data JSON here..."></textarea>
+            </div>
+            <div class="input-group">
+                <label>Decryption Key:</label>
+                <input type="text" id="decryptKey" placeholder="Enter the decryption key">
+            </div>
+            <button onclick="decryptData()">Decrypt Data</button>
+            <div id="decryptResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="example-section">
+            <h2>4. Complete Example</h2>
+            <p>Full encrypt-decrypt cycle with automatic key generation:</p>
+            <div class="code-block">
+// Generate key
+const key = trustedge.generateKey();
+
+// Encrypt data
+const encrypted = trustedge.encryptSimple("Secret message", key);
+
+// Decrypt data
+const decrypted = trustedge.decrypt(encrypted, key);
+
+console.log('Original === Decrypted:', "Secret message" === decrypted);
+            </div>
+            <div class="input-group">
+                <label>Test Message:</label>
+                <input type="text" id="testMessage" value="This is a test message for the complete example!" placeholder="Enter test message">
+            </div>
+            <button onclick="runCompleteExample()">Run Complete Example</button>
+            <div id="completeResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="example-section">
+            <h2>5. Performance Test</h2>
+            <p>Test encryption/decryption performance:</p>
+            <button onclick="runPerformanceTest()">Run Performance Test</button>
+            <div id="performanceResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import TrustEdge from '../js/trustedge.js';
+
+        let trustedge;
+        let currentEncryptedData = null;
+
+        // Initialize TrustEdge
+        async function init() {
+            const statusEl = document.getElementById('status');
+            try {
+                trustedge = new TrustEdge();
+                await trustedge.init();
+                statusEl.textContent = '✅ TrustEdge WASM module ready!';
+                statusEl.className = 'status ready';
+                
+                // Enable all buttons
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(btn => btn.disabled = false);
+                
+            } catch (error) {
+                statusEl.textContent = '❌ Failed to load TrustEdge WASM: ' + error.message;
+                statusEl.className = 'status error';
+                console.error('Initialization error:', error);
+            }
+        }
+
+        // Make functions available globally
+        window.generateKey = () => {
+            try {
+                const key = trustedge.generateKey();
+                document.getElementById('generatedKey').value = key;
+                
+                // Auto-fill encryption key field
+                document.getElementById('encryptKey').value = key;
+                
+                showResult('Generated new 256-bit key successfully!', false);
+            } catch (error) {
+                showResult('Key generation failed: ' + error.message, true);
+            }
+        };
+
+        window.encryptData = () => {
+            try {
+                const plaintext = document.getElementById('plaintext').value;
+                const key = document.getElementById('encryptKey').value;
+                
+                if (!plaintext.trim()) {
+                    throw new Error('Please enter data to encrypt');
+                }
+                if (!key.trim()) {
+                    throw new Error('Please enter an encryption key');
+                }
+                
+                const timer = trustedge.createTimer();
+                const encrypted = trustedge.encryptSimple(plaintext, key);
+                const elapsed = timer.elapsed();
+                
+                currentEncryptedData = encrypted;
+                
+                // Auto-fill decryption fields
+                document.getElementById('encryptedData').value = encrypted.to_json();
+                document.getElementById('decryptKey').value = key;
+                
+                const result = `Encryption successful! (${elapsed.toFixed(2)}ms)
+
+Ciphertext: ${encrypted.ciphertext}
+Nonce: ${encrypted.nonce}
+
+JSON format:
+${encrypted.to_json()}`;
+                
+                showResult(result, false, 'encryptResult');
+                
+            } catch (error) {
+                showResult('Encryption failed: ' + error.message, true, 'encryptResult');
+            }
+        };
+
+        window.decryptData = () => {
+            try {
+                const encryptedJson = document.getElementById('encryptedData').value;
+                const key = document.getElementById('decryptKey').value;
+                
+                if (!encryptedJson.trim()) {
+                    throw new Error('Please enter encrypted data JSON');
+                }
+                if (!key.trim()) {
+                    throw new Error('Please enter a decryption key');
+                }
+                
+                const timer = trustedge.createTimer();
+                const encryptedData = JSON.parse(encryptedJson);
+                const decrypted = trustedge.decrypt(encryptedData, key);
+                const elapsed = timer.elapsed();
+                
+                const result = `Decryption successful! (${elapsed.toFixed(2)}ms)
+
+Decrypted text:
+${decrypted}`;
+                
+                showResult(result, false, 'decryptResult');
+                
+            } catch (error) {
+                showResult('Decryption failed: ' + error.message, true, 'decryptResult');
+            }
+        };
+
+        window.runCompleteExample = () => {
+            try {
+                const message = document.getElementById('testMessage').value;
+                if (!message.trim()) {
+                    throw new Error('Please enter a test message');
+                }
+                
+                const timer = trustedge.createTimer();
+                
+                // Step 1: Generate key
+                const key = trustedge.generateKey();
+                
+                // Step 2: Encrypt
+                const encrypted = trustedge.encryptSimple(message, key);
+                
+                // Step 3: Decrypt
+                const decrypted = trustedge.decrypt(encrypted, key);
+                
+                const elapsed = timer.elapsed();
+                
+                // Step 4: Verify
+                const isValid = message === decrypted;
+                
+                const result = `Complete Example Results (${elapsed.toFixed(2)}ms total):
+
+1. Generated Key: ${key.substring(0, 32)}...
+2. Original Message: "${message}"
+3. Encrypted Successfully: ${encrypted.ciphertext.substring(0, 32)}...
+4. Decrypted Message: "${decrypted}"
+5. Integrity Check: ${isValid ? '✅ PASSED' : '❌ FAILED'}
+
+${isValid ? 'All operations completed successfully!' : 'ERROR: Decrypted message does not match original!'}`;
+                
+                showResult(result, !isValid, 'completeResult');
+                
+            } catch (error) {
+                showResult('Complete example failed: ' + error.message, true, 'completeResult');
+            }
+        };
+
+        window.runPerformanceTest = () => {
+            try {
+                const iterations = 100;
+                const testData = 'Performance test data '.repeat(50); // ~1KB
+                
+                showResult('Running performance test...', false, 'performanceResult');
+                
+                setTimeout(() => {
+                    try {
+                        const key = trustedge.generateKey();
+                        
+                        // Encryption performance
+                        const encryptTimer = trustedge.createTimer();
+                        const encryptedResults = [];
+                        
+                        for (let i = 0; i < iterations; i++) {
+                            encryptedResults.push(trustedge.encryptSimple(testData, key));
+                        }
+                        const encryptTime = encryptTimer.elapsed();
+                        
+                        // Decryption performance
+                        const decryptTimer = trustedge.createTimer();
+                        
+                        for (let i = 0; i < iterations; i++) {
+                            trustedge.decrypt(encryptedResults[i], key);
+                        }
+                        const decryptTime = decryptTimer.elapsed();
+                        
+                        const result = `Performance Test Results:
+
+Data Size: ${(testData.length / 1024).toFixed(1)} KB
+Iterations: ${iterations}
+
+Encryption:
+- Total Time: ${encryptTime.toFixed(2)}ms
+- Average: ${(encryptTime / iterations).toFixed(2)}ms per operation
+- Throughput: ${((testData.length * iterations) / (encryptTime / 1000) / 1024 / 1024).toFixed(2)} MB/s
+
+Decryption:
+- Total Time: ${decryptTime.toFixed(2)}ms
+- Average: ${(decryptTime / iterations).toFixed(2)}ms per operation
+- Throughput: ${((testData.length * iterations) / (decryptTime / 1000) / 1024 / 1024).toFixed(2)} MB/s
+
+Total Time: ${(encryptTime + decryptTime).toFixed(2)}ms`;
+                        
+                        showResult(result, false, 'performanceResult');
+                        
+                    } catch (error) {
+                        showResult('Performance test failed: ' + error.message, true, 'performanceResult');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                showResult('Performance test failed: ' + error.message, true, 'performanceResult');
+            }
+        };
+
+        function showResult(message, isError = false, elementId = null) {
+            const resultEl = elementId ? document.getElementById(elementId) : null;
+            if (resultEl) {
+                resultEl.textContent = message;
+                resultEl.className = isError ? 'result error' : 'result';
+                resultEl.style.display = 'block';
+            } else {
+                console.log(isError ? 'ERROR:' : 'SUCCESS:', message);
+            }
+        }
+
+        // Disable all buttons initially
+        document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+
+        // Initialize when page loads
+        init();
+    </script>
+</body>
+</html>
