@@ -1,3 +1,11 @@
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/johnzilla/trustedge
+-->
+
+
 # TrustEdge Labs LinkedIn Release Post - v0.2.0
 
 Just shipped TrustEdge 0.2.0 with hardware-backed security. This release transforms our open-source crypto engine into something enterprises can actually deploy.
