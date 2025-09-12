@@ -1,4 +1,3 @@
-
 //
 // Copyright (c) 2025 TRUSTEDGE LABS LLC
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
@@ -41,10 +40,10 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
-use trustedge_core::Envelope;
-use serde::{Deserialize, Serialize};
+use anyhow::{Context, Result};
 use ed25519_dalek::{SigningKey, VerifyingKey};
-use anyhow::{Result, Context};
+use serde::{Deserialize, Serialize};
+use trustedge_core::Envelope;
 
 /// Represents a transferable claim, forming the payload of a TrustEdge Envelope.
 ///
@@ -145,9 +144,12 @@ impl Receipt {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs();
-        
-        if self.created_at > now + 300 {  // Not more than 5 minutes in future
-            return Err(anyhow::anyhow!("Receipt timestamp is too far in the future"));
+
+        if self.created_at > now + 300 {
+            // Not more than 5 minutes in future
+            return Err(anyhow::anyhow!(
+                "Receipt timestamp is too far in the future"
+            ));
         }
 
         Ok(())
@@ -176,13 +178,12 @@ pub fn create_receipt(
 ) -> Result<Envelope> {
     // The Contract Writer creates the business logic
     let receipt = Receipt::new_origin(issuer_key, beneficiary_key, amount, description);
-    
+
     // Validate the business rules
     receipt.validate().context("Receipt validation failed")?;
 
     // Serialize the business logic (the Receipt) into a payload
-    let payload = serde_json::to_vec(&receipt)
-        .context("Failed to serialize receipt")?;
+    let payload = serde_json::to_vec(&receipt).context("Failed to serialize receipt")?;
 
     // Hand the payload to the Security Guard (Envelope::seal) to secure it
     Envelope::seal(&payload, issuer_key, beneficiary_key)
@@ -216,13 +217,15 @@ pub fn assign_receipt(
     // Check that the assigner is actually the current beneficiary
     let previous_beneficiary = previous_envelope.beneficiary();
     if previous_beneficiary != assigner_key.verifying_key() {
-        return Err(anyhow::anyhow!("Assigner key does not match previous beneficiary"));
+        return Err(anyhow::anyhow!(
+            "Assigner key does not match previous beneficiary"
+        ));
     }
 
     // We need to unseal the previous envelope to get the amount
     // For now, we'll use a placeholder since decryption isn't fully implemented
     // In a real implementation, the assigner would provide their private key to decrypt
-    
+
     // Calculate the hash of the previous envelope to create the chain link
     let prev_hash = previous_envelope.hash();
 
@@ -240,7 +243,9 @@ pub fn assign_receipt(
     );
 
     // Validate the business rules
-    assignment_receipt.validate().context("Assignment receipt validation failed")?;
+    assignment_receipt
+        .validate()
+        .context("Assignment receipt validation failed")?;
 
     // Serialize the business logic
     let payload = serde_json::to_vec(&assignment_receipt)
@@ -264,15 +269,18 @@ pub fn assign_receipt(
 /// The Receipt contained in the envelope, or an error
 pub fn extract_receipt(envelope: &Envelope, decryption_key: &SigningKey) -> Result<Receipt> {
     // Ask the Security Guard to verify and unseal the envelope
-    let payload = envelope.unseal(decryption_key)
+    let payload = envelope
+        .unseal(decryption_key)
         .context("Failed to unseal envelope")?;
 
     // Deserialize the business logic
-    let receipt: Receipt = serde_json::from_slice(&payload)
-        .context("Failed to deserialize receipt from payload")?;
+    let receipt: Receipt =
+        serde_json::from_slice(&payload).context("Failed to deserialize receipt from payload")?;
 
     // Validate the business rules
-    receipt.validate().context("Extracted receipt validation failed")?;
+    receipt
+        .validate()
+        .context("Extracted receipt validation failed")?;
 
     Ok(receipt)
 }
@@ -350,7 +358,8 @@ mod tests {
             &bob_key.verifying_key(),
             1000,
             Some("Test receipt".to_string()),
-        ).expect("Failed to create receipt");
+        )
+        .expect("Failed to create receipt");
 
         assert!(envelope.verify());
         assert_eq!(envelope.issuer(), alice_key.verifying_key());
@@ -369,7 +378,8 @@ mod tests {
             &bob_key.verifying_key(),
             1000,
             Some("Original receipt".to_string()),
-        ).expect("Failed to create receipt");
+        )
+        .expect("Failed to create receipt");
 
         // Bob assigns to Charlie
         let assignment_envelope = assign_receipt(
@@ -377,11 +387,15 @@ mod tests {
             &bob_key,
             &charlie_key.verifying_key(),
             Some("Assignment to Charlie".to_string()),
-        ).expect("Failed to assign receipt");
+        )
+        .expect("Failed to assign receipt");
 
         assert!(assignment_envelope.verify());
         assert_eq!(assignment_envelope.issuer(), bob_key.verifying_key());
-        assert_eq!(assignment_envelope.beneficiary(), charlie_key.verifying_key());
+        assert_eq!(
+            assignment_envelope.beneficiary(),
+            charlie_key.verifying_key()
+        );
     }
 
     #[test]
@@ -392,23 +406,22 @@ mod tests {
         let dave_key = SigningKey::generate(&mut OsRng);
 
         // Alice creates original receipt for Bob
-        let original_envelope = create_receipt(
-            &alice_key,
-            &bob_key.verifying_key(),
-            1000,
-            None,
-        ).expect("Failed to create receipt");
+        let original_envelope = create_receipt(&alice_key, &bob_key.verifying_key(), 1000, None)
+            .expect("Failed to create receipt");
 
         // Dave tries to assign (but he's not the beneficiary)
         let result = assign_receipt(
             &original_envelope,
-            &dave_key,  // Dave is not the beneficiary!
+            &dave_key, // Dave is not the beneficiary!
             &charlie_key.verifying_key(),
             None,
         );
 
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("does not match previous beneficiary"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("does not match previous beneficiary"));
     }
 
     #[test]
@@ -420,7 +433,7 @@ mod tests {
         // Create a chain: Alice -> Bob -> Charlie
         let envelope1 = create_receipt(&alice_key, &bob_key.verifying_key(), 1000, None)
             .expect("Failed to create receipt");
-        
+
         let envelope2 = assign_receipt(&envelope1, &bob_key, &charlie_key.verifying_key(), None)
             .expect("Failed to assign receipt");
 
@@ -450,7 +463,8 @@ mod tests {
         future_receipt.created_at = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
-            .as_secs() + 1000;  // 1000 seconds in the future
+            .as_secs()
+            + 1000; // 1000 seconds in the future
         assert!(future_receipt.validate().is_err());
     }
 }
