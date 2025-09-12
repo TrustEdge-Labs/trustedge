@@ -13,11 +13,14 @@ use serde::{Deserialize, Serialize};
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
 pub const NONCE_LEN: usize = 12;
 
+pub mod asymmetric;
 pub mod audio;
 pub mod auth;
 pub mod backends;
 pub mod envelope;
+pub mod envelope_v2_bridge;
 pub mod format;
+pub mod hybrid;
 pub mod transport;
 pub mod vectors;
 
@@ -50,8 +53,11 @@ pub use backends::{
     UniversalBackendRegistry,
     UniversalKeyringBackend,
 };
+pub use asymmetric::{KeyPair, PrivateKey, PublicKey, AsymmetricError, key_exchange, encrypt_key_asymmetric, decrypt_key_asymmetric};
 pub use envelope::{Envelope, EnvelopeMetadata};
+pub use envelope_v2_bridge::{UnifiedEnvelope, EnvelopeFormat, EnvelopeInfo, detect_envelope_format};
 pub use format::*;
+pub use hybrid::{seal_for_recipient, open_envelope, TrustEdgeError, SymmetricKey};
 pub use transport::{Transport, TransportConfig, TransportFactory};
 
 /// Represents a chunk of data sent over the network, including encrypted data,
