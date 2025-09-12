@@ -95,7 +95,7 @@ impl PubkyClient {
             serde_json::to_string(&record).context("Failed to serialize identity record")?;
 
         // Store the identity record at a well-known path
-        let path = format!("/trustedge/identity");
+        let path = "/trustedge/identity".to_string();
 
         // Use Pubky client to store the record
         // Note: This is a simplified version - actual Pubky API may differ
@@ -117,7 +117,7 @@ impl PubkyClient {
             .map_err(|e| PubkyError::InvalidIdentity(format!("Invalid pubky ID: {:?}", e)))?;
 
         // Construct the path for the identity record
-        let path = format!("/trustedge/identity");
+        let path = "/trustedge/identity".to_string();
 
         // Retrieve the record from the network
         let url = format!("pubky://{}{}", pubky_id, path);
@@ -169,7 +169,7 @@ impl PubkyClient {
         let record_json =
             serde_json::to_string(&record).context("Failed to serialize identity record")?;
 
-        let path = format!("/trustedge/identity");
+        let path = "/trustedge/identity".to_string();
         let record_bytes = record_json.into_bytes();
 
         self.client
@@ -184,7 +184,7 @@ impl PubkyClient {
 
     /// Delete an identity record
     pub async fn delete_identity(&self) -> Result<()> {
-        let path = format!("/trustedge/identity");
+        let path = "/trustedge/identity".to_string();
 
         self.client
             .delete(&path)
