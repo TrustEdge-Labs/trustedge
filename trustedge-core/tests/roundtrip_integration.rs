@@ -742,10 +742,7 @@ fn test_format_detection_accuracy() -> Result<()> {
 /// Tests 30+ supported MIME types, verifies detection accuracy, and validates unknown format handling
 #[test]
 fn test_comprehensive_mime_type_detection() -> Result<()> {
-    let binary_path = std::env::current_dir()?
-        .join("target")
-        .join("debug")
-        .join("trustedge-core");
+    let binary_path = get_binary_path();
 
     // Comprehensive test cases with expected MIME types
     let test_cases = vec![
