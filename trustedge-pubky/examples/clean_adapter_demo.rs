@@ -9,7 +9,7 @@
 
 use trustedge_core::{AsymmetricAlgorithm, KeyPair};
 use trustedge_pubky::{
-    create_pubky_adapter_random, receive_trusted_data, send_trusted_data, PubkyAdapter,
+    create_pubky_backend_random, receive_trusted_data, send_trusted_data, PubkyBackend,
 };
 
 #[tokio::main]
@@ -19,8 +19,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Step 1: Create Pubky adapters for Alice and Bob
     println!("📋 Step 1: Creating Pubky adapters...");
-    let alice_adapter = create_pubky_adapter_random().await?;
-    let bob_adapter = create_pubky_adapter_random().await?;
+    let alice_adapter = create_pubky_backend_random()?;
+    let bob_adapter = create_pubky_backend_random()?;
 
     println!("✅ Alice's Pubky ID: {}", alice_adapter.our_pubky_id());
     println!("✅ Bob's Pubky ID: {}", bob_adapter.our_pubky_id());
@@ -37,10 +37,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Step 3: Publish public keys to Pubky network
     println!("📋 Step 3: Publishing public keys to Pubky network...");
-    let alice_pubky_id = alice_adapter
-        .publish_public_key(&alice_keypair.public)
-        .await?;
-    let bob_pubky_id = bob_adapter.publish_public_key(&bob_keypair.public).await?;
+    let alice_pubky_id = alice_adapter.publish_public_key(&alice_keypair.public)?;
+    let bob_pubky_id = bob_adapter.publish_public_key(&bob_keypair.public)?;
 
     println!("✅ Alice published key with Pubky ID: {}", alice_pubky_id);
     println!("✅ Bob published key with Pubky ID: {}", bob_pubky_id);
@@ -61,8 +59,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         secret_message,
         &bob_pubky_id,  // Pubky ID for resolution
         &alice_adapter, // Alice's adapter for network access
-    )
-    .await?;
+    )?;
 
     println!("✅ Message sealed successfully!");
     println!("   Envelope size: {} bytes", sealed_envelope.len());
@@ -76,7 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Step 5: Bob receives and decrypts the data
     println!("📋 Step 5: Bob receives trusted data...");
-    let decrypted_message = receive_trusted_data(&sealed_envelope, &bob_keypair.private).await?;
+    let decrypted_message = receive_trusted_data(&sealed_envelope, &bob_keypair.private)?;
 
     println!("✅ Message decrypted successfully!");
     println!(
@@ -91,7 +88,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Step 6: Demonstrate key resolution
     println!("📋 Step 6: Testing key resolution...");
-    let resolved_bob_key = alice_adapter.resolve_public_key(&bob_pubky_id).await?;
+    let resolved_bob_key = alice_adapter.resolve_public_key(&bob_pubky_id)?;
 
     println!("✅ Key resolution successful!");
     println!("   Resolved key ID: {}", resolved_bob_key.id());
@@ -105,15 +102,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Step 7: Test with different key types
     println!("📋 Step 7: Testing with Ed25519 keys...");
     let alice_ed25519 = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
-    let alice_ed25519_pubky_id = alice_adapter
-        .publish_public_key(&alice_ed25519.public)
-        .await?;
+    let alice_ed25519_pubky_id = alice_adapter.publish_public_key(&alice_ed25519.public)?;
 
     println!("✅ Ed25519 key published: {}", alice_ed25519_pubky_id);
 
-    let resolved_ed25519 = bob_adapter
-        .resolve_public_key(&alice_ed25519_pubky_id)
-        .await?;
+    let resolved_ed25519 = bob_adapter.resolve_public_key(&alice_ed25519_pubky_id)?;
     println!("✅ Ed25519 key resolved: {}", resolved_ed25519.id());
     println!();
 
@@ -122,11 +115,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let large_data = vec![42u8; 10240]; // 10KB
 
     let start = std::time::Instant::now();
-    let large_envelope = send_trusted_data(&large_data, &bob_pubky_id, &alice_adapter).await?;
+    let large_envelope = send_trusted_data(&large_data, &bob_pubky_id, &alice_adapter)?;
     let send_time = start.elapsed();
 
     let start = std::time::Instant::now();
-    let _decrypted_large = receive_trusted_data(&large_envelope, &bob_keypair.private).await?;
+    let _decrypted_large = receive_trusted_data(&large_envelope, &bob_keypair.private)?;
     let receive_time = start.elapsed();
 
     println!("✅ Large data performance:");
@@ -158,12 +151,9 @@ mod tests {
     #[tokio::test]
     async fn test_clean_adapter_api() {
         // Create adapters
-        let alice_adapter = create_pubky_adapter_random()
-            .await
-            .expect("Failed to create Alice's adapter");
-        let bob_adapter = create_pubky_adapter_random()
-            .await
-            .expect("Failed to create Bob's adapter");
+        let alice_adapter =
+            create_pubky_backend_random().expect("Failed to create Alice's adapter");
+        let bob_adapter = create_pubky_backend_random().expect("Failed to create Bob's adapter");
 
         // Generate keys
         let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
@@ -174,18 +164,15 @@ mod tests {
         // Publish Bob's key
         let bob_pubky_id = bob_adapter
             .publish_public_key(&bob_keypair.public)
-            .await
             .expect("Failed to publish Bob's key");
 
         // Test the clean API
         let message = b"Test message for clean API";
 
         let envelope = send_trusted_data(message, &bob_pubky_id, &alice_adapter)
-            .await
             .expect("Failed to send trusted data");
 
         let decrypted = receive_trusted_data(&envelope, &bob_keypair.private)
-            .await
             .expect("Failed to receive trusted data");
 
         assert_eq!(message, decrypted.as_slice());
@@ -193,21 +180,17 @@ mod tests {
 
     #[tokio::test]
     async fn test_key_resolution() {
-        let adapter = create_pubky_adapter_random()
-            .await
-            .expect("Failed to create adapter");
+        let adapter = create_pubky_backend_random().expect("Failed to create adapter");
 
         let keypair =
             KeyPair::generate(AsymmetricAlgorithm::Ed25519).expect("Failed to generate key pair");
 
         let pubky_id = adapter
             .publish_public_key(&keypair.public)
-            .await
             .expect("Failed to publish key");
 
         let resolved_key = adapter
             .resolve_public_key(&pubky_id)
-            .await
             .expect("Failed to resolve key");
 
         assert_eq!(keypair.public.id(), resolved_key.id());

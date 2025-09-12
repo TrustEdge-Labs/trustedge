@@ -223,7 +223,7 @@ fn assemble_envelope(
         algorithm: AeadAlgorithm::Aes256Gcm as u8,
     };
 
-    bincode::serialize(&envelope).map_err(|e| TrustEdgeError::SerializationError(e))
+    bincode::serialize(&envelope).map_err(TrustEdgeError::SerializationError)
 }
 
 /// Parse an envelope from bytes

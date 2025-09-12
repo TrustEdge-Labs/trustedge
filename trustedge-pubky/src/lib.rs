@@ -14,7 +14,11 @@ use anyhow::Result;
 use pubky::{Client, ClientBuilder, Keypair};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use trustedge_core::backends::AsymmetricAlgorithm;
+use tokio::runtime::Runtime;
+use trustedge_core::backends::{
+    AsymmetricAlgorithm, BackendCapabilities, BackendInfo, CryptoOperation, CryptoResult,
+    KeyMetadata, UniversalBackend,
+};
 use trustedge_core::{PrivateKey, PublicKey};
 
 /// Errors that can occur during Pubky operations
@@ -58,22 +62,51 @@ pub struct PublicKeyData {
     pub key_id: Option<String>,
 }
 
-/// Client for interacting with the Pubky network
-pub struct PubkyAdapter {
+/// Backend for Pubky network operations implementing UniversalBackend
+pub struct PubkyBackend {
     /// The Pubky client
     client: Client,
     /// Our Pubky keypair
     keypair: Keypair,
+    /// Async runtime for network operations
+    runtime: Runtime,
 }
 
-impl PubkyAdapter {
-    /// Create a new Pubky adapter
+impl PubkyBackend {
+    /// Create a new Pubky backend
     pub async fn new(keypair: Keypair) -> Result<Self, PubkyAdapterError> {
         let client = ClientBuilder::default().build().map_err(|e| {
             PubkyAdapterError::Network(anyhow::anyhow!("Failed to build Pubky client: {:?}", e))
         })?;
 
-        Ok(Self { client, keypair })
+        let runtime = Runtime::new().map_err(|e| {
+            PubkyAdapterError::Network(anyhow::anyhow!("Failed to create async runtime: {:?}", e))
+        })?;
+
+        Ok(Self {
+            client,
+            keypair,
+            runtime,
+        })
+    }
+
+    /// Create a new Pubky backend synchronously
+    pub fn new_sync(keypair: Keypair) -> Result<Self, PubkyAdapterError> {
+        let runtime = Runtime::new().map_err(|e| {
+            PubkyAdapterError::Network(anyhow::anyhow!("Failed to create async runtime: {:?}", e))
+        })?;
+
+        let client = runtime.block_on(async {
+            ClientBuilder::default().build().map_err(|e| {
+                PubkyAdapterError::Network(anyhow::anyhow!("Failed to build Pubky client: {:?}", e))
+            })
+        })?;
+
+        Ok(Self {
+            client,
+            keypair,
+            runtime,
+        })
     }
 
     /// Publish a TrustEdge public key to the Pubky network
@@ -111,7 +144,7 @@ impl PubkyAdapter {
         Ok(hex::encode(self.keypair.public_key().to_bytes()))
     }
 
-    /// Resolve a Pubky ID to get the TrustEdge public key
+    /// Resolve a Pubky ID to get the TrustEdge public key (async)
     pub async fn resolve_public_key(&self, pubky_id: &str) -> Result<PublicKey, PubkyAdapterError> {
         let path = "/trustedge/public_key";
         let url = format!("pubky://{}{}", pubky_id, path);
@@ -156,24 +189,85 @@ impl PubkyAdapter {
         Ok(public_key)
     }
 
+    /// Resolve a Pubky ID to get the TrustEdge public key (sync)
+    pub fn resolve_public_key_sync(&self, pubky_id: &str) -> Result<PublicKey, PubkyAdapterError> {
+        self.runtime.block_on(self.resolve_public_key(pubky_id))
+    }
+
     /// Get our Pubky ID
     pub fn our_pubky_id(&self) -> String {
         hex::encode(self.keypair.public_key().to_bytes())
     }
 }
 
+impl UniversalBackend for PubkyBackend {
+    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult> {
+        match operation {
+            CryptoOperation::GetPublicKey => {
+                // key_id is the Pubky ID
+                let public_key = self
+                    .resolve_public_key_sync(key_id)
+                    .map_err(|e| anyhow::anyhow!("Failed to resolve Pubky ID {}: {}", key_id, e))?;
+                Ok(CryptoResult::PublicKey(public_key.key_bytes))
+            }
+            _ => Err(anyhow::anyhow!(
+                "Operation not supported by PubkyBackend: {:?}",
+                operation
+            )),
+        }
+    }
+
+    fn supports_operation(&self, operation: &CryptoOperation) -> bool {
+        matches!(operation, CryptoOperation::GetPublicKey)
+    }
+
+    fn get_capabilities(&self) -> BackendCapabilities {
+        BackendCapabilities {
+            symmetric_algorithms: vec![],
+            asymmetric_algorithms: vec![
+                AsymmetricAlgorithm::Ed25519,
+                AsymmetricAlgorithm::EcdsaP256,
+                AsymmetricAlgorithm::Rsa2048,
+                AsymmetricAlgorithm::Rsa4096,
+            ],
+            signature_algorithms: vec![],
+            hash_algorithms: vec![],
+            hardware_backed: false,
+            supports_key_derivation: false,
+            supports_key_generation: false,
+            supports_attestation: false,
+            max_key_size: Some(4096),
+        }
+    }
+
+    fn backend_info(&self) -> BackendInfo {
+        BackendInfo {
+            name: "pubky",
+            description: "Decentralized key resolution via Pubky network",
+            version: "0.1.0",
+            available: true,
+            config_requirements: vec!["pubky_keypair"],
+        }
+    }
+
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
+        // Pubky backend doesn't enumerate keys - they're resolved by ID
+        Ok(vec![])
+    }
+}
+
 /// Send trusted data to a recipient via Pubky network resolution
 ///
 /// This is the main high-level function that:
-/// 1. Uses the pubky client to resolve the ID and get the public key
+/// 1. Uses the pubky backend to resolve the ID and get the public key
 /// 2. Calls the core library function to perform the hybrid encryption
-pub async fn send_trusted_data(
+pub fn send_trusted_data(
     data: &[u8],
     recipient_id: &str, // e.g., "abc123..." (hex-encoded Pubky ID)
-    pubky_adapter: &PubkyAdapter,
+    pubky_backend: &PubkyBackend,
 ) -> Result<Vec<u8>, PubkyAdapterError> {
-    // 1. Use the pubky client to resolve the ID and get the public key
-    let recipient_public_key = pubky_adapter.resolve_public_key(recipient_id).await?;
+    // 1. Use the pubky backend to resolve the ID and get the public key
+    let recipient_public_key = pubky_backend.resolve_public_key_sync(recipient_id)?;
 
     // 2. Call the core library function to perform the hybrid encryption
     let sealed_envelope = trustedge_core::seal_for_recipient(data, &recipient_public_key)?;
@@ -186,7 +280,7 @@ pub async fn send_trusted_data(
 /// This function:
 /// 1. Uses the core library to decrypt the envelope
 /// 2. Returns the original data
-pub async fn receive_trusted_data(
+pub fn receive_trusted_data(
     envelope: &[u8],
     my_private_key: &PrivateKey,
 ) -> Result<Vec<u8>, PubkyAdapterError> {
@@ -196,18 +290,16 @@ pub async fn receive_trusted_data(
     Ok(decrypted_data)
 }
 
-/// Convenience function to create a Pubky adapter from a seed
-pub async fn create_pubky_adapter_from_seed(
-    seed: &[u8; 32],
-) -> Result<PubkyAdapter, PubkyAdapterError> {
+/// Convenience function to create a Pubky backend from a seed
+pub fn create_pubky_backend_from_seed(seed: &[u8; 32]) -> Result<PubkyBackend, PubkyAdapterError> {
     let keypair = Keypair::from_secret_key(seed);
-    PubkyAdapter::new(keypair).await
+    PubkyBackend::new_sync(keypair)
 }
 
-/// Convenience function to create a Pubky adapter with a random keypair
-pub async fn create_pubky_adapter_random() -> Result<PubkyAdapter, PubkyAdapterError> {
+/// Convenience function to create a Pubky backend with a random keypair
+pub fn create_pubky_backend_random() -> Result<PubkyBackend, PubkyAdapterError> {
     let keypair = Keypair::random();
-    PubkyAdapter::new(keypair).await
+    PubkyBackend::new_sync(keypair)
 }
 
 #[cfg(test)]
@@ -246,18 +338,16 @@ mod tests {
         assert_eq!(record.created_at, deserialized.created_at);
     }
 
-    #[tokio::test]
-    async fn test_adapter_creation() {
-        let adapter = create_pubky_adapter_random()
-            .await
-            .expect("Failed to create adapter");
+    #[test]
+    fn test_backend_creation() {
+        let backend = create_pubky_backend_random().expect("Failed to create backend");
 
-        let pubky_id = adapter.our_pubky_id();
+        let pubky_id = backend.our_pubky_id();
         assert_eq!(pubky_id.len(), 64); // 32 bytes * 2 hex chars
     }
 
-    #[tokio::test]
-    async fn test_receive_trusted_data() {
+    #[test]
+    fn test_receive_trusted_data() {
         // Create a test envelope using core functions
         let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
             .expect("Failed to generate Alice's key");
@@ -268,44 +358,40 @@ mod tests {
 
         // Test the receive function
         let decrypted = receive_trusted_data(&envelope, &alice_keypair.private)
-            .await
             .expect("Failed to receive trusted data");
 
         assert_eq!(data, decrypted.as_slice());
     }
 
-    #[tokio::test]
-    async fn test_mock_integration() {
-        use crate::mock::{mock_send_trusted_data, MockPubkyAdapter};
+    #[test]
+    fn test_mock_integration() {
+        use crate::mock::{mock_send_trusted_data, MockPubkyBackend};
         use std::collections::HashMap;
         use std::sync::{Arc, Mutex};
 
         let storage = Arc::new(Mutex::new(HashMap::new()));
 
-        let alice_adapter = MockPubkyAdapter::with_shared_storage(storage.clone());
-        let bob_adapter = MockPubkyAdapter::with_shared_storage(storage.clone());
+        let _alice_backend = MockPubkyBackend::with_shared_storage(storage.clone());
+        let bob_backend = MockPubkyBackend::with_shared_storage(storage.clone());
 
         // Generate keys
-        let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
+        let _alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
             .expect("Failed to generate Alice's key");
         let bob_keypair =
             KeyPair::generate(AsymmetricAlgorithm::Rsa2048).expect("Failed to generate Bob's key");
 
         // Publish Bob's key
-        let bob_pubky_id = bob_adapter
+        let bob_pubky_id = bob_backend
             .publish_public_key(&bob_keypair.public)
-            .await
             .expect("Failed to publish Bob's key");
 
         // Test the clean API with mock
         let message = b"Test message for mock integration";
 
         let envelope = mock_send_trusted_data(message, &bob_pubky_id, storage)
-            .await
             .expect("Failed to send trusted data");
 
         let decrypted = receive_trusted_data(&envelope, &bob_keypair.private)
-            .await
             .expect("Failed to receive trusted data");
 
         assert_eq!(message, decrypted.as_slice());
