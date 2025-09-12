@@ -6,7 +6,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 # TrustEdge Testing Guide
 
-Comprehensive testing, validation, and verification procedures for TrustEdge with **144 total tests** covering all components.
+Comprehensive testing, validation, and verification procedures for TrustEdge with **109 total tests** covering all components.
 
 ## Table of Contents
 - [Test Architecture](#test-architecture)
@@ -27,9 +27,9 @@ Comprehensive testing, validation, and verification procedures for TrustEdge wit
 TrustEdge employs a comprehensive 3-tier testing strategy:
 
 ### Test Statistics
-- **144 Total Tests** (significantly expanded from 63)
-- **79 Unit Tests** (core library functionality)
-- **65 Integration Tests** (cross-component validation)
+- **109 Total Tests** covering all production features
+- **86 Core Tests** (trustedge-core: envelope encryption, backends, transport, YubiKey)
+- **23 Receipt Tests** (trustedge-receipts: digital receipts, security, attack resistance)
 - **100% Feature Coverage** (all major components tested)
 
 ### Quick Test Commands
@@ -37,16 +37,12 @@ TrustEdge employs a comprehensive 3-tier testing strategy:
 # All tests (recommended before commit)
 ./ci-check.sh                    # Runs format, lint, build, and all tests
 
-# By category
-cargo test --lib                 # Unit tests (79)
-cargo test --test yubikey_integration     # YubiKey hardware tests
-cargo test --test transport_integration   # Transport layer tests (10)
-cargo test --test software_hsm_integration # Software HSM tests (9)
-cargo test --test auth_integration         # Authentication tests (3)
-cargo test --test network_integration      # Network tests (7)
-cargo test --test roundtrip_integration    # End-to-end tests (15)
-cargo test --test universal_backend_integration # Backend tests (6)
-cargo test --test domain_separation_test   # Security tests (7)
+# By crate
+cargo test -p trustedge-core --lib        # Core cryptography tests (86)
+cargo test -p trustedge-receipts          # Receipt system tests (23)
+
+# Hardware features
+cargo test --features yubikey    # Include YubiKey hardware tests
 
 # With features
 cargo test --features yubikey    # Include YubiKey hardware tests
@@ -56,52 +52,42 @@ cargo test --features yubikey    # Include YubiKey hardware tests
 
 ## Test Categories
 
-### 1. Unit Tests (79 Tests)
-**Core Library** (`src/lib.rs`):
-- Audio chunk serialization/deserialization
-- Format detection and validation
-- Encryption algorithm testing
-- Backend capability discovery
+### 1. Core Cryptography Tests (86 Tests)
+**Envelope System** (`trustedge-core`):
+- AES-256-GCM encryption/decryption with real cryptography
+- PBKDF2 key derivation with 100,000 iterations
+- Memory-safe key handling with zeroization
+- Envelope seal/unseal roundtrip testing
+- Large payload chunking and reassembly
 
-**Transport Layer** (`src/transport/`):
-- QUIC transport configuration and validation (8 tests)
-- TCP transport framing and error handling (8 tests)  
-- Protocol selection logic
-- NetworkChunk compatibility
+**Universal Backend System**:
+- Software HSM operations with persistent key storage
+- Universal registry management and capability discovery
+- Keyring backend integration with OS keyring
+- YubiKey hardware backend with real PKCS#11 operations
 
-**Universal Backend System** (`src/backends/`):
-- Software HSM operations (39 tests)
-- Universal registry management (5 tests)
-- Keyring backend integration (5 tests)
-- YubiKey backend stubs (3 tests)
-
-### 2. Integration Tests (65 Tests)
-
-#### YubiKey Integration (8 Tests) - **NEW!**
-Complete testing of YubiKey hardware integration:
-```bash
-cargo test --test yubikey_integration
-```
-- **Phase 1**: X.509 certificate validation with x509-cert crate
-- **Phase 2**: Hardware-signed certificate generation with PIV slots  
-- **Phase 3**: QUIC transport integration with YubiKey certificates
-- Multi-slot operations (9a, 9c, 9d, 9e PIV slots)
-- Error handling and hardware fallback scenarios
-
-#### Transport Integration (10 Tests) - **NEW!**
-Comprehensive transport layer validation:
-```bash
-cargo test --test transport_integration  
-```
-- QUIC vs TCP protocol selection logic
+**Transport Layer**:
+- QUIC/TCP transport configuration and validation
 - NetworkChunk serialization compatibility
-- Concurrent operation handling
-- Timeout and retry mechanisms
+- Concurrent connection handling
 - Security configuration validation
 
-#### Authentication Integration (3 Tests)
+### 2. Digital Receipt System Tests (23 Tests)
+**Receipt Creation & Assignment** (`trustedge-receipts`):
 ```bash
-cargo test --test auth_integration
+cargo test -p trustedge-receipts
+```
+- **Cryptographic Security**: Real encryption/decryption with production algorithms
+- **Ownership Transfer**: Multi-party receipt assignment chains (Alice → Bob → Charlie → Dave → Eve)
+- **Amount Preservation**: Cryptographic protection of receipt amounts through assignment chains
+- **Attack Resistance**: Comprehensive security testing against various attack scenarios
+
+**Security Test Categories**:
+- **Cryptographic Key Isolation**: Ensures only intended recipients can decrypt receipts
+- **Signature Forgery Resistance**: Prevents impersonation using Ed25519 signatures
+- **Replay Attack Prevention**: Each receipt has unique cryptographic fingerprint
+- **Amount Tampering Resistance**: Receipt amounts are cryptographically bound and protected
+- **Chain Integrity Validation**: Broken or out-of-order chains are properly rejected
 ```
 - Certificate generation and verification
 - Mutual authentication workflows
@@ -656,52 +642,62 @@ done
 
 ## Security Testing
 
-### Tamper Detection Tests
+TrustEdge includes **comprehensive security testing** covering cryptographic attacks and security scenarios:
 
-**📖 For complete error message reference and diagnostic procedures, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md#cryptographic-errors).**
+### Receipt System Security Tests (23 Tests)
 
-#### 1. Header Tampering Validation
+**Production-Ready Security Testing:**
 ```bash
-# Create valid envelope
+# Run all security tests
+cargo test -p trustedge-receipts
+
+# Run specific security test categories
+cargo test -p trustedge-receipts test_cryptographic_key_isolation
+cargo test -p trustedge-receipts test_signature_forgery_resistance
+cargo test -p trustedge-receipts test_replay_attack_resistance
+cargo test -p trustedge-receipts test_amount_tampering_resistance
+cargo test -p trustedge-receipts test_chain_integrity_validation
+```
+
+**Security Test Categories:**
+
+1. **Cryptographic Key Isolation**: Ensures attackers cannot decrypt others' receipts
+2. **Signature Forgery Resistance**: Prevents impersonation using Ed25519 signatures  
+3. **Replay Attack Prevention**: Each receipt has unique cryptographic fingerprint
+4. **Amount Tampering Resistance**: Receipt amounts are cryptographically protected
+5. **Chain Integrity Validation**: Broken/out-of-order chains are rejected
+6. **Memory Safety**: Cryptographic key material is properly zeroized
+7. **Multi-Party Chain Testing**: Complex ownership transfer scenarios (Alice → Bob → Charlie → Dave → Eve)
+
+### Envelope System Security Tests
+
+**Real Cryptography Validation:**
+
+**Core Envelope Tests:**
+- **AES-256-GCM Encryption**: Real production cryptography with PBKDF2 key derivation
+- **Key Derivation Security**: 100,000 PBKDF2 iterations with proper salt handling
+- **Memory Safety**: Cryptographic key material properly zeroized after use
+- **Tampering Detection**: Envelope verification fails when data is modified
+- **Wrong Key Rejection**: Decryption fails with incorrect keys
+
+**Manual Security Validation:**
+```bash
+# Test envelope tampering detection
 ./target/release/trustedge-core \
   --input test.txt \
   --envelope original.trst \
-  --key-hex $(openssl rand -hex 32)
+  --key-out test.key
 
-# Test header corruption detection
-dd if=/dev/urandom of=corrupted.trst bs=1 count=10 conv=notrunc
-
-# Verify detection (should fail)
-./target/release/trustedge-core \
-  --decrypt \
-  --input corrupted.trst \
-  --out should_fail.txt \
-  --key-hex $(cat last_key.hex)
-# Expected: "bad magic" error
-```
-
-#### 2. Record Tampering Validation
-```bash
-# Test data corruption detection
+# Tamper with envelope (should fail decryption)
 dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 
-# Verify detection (should fail)
+# Verify tampering is detected
 ./target/release/trustedge-core \
   --decrypt \
   --input original.trst \
   --out should_fail.txt \
-  --key-hex $(cat last_key.hex)
-# Expected: "AES-GCM decrypt/verify failed" error
-```
-
-### Key Validation Tests
-
-#### 1. Wrong Key Detection
-```bash
-# Test cryptographic validation
-./target/release/trustedge-core \
-  --input test.txt \
-  --envelope test.trst \
+  --key-hex $(cat test.key)
+# Expected: Decryption failure due to tampering
   --key-hex $(openssl rand -hex 32)
 
 # Verify wrong key detection (should fail)
