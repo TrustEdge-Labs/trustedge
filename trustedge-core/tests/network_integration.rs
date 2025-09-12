@@ -27,13 +27,15 @@ use tokio::time::sleep;
 /// Test helper to get the path to the server binary
 fn get_server_binary_path() -> PathBuf {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
-    PathBuf::from(manifest_dir).join("target/debug/trustedge-server")
+    // In workspace, binaries are built in workspace root target directory
+    PathBuf::from(manifest_dir).parent().unwrap().join("target/debug/trustedge-server")
 }
 
 /// Test helper to get the path to the client binary  
 fn get_client_binary_path() -> PathBuf {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
-    PathBuf::from(manifest_dir).join("target/debug/trustedge-client")
+    // In workspace, binaries are built in workspace root target directory
+    PathBuf::from(manifest_dir).parent().unwrap().join("target/debug/trustedge-client")
 }
 
 /// Test helper to create test data of specified size with pattern
