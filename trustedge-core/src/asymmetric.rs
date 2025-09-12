@@ -48,13 +48,13 @@ pub struct KeyPair {
 pub enum AsymmetricError {
     #[error("Unsupported algorithm: {0:?}")]
     UnsupportedAlgorithm(AsymmetricAlgorithm),
-    
+
     #[error("Invalid key format: {0}")]
     InvalidKeyFormat(String),
-    
+
     #[error("Key exchange failed: {0}")]
     KeyExchangeFailed(String),
-    
+
     #[error("Backend error: {0}")]
     BackendError(#[from] anyhow::Error),
 }
@@ -190,8 +190,8 @@ impl KeyPair {
 
     /// Generate an ECDSA P-256 key pair
     fn generate_ecdsa_p256() -> Result<Self> {
-        use p256::SecretKey;
         use p256::elliptic_curve::sec1::ToEncodedPoint;
+        use p256::SecretKey;
         use rand::rngs::OsRng;
 
         let secret_key = SecretKey::random(&mut OsRng);
@@ -213,11 +213,11 @@ impl KeyPair {
     /// Generate an RSA key pair
     fn generate_rsa(bits: usize) -> Result<Self> {
         use rand::rngs::OsRng;
-        use rsa::{RsaPrivateKey, RsaPublicKey};
         use rsa::pkcs8::{EncodePrivateKey, EncodePublicKey};
+        use rsa::{RsaPrivateKey, RsaPublicKey};
 
-        let private_key = RsaPrivateKey::new(&mut OsRng, bits)
-            .context("Failed to generate RSA private key")?;
+        let private_key =
+            RsaPrivateKey::new(&mut OsRng, bits).context("Failed to generate RSA private key")?;
         let public_key = RsaPublicKey::from(&private_key);
 
         let algorithm = match bits {
@@ -226,9 +226,11 @@ impl KeyPair {
             _ => return Err(anyhow::anyhow!("Unsupported RSA key size: {}", bits)),
         };
 
-        let private_der = private_key.to_pkcs8_der()
+        let private_der = private_key
+            .to_pkcs8_der()
             .context("Failed to encode RSA private key")?;
-        let public_der = public_key.to_public_key_der()
+        let public_der = public_key
+            .to_public_key_der()
             .context("Failed to encode RSA public key")?;
 
         let private = PrivateKey::new(algorithm.clone(), private_der.as_bytes().to_vec());
@@ -248,14 +250,16 @@ pub fn key_exchange(
         (AsymmetricAlgorithm::EcdsaP256, AsymmetricAlgorithm::EcdsaP256) => {
             ecdh_p256(my_private_key, peer_public_key)
         }
-        _ => Err(AsymmetricError::UnsupportedAlgorithm(my_private_key.algorithm.clone())),
+        _ => Err(AsymmetricError::UnsupportedAlgorithm(
+            my_private_key.algorithm.clone(),
+        )),
     }
 }
 
 /// Perform ECDH with P-256 keys
 fn ecdh_p256(private_key: &PrivateKey, public_key: &PublicKey) -> Result<Vec<u8>, AsymmetricError> {
-    use p256::{SecretKey, PublicKey as P256PublicKey, ecdh::diffie_hellman};
     use p256::elliptic_curve::sec1::FromEncodedPoint;
+    use p256::{ecdh::diffie_hellman, PublicKey as P256PublicKey, SecretKey};
 
     // Parse private key
     let secret = SecretKey::from_slice(&private_key.key_bytes)
@@ -264,14 +268,14 @@ fn ecdh_p256(private_key: &PrivateKey, public_key: &PublicKey) -> Result<Vec<u8>
     // Parse public key
     let point = p256::EncodedPoint::from_bytes(&public_key.key_bytes)
         .map_err(|e| AsymmetricError::InvalidKeyFormat(format!("Invalid public key: {}", e)))?;
-    
+
     let peer_public = P256PublicKey::from_encoded_point(&point)
         .into_option()
         .ok_or_else(|| AsymmetricError::InvalidKeyFormat("Invalid public key point".to_string()))?;
 
     // Perform ECDH
     let shared_secret = diffie_hellman(secret.to_nonzero_scalar(), peer_public.as_affine());
-    
+
     // Return the raw bytes of the shared secret
     Ok(shared_secret.raw_secret_bytes().to_vec())
 }
@@ -285,7 +289,9 @@ pub fn encrypt_key_asymmetric(
         AsymmetricAlgorithm::Rsa2048 | AsymmetricAlgorithm::Rsa4096 => {
             rsa_encrypt_key(session_key, recipient_public_key)
         }
-        _ => Err(AsymmetricError::UnsupportedAlgorithm(recipient_public_key.algorithm.clone())),
+        _ => Err(AsymmetricError::UnsupportedAlgorithm(
+            recipient_public_key.algorithm.clone(),
+        )),
     }
 }
 
@@ -298,7 +304,9 @@ pub fn decrypt_key_asymmetric(
         AsymmetricAlgorithm::Rsa2048 | AsymmetricAlgorithm::Rsa4096 => {
             rsa_decrypt_key(encrypted_key, my_private_key)
         }
-        _ => Err(AsymmetricError::UnsupportedAlgorithm(my_private_key.algorithm.clone())),
+        _ => Err(AsymmetricError::UnsupportedAlgorithm(
+            my_private_key.algorithm.clone(),
+        )),
     }
 }
 
@@ -308,13 +316,14 @@ fn rsa_encrypt_key(
     public_key: &PublicKey,
 ) -> Result<Vec<u8>, AsymmetricError> {
     use rand::rngs::OsRng;
-    use rsa::{RsaPublicKey, Pkcs1v15Encrypt};
     use rsa::pkcs8::DecodePublicKey;
+    use rsa::{Pkcs1v15Encrypt, RsaPublicKey};
 
     let rsa_public = RsaPublicKey::from_public_key_der(&public_key.key_bytes)
         .map_err(|e| AsymmetricError::InvalidKeyFormat(format!("Invalid RSA public key: {}", e)))?;
 
-    let encrypted = rsa_public.encrypt(&mut OsRng, Pkcs1v15Encrypt, session_key)
+    let encrypted = rsa_public
+        .encrypt(&mut OsRng, Pkcs1v15Encrypt, session_key)
         .map_err(|e| AsymmetricError::KeyExchangeFailed(format!("RSA encryption failed: {}", e)))?;
 
     Ok(encrypted)
@@ -325,19 +334,22 @@ fn rsa_decrypt_key(
     encrypted_key: &[u8],
     private_key: &PrivateKey,
 ) -> Result<[u8; 32], AsymmetricError> {
-    use rsa::{RsaPrivateKey, Pkcs1v15Encrypt};
     use rsa::pkcs8::DecodePrivateKey;
+    use rsa::{Pkcs1v15Encrypt, RsaPrivateKey};
 
-    let rsa_private = RsaPrivateKey::from_pkcs8_der(&private_key.key_bytes)
-        .map_err(|e| AsymmetricError::InvalidKeyFormat(format!("Invalid RSA private key: {}", e)))?;
+    let rsa_private = RsaPrivateKey::from_pkcs8_der(&private_key.key_bytes).map_err(|e| {
+        AsymmetricError::InvalidKeyFormat(format!("Invalid RSA private key: {}", e))
+    })?;
 
-    let decrypted = rsa_private.decrypt(Pkcs1v15Encrypt, encrypted_key)
+    let decrypted = rsa_private
+        .decrypt(Pkcs1v15Encrypt, encrypted_key)
         .map_err(|e| AsymmetricError::KeyExchangeFailed(format!("RSA decryption failed: {}", e)))?;
 
     if decrypted.len() != 32 {
-        return Err(AsymmetricError::KeyExchangeFailed(
-            format!("Invalid session key length: expected 32, got {}", decrypted.len())
-        ));
+        return Err(AsymmetricError::KeyExchangeFailed(format!(
+            "Invalid session key length: expected 32, got {}",
+            decrypted.len()
+        )));
     }
 
     let mut key = [0u8; 32];
@@ -360,7 +372,10 @@ impl fmt::Debug for KeyPair {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("KeyPair")
             .field("public", &self.public)
-            .field("private", &format!("[PrivateKey: {} bytes]", self.private.key_bytes.len()))
+            .field(
+                "private",
+                &format!("[PrivateKey: {} bytes]", self.private.key_bytes.len()),
+            )
             .finish()
     }
 }
@@ -373,7 +388,7 @@ mod tests {
     fn test_ed25519_key_generation() {
         let keypair = KeyPair::generate(AsymmetricAlgorithm::Ed25519)
             .expect("Failed to generate Ed25519 key pair");
-        
+
         assert_eq!(keypair.public.algorithm, AsymmetricAlgorithm::Ed25519);
         assert_eq!(keypair.private.algorithm, AsymmetricAlgorithm::Ed25519);
         assert_eq!(keypair.public.key_bytes.len(), 32);
@@ -384,7 +399,7 @@ mod tests {
     fn test_ecdsa_p256_key_generation() {
         let keypair = KeyPair::generate(AsymmetricAlgorithm::EcdsaP256)
             .expect("Failed to generate ECDSA P-256 key pair");
-        
+
         assert_eq!(keypair.public.algorithm, AsymmetricAlgorithm::EcdsaP256);
         assert_eq!(keypair.private.algorithm, AsymmetricAlgorithm::EcdsaP256);
         assert_eq!(keypair.private.key_bytes.len(), 32); // P-256 private key
@@ -394,7 +409,7 @@ mod tests {
     fn test_rsa_key_generation() {
         let keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
             .expect("Failed to generate RSA-2048 key pair");
-        
+
         assert_eq!(keypair.public.algorithm, AsymmetricAlgorithm::Rsa2048);
         assert_eq!(keypair.private.algorithm, AsymmetricAlgorithm::Rsa2048);
         assert!(keypair.public.key_bytes.len() > 200); // RSA public key DER
@@ -403,15 +418,17 @@ mod tests {
 
     #[test]
     fn test_public_key_serialization() {
-        let keypair = KeyPair::generate(AsymmetricAlgorithm::Ed25519)
-            .expect("Failed to generate key pair");
-        
-        let serialized = keypair.public.to_bytes()
+        let keypair =
+            KeyPair::generate(AsymmetricAlgorithm::Ed25519).expect("Failed to generate key pair");
+
+        let serialized = keypair
+            .public
+            .to_bytes()
             .expect("Failed to serialize public key");
-        
-        let deserialized = PublicKey::from_bytes(&serialized)
-            .expect("Failed to deserialize public key");
-        
+
+        let deserialized =
+            PublicKey::from_bytes(&serialized).expect("Failed to deserialize public key");
+
         assert_eq!(keypair.public, deserialized);
     }
 
@@ -419,15 +436,15 @@ mod tests {
     fn test_rsa_key_encryption() {
         let keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
             .expect("Failed to generate RSA key pair");
-        
+
         let session_key = [42u8; 32];
-        
+
         let encrypted = encrypt_key_asymmetric(&session_key, &keypair.public)
             .expect("Failed to encrypt session key");
-        
+
         let decrypted = decrypt_key_asymmetric(&encrypted, &keypair.private)
             .expect("Failed to decrypt session key");
-        
+
         assert_eq!(session_key, decrypted);
     }
 
@@ -435,16 +452,16 @@ mod tests {
     fn test_ecdh_p256() {
         let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::EcdsaP256)
             .expect("Failed to generate Alice's key pair");
-        
+
         let bob_keypair = KeyPair::generate(AsymmetricAlgorithm::EcdsaP256)
             .expect("Failed to generate Bob's key pair");
-        
+
         let alice_shared = key_exchange(&alice_keypair.private, &bob_keypair.public)
             .expect("Alice's key exchange failed");
-        
+
         let bob_shared = key_exchange(&bob_keypair.private, &alice_keypair.public)
             .expect("Bob's key exchange failed");
-        
+
         assert_eq!(alice_shared, bob_shared);
         assert!(!alice_shared.is_empty());
     }

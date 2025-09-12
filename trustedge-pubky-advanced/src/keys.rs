@@ -51,7 +51,7 @@ impl DualKeyPair {
     /// Generate a new dual key pair
     pub fn generate() -> Self {
         use rand::rngs::OsRng;
-        
+
         Self {
             ed25519_key: SigningKey::generate(&mut OsRng),
             x25519_key: StaticSecret::random_from_rng(OsRng),
@@ -126,23 +126,23 @@ impl DualKeyPair {
     /// useful for backwards compatibility or when you only have an Ed25519 key.
     pub fn derive_x25519_from_ed25519(ed25519_key: &SigningKey) -> StaticSecret {
         use blake3::Hasher;
-        
+
         // Create deterministic X25519 key from Ed25519 key
         let mut hasher = Hasher::new();
         hasher.update(b"TRUSTEDGE_X25519_DERIVATION");
         hasher.update(&ed25519_key.to_bytes());
-        
+
         let hash = hasher.finalize();
         let mut x25519_bytes = [0u8; 32];
         x25519_bytes.copy_from_slice(&hash.as_bytes()[..32]);
-        
+
         StaticSecret::from(x25519_bytes)
     }
 
     /// Create a DualKeyPair with derived X25519 key
     pub fn from_ed25519_with_derived_x25519(ed25519_key: SigningKey) -> Self {
         let x25519_key = Self::derive_x25519_from_ed25519(&ed25519_key);
-        
+
         Self {
             ed25519_key,
             x25519_key,
@@ -176,26 +176,22 @@ impl PubkyIdentity {
 
     /// Serialize to JSON
     pub fn to_json(&self) -> Result<String> {
-        serde_json::to_string(self)
-            .context("Failed to serialize PubkyIdentity to JSON")
+        serde_json::to_string(self).context("Failed to serialize PubkyIdentity to JSON")
     }
 
     /// Deserialize from JSON
     pub fn from_json(json: &str) -> Result<Self> {
-        serde_json::from_str(json)
-            .context("Failed to deserialize PubkyIdentity from JSON")
+        serde_json::from_str(json).context("Failed to deserialize PubkyIdentity from JSON")
     }
 
     /// Serialize to bytes
     pub fn to_bytes(&self) -> Result<Vec<u8>> {
-        bincode::serialize(self)
-            .context("Failed to serialize PubkyIdentity to bytes")
+        bincode::serialize(self).context("Failed to serialize PubkyIdentity to bytes")
     }
 
     /// Deserialize from bytes
     pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
-        bincode::deserialize(bytes)
-            .context("Failed to deserialize PubkyIdentity from bytes")
+        bincode::deserialize(bytes).context("Failed to deserialize PubkyIdentity from bytes")
     }
 
     /// Verify this identity is valid
@@ -238,7 +234,7 @@ mod tests {
     #[test]
     fn test_dual_key_generation() {
         let keys = DualKeyPair::generate();
-        
+
         // Verify we can get both public keys
         let ed25519_pub = keys.ed25519_public();
         let _x25519_pub = keys.x25519_public();
@@ -257,40 +253,41 @@ mod tests {
         assert_eq!(identity.ed25519_pubkey, keys.ed25519_public().to_bytes());
         assert_eq!(identity.x25519_pubkey, keys.x25519_public().to_bytes());
         assert!(identity.verify());
-        
+
         // Test serialization
         let json = identity.to_json().expect("Failed to serialize to JSON");
-        let deserialized = PubkyIdentity::from_json(&json).expect("Failed to deserialize from JSON");
-        
+        let deserialized =
+            PubkyIdentity::from_json(&json).expect("Failed to deserialize from JSON");
+
         assert_eq!(identity.pubky_id(), deserialized.pubky_id());
     }
 
     #[test]
     fn test_key_derivation() {
         let ed25519_key = SigningKey::generate(&mut rand::rngs::OsRng);
-        
+
         // Derive X25519 key twice - should be deterministic
         let x25519_key1 = DualKeyPair::derive_x25519_from_ed25519(&ed25519_key);
         let x25519_key2 = DualKeyPair::derive_x25519_from_ed25519(&ed25519_key);
-        
+
         assert_eq!(x25519_key1.to_bytes(), x25519_key2.to_bytes());
-        
+
         // Create dual key pair with derived X25519
         let dual_keys = DualKeyPair::from_ed25519_with_derived_x25519(ed25519_key);
         let x25519_key3 = DualKeyPair::derive_x25519_from_ed25519(&dual_keys.ed25519_key);
-        
+
         assert_eq!(dual_keys.x25519_key.to_bytes(), x25519_key3.to_bytes());
     }
 
     #[test]
     fn test_key_serialization() {
         let keys = DualKeyPair::generate();
-        
+
         // Export and import keys
         let key_bytes = keys.to_bytes();
-        let restored_keys = DualKeyPair::from_bytes(&key_bytes)
-            .expect("Failed to restore keys from bytes");
-        
+        let restored_keys =
+            DualKeyPair::from_bytes(&key_bytes).expect("Failed to restore keys from bytes");
+
         // Verify keys are identical
         assert_eq!(
             keys.ed25519_public().to_bytes(),

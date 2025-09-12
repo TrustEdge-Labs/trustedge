@@ -24,6 +24,10 @@ pub mod hybrid;
 pub mod transport;
 pub mod vectors;
 
+pub use asymmetric::{
+    decrypt_key_asymmetric, encrypt_key_asymmetric, key_exchange, AsymmetricError, KeyPair,
+    PrivateKey, PublicKey,
+};
 #[cfg(feature = "audio")]
 pub use audio::AudioCapture;
 pub use audio::{AudioChunk, AudioConfig};
@@ -53,11 +57,12 @@ pub use backends::{
     UniversalBackendRegistry,
     UniversalKeyringBackend,
 };
-pub use asymmetric::{KeyPair, PrivateKey, PublicKey, AsymmetricError, key_exchange, encrypt_key_asymmetric, decrypt_key_asymmetric};
 pub use envelope::{Envelope, EnvelopeMetadata};
-pub use envelope_v2_bridge::{UnifiedEnvelope, EnvelopeFormat, EnvelopeInfo, detect_envelope_format};
+pub use envelope_v2_bridge::{
+    detect_envelope_format, EnvelopeFormat, EnvelopeInfo, UnifiedEnvelope,
+};
 pub use format::*;
-pub use hybrid::{seal_for_recipient, open_envelope, TrustEdgeError, SymmetricKey};
+pub use hybrid::{open_envelope, seal_for_recipient, SymmetricKey, TrustEdgeError};
 pub use transport::{Transport, TransportConfig, TransportFactory};
 
 /// Represents a chunk of data sent over the network, including encrypted data,

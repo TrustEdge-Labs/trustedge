@@ -42,20 +42,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
 
     println!("✅ Envelope created successfully!");
-    println!("   - Magic: {:?}", std::str::from_utf8(&envelope.header.magic).unwrap_or("???"));
+    println!(
+        "   - Magic: {:?}",
+        std::str::from_utf8(&envelope.header.magic).unwrap_or("???")
+    );
     println!("   - Version: {}", envelope.header.version);
     println!("   - Recipient: {}", envelope.header.recipient_pubkey_id);
-    println!("   - Key Exchange: {:?}", envelope.header.key_exchange_algorithm);
+    println!(
+        "   - Key Exchange: {:?}",
+        envelope.header.key_exchange_algorithm
+    );
     println!("   - Payload Size: {} bytes", envelope.header.payload_size);
     println!("   - Chunk Count: {}", envelope.header.chunk_count);
-    println!("   - Encrypted Session Key Size: {} bytes", envelope.encrypted_session_key.len());
+    println!(
+        "   - Encrypted Session Key Size: {} bytes",
+        envelope.encrypted_session_key.len()
+    );
     println!("   - Signature Size: {} bytes", envelope.signature.len());
     println!();
 
     // Step 4: Verify envelope integrity
     println!("📋 Step 4: Verifying envelope integrity...");
     let is_valid = envelope.verify();
-    println!("✅ Envelope verification: {}", if is_valid { "PASSED" } else { "FAILED" });
+    println!(
+        "✅ Envelope verification: {}",
+        if is_valid { "PASSED" } else { "FAILED" }
+    );
     println!();
 
     // Step 5: Bob decrypts the data
@@ -70,26 +82,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📋 Step 6: Testing serialization...");
     let serialized = envelope.to_bytes()?;
     println!("✅ Serialized envelope size: {} bytes", serialized.len());
-    
+
     let deserialized = EnvelopeV2::from_bytes(&serialized)?;
     println!("✅ Deserialization successful!");
-    
+
     let deserialized_data = deserialized.unseal(&bob_keys)?;
-    println!("✅ Deserialized data matches: {}", sample_data == deserialized_data);
+    println!(
+        "✅ Deserialized data matches: {}",
+        sample_data == deserialized_data
+    );
     println!();
 
     // Step 7: Performance analysis
     println!("📋 Step 7: Performance analysis...");
     let overhead = serialized.len() - sample_data.len();
     let overhead_percent = (overhead as f64 / sample_data.len() as f64) * 100.0;
-    println!("✅ Encryption overhead: {} bytes ({:.2}%)", overhead, overhead_percent);
-    
+    println!(
+        "✅ Encryption overhead: {} bytes ({:.2}%)",
+        overhead, overhead_percent
+    );
+
     // Calculate efficiency metrics
     let header_size = bincode::serialize(&envelope.header)?.len();
     let session_key_size = envelope.encrypted_session_key.len();
     let signature_size = envelope.signature.len();
-    let chunk_overhead = serialized.len() - sample_data.len() - header_size - session_key_size - signature_size;
-    
+    let chunk_overhead =
+        serialized.len() - sample_data.len() - header_size - session_key_size - signature_size;
+
     println!("   - Header size: {} bytes", header_size);
     println!("   - Encrypted session key: {} bytes", session_key_size);
     println!("   - Signature: {} bytes", signature_size);
@@ -109,8 +128,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📋 Step 9: Key derivation determinism...");
     let derived_x25519_1 = DualKeyPair::derive_x25519_from_ed25519(&alice_keys.ed25519_key);
     let derived_x25519_2 = DualKeyPair::derive_x25519_from_ed25519(&alice_keys.ed25519_key);
-    println!("✅ Deterministic X25519 derivation: {}", 
-        derived_x25519_1.to_bytes() == derived_x25519_2.to_bytes());
+    println!(
+        "✅ Deterministic X25519 derivation: {}",
+        derived_x25519_1.to_bytes() == derived_x25519_2.to_bytes()
+    );
     println!();
 
     println!("🎉 Demo completed successfully!");
@@ -123,30 +144,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn create_sample_audio_data() -> Vec<u8> {
     // Simulate audio data with a pattern that's easy to verify
     let mut data = Vec::new();
-    
+
     // Add a "header" section
     data.extend_from_slice(b"TRUSTEDGE_AUDIO_V2");
     data.extend_from_slice(&[0u8; 14]); // Padding to 32 bytes
-    
+
     // Add sample rate and metadata
     data.extend_from_slice(&44100u32.to_le_bytes()); // Sample rate
-    data.extend_from_slice(&2u16.to_le_bytes());     // Channels
-    data.extend_from_slice(&16u16.to_le_bytes());    // Bit depth
-    data.extend_from_slice(&[0u8; 22]);              // Reserved
-    
+    data.extend_from_slice(&2u16.to_le_bytes()); // Channels
+    data.extend_from_slice(&16u16.to_le_bytes()); // Bit depth
+    data.extend_from_slice(&[0u8; 22]); // Reserved
+
     // Generate synthetic audio data (sine wave pattern)
     for i in 0..8192 {
         let sample = (((i as f32 * 0.1).sin() * 32767.0) as i16).to_le_bytes();
         data.extend_from_slice(&sample);
     }
-    
+
     // Add some random data to make it more realistic
     use rand::{Rng, SeedableRng};
     let mut rng = rand::rngs::StdRng::seed_from_u64(42); // Deterministic for testing
     for _ in 0..1024 {
         data.push(rng.gen());
     }
-    
+
     data
 }
 
@@ -172,11 +193,13 @@ mod tests {
             &alice_keys,
             &bob_keys.x25519_public(),
             &bob_keys.pubky_identity(),
-        ).expect("Failed to seal envelope");
+        )
+        .expect("Failed to seal envelope");
 
         assert!(envelope.verify(), "Envelope should verify");
 
-        let decrypted = envelope.unseal(&bob_keys)
+        let decrypted = envelope
+            .unseal(&bob_keys)
             .expect("Failed to unseal envelope");
 
         assert_eq!(data, decrypted, "Decrypted data should match original");
@@ -193,17 +216,22 @@ mod tests {
             &alice_keys,
             &bob_keys.x25519_public(),
             &bob_keys.pubky_identity(),
-        ).expect("Failed to seal envelope");
+        )
+        .expect("Failed to seal envelope");
 
         let serialized = envelope.to_bytes().expect("Failed to serialize");
-        let deserialized = EnvelopeV2::from_bytes(&serialized)
-            .expect("Failed to deserialize");
+        let deserialized = EnvelopeV2::from_bytes(&serialized).expect("Failed to deserialize");
 
         assert!(deserialized.verify(), "Deserialized envelope should verify");
 
-        let decrypted = deserialized.unseal(&bob_keys)
+        let decrypted = deserialized
+            .unseal(&bob_keys)
             .expect("Failed to unseal deserialized envelope");
 
-        assert_eq!(data, decrypted.as_slice(), "Data should survive serialization roundtrip");
+        assert_eq!(
+            data,
+            decrypted.as_slice(),
+            "Data should survive serialization roundtrip"
+        );
     }
 }
