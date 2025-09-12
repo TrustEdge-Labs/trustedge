@@ -32,3 +32,8 @@ rand = { workspace = true }
 
 [dev-dependencies]
 tokio-test = "0.4"
+
+# Temporarily exclude broken example
+[[example]]
+name = "clean_adapter_demo"
+required-features = ["broken"]

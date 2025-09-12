@@ -16,7 +16,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use trustedge_core::{backends::AsymmetricAlgorithm, KeyPair};
-use trustedge_pubky::mock::{mock_send_trusted_data, MockPubkyBackend};
+use trustedge_pubky::mock::MockPubkyBackend;
 use trustedge_pubky::receive_trusted_data;
 
 /// This is your exact API specification!
@@ -48,11 +48,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📋 Setting up the demo environment...");
     let storage = Arc::new(Mutex::new(HashMap::new()));
 
-    let alice_adapter = MockPubkyBackend::with_shared_storage(storage.clone());
+    let _alice_adapter = MockPubkyBackend::with_shared_storage(storage.clone());
     let bob_adapter = MockPubkyBackend::with_shared_storage(storage.clone());
 
     // Generate keys and publish Bob's key
-    let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)?;
+    let _alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)?;
     let bob_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)?;
 
     let bob_pubky_id = bob_adapter.publish_public_key(&bob_keypair.public)?;
