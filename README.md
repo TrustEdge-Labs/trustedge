@@ -30,6 +30,35 @@ TrustEdge is available under MPL-2.0 for open source use. Commercial licenses ar
 
 ---
 
+## Project Structure
+
+TrustEdge is organized as a Cargo workspace with multiple crates:
+
+```
+trustedge/
+├── Cargo.toml                    # Workspace root with shared dependencies
+├── trustedge-core/               # Core library and CLI tools
+│   ├── src/lib.rs               # Core cryptographic library
+│   ├── src/main.rs              # Main CLI application
+│   └── src/bin/                 # Additional CLI tools
+├── trustedge-wasm/               # WebAssembly bindings
+│   ├── src/lib.rs               # WASM exports
+│   └── pkg/                     # Generated WASM packages
+└── docs/                        # Documentation and examples
+```
+
+**Crates:**
+- **`trustedge-core`**: Core cryptographic library with YubiKey and audio support
+- **`trustedge-wasm`**: WebAssembly bindings for browser/Node.js integration
+
+**Workspace Benefits:**
+- Unified dependency management across all crates
+- Consistent versioning and release process
+- Shared build cache for faster development
+- Cross-crate integration testing
+
+---
+
 ## Why This Project?
 
 **Trustable Edge AI** — privacy-preserving edge pipelines with **secure** and data-agnostic encryption.
@@ -118,8 +147,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Clone and build (file encryption only)
 git clone https://github.com/TrustEdge-Labs/trustedge.git
-cd trustedge/trustedge-core
-cargo build --release --no-default-features
+cd trustedge
+cargo build --workspace --release --no-default-features
 ```
 
 **Full Installation (with live audio capture):**
@@ -135,7 +164,7 @@ sudo apt-get install libasound2-dev pkg-config
 # Audio libraries included with Windows SDK
 
 # Build with audio features
-cargo build --release --features audio
+cargo build --package trustedge-core --release --features audio
 ```
 
 **YubiKey Hardware Support (Optional):**
@@ -148,10 +177,10 @@ sudo apt install opensc-pkcs11
 brew install opensc
 
 # Build with YubiKey hardware backend
-cargo build --release --features yubikey
+cargo build --package trustedge-core --release --features yubikey
 
 # Or build with all features
-cargo build --release --features audio,yubikey
+cargo build --package trustedge-core --release --features audio,yubikey
 ```
 
 ### Basic Usage
