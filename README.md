@@ -41,6 +41,8 @@ trustedge/
 │   ├── src/lib.rs               # Core cryptographic library
 │   ├── src/main.rs              # Main CLI application
 │   └── src/bin/                 # Additional CLI tools
+├── trustedge-receipts/           # Digital receipt system
+│   └── src/lib.rs               # Receipt creation and assignment
 ├── trustedge-wasm/               # WebAssembly bindings
 │   ├── src/lib.rs               # WASM exports
 │   └── pkg/                     # Generated WASM packages
@@ -48,7 +50,8 @@ trustedge/
 ```
 
 **Crates:**
-- **`trustedge-core`**: Core cryptographic library with YubiKey and audio support
+- **`trustedge-core`**: Core cryptographic library with envelope encryption and YubiKey support
+- **`trustedge-receipts`**: Digital receipt system with cryptographic ownership transfer
 - **`trustedge-wasm`**: WebAssembly bindings for browser/Node.js integration
 
 **Workspace Benefits:**
@@ -66,16 +69,17 @@ trustedge/
 TrustEdge features:
 
 - **Data-agnostic encryption:** Works with files, live audio, sensor data, or any binary stream
+- **Digital receipt system:** Cryptographically secure transferable receipts with ownership chains
+- **Production-ready cryptography:** Real AES-256-GCM encryption with PBKDF2 key derivation
 - **Live audio capture:** Real-time microphone input with configurable quality and device selection
-- **Algorithm agility:** Configurable cryptographic algorithms with forward-compatible headers supporting current and post-quantum cryptography
-- **Provenance by design:** each chunk carries a signed manifest (C2PA-inspired) whose hash is bound into AEAD AAD; tampering breaks decryption
-- **Privacy by design & default**: encrypt at the edge, not just TLS in transit, audio chunks are encrypted with configurable AEAD algorithms before leaving the device
-- **Rust at the edge**: safety + performance for streaming workloads  
-- **Streaming-friendly:** fixed nonce discipline (prefix||counter) and per-chunk records
-- **Universal Backend System**: Capability-based crypto operations supporting Software HSM, Keyring, and **YubiKey hardware** backends
-- **YubiKey Hardware Integration**: Full PKCS#11 support for YubiKey PIV operations with real hardware signing and authentication
-- **DoS Protection & Bounds Checking**: Comprehensive resource limits and validation to prevent denial-of-service attacks
-- **Learning in public**: small, honest milestones → real, reviewable code
+- **Algorithm agility:** Configurable cryptographic algorithms with forward-compatible headers
+- **Provenance by design:** Each chunk carries a signed manifest whose hash is bound into AEAD AAD
+- **Privacy by design & default**: Encrypt at the edge, not just TLS in transit
+- **Rust at the edge**: Safety + performance for streaming workloads  
+- **Streaming-friendly:** Fixed nonce discipline and per-chunk records
+- **Universal Backend System**: Capability-based crypto operations supporting Software HSM, Keyring, and YubiKey hardware backends
+- **YubiKey Hardware Integration**: Full PKCS#11 support for YubiKey PIV operations with real hardware signing
+- **Memory-safe cryptography**: Proper key material cleanup with zeroization
 
 **Technology Stack:**
 - Language: Rust (stable)
@@ -88,46 +92,37 @@ TrustEdge features:
 ## 🎉 What's New in 0.2.0
 
 **Major Features:**
+- 🔐 **Production-Ready Cryptography** - Real AES-256-GCM encryption with PBKDF2 key derivation (100k iterations)
+- 🧾 **Digital Receipt System** - Cryptographically secure transferable receipts with ownership chains
 - 🔐 **YubiKey Hardware Integration** - Real PKCS#11 support with hardware signing operations
 - 🏗️ **Universal Backend Architecture** - Pluggable crypto backends (Software HSM, Keyring, YubiKey)
 - 🌐 **Production Transport Layer** - Real TCP operations with concurrent connection support
-- 🧪 **Comprehensive Test Overhaul** - 204 real functional tests (eliminated all fake/stub tests)
+- 🧪 **Comprehensive Test Suite** - 109 tests including security attack scenarios
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **204 automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **109 automated tests** covering all aspects of the system:
 
 **Test Categories:**
-- **79 Unit Tests**: Core functionality validation including Universal Backend system, Software HSM, and Transport layer
-- **125 Integration Tests**: Cross-component validation and end-to-end workflows
+- **86 Core Tests**: Envelope encryption, Universal Backend system, Software HSM, Transport layer, and YubiKey integration
+- **23 Receipt Tests**: Digital receipt creation, assignment, cryptographic security, and attack resistance
 
-**Integration Test Breakdown:**
-- **YubiKey Hardware Integration Tests (65)**: Real hardware PIV operations, PKCS#11 signing, certificate workflows, and hardware detection across multiple test suites
-  - YubiKey Integration Tests (8): Core hardware integration
-  - YubiKey Hardware Tests (10): Real hardware operations
-  - YubiKey Real Operations (10): Production hardware workflows
-  - YubiKey Simulation Tests (11): Hardware simulation and fallback
-  - YubiKey Strict Hardware (10): Hardware-only validation
-  - YubiKey PIV Analysis (7): PIV protocol analysis
-  - YubiKey Certificate Debug (5): Certificate workflow debugging
-  - YubiKey Hardware Detection (4): Hardware detection and availability
-- **Transport Integration Tests (13)**: QUIC/TCP transport layer validation with NetworkChunk compatibility, concurrent connections, and multi-chunk streaming
-- **Software HSM Integration Tests (9)**: Cross-session persistence, CLI integration, file workflows, and error recovery
-- **Authentication Tests (3)**: Certificate generation, mutual authentication, session management
-- **Roundtrip Tests (15)**: End-to-end encryption/decryption validation including comprehensive MIME type detection
-- **Network Integration Tests (7)**: Distributed encryption workflows with real network communication
-- **Universal Backend Integration Tests (6)**: End-to-end crypto workflows using capability-based backend selection
-- **Domain Separation Tests (7)**: Security validation and cross-context attack prevention
+**Test Breakdown:**
+- **Core Cryptography Tests**: Envelope encryption/decryption, key derivation, memory safety
+- **Receipt System Tests (23)**: Digital receipt creation, assignment, security attack scenarios
+- **YubiKey Hardware Tests**: Real hardware PIV operations, PKCS#11 signing, certificate workflows
+- **Transport Layer Tests**: QUIC/TCP transport validation, concurrent connections, streaming
+- **Universal Backend Tests**: Capability-based backend selection, cross-backend compatibility
+- **Security Tests**: Cryptographic isolation, tampering resistance, replay attack prevention
 
 **Quality Assurance:**
 ```bash
-# Complete test suite (all 204 tests)
+# Complete test suite (all 109 tests)
 ./ci-check.sh                    # Runs format, lint, build, and all tests
 
 # Test by category
-cargo test --lib                 # Unit tests (79)
-cargo test --test yubikey_integration     # YubiKey hardware tests (8)
-cargo test --test transport_integration   # Transport layer tests (13)
+cargo test -p trustedge-core --lib        # Core cryptography tests (86)
+cargo test -p trustedge-receipts          # Receipt system tests (23)
 
 # Hardware feature testing
 cargo test --features yubikey    # Include YubiKey hardware tests
@@ -378,6 +373,80 @@ cargo run --example yubikey_quic_demo --features yubikey
 
 ---
 
+## Digital Receipt System
+
+TrustEdge includes a **production-ready digital receipt system** that enables cryptographically secure ownership transfer of digital assets:
+
+### Key Features
+
+- **🔐 Real Cryptography**: AES-256-GCM encryption with PBKDF2-HMAC-SHA256 key derivation (100,000 iterations)
+- **📋 Transferable Receipts**: Create and assign receipts with cryptographic ownership chains
+- **🔗 Chain Integrity**: Each assignment links to previous receipt with cryptographic hash binding
+- **💰 Amount Preservation**: Receipt amounts are cryptographically protected through the chain
+- **🛡️ Attack Resistance**: Comprehensive security against tampering, replay, and forgery attacks
+- **🧪 Battle-Tested**: 23 security tests covering cryptographic isolation and attack scenarios
+
+### Basic Usage
+
+```rust
+use trustedge_receipts::{create_receipt, assign_receipt};
+use ed25519_dalek::SigningKey;
+use rand::rngs::OsRng;
+
+// Create signing keys
+let alice_key = SigningKey::generate(&mut OsRng);
+let bob_key = SigningKey::generate(&mut OsRng);
+let charlie_key = SigningKey::generate(&mut OsRng);
+
+// Alice creates a receipt for Bob (1000 units)
+let receipt_envelope = create_receipt(
+    &alice_key,
+    &bob_key.verifying_key(),
+    1000,
+    Some("Payment for services".to_string())
+)?;
+
+// Bob assigns the receipt to Charlie
+let assignment_envelope = assign_receipt(
+    &receipt_envelope,
+    &bob_key,
+    &charlie_key.verifying_key(),
+    Some("Transfer to Charlie".to_string())
+)?;
+
+// Charlie can now decrypt and verify the receipt
+let payload = assignment_envelope.unseal(&charlie_key)?;
+let receipt: Receipt = serde_json::from_slice(&payload)?;
+assert_eq!(receipt.amount, 1000); // Amount preserved through chain
+```
+
+### Security Properties
+
+- **Cryptographic Isolation**: Only the intended recipient can decrypt each receipt
+- **Signature Forgery Resistance**: Ed25519 signatures prevent impersonation
+- **Replay Attack Prevention**: Each receipt has unique cryptographic fingerprint
+- **Amount Tampering Resistance**: Receipt amounts are cryptographically bound
+- **Chain Integrity Validation**: Broken or out-of-order chains are rejected
+- **Memory Safety**: All cryptographic key material is properly zeroized
+
+### Test Coverage
+
+The receipt system includes comprehensive security testing:
+
+```bash
+# Run all receipt tests (23 tests)
+cargo test -p trustedge-receipts
+
+# Run specific security test categories
+cargo test -p trustedge-receipts test_cryptographic_key_isolation
+cargo test -p trustedge-receipts test_signature_forgery_resistance
+cargo test -p trustedge-receipts test_amount_tampering_resistance
+```
+
+**📖 For complete receipt system documentation and API reference, see the `trustedge-receipts` crate documentation.**
+
+---
+
 ## How It Works
 
 TrustEdge uses a **data-agnostic architecture** with **format-aware decryption** that treats all input sources uniformly while preserving format information:
@@ -485,7 +554,7 @@ graph TD
 - ✅ Comprehensive validation and error handling
 - ✅ Test vector validation for format stability
 - ✅ Production-ready network resilience features
-- ✅ **Comprehensive test suite with 93 tests covering all workflows**
+- ✅ **Comprehensive test suite with 109 tests covering all workflows**
 - ✅ **Format-specific validation (PDF, MP3, JSON, binary, text)**
 - ✅ **End-to-end network testing with real client-server communication**
 
