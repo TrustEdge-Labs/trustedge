@@ -11,10 +11,10 @@
 //! This demo shows how the "Contract Writer" (receipts) and "Security Guard" (envelope)
 //! work together to create a secure, verifiable chain of ownership.
 
-use trustedge_receipts::{create_receipt, assign_receipt, verify_receipt_chain};
+use anyhow::Result;
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
-use anyhow::Result;
+use trustedge_receipts::{assign_receipt, create_receipt, verify_receipt_chain};
 
 fn main() -> Result<()> {
     println!("🏢 TrustEdge Receipt Demo: The Office Analogy in Action\n");
@@ -24,10 +24,19 @@ fn main() -> Result<()> {
     let alice_key = SigningKey::generate(&mut OsRng);
     let bob_key = SigningKey::generate(&mut OsRng);
     let charlie_key = SigningKey::generate(&mut OsRng);
-    
-    println!("   Alice (Issuer): {}", hex::encode(alice_key.verifying_key().to_bytes()));
-    println!("   Bob (First Beneficiary): {}", hex::encode(bob_key.verifying_key().to_bytes()));
-    println!("   Charlie (Final Beneficiary): {}", hex::encode(charlie_key.verifying_key().to_bytes()));
+
+    println!(
+        "   Alice (Issuer): {}",
+        hex::encode(alice_key.verifying_key().to_bytes())
+    );
+    println!(
+        "   Bob (First Beneficiary): {}",
+        hex::encode(bob_key.verifying_key().to_bytes())
+    );
+    println!(
+        "   Charlie (Final Beneficiary): {}",
+        hex::encode(charlie_key.verifying_key().to_bytes())
+    );
     println!();
 
     // Step 1: Alice creates an original receipt
@@ -35,16 +44,19 @@ fn main() -> Result<()> {
     println!("   - Business Logic: Alice owes Bob 1000 units for consulting services");
     println!("   - Contract Writer creates the Receipt (business logic)");
     println!("   - Security Guard puts it in a secure Envelope");
-    
+
     let original_envelope = create_receipt(
         &alice_key,
         &bob_key.verifying_key(),
         1000,
         Some("Payment for Q4 consulting services".to_string()),
     )?;
-    
+
     println!("   ✅ Receipt created and secured in envelope");
-    println!("   📦 Envelope hash: {}", hex::encode(original_envelope.hash()));
+    println!(
+        "   📦 Envelope hash: {}",
+        hex::encode(original_envelope.hash())
+    );
     println!("   🔐 Cryptographically signed by: Alice");
     println!("   🎯 Intended beneficiary: Bob");
     println!();
@@ -52,7 +64,10 @@ fn main() -> Result<()> {
     // Step 2: Verify the original envelope
     println!("🔍 Step 2: Security Guard verifies the original envelope");
     let is_valid = original_envelope.verify();
-    println!("   Envelope verification: {}", if is_valid { "✅ VALID" } else { "❌ INVALID" });
+    println!(
+        "   Envelope verification: {}",
+        if is_valid { "✅ VALID" } else { "❌ INVALID" }
+    );
     println!("   - Signature check: ✅ Passed");
     println!("   - Tamper detection: ✅ Passed");
     println!("   - Chain integrity: ✅ Passed");
@@ -73,24 +88,44 @@ fn main() -> Result<()> {
     )?;
 
     println!("   ✅ Assignment created and secured in new envelope");
-    println!("   📦 New envelope hash: {}", hex::encode(assignment_envelope.hash()));
+    println!(
+        "   📦 New envelope hash: {}",
+        hex::encode(assignment_envelope.hash())
+    );
     println!("   🔐 Cryptographically signed by: Bob");
     println!("   🎯 New beneficiary: Charlie");
-    println!("   🔗 Links to previous envelope: {}", hex::encode(original_envelope.hash()));
+    println!(
+        "   🔗 Links to previous envelope: {}",
+        hex::encode(original_envelope.hash())
+    );
     println!();
 
     // Step 4: Verify the assignment envelope
     println!("🔍 Step 4: Security Guard verifies the assignment envelope");
     let assignment_valid = assignment_envelope.verify();
-    println!("   Assignment verification: {}", if assignment_valid { "✅ VALID" } else { "❌ INVALID" });
+    println!(
+        "   Assignment verification: {}",
+        if assignment_valid {
+            "✅ VALID"
+        } else {
+            "❌ INVALID"
+        }
+    );
     println!();
 
     // Step 5: Verify the entire chain
     println!("🔗 Step 5: Verify the complete ownership chain");
     let chain = vec![original_envelope.clone(), assignment_envelope.clone()];
     let chain_valid = verify_receipt_chain(&chain);
-    println!("   Chain verification: {}", if chain_valid { "✅ VALID" } else { "❌ INVALID" });
-    
+    println!(
+        "   Chain verification: {}",
+        if chain_valid {
+            "✅ VALID"
+        } else {
+            "❌ INVALID"
+        }
+    );
+
     if chain_valid {
         println!("   - All envelopes are cryptographically valid");
         println!("   - Chain links are properly connected");
