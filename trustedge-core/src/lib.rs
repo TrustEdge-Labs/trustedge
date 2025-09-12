@@ -16,6 +16,7 @@ pub const NONCE_LEN: usize = 12;
 pub mod audio;
 pub mod auth;
 pub mod backends;
+pub mod envelope;
 pub mod format;
 pub mod transport;
 pub mod vectors;
@@ -49,6 +50,7 @@ pub use backends::{
     UniversalBackendRegistry,
     UniversalKeyringBackend,
 };
+pub use envelope::{Envelope, EnvelopeMetadata};
 pub use format::*;
 pub use transport::{Transport, TransportConfig, TransportFactory};
 
