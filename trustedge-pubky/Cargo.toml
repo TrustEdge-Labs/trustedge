@@ -1,0 +1,29 @@
+[package]
+name = "trustedge-pubky"
+version = "0.1.0"
+edition = "2021"
+authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
+license = "MPL-2.0"
+description = "Clean adapter between TrustEdge core and Pubky network"
+repository = "https://github.com/trustedgelabs/trustedge"
+keywords = ["cryptography", "pubky", "adapter", "bridge"]
+categories = ["cryptography", "network-programming"]
+
+[dependencies]
+# Core TrustEdge functionality
+trustedge-core = { path = "../trustedge-core" }
+
+# Pubky network integration
+pubky = { workspace = true }
+
+# Utilities
+anyhow = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+thiserror = { workspace = true }
+rand = { workspace = true }
+
+[dev-dependencies]
+tokio-test = "0.4"
