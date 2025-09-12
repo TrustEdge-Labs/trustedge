@@ -1254,7 +1254,7 @@ mod tests {
                 amount,
                 Some(format!("Test amount: {}", amount)),
             )
-            .expect(&format!("Failed to create receipt for amount {}", amount));
+            .unwrap_or_else(|_| panic!("Failed to create receipt for amount {}", amount));
 
             // Verify envelope
             assert!(
@@ -1266,11 +1266,9 @@ mod tests {
             // Unseal and verify amount
             let payload = envelope
                 .unseal(&bob_key)
-                .expect(&format!("Failed to unseal envelope for amount {}", amount));
-            let receipt: Receipt = serde_json::from_slice(&payload).expect(&format!(
-                "Failed to deserialize receipt for amount {}",
-                amount
-            ));
+                .unwrap_or_else(|_| panic!("Failed to unseal envelope for amount {}", amount));
+            let receipt: Receipt = serde_json::from_slice(&payload)
+                .unwrap_or_else(|_| panic!("Failed to deserialize receipt for amount {}", amount));
 
             assert_eq!(
                 receipt.amount, amount,
