@@ -126,15 +126,16 @@ fn create_unknown_format_data() -> Vec<u8> {
 
 /// Helper function to find the binary path
 fn get_binary_path() -> std::path::PathBuf {
-    let release_path = std::env::current_dir()
-        .unwrap()
-        .join("target/release/trustedge-core");
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+    // In workspace, binaries are built in workspace root target directory
+    let manifest_path = std::path::PathBuf::from(manifest_dir);
+    let workspace_root = manifest_path.parent().unwrap();
+
+    let release_path = workspace_root.join("target/release/trustedge-core");
     if release_path.exists() {
         release_path
     } else {
-        std::env::current_dir()
-            .unwrap()
-            .join("target/debug/trustedge-core")
+        workspace_root.join("target/debug/trustedge-core")
     }
 }
 
