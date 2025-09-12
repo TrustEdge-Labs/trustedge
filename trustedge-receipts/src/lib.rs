@@ -223,13 +223,14 @@ pub fn assign_receipt(
     }
 
     // Unseal the previous envelope to get the actual amount
-    let previous_payload = previous_envelope.unseal(assigner_key)
+    let previous_payload = previous_envelope
+        .unseal(assigner_key)
         .context("Failed to unseal previous envelope - assigner key may be invalid")?;
-    
+
     // Deserialize the previous receipt to get the amount
     let previous_receipt: Receipt = serde_json::from_slice(&previous_payload)
         .context("Failed to deserialize previous receipt")?;
-    
+
     // Use the actual amount from the previous receipt
     let amount = previous_receipt.amount;
 
@@ -489,11 +490,13 @@ mod tests {
         assert!(envelope.verify());
 
         // Bob should be able to unseal the envelope
-        let unsealed_data = envelope.unseal(&bob_key).expect("Failed to unseal envelope");
-        
+        let unsealed_data = envelope
+            .unseal(&bob_key)
+            .expect("Failed to unseal envelope");
+
         // Deserialize the receipt from the unsealed data
-        let receipt: Receipt = serde_json::from_slice(&unsealed_data)
-            .expect("Failed to deserialize receipt");
+        let receipt: Receipt =
+            serde_json::from_slice(&unsealed_data).expect("Failed to deserialize receipt");
 
         // Verify the receipt data matches what we expect
         assert_eq!(receipt.amount, 1000);
@@ -520,8 +523,8 @@ mod tests {
 
         // Step 2: Bob unseals to verify he received 1000 units
         let unsealed1 = envelope1.unseal(&bob_key).expect("Bob failed to unseal");
-        let receipt1: Receipt = serde_json::from_slice(&unsealed1)
-            .expect("Failed to deserialize receipt1");
+        let receipt1: Receipt =
+            serde_json::from_slice(&unsealed1).expect("Failed to deserialize receipt1");
         assert_eq!(receipt1.amount, 1000);
 
         // Step 3: Bob assigns to Charlie - this should use the ACTUAL amount from envelope1
@@ -535,13 +538,18 @@ mod tests {
         .expect("Failed to assign receipt");
 
         // Step 4: Charlie unseals to verify the amount
-        let unsealed2 = envelope2.unseal(&charlie_key).expect("Charlie failed to unseal");
-        let receipt2: Receipt = serde_json::from_slice(&unsealed2)
-            .expect("Failed to deserialize receipt2");
+        let unsealed2 = envelope2
+            .unseal(&charlie_key)
+            .expect("Charlie failed to unseal");
+        let receipt2: Receipt =
+            serde_json::from_slice(&unsealed2).expect("Failed to deserialize receipt2");
 
         // CRITICAL TEST: The amount should match the original (currently fails due to hardcoded 1000)
-        assert_eq!(receipt2.amount, receipt1.amount, "Amount should be preserved through assignment");
-        
+        assert_eq!(
+            receipt2.amount, receipt1.amount,
+            "Amount should be preserved through assignment"
+        );
+
         // Verify chain integrity
         let chain = vec![envelope1, envelope2];
         assert!(verify_receipt_chain(&chain));
@@ -560,7 +568,7 @@ mod tests {
 
         // Create a tampered envelope by serializing, modifying bytes, and deserializing
         let mut envelope_bytes = serde_json::to_vec(&envelope).expect("Failed to serialize");
-        
+
         // Tamper with a byte in the middle (this should break signature verification)
         if envelope_bytes.len() > 100 {
             envelope_bytes[50] ^= 0xFF; // Flip bits
@@ -569,7 +577,10 @@ mod tests {
         // Try to deserialize the tampered envelope
         if let Ok(tampered_envelope) = serde_json::from_slice::<Envelope>(&envelope_bytes) {
             // Verification should fail for tampered envelope
-            assert!(!tampered_envelope.verify(), "Tampered envelope should fail verification");
+            assert!(
+                !tampered_envelope.verify(),
+                "Tampered envelope should fail verification"
+            );
 
             // Unsealing should also fail
             let result = tampered_envelope.unseal(&bob_key);
@@ -593,7 +604,7 @@ mod tests {
 
         // Charlie cannot unseal (wrong key)
         assert!(envelope.unseal(&charlie_key).is_err());
-        
+
         // Alice cannot unseal (she's the issuer, not beneficiary)
         assert!(envelope.unseal(&alice_key).is_err());
     }
@@ -635,9 +646,14 @@ mod tests {
         .expect("Failed to assign to Charlie");
 
         // Verify Charlie can unseal and amount is preserved
-        let payload2 = envelope2.unseal(&charlie_key).expect("Charlie failed to unseal");
+        let payload2 = envelope2
+            .unseal(&charlie_key)
+            .expect("Charlie failed to unseal");
         let receipt2: Receipt = serde_json::from_slice(&payload2).expect("Failed to deserialize");
-        assert_eq!(receipt2.amount, original_amount, "Amount should be preserved");
+        assert_eq!(
+            receipt2.amount, original_amount,
+            "Amount should be preserved"
+        );
         assert_eq!(receipt2.issuer, bob_key.verifying_key().to_bytes());
         assert_eq!(receipt2.beneficiary, charlie_key.verifying_key().to_bytes());
 
@@ -662,19 +678,37 @@ mod tests {
         // Verify Eve can unseal and amount is still preserved
         let payload4 = envelope4.unseal(&eve_key).expect("Eve failed to unseal");
         let receipt4: Receipt = serde_json::from_slice(&payload4).expect("Failed to deserialize");
-        assert_eq!(receipt4.amount, original_amount, "Amount should be preserved through entire chain");
+        assert_eq!(
+            receipt4.amount, original_amount,
+            "Amount should be preserved through entire chain"
+        );
         assert_eq!(receipt4.issuer, dave_key.verifying_key().to_bytes());
         assert_eq!(receipt4.beneficiary, eve_key.verifying_key().to_bytes());
 
         // Verify intermediate parties cannot unseal final envelope
-        assert!(envelope4.unseal(&alice_key).is_err(), "Alice should not be able to unseal final envelope");
-        assert!(envelope4.unseal(&bob_key).is_err(), "Bob should not be able to unseal final envelope");
-        assert!(envelope4.unseal(&charlie_key).is_err(), "Charlie should not be able to unseal final envelope");
-        assert!(envelope4.unseal(&dave_key).is_err(), "Dave should not be able to unseal final envelope");
+        assert!(
+            envelope4.unseal(&alice_key).is_err(),
+            "Alice should not be able to unseal final envelope"
+        );
+        assert!(
+            envelope4.unseal(&bob_key).is_err(),
+            "Bob should not be able to unseal final envelope"
+        );
+        assert!(
+            envelope4.unseal(&charlie_key).is_err(),
+            "Charlie should not be able to unseal final envelope"
+        );
+        assert!(
+            envelope4.unseal(&dave_key).is_err(),
+            "Dave should not be able to unseal final envelope"
+        );
 
         // Verify the complete chain
         let chain = vec![envelope1, envelope2, envelope3, envelope4];
-        assert!(verify_receipt_chain(&chain), "Complete chain should be valid");
+        assert!(
+            verify_receipt_chain(&chain),
+            "Complete chain should be valid"
+        );
     }
 
     #[test]
@@ -696,9 +730,14 @@ mod tests {
         .expect("Failed to create receipt with max amount");
 
         // Verify Bob can unseal
-        let payload1 = envelope1.unseal(&bob_key).expect("Failed to unseal max amount");
+        let payload1 = envelope1
+            .unseal(&bob_key)
+            .expect("Failed to unseal max amount");
         let receipt1: Receipt = serde_json::from_slice(&payload1).expect("Failed to deserialize");
-        assert_eq!(receipt1.amount, max_amount, "Max amount should be preserved");
+        assert_eq!(
+            receipt1.amount, max_amount,
+            "Max amount should be preserved"
+        );
 
         // Assign to Charlie
         let envelope2 = assign_receipt(
@@ -710,9 +749,14 @@ mod tests {
         .expect("Failed to assign max amount");
 
         // Verify Charlie gets the correct amount
-        let payload2 = envelope2.unseal(&charlie_key).expect("Failed to unseal assigned max amount");
+        let payload2 = envelope2
+            .unseal(&charlie_key)
+            .expect("Failed to unseal assigned max amount");
         let receipt2: Receipt = serde_json::from_slice(&payload2).expect("Failed to deserialize");
-        assert_eq!(receipt2.amount, max_amount, "Max amount should be preserved through assignment");
+        assert_eq!(
+            receipt2.amount, max_amount,
+            "Max amount should be preserved through assignment"
+        );
     }
 
     #[test]
@@ -756,7 +800,10 @@ mod tests {
             &alice_key.verifying_key(),
             None,
         );
-        assert!(invalid_assignment.is_err(), "Charlie should not be able to assign Dave's envelope");
+        assert!(
+            invalid_assignment.is_err(),
+            "Charlie should not be able to assign Dave's envelope"
+        );
     }
 
     #[test]
@@ -780,9 +827,12 @@ mod tests {
         // Create identical envelope and verify different hash
         let envelope2 = create_receipt(&alice_key, &bob_key.verifying_key(), 1000, None)
             .expect("Failed to create second receipt");
-        
+
         let hash3 = envelope2.hash();
-        assert_ne!(hash1, hash3, "Different envelopes should have different hashes");
+        assert_ne!(
+            hash1, hash3,
+            "Different envelopes should have different hashes"
+        );
     }
 
     #[test]
@@ -792,10 +842,16 @@ mod tests {
 
         // Attempt to create receipt with zero amount should fail
         let result = create_receipt(&alice_key, &bob_key.verifying_key(), 0, None);
-        assert!(result.is_err(), "Zero amount receipt should fail validation");
-        
+        assert!(
+            result.is_err(),
+            "Zero amount receipt should fail validation"
+        );
+
         let error_msg = result.unwrap_err().to_string();
-        assert!(error_msg.contains("Receipt validation failed"), "Error should be about receipt validation");
+        assert!(
+            error_msg.contains("Receipt validation failed"),
+            "Error should be about receipt validation"
+        );
     }
 
     #[test]
@@ -831,10 +887,15 @@ mod tests {
         .expect("Failed to assign with description");
 
         // Verify new description
-        let payload2 = envelope2.unseal(&charlie_key).expect("Failed to unseal assignment");
+        let payload2 = envelope2
+            .unseal(&charlie_key)
+            .expect("Failed to unseal assignment");
         let receipt2: Receipt = serde_json::from_slice(&payload2).expect("Failed to deserialize");
         assert_eq!(receipt2.description, Some(assignment_desc.to_string()));
-        assert_ne!(receipt2.description, receipt1.description, "Descriptions should be different");
+        assert_ne!(
+            receipt2.description, receipt1.description,
+            "Descriptions should be different"
+        );
     }
 
     #[test]
@@ -850,7 +911,10 @@ mod tests {
             .expect("Failed to create receipt");
 
         // Eve (attacker) cannot unseal Bob's envelope
-        assert!(envelope.unseal(&eve_key).is_err(), "Eve should not be able to unseal Bob's envelope");
+        assert!(
+            envelope.unseal(&eve_key).is_err(),
+            "Eve should not be able to unseal Bob's envelope"
+        );
 
         // Eve cannot assign Bob's envelope (not the beneficiary)
         let malicious_assignment = assign_receipt(
@@ -859,7 +923,10 @@ mod tests {
             &charlie_key.verifying_key(),
             Some("Malicious assignment attempt".to_string()),
         );
-        assert!(malicious_assignment.is_err(), "Eve should not be able to assign Bob's envelope");
+        assert!(
+            malicious_assignment.is_err(),
+            "Eve should not be able to assign Bob's envelope"
+        );
 
         // Bob assigns to Charlie
         let legitimate_assignment = assign_receipt(
@@ -871,10 +938,16 @@ mod tests {
         .expect("Legitimate assignment should succeed");
 
         // Eve still cannot unseal Charlie's envelope
-        assert!(legitimate_assignment.unseal(&eve_key).is_err(), "Eve should not be able to unseal Charlie's envelope");
+        assert!(
+            legitimate_assignment.unseal(&eve_key).is_err(),
+            "Eve should not be able to unseal Charlie's envelope"
+        );
 
         // Only Charlie can unseal his envelope
-        assert!(legitimate_assignment.unseal(&charlie_key).is_ok(), "Charlie should be able to unseal his envelope");
+        assert!(
+            legitimate_assignment.unseal(&charlie_key).is_ok(),
+            "Charlie should be able to unseal his envelope"
+        );
     }
 
     #[test]
@@ -892,18 +965,30 @@ mod tests {
 
         // Attempt to create envelope with attacker's key but claiming to be from Alice
         // This should fail because the signature won't match
-        let malicious_envelope = create_receipt(&attacker_key, &bob_key.verifying_key(), 1000, None)
-            .expect("Envelope creation should succeed");
+        let malicious_envelope =
+            create_receipt(&attacker_key, &bob_key.verifying_key(), 1000, None)
+                .expect("Envelope creation should succeed");
 
         // The envelope should verify (it's properly signed by attacker_key)
-        assert!(malicious_envelope.verify(), "Malicious envelope should verify its own signature");
+        assert!(
+            malicious_envelope.verify(),
+            "Malicious envelope should verify its own signature"
+        );
 
         // But the issuer should be the attacker, not Alice
         assert_eq!(malicious_envelope.issuer(), attacker_key.verifying_key());
-        assert_ne!(malicious_envelope.issuer(), alice_key.verifying_key(), "Issuer should be attacker, not Alice");
+        assert_ne!(
+            malicious_envelope.issuer(),
+            alice_key.verifying_key(),
+            "Issuer should be attacker, not Alice"
+        );
 
         // The envelopes should have different hashes
-        assert_ne!(envelope.hash(), malicious_envelope.hash(), "Different envelopes should have different hashes");
+        assert_ne!(
+            envelope.hash(),
+            malicious_envelope.hash(),
+            "Different envelopes should have different hashes"
+        );
     }
 
     #[test]
@@ -930,7 +1015,11 @@ mod tests {
             .expect("Failed to create second receipt");
 
         // Envelopes should have different hashes (preventing replay)
-        assert_ne!(envelope1.hash(), envelope3.hash(), "Identical receipts should have different hashes");
+        assert_ne!(
+            envelope1.hash(),
+            envelope3.hash(),
+            "Identical receipts should have different hashes"
+        );
 
         // Both should verify independently
         assert!(envelope1.verify(), "First envelope should verify");
@@ -939,11 +1028,16 @@ mod tests {
         // But they represent different transactions
         let payload1 = envelope1.unseal(&bob_key).expect("Failed to unseal first");
         let payload3 = envelope3.unseal(&bob_key).expect("Failed to unseal second");
-        let receipt1: Receipt = serde_json::from_slice(&payload1).expect("Failed to deserialize first");
-        let receipt3: Receipt = serde_json::from_slice(&payload3).expect("Failed to deserialize second");
+        let receipt1: Receipt =
+            serde_json::from_slice(&payload1).expect("Failed to deserialize first");
+        let receipt3: Receipt =
+            serde_json::from_slice(&payload3).expect("Failed to deserialize second");
 
         // Timestamps should be different (or at least not identical in all fields)
-        assert!(receipt1.created_at <= receipt3.created_at, "Second receipt should have later or equal timestamp");
+        assert!(
+            receipt1.created_at <= receipt3.created_at,
+            "Second receipt should have later or equal timestamp"
+        );
     }
 
     #[test]
@@ -970,7 +1064,10 @@ mod tests {
         // Verify amount is preserved
         let payload2 = envelope2.unseal(&charlie_key).expect("Failed to unseal");
         let receipt2: Receipt = serde_json::from_slice(&payload2).expect("Failed to deserialize");
-        assert_eq!(receipt2.amount, original_amount, "Amount should be preserved");
+        assert_eq!(
+            receipt2.amount, original_amount,
+            "Amount should be preserved"
+        );
 
         // Simulate tampering by trying to create a receipt with a different amount
         // but using the same envelope structure (this should fail due to signature mismatch)
@@ -983,24 +1080,46 @@ mod tests {
         );
 
         // The tampered receipt should validate its own business rules
-        assert!(tampered_receipt.validate().is_ok(), "Tampered receipt should validate business rules");
+        assert!(
+            tampered_receipt.validate().is_ok(),
+            "Tampered receipt should validate business rules"
+        );
 
         // But when we try to create an envelope with it, the signature won't match the original chain
-        let tampered_payload = serde_json::to_vec(&tampered_receipt).expect("Failed to serialize tampered receipt");
-        let tampered_envelope = Envelope::seal(&tampered_payload, &bob_key, &charlie_key.verifying_key())
-            .expect("Failed to create tampered envelope");
+        let tampered_payload =
+            serde_json::to_vec(&tampered_receipt).expect("Failed to serialize tampered receipt");
+        let tampered_envelope =
+            Envelope::seal(&tampered_payload, &bob_key, &charlie_key.verifying_key())
+                .expect("Failed to create tampered envelope");
 
         // The tampered envelope should verify (it's properly signed)
-        assert!(tampered_envelope.verify(), "Tampered envelope should verify its own signature");
+        assert!(
+            tampered_envelope.verify(),
+            "Tampered envelope should verify its own signature"
+        );
 
         // But it should have a different hash than the legitimate envelope
-        assert_ne!(envelope2.hash(), tampered_envelope.hash(), "Tampered envelope should have different hash");
+        assert_ne!(
+            envelope2.hash(),
+            tampered_envelope.hash(),
+            "Tampered envelope should have different hash"
+        );
 
         // And the amounts should be different
-        let tampered_payload_unsealed = tampered_envelope.unseal(&charlie_key).expect("Failed to unseal tampered");
-        let tampered_receipt_unsealed: Receipt = serde_json::from_slice(&tampered_payload_unsealed).expect("Failed to deserialize tampered");
-        assert_eq!(tampered_receipt_unsealed.amount, original_amount * 2, "Tampered amount should be doubled");
-        assert_ne!(tampered_receipt_unsealed.amount, receipt2.amount, "Amounts should be different");
+        let tampered_payload_unsealed = tampered_envelope
+            .unseal(&charlie_key)
+            .expect("Failed to unseal tampered");
+        let tampered_receipt_unsealed: Receipt = serde_json::from_slice(&tampered_payload_unsealed)
+            .expect("Failed to deserialize tampered");
+        assert_eq!(
+            tampered_receipt_unsealed.amount,
+            original_amount * 2,
+            "Tampered amount should be doubled"
+        );
+        assert_ne!(
+            tampered_receipt_unsealed.amount, receipt2.amount,
+            "Amounts should be different"
+        );
     }
 
     #[test]
@@ -1022,23 +1141,38 @@ mod tests {
 
         // Legitimate chain should verify
         let legitimate_chain = vec![envelope1.clone(), envelope2.clone(), envelope3.clone()];
-        assert!(verify_receipt_chain(&legitimate_chain), "Legitimate chain should verify");
+        assert!(
+            verify_receipt_chain(&legitimate_chain),
+            "Legitimate chain should verify"
+        );
 
         // Test broken chain (missing middle envelope)
         let broken_chain = vec![envelope1.clone(), envelope3.clone()];
-        assert!(!verify_receipt_chain(&broken_chain), "Broken chain should not verify");
+        assert!(
+            !verify_receipt_chain(&broken_chain),
+            "Broken chain should not verify"
+        );
 
         // Test out-of-order chain
         let out_of_order_chain = vec![envelope2.clone(), envelope1.clone(), envelope3.clone()];
-        assert!(!verify_receipt_chain(&out_of_order_chain), "Out-of-order chain should not verify");
+        assert!(
+            !verify_receipt_chain(&out_of_order_chain),
+            "Out-of-order chain should not verify"
+        );
 
         // Test chain with duplicate envelope
         let duplicate_chain = vec![envelope1.clone(), envelope2.clone(), envelope2.clone()];
-        assert!(!verify_receipt_chain(&duplicate_chain), "Chain with duplicates should not verify");
+        assert!(
+            !verify_receipt_chain(&duplicate_chain),
+            "Chain with duplicates should not verify"
+        );
 
         // Test single envelope (should verify as valid chain of length 1)
         let single_chain = vec![envelope1.clone()];
-        assert!(verify_receipt_chain(&single_chain), "Single envelope should verify as valid chain");
+        assert!(
+            verify_receipt_chain(&single_chain),
+            "Single envelope should verify as valid chain"
+        );
     }
 
     #[test]
@@ -1050,27 +1184,59 @@ mod tests {
         let _test_data = b"Test data for determinism check";
 
         // Create multiple envelopes with the same keys and data
-        let envelope1 = create_receipt(&alice_key, &bob_key.verifying_key(), 1000, Some("Test".to_string()))
-            .expect("Failed to create first envelope");
+        let envelope1 = create_receipt(
+            &alice_key,
+            &bob_key.verifying_key(),
+            1000,
+            Some("Test".to_string()),
+        )
+        .expect("Failed to create first envelope");
 
-        let envelope2 = create_receipt(&alice_key, &bob_key.verifying_key(), 1000, Some("Test".to_string()))
-            .expect("Failed to create second envelope");
+        let envelope2 = create_receipt(
+            &alice_key,
+            &bob_key.verifying_key(),
+            1000,
+            Some("Test".to_string()),
+        )
+        .expect("Failed to create second envelope");
 
         // Envelopes should have different hashes (due to timestamps/nonces)
-        assert_ne!(envelope1.hash(), envelope2.hash(), "Different envelopes should have different hashes");
+        assert_ne!(
+            envelope1.hash(),
+            envelope2.hash(),
+            "Different envelopes should have different hashes"
+        );
 
         // But both should be unsealed by the same key
-        let payload1 = envelope1.unseal(&bob_key).expect("Failed to unseal first envelope");
-        let payload2 = envelope2.unseal(&bob_key).expect("Failed to unseal second envelope");
+        let payload1 = envelope1
+            .unseal(&bob_key)
+            .expect("Failed to unseal first envelope");
+        let payload2 = envelope2
+            .unseal(&bob_key)
+            .expect("Failed to unseal second envelope");
 
         // The payloads should be identical (same receipt data)
-        let receipt1: Receipt = serde_json::from_slice(&payload1).expect("Failed to deserialize first");
-        let receipt2: Receipt = serde_json::from_slice(&payload2).expect("Failed to deserialize second");
+        let receipt1: Receipt =
+            serde_json::from_slice(&payload1).expect("Failed to deserialize first");
+        let receipt2: Receipt =
+            serde_json::from_slice(&payload2).expect("Failed to deserialize second");
 
-        assert_eq!(receipt1.amount, receipt2.amount, "Amounts should be identical");
-        assert_eq!(receipt1.issuer, receipt2.issuer, "Issuers should be identical");
-        assert_eq!(receipt1.beneficiary, receipt2.beneficiary, "Beneficiaries should be identical");
-        assert_eq!(receipt1.description, receipt2.description, "Descriptions should be identical");
+        assert_eq!(
+            receipt1.amount, receipt2.amount,
+            "Amounts should be identical"
+        );
+        assert_eq!(
+            receipt1.issuer, receipt2.issuer,
+            "Issuers should be identical"
+        );
+        assert_eq!(
+            receipt1.beneficiary, receipt2.beneficiary,
+            "Beneficiaries should be identical"
+        );
+        assert_eq!(
+            receipt1.description, receipt2.description,
+            "Descriptions should be identical"
+        );
     }
 
     #[test]
@@ -1091,15 +1257,26 @@ mod tests {
             .expect(&format!("Failed to create receipt for amount {}", amount));
 
             // Verify envelope
-            assert!(envelope.verify(), "Envelope should verify for amount {}", amount);
+            assert!(
+                envelope.verify(),
+                "Envelope should verify for amount {}",
+                amount
+            );
 
             // Unseal and verify amount
-            let payload = envelope.unseal(&bob_key)
+            let payload = envelope
+                .unseal(&bob_key)
                 .expect(&format!("Failed to unseal envelope for amount {}", amount));
-            let receipt: Receipt = serde_json::from_slice(&payload)
-                .expect(&format!("Failed to deserialize receipt for amount {}", amount));
+            let receipt: Receipt = serde_json::from_slice(&payload).expect(&format!(
+                "Failed to deserialize receipt for amount {}",
+                amount
+            ));
 
-            assert_eq!(receipt.amount, amount, "Amount should be preserved for {}", amount);
+            assert_eq!(
+                receipt.amount, amount,
+                "Amount should be preserved for {}",
+                amount
+            );
         }
     }
 }
