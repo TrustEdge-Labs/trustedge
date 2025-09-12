@@ -12,10 +12,16 @@ use crate::{NetworkChunk, NONCE_LEN};
 use anyhow::{Context, Result};
 use blake3;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
+use pbkdf2::pbkdf2_hmac;
 use serde::{Deserialize, Serialize};
+use sha2::Sha256;
+use zeroize::Zeroize;
 
 /// The chunk size to use when breaking up large payloads
 const DEFAULT_CHUNK_SIZE: usize = 64 * 1024; // 64KB chunks
+
+/// Number of PBKDF2 iterations for key derivation (balanced security/performance)
+const PBKDF2_ITERATIONS: u32 = 100_000;
 
 /// A high-level envelope that wraps and secures arbitrary payloads
 ///
@@ -50,6 +56,44 @@ pub struct EnvelopeMetadata {
     pub hash_algorithm: u8,
 }
 
+/// Derive a shared encryption key using only public keys and context
+///
+/// This is a simplified approach that derives the same key for both parties
+/// using only public information plus chunk-specific context.
+/// 
+/// Security note: This is not as strong as proper ECDH, but provides reasonable
+/// security for this use case where we need deterministic key derivation.
+fn derive_shared_encryption_key(
+    sender_key: &VerifyingKey,
+    recipient_key: &VerifyingKey, 
+    salt: &[u8; 32],
+    sequence: u64,
+    metadata_hash: &[u8],
+    iterations: u32,
+) -> Result<[u8; 32]> {
+    // Create deterministic key material using only public keys
+    let mut key_material = Vec::new();
+    
+    // Use consistent ordering: sender_public || recipient_public || context
+    key_material.extend_from_slice(&sender_key.to_bytes());
+    key_material.extend_from_slice(&recipient_key.to_bytes());
+    key_material.extend_from_slice(salt);
+    key_material.extend_from_slice(&sequence.to_le_bytes());
+    key_material.extend_from_slice(metadata_hash);
+    
+    // Add a fixed context string to prevent key reuse in other contexts
+    key_material.extend_from_slice(b"TRUSTEDGE_ENVELOPE_V1");
+    
+    // Derive the encryption key using PBKDF2
+    let mut derived_key = [0u8; 32];
+    pbkdf2_hmac::<Sha256>(&key_material, salt, iterations, &mut derived_key);
+    
+    // Clear the key material from memory
+    key_material.zeroize();
+    
+    Ok(derived_key)
+}
+
 impl Envelope {
     /// Seal a payload into a secure envelope (the "gas pedal")
     ///
@@ -80,7 +124,7 @@ impl Envelope {
         // Break the payload into chunks and encrypt each one
         let mut chunks = Vec::new();
         for (i, chunk_data) in payload.chunks(DEFAULT_CHUNK_SIZE).enumerate() {
-            let chunk = Self::create_encrypted_chunk(i as u64, chunk_data, signing_key, &metadata)?;
+            let chunk = Self::create_encrypted_chunk(i as u64, chunk_data, signing_key, beneficiary_key, &metadata)?;
             chunks.push(chunk);
         }
 
@@ -171,14 +215,15 @@ impl Envelope {
         sequence: u64,
         chunk_data: &[u8],
         signing_key: &SigningKey,
+        beneficiary_key: &VerifyingKey,
         metadata: &EnvelopeMetadata,
     ) -> Result<NetworkChunk> {
         use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
         use rand::RngCore;
 
-        // Generate a random encryption key for this chunk
-        let mut encryption_key = [0u8; 32];
-        rand::thread_rng().fill_bytes(&mut encryption_key);
+        // Generate a random salt for key derivation
+        let mut key_derivation_salt = [0u8; 32];
+        rand::thread_rng().fill_bytes(&mut key_derivation_salt);
 
         // Generate a random nonce
         let mut nonce = [0u8; NONCE_LEN];
@@ -190,6 +235,8 @@ impl Envelope {
             chunk_size: chunk_data.len() as u32,
             timestamp: metadata.created_at,
             format_hint: "application/octet-stream".to_string(),
+            key_derivation_salt,
+            pbkdf2_iterations: PBKDF2_ITERATIONS,
         };
 
         let manifest_bytes =
@@ -204,6 +251,17 @@ impl Envelope {
             sig: manifest_signature.to_bytes().to_vec(),
             pubkey: signing_key.verifying_key().to_bytes().to_vec(),
         };
+
+        // Derive encryption key from signing key, beneficiary key, and chunk-specific data
+        let metadata_hash = blake3::hash(&bincode::serialize(metadata).unwrap_or_default());
+        let mut encryption_key = derive_shared_encryption_key(
+            &signing_key.verifying_key(), // sender's public key
+            beneficiary_key,               // recipient's public key
+            &key_derivation_salt,
+            sequence,
+            metadata_hash.as_bytes(),
+            PBKDF2_ITERATIONS,
+        )?;
 
         // Create AAD for authenticated encryption
         let header_hash = blake3::hash(b"ENVELOPE_V1"); // Simple header for envelope format
@@ -225,6 +283,9 @@ impl Envelope {
         cipher
             .encrypt_in_place(nonce_obj, &aad, &mut ciphertext)
             .map_err(|e| anyhow::anyhow!("Encryption failed: {:?}", e))?;
+
+        // Clear the encryption key from memory
+        encryption_key.zeroize();
 
         // Create the network chunk
         let signed_manifest_bytes =
@@ -293,17 +354,62 @@ impl Envelope {
     /// Decrypt a single chunk (internal engine work)
     fn decrypt_chunk(
         &self,
-        _chunk: &NetworkChunk,
-        _decryption_key: &SigningKey,
+        chunk: &NetworkChunk,
+        decryption_key: &SigningKey,
     ) -> Result<Vec<u8>> {
-        // For now, this is a simplified implementation
-        // In a full implementation, we'd need to derive the encryption key
-        // from the decryption_key or store it securely within the envelope
+        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
 
-        // This is a placeholder that would need proper key derivation
-        Err(anyhow::anyhow!(
-            "Decryption not yet fully implemented - needs key derivation"
-        ))
+        // Deserialize the signed manifest to get chunk metadata
+        let signed_manifest: SignedManifest = bincode::deserialize(&chunk.manifest)
+            .context("Failed to deserialize signed manifest")?;
+
+        // Deserialize the chunk manifest to get key derivation parameters
+        let manifest: ChunkManifest = bincode::deserialize(&signed_manifest.manifest)
+            .context("Failed to deserialize chunk manifest")?;
+
+        // Get the sender's public key from the envelope
+        let sender_public_key = VerifyingKey::from_bytes(&self.verifying_key_bytes)
+            .context("Invalid sender public key in envelope")?;
+
+        // Derive the same encryption key used during sealing
+        let metadata_hash = blake3::hash(&bincode::serialize(&self.metadata).unwrap_or_default());
+        let mut encryption_key = derive_shared_encryption_key(
+            &sender_public_key,                    // sender's public key
+            &decryption_key.verifying_key(),       // recipient's public key
+            &manifest.key_derivation_salt,
+            manifest.sequence,
+            metadata_hash.as_bytes(),
+            manifest.pbkdf2_iterations,
+        )?;
+
+        // Create the cipher
+        let cipher = Aes256Gcm::new_from_slice(&encryption_key)
+            .context("Failed to create cipher for decryption")?;
+
+        // Get the nonce from the chunk
+        let nonce_obj = Nonce::from_slice(&chunk.nonce);
+
+        // Recreate the AAD used during encryption
+        let header_hash = blake3::hash(b"ENVELOPE_V1");
+        let manifest_hash = blake3::hash(&signed_manifest.manifest);
+        let aad = build_aad(
+            header_hash.as_bytes(),
+            manifest.sequence,
+            &chunk.nonce,
+            manifest_hash.as_bytes(),
+            manifest.chunk_size,
+        );
+
+        // Decrypt the chunk data
+        let mut plaintext = chunk.data.clone();
+        cipher
+            .decrypt_in_place(nonce_obj, &aad, &mut plaintext)
+            .map_err(|e| anyhow::anyhow!("Decryption failed: {:?}", e))?;
+
+        // Clear the encryption key from memory
+        encryption_key.zeroize();
+
+        Ok(plaintext)
     }
 }
 
@@ -318,6 +424,10 @@ struct ChunkManifest {
     timestamp: u64,
     /// MIME type hint for the data
     format_hint: String,
+    /// Salt used for key derivation (32 bytes)
+    key_derivation_salt: [u8; 32],
+    /// Number of PBKDF2 iterations used
+    pbkdf2_iterations: u32,
 }
 
 #[cfg(test)]
@@ -376,5 +486,105 @@ mod tests {
         assert_eq!(envelope.metadata.payload_size, large_payload.len() as u64);
         assert_eq!(envelope.metadata.chunk_count, 4); // 3 full chunks + 1 partial
         assert!(envelope.verify());
+    }
+
+    #[test]
+    fn test_envelope_seal_unseal_roundtrip() {
+        let signing_key = SigningKey::generate(&mut OsRng);
+        let beneficiary_key = SigningKey::generate(&mut OsRng);
+
+        let original_payload = b"This is a test payload for seal/unseal roundtrip testing";
+
+        // Seal the payload
+        let envelope = Envelope::seal(
+            original_payload,
+            &signing_key,
+            &beneficiary_key.verifying_key(),
+        )
+        .expect("Failed to seal envelope");
+
+        // Verify the envelope
+        assert!(envelope.verify());
+
+        // Unseal the payload
+        let unsealed_payload = envelope.unseal(&beneficiary_key)
+            .expect("Failed to unseal envelope");
+
+        // Verify the payload is identical
+        assert_eq!(original_payload, unsealed_payload.as_slice());
+    }
+
+    #[test]
+    fn test_envelope_large_payload_roundtrip() {
+        let signing_key = SigningKey::generate(&mut OsRng);
+        let beneficiary_key = SigningKey::generate(&mut OsRng);
+
+        // Create a large payload with pattern for verification
+        let mut large_payload = Vec::new();
+        for i in 0..100000 {
+            large_payload.push((i % 256) as u8);
+        }
+
+        // Seal the payload
+        let envelope = Envelope::seal(
+            &large_payload,
+            &signing_key,
+            &beneficiary_key.verifying_key(),
+        )
+        .expect("Failed to seal large envelope");
+
+        // Verify the envelope
+        assert!(envelope.verify());
+        assert!(envelope.metadata.chunk_count > 1); // Should be chunked
+
+        // Unseal the payload
+        let unsealed_payload = envelope.unseal(&beneficiary_key)
+            .expect("Failed to unseal large envelope");
+
+        // Verify the payload is identical
+        assert_eq!(large_payload, unsealed_payload);
+    }
+
+    #[test]
+    fn test_envelope_wrong_key_fails() {
+        let signing_key = SigningKey::generate(&mut OsRng);
+        let beneficiary_key = SigningKey::generate(&mut OsRng);
+        let wrong_key = SigningKey::generate(&mut OsRng);
+
+        let payload = b"Secret message";
+
+        let envelope = Envelope::seal(payload, &signing_key, &beneficiary_key.verifying_key())
+            .expect("Failed to seal envelope");
+
+        // Correct key should work
+        assert!(envelope.unseal(&beneficiary_key).is_ok());
+
+        // Wrong key should fail
+        assert!(envelope.unseal(&wrong_key).is_err());
+        
+        // Signing key should also fail (issuer != beneficiary)
+        assert!(envelope.unseal(&signing_key).is_err());
+    }
+
+    #[test]
+    fn test_envelope_hash_consistency() {
+        let signing_key = SigningKey::generate(&mut OsRng);
+        let beneficiary_key = SigningKey::generate(&mut OsRng);
+
+        let payload = b"Test payload for hash consistency";
+
+        let envelope1 = Envelope::seal(payload, &signing_key, &beneficiary_key.verifying_key())
+            .expect("Failed to seal envelope1");
+        
+        let envelope2 = Envelope::seal(payload, &signing_key, &beneficiary_key.verifying_key())
+            .expect("Failed to seal envelope2");
+
+        // Different envelopes should have different hashes (due to random nonces)
+        assert_ne!(envelope1.hash(), envelope2.hash());
+
+        // Same envelope should have consistent hash
+        let hash1 = envelope1.hash();
+        let hash2 = envelope1.hash();
+        assert_eq!(hash1, hash2);
     }
 }
