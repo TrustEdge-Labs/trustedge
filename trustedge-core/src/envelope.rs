@@ -60,12 +60,12 @@ pub struct EnvelopeMetadata {
 ///
 /// This is a simplified approach that derives the same key for both parties
 /// using only public information plus chunk-specific context.
-/// 
+///
 /// Security note: This is not as strong as proper ECDH, but provides reasonable
 /// security for this use case where we need deterministic key derivation.
 fn derive_shared_encryption_key(
     sender_key: &VerifyingKey,
-    recipient_key: &VerifyingKey, 
+    recipient_key: &VerifyingKey,
     salt: &[u8; 32],
     sequence: u64,
     metadata_hash: &[u8],
@@ -73,24 +73,24 @@ fn derive_shared_encryption_key(
 ) -> Result<[u8; 32]> {
     // Create deterministic key material using only public keys
     let mut key_material = Vec::new();
-    
+
     // Use consistent ordering: sender_public || recipient_public || context
     key_material.extend_from_slice(&sender_key.to_bytes());
     key_material.extend_from_slice(&recipient_key.to_bytes());
     key_material.extend_from_slice(salt);
     key_material.extend_from_slice(&sequence.to_le_bytes());
     key_material.extend_from_slice(metadata_hash);
-    
+
     // Add a fixed context string to prevent key reuse in other contexts
     key_material.extend_from_slice(b"TRUSTEDGE_ENVELOPE_V1");
-    
+
     // Derive the encryption key using PBKDF2
     let mut derived_key = [0u8; 32];
     pbkdf2_hmac::<Sha256>(&key_material, salt, iterations, &mut derived_key);
-    
+
     // Clear the key material from memory
     key_material.zeroize();
-    
+
     Ok(derived_key)
 }
 
@@ -124,7 +124,13 @@ impl Envelope {
         // Break the payload into chunks and encrypt each one
         let mut chunks = Vec::new();
         for (i, chunk_data) in payload.chunks(DEFAULT_CHUNK_SIZE).enumerate() {
-            let chunk = Self::create_encrypted_chunk(i as u64, chunk_data, signing_key, beneficiary_key, &metadata)?;
+            let chunk = Self::create_encrypted_chunk(
+                i as u64,
+                chunk_data,
+                signing_key,
+                beneficiary_key,
+                &metadata,
+            )?;
             chunks.push(chunk);
         }
 
@@ -256,7 +262,7 @@ impl Envelope {
         let metadata_hash = blake3::hash(&bincode::serialize(metadata).unwrap_or_default());
         let mut encryption_key = derive_shared_encryption_key(
             &signing_key.verifying_key(), // sender's public key
-            beneficiary_key,               // recipient's public key
+            beneficiary_key,              // recipient's public key
             &key_derivation_salt,
             sequence,
             metadata_hash.as_bytes(),
@@ -352,11 +358,7 @@ impl Envelope {
     }
 
     /// Decrypt a single chunk (internal engine work)
-    fn decrypt_chunk(
-        &self,
-        chunk: &NetworkChunk,
-        decryption_key: &SigningKey,
-    ) -> Result<Vec<u8>> {
+    fn decrypt_chunk(&self, chunk: &NetworkChunk, decryption_key: &SigningKey) -> Result<Vec<u8>> {
         use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
 
         // Deserialize the signed manifest to get chunk metadata
@@ -374,8 +376,8 @@ impl Envelope {
         // Derive the same encryption key used during sealing
         let metadata_hash = blake3::hash(&bincode::serialize(&self.metadata).unwrap_or_default());
         let mut encryption_key = derive_shared_encryption_key(
-            &sender_public_key,                    // sender's public key
-            &decryption_key.verifying_key(),       // recipient's public key
+            &sender_public_key,              // sender's public key
+            &decryption_key.verifying_key(), // recipient's public key
             &manifest.key_derivation_salt,
             manifest.sequence,
             metadata_hash.as_bytes(),
@@ -507,7 +509,8 @@ mod tests {
         assert!(envelope.verify());
 
         // Unseal the payload
-        let unsealed_payload = envelope.unseal(&beneficiary_key)
+        let unsealed_payload = envelope
+            .unseal(&beneficiary_key)
             .expect("Failed to unseal envelope");
 
         // Verify the payload is identical
@@ -538,7 +541,8 @@ mod tests {
         assert!(envelope.metadata.chunk_count > 1); // Should be chunked
 
         // Unseal the payload
-        let unsealed_payload = envelope.unseal(&beneficiary_key)
+        let unsealed_payload = envelope
+            .unseal(&beneficiary_key)
             .expect("Failed to unseal large envelope");
 
         // Verify the payload is identical
@@ -561,7 +565,7 @@ mod tests {
 
         // Wrong key should fail
         assert!(envelope.unseal(&wrong_key).is_err());
-        
+
         // Signing key should also fail (issuer != beneficiary)
         assert!(envelope.unseal(&signing_key).is_err());
     }
@@ -575,7 +579,7 @@ mod tests {
 
         let envelope1 = Envelope::seal(payload, &signing_key, &beneficiary_key.verifying_key())
             .expect("Failed to seal envelope1");
-        
+
         let envelope2 = Envelope::seal(payload, &signing_key, &beneficiary_key.verifying_key())
             .expect("Failed to seal envelope2");
 
