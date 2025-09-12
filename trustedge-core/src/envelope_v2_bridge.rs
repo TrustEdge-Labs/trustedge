@@ -7,8 +7,8 @@
 //! This module provides integration between the core hybrid encryption API
 //! and the advanced v2 envelope system with Pubky support.
 
-use crate::asymmetric::{PublicKey, PrivateKey};
-use crate::hybrid::{TrustEdgeError, seal_for_recipient, open_envelope};
+use crate::asymmetric::{PrivateKey, PublicKey};
+use crate::hybrid::{open_envelope, seal_for_recipient, TrustEdgeError};
 use anyhow::Result;
 
 /// Envelope format detection
@@ -66,19 +66,17 @@ impl UnifiedEnvelope {
             .map_err(|e| TrustEdgeError::InvalidEnvelope(e.to_string()))?;
 
         match format {
-            EnvelopeFormat::CoreHybrid => {
-                open_envelope(envelope_bytes, private_key)
-            }
+            EnvelopeFormat::CoreHybrid => open_envelope(envelope_bytes, private_key),
             EnvelopeFormat::V1 => {
                 // TODO: Implement v1 envelope opening
                 Err(TrustEdgeError::InvalidEnvelope(
-                    "V1 envelope format not yet supported in unified API".to_string()
+                    "V1 envelope format not yet supported in unified API".to_string(),
                 ))
             }
             EnvelopeFormat::V2Pubky => {
                 // TODO: Integrate with trustedge-pubky
                 Err(TrustEdgeError::InvalidEnvelope(
-                    "V2 Pubky envelope format requires trustedge-pubky integration".to_string()
+                    "V2 Pubky envelope format requires trustedge-pubky integration".to_string(),
                 ))
             }
         }
@@ -87,28 +85,22 @@ impl UnifiedEnvelope {
     /// Get information about an envelope without opening it
     pub fn inspect(envelope_bytes: &[u8]) -> Result<EnvelopeInfo> {
         let format = detect_envelope_format(envelope_bytes)?;
-        
+
         match format {
-            EnvelopeFormat::CoreHybrid => {
-                Self::inspect_core_hybrid(envelope_bytes)
-            }
-            EnvelopeFormat::V1 => {
-                Ok(EnvelopeInfo {
-                    format,
-                    recipient_id: None,
-                    size: envelope_bytes.len(),
-                    algorithm: "AES-256-GCM (symmetric)".to_string(),
-                })
-            }
-            EnvelopeFormat::V2Pubky => {
-                Self::inspect_v2_pubky(envelope_bytes)
-            }
+            EnvelopeFormat::CoreHybrid => Self::inspect_core_hybrid(envelope_bytes),
+            EnvelopeFormat::V1 => Ok(EnvelopeInfo {
+                format,
+                recipient_id: None,
+                size: envelope_bytes.len(),
+                algorithm: "AES-256-GCM (symmetric)".to_string(),
+            }),
+            EnvelopeFormat::V2Pubky => Self::inspect_v2_pubky(envelope_bytes),
         }
     }
 
     fn inspect_core_hybrid(envelope_bytes: &[u8]) -> Result<EnvelopeInfo> {
         use crate::hybrid::HybridEnvelope;
-        
+
         let envelope: HybridEnvelope = bincode::deserialize(envelope_bytes)
             .map_err(|e| anyhow::anyhow!("Failed to parse core hybrid envelope: {}", e))?;
 
@@ -155,47 +147,43 @@ mod tests {
 
     #[test]
     fn test_format_detection() {
-        let alice = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
-            .expect("Failed to generate key");
-        
-        let data = b"Test data";
-        let envelope = seal_for_recipient(data, &alice.public)
-            .expect("Failed to seal envelope");
+        let alice =
+            KeyPair::generate(AsymmetricAlgorithm::Rsa2048).expect("Failed to generate key");
 
-        let format = detect_envelope_format(&envelope)
-            .expect("Failed to detect format");
-        
+        let data = b"Test data";
+        let envelope = seal_for_recipient(data, &alice.public).expect("Failed to seal envelope");
+
+        let format = detect_envelope_format(&envelope).expect("Failed to detect format");
+
         assert_eq!(format, EnvelopeFormat::CoreHybrid);
     }
 
     #[test]
     fn test_unified_envelope() {
-        let alice = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
-            .expect("Failed to generate key");
-        
+        let alice =
+            KeyPair::generate(AsymmetricAlgorithm::Rsa2048).expect("Failed to generate key");
+
         let data = b"Test data for unified envelope";
-        
-        let envelope = UnifiedEnvelope::seal_auto(data, &alice.public)
-            .expect("Failed to seal envelope");
-        
-        let decrypted = UnifiedEnvelope::open_auto(&envelope, &alice.private)
-            .expect("Failed to open envelope");
-        
+
+        let envelope =
+            UnifiedEnvelope::seal_auto(data, &alice.public).expect("Failed to seal envelope");
+
+        let decrypted =
+            UnifiedEnvelope::open_auto(&envelope, &alice.private).expect("Failed to open envelope");
+
         assert_eq!(data, decrypted.as_slice());
     }
 
     #[test]
     fn test_envelope_inspection() {
-        let alice = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
-            .expect("Failed to generate key");
-        
-        let data = b"Test data for inspection";
-        let envelope = seal_for_recipient(data, &alice.public)
-            .expect("Failed to seal envelope");
+        let alice =
+            KeyPair::generate(AsymmetricAlgorithm::Rsa2048).expect("Failed to generate key");
 
-        let info = UnifiedEnvelope::inspect(&envelope)
-            .expect("Failed to inspect envelope");
-        
+        let data = b"Test data for inspection";
+        let envelope = seal_for_recipient(data, &alice.public).expect("Failed to seal envelope");
+
+        let info = UnifiedEnvelope::inspect(&envelope).expect("Failed to inspect envelope");
+
         assert_eq!(info.format, EnvelopeFormat::CoreHybrid);
         assert_eq!(info.recipient_id, Some(alice.public.id()));
         assert_eq!(info.algorithm, "RSA + AES-256-GCM");

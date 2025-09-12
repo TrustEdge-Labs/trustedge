@@ -16,7 +16,7 @@ pub mod envelope;
 pub mod keys;
 pub mod pubky_client;
 
-pub use envelope::{EnvelopeV2, EnvelopeHeaderV2, KeyExchangeAlgorithm};
+pub use envelope::{EnvelopeHeaderV2, EnvelopeV2, KeyExchangeAlgorithm};
 pub use keys::{DualKeyPair, PubkyIdentity};
 pub use pubky_client::{PubkyClient, PubkyError};
 

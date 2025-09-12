@@ -14,24 +14,24 @@ use anyhow::Result;
 use pubky::{Client, ClientBuilder, Keypair};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use trustedge_core::{PublicKey, PrivateKey};
 use trustedge_core::backends::AsymmetricAlgorithm;
+use trustedge_core::{PrivateKey, PublicKey};
 
 /// Errors that can occur during Pubky operations
 #[derive(Debug, thiserror::Error)]
 pub enum PubkyAdapterError {
     #[error("Network error: {0}")]
     Network(#[from] anyhow::Error),
-    
+
     #[error("Key resolution failed for ID: {0}")]
     KeyResolutionFailed(String),
-    
+
     #[error("Invalid Pubky ID format: {0}")]
     InvalidPubkyId(String),
-    
+
     #[error("TrustEdge core error: {0}")]
     CoreError(#[from] trustedge_core::TrustEdgeError),
-    
+
     #[error("Serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),
 }
@@ -69,15 +69,18 @@ pub struct PubkyAdapter {
 impl PubkyAdapter {
     /// Create a new Pubky adapter
     pub async fn new(keypair: Keypair) -> Result<Self, PubkyAdapterError> {
-        let client = ClientBuilder::default()
-            .build()
-            .map_err(|e| PubkyAdapterError::Network(anyhow::anyhow!("Failed to build Pubky client: {:?}", e)))?;
+        let client = ClientBuilder::default().build().map_err(|e| {
+            PubkyAdapterError::Network(anyhow::anyhow!("Failed to build Pubky client: {:?}", e))
+        })?;
 
         Ok(Self { client, keypair })
     }
 
     /// Publish a TrustEdge public key to the Pubky network
-    pub async fn publish_public_key(&self, public_key: &PublicKey) -> Result<String, PubkyAdapterError> {
+    pub async fn publish_public_key(
+        &self,
+        public_key: &PublicKey,
+    ) -> Result<String, PubkyAdapterError> {
         let record = TrustEdgeKeyRecord {
             public_key: PublicKeyData {
                 algorithm: format!("{:?}", public_key.algorithm),
@@ -100,7 +103,9 @@ impl PubkyAdapter {
             .body(record_json.into_bytes())
             .send()
             .await
-            .map_err(|e| PubkyAdapterError::Network(anyhow::anyhow!("Failed to publish key: {:?}", e)))?;
+            .map_err(|e| {
+                PubkyAdapterError::Network(anyhow::anyhow!("Failed to publish key: {:?}", e))
+            })?;
 
         // Return the Pubky ID
         Ok(hex::encode(self.keypair.public_key().to_bytes()))
@@ -112,16 +117,13 @@ impl PubkyAdapter {
         let url = format!("pubky://{}{}", pubky_id, path);
 
         // Retrieve the record from Pubky network
-        let response = self.client
-            .get(&url)
-            .send()
-            .await
-            .map_err(|e| PubkyAdapterError::Network(anyhow::anyhow!("Failed to resolve key: {:?}", e)))?;
+        let response = self.client.get(&url).send().await.map_err(|e| {
+            PubkyAdapterError::Network(anyhow::anyhow!("Failed to resolve key: {:?}", e))
+        })?;
 
-        let record_bytes = response
-            .bytes()
-            .await
-            .map_err(|e| PubkyAdapterError::Network(anyhow::anyhow!("Failed to read response: {:?}", e)))?;
+        let record_bytes = response.bytes().await.map_err(|e| {
+            PubkyAdapterError::Network(anyhow::anyhow!("Failed to read response: {:?}", e))
+        })?;
 
         let record_str = String::from_utf8(record_bytes.to_vec())
             .map_err(|e| PubkyAdapterError::InvalidPubkyId(format!("Invalid UTF-8: {:?}", e)))?;
@@ -134,9 +136,12 @@ impl PubkyAdapter {
             "EcdsaP256" => AsymmetricAlgorithm::EcdsaP256,
             "Rsa2048" => AsymmetricAlgorithm::Rsa2048,
             "Rsa4096" => AsymmetricAlgorithm::Rsa4096,
-            _ => return Err(PubkyAdapterError::InvalidPubkyId(
-                format!("Unsupported algorithm: {}", record.public_key.algorithm)
-            )),
+            _ => {
+                return Err(PubkyAdapterError::InvalidPubkyId(format!(
+                    "Unsupported algorithm: {}",
+                    record.public_key.algorithm
+                )))
+            }
         };
 
         let key_bytes = hex::decode(&record.public_key.key_bytes)
@@ -192,7 +197,9 @@ pub async fn receive_trusted_data(
 }
 
 /// Convenience function to create a Pubky adapter from a seed
-pub async fn create_pubky_adapter_from_seed(seed: &[u8; 32]) -> Result<PubkyAdapter, PubkyAdapterError> {
+pub async fn create_pubky_adapter_from_seed(
+    seed: &[u8; 32],
+) -> Result<PubkyAdapter, PubkyAdapterError> {
     let keypair = Keypair::from_secret_key(seed);
     PubkyAdapter::new(keypair).await
 }
@@ -206,12 +213,12 @@ pub async fn create_pubky_adapter_random() -> Result<PubkyAdapter, PubkyAdapterE
 #[cfg(test)]
 mod tests {
     use super::*;
-    use trustedge_core::{KeyPair, AsymmetricAlgorithm};
+    use trustedge_core::{AsymmetricAlgorithm, KeyPair};
 
     #[test]
     fn test_public_key_serialization() {
-        let keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
-            .expect("Failed to generate key pair");
+        let keypair =
+            KeyPair::generate(AsymmetricAlgorithm::Rsa2048).expect("Failed to generate key pair");
 
         let record = TrustEdgeKeyRecord {
             public_key: PublicKeyData {
@@ -223,20 +230,26 @@ mod tests {
             metadata: None,
         };
 
-        let json = serde_json::to_string(&record)
-            .expect("Failed to serialize record");
+        let json = serde_json::to_string(&record).expect("Failed to serialize record");
 
-        let deserialized: TrustEdgeKeyRecord = serde_json::from_str(&json)
-            .expect("Failed to deserialize record");
+        let deserialized: TrustEdgeKeyRecord =
+            serde_json::from_str(&json).expect("Failed to deserialize record");
 
-        assert_eq!(record.public_key.algorithm, deserialized.public_key.algorithm);
-        assert_eq!(record.public_key.key_bytes, deserialized.public_key.key_bytes);
+        assert_eq!(
+            record.public_key.algorithm,
+            deserialized.public_key.algorithm
+        );
+        assert_eq!(
+            record.public_key.key_bytes,
+            deserialized.public_key.key_bytes
+        );
         assert_eq!(record.created_at, deserialized.created_at);
     }
 
     #[tokio::test]
     async fn test_adapter_creation() {
-        let adapter = create_pubky_adapter_random().await
+        let adapter = create_pubky_adapter_random()
+            .await
             .expect("Failed to create adapter");
 
         let pubky_id = adapter.our_pubky_id();
@@ -254,7 +267,8 @@ mod tests {
             .expect("Failed to seal envelope");
 
         // Test the receive function
-        let decrypted = receive_trusted_data(&envelope, &alice_keypair.private).await
+        let decrypted = receive_trusted_data(&envelope, &alice_keypair.private)
+            .await
             .expect("Failed to receive trusted data");
 
         assert_eq!(data, decrypted.as_slice());
@@ -262,32 +276,36 @@ mod tests {
 
     #[tokio::test]
     async fn test_mock_integration() {
-        use crate::mock::{MockPubkyAdapter, mock_send_trusted_data};
-        use std::sync::{Arc, Mutex};
+        use crate::mock::{mock_send_trusted_data, MockPubkyAdapter};
         use std::collections::HashMap;
+        use std::sync::{Arc, Mutex};
 
         let storage = Arc::new(Mutex::new(HashMap::new()));
-        
+
         let alice_adapter = MockPubkyAdapter::with_shared_storage(storage.clone());
         let bob_adapter = MockPubkyAdapter::with_shared_storage(storage.clone());
 
         // Generate keys
         let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
             .expect("Failed to generate Alice's key");
-        let bob_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
-            .expect("Failed to generate Bob's key");
+        let bob_keypair =
+            KeyPair::generate(AsymmetricAlgorithm::Rsa2048).expect("Failed to generate Bob's key");
 
         // Publish Bob's key
-        let bob_pubky_id = bob_adapter.publish_public_key(&bob_keypair.public).await
+        let bob_pubky_id = bob_adapter
+            .publish_public_key(&bob_keypair.public)
+            .await
             .expect("Failed to publish Bob's key");
 
         // Test the clean API with mock
         let message = b"Test message for mock integration";
-        
-        let envelope = mock_send_trusted_data(message, &bob_pubky_id, storage).await
+
+        let envelope = mock_send_trusted_data(message, &bob_pubky_id, storage)
+            .await
             .expect("Failed to send trusted data");
 
-        let decrypted = receive_trusted_data(&envelope, &bob_keypair.private).await
+        let decrypted = receive_trusted_data(&envelope, &bob_keypair.private)
+            .await
             .expect("Failed to receive trusted data");
 
         assert_eq!(message, decrypted.as_slice());

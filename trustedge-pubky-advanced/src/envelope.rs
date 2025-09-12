@@ -116,10 +116,8 @@ impl EnvelopeV2 {
         )?;
 
         // Encrypt the session key
-        let encrypted_session_key = Self::encrypt_session_key(
-            &session_key,
-            &session_key_encryption_key,
-        )?;
+        let encrypted_session_key =
+            Self::encrypt_session_key(&session_key, &session_key_encryption_key)?;
 
         // Calculate chunk count
         let chunk_count = payload.len().div_ceil(DEFAULT_CHUNK_SIZE) as u32;
@@ -188,7 +186,9 @@ impl EnvelopeV2 {
 
         // Perform X25519 ECDH to recover shared secret
         let sender_ephemeral_pubkey = X25519PublicKey::from(self.header.sender_x25519_pubkey);
-        let shared_secret = recipient_keys.x25519_key.diffie_hellman(&sender_ephemeral_pubkey);
+        let shared_secret = recipient_keys
+            .x25519_key
+            .diffie_hellman(&sender_ephemeral_pubkey);
 
         // Derive the same encryption key used for the session key
         let session_key_encryption_key = Self::derive_session_key_encryption_key(
@@ -198,10 +198,8 @@ impl EnvelopeV2 {
         )?;
 
         // Decrypt the session key
-        let session_key = Self::decrypt_session_key(
-            &self.encrypted_session_key,
-            &session_key_encryption_key,
-        )?;
+        let session_key =
+            Self::decrypt_session_key(&self.encrypted_session_key, &session_key_encryption_key)?;
 
         // Decrypt and reassemble the payload
         let payload = Self::decrypt_payload_chunks(&self.chunks, &session_key, &self.header)?;
@@ -226,14 +224,12 @@ impl EnvelopeV2 {
 
     /// Serialize envelope to bytes for storage/transmission
     pub fn to_bytes(&self) -> Result<Vec<u8>> {
-        bincode::serialize(self)
-            .context("Failed to serialize envelope")
+        bincode::serialize(self).context("Failed to serialize envelope")
     }
 
     /// Deserialize envelope from bytes
     pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
-        bincode::deserialize(bytes)
-            .context("Failed to deserialize envelope")
+        bincode::deserialize(bytes).context("Failed to deserialize envelope")
     }
 
     // Private helper methods
@@ -356,16 +352,12 @@ impl EnvelopeV2 {
                 chunk_size: chunk_data.len() as u32,
             };
 
-            let manifest_bytes = bincode::serialize(&manifest)
-                .context("Failed to serialize chunk manifest")?;
+            let manifest_bytes =
+                bincode::serialize(&manifest).context("Failed to serialize chunk manifest")?;
 
             // Create network chunk
-            let chunk = NetworkChunk::new_with_nonce(
-                i as u64,
-                ciphertext,
-                manifest_bytes,
-                nonce_bytes,
-            );
+            let chunk =
+                NetworkChunk::new_with_nonce(i as u64, ciphertext, manifest_bytes, nonce_bytes);
 
             chunks.push(chunk);
         }
@@ -374,7 +366,11 @@ impl EnvelopeV2 {
     }
 
     /// Decrypt payload chunks using the session key
-    fn decrypt_payload_chunks(chunks: &[NetworkChunk], session_key: &[u8; 32], header: &EnvelopeHeaderV2) -> Result<Vec<u8>> {
+    fn decrypt_payload_chunks(
+        chunks: &[NetworkChunk],
+        session_key: &[u8; 32],
+        header: &EnvelopeHeaderV2,
+    ) -> Result<Vec<u8>> {
         use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
 
         let cipher = Aes256Gcm::new_from_slice(session_key)
@@ -395,7 +391,12 @@ impl EnvelopeV2 {
             let nonce = Nonce::from_slice(&chunk.nonce);
 
             // Create AAD using the same method as encryption
-            let aad = Self::build_chunk_aad(header, manifest.sequence, &chunk.nonce, manifest.chunk_size as usize)?;
+            let aad = Self::build_chunk_aad(
+                header,
+                manifest.sequence,
+                &chunk.nonce,
+                manifest.chunk_size as usize,
+            )?;
 
             // Decrypt chunk
             let mut plaintext = chunk.data.clone();
@@ -527,7 +528,7 @@ mod tests {
     fn test_envelope_v2_seal_unseal() {
         let sender_keys = DualKeyPair::generate();
         let recipient_keys = DualKeyPair::generate();
-        
+
         let payload = b"Hello, hybrid encryption world!";
         let recipient_pubky_id = recipient_keys.pubky_identity();
 
@@ -537,13 +538,15 @@ mod tests {
             &sender_keys,
             &recipient_keys.x25519_public(),
             &recipient_pubky_id,
-        ).expect("Failed to seal envelope");
+        )
+        .expect("Failed to seal envelope");
 
         // Verify envelope
         assert!(envelope.verify());
 
         // Unseal envelope
-        let unsealed = envelope.unseal(&recipient_keys)
+        let unsealed = envelope
+            .unseal(&recipient_keys)
             .expect("Failed to unseal envelope");
 
         assert_eq!(payload, unsealed.as_slice());
@@ -553,7 +556,7 @@ mod tests {
     fn test_large_payload_v2() {
         let sender_keys = DualKeyPair::generate();
         let recipient_keys = DualKeyPair::generate();
-        
+
         // Create large payload
         let large_payload = vec![42u8; DEFAULT_CHUNK_SIZE * 3 + 1000];
         let recipient_pubky_id = recipient_keys.pubky_identity();
@@ -564,14 +567,16 @@ mod tests {
             &sender_keys,
             &recipient_keys.x25519_public(),
             &recipient_pubky_id,
-        ).expect("Failed to seal large envelope");
+        )
+        .expect("Failed to seal large envelope");
 
         // Verify
         assert!(envelope.verify());
         assert_eq!(envelope.header.chunk_count, 4);
 
         // Unseal
-        let unsealed = envelope.unseal(&recipient_keys)
+        let unsealed = envelope
+            .unseal(&recipient_keys)
             .expect("Failed to unseal large envelope");
 
         assert_eq!(large_payload, unsealed);
@@ -581,7 +586,7 @@ mod tests {
     fn test_envelope_serialization() {
         let sender_keys = DualKeyPair::generate();
         let recipient_keys = DualKeyPair::generate();
-        
+
         let payload = b"Test serialization";
         let recipient_pubky_id = recipient_keys.pubky_identity();
 
@@ -591,7 +596,8 @@ mod tests {
             &sender_keys,
             &recipient_keys.x25519_public(),
             &recipient_pubky_id,
-        ).expect("Failed to seal envelope");
+        )
+        .expect("Failed to seal envelope");
 
         // Serialize and deserialize
         let bytes = envelope.to_bytes().expect("Failed to serialize");
@@ -599,10 +605,11 @@ mod tests {
 
         // Verify deserialized envelope
         assert!(deserialized.verify());
-        
-        let unsealed = deserialized.unseal(&recipient_keys)
+
+        let unsealed = deserialized
+            .unseal(&recipient_keys)
             .expect("Failed to unseal deserialized envelope");
-        
+
         assert_eq!(payload, unsealed.as_slice());
     }
 }

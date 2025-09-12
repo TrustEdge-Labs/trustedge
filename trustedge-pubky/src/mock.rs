@@ -7,7 +7,7 @@
 //! This module provides a mock implementation that doesn't require actual
 //! network connectivity, useful for testing and development.
 
-use crate::{PubkyAdapterError, TrustEdgeKeyRecord, PublicKeyData};
+use crate::{PubkyAdapterError, PublicKeyData, TrustEdgeKeyRecord};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use trustedge_core::PublicKey;
@@ -41,7 +41,10 @@ impl MockPubkyAdapter {
     }
 
     /// Publish a public key (stores in mock storage)
-    pub async fn publish_public_key(&self, public_key: &PublicKey) -> Result<String, PubkyAdapterError> {
+    pub async fn publish_public_key(
+        &self,
+        public_key: &PublicKey,
+    ) -> Result<String, PubkyAdapterError> {
         let record = TrustEdgeKeyRecord {
             public_key: PublicKeyData {
                 algorithm: format!("{:?}", public_key.algorithm),
@@ -56,7 +59,7 @@ impl MockPubkyAdapter {
         };
 
         let record_json = serde_json::to_string(&record)?;
-        
+
         // Store in mock storage
         let mut storage = self.storage.lock().unwrap();
         storage.insert(self.pubky_id.clone(), record_json);
@@ -67,7 +70,8 @@ impl MockPubkyAdapter {
     /// Resolve a public key (retrieves from mock storage)
     pub async fn resolve_public_key(&self, pubky_id: &str) -> Result<PublicKey, PubkyAdapterError> {
         let storage = self.storage.lock().unwrap();
-        let record_json = storage.get(pubky_id)
+        let record_json = storage
+            .get(pubky_id)
             .ok_or_else(|| PubkyAdapterError::KeyResolutionFailed(pubky_id.to_string()))?;
 
         let record: TrustEdgeKeyRecord = serde_json::from_str(record_json)?;
@@ -78,9 +82,12 @@ impl MockPubkyAdapter {
             "EcdsaP256" => trustedge_core::backends::AsymmetricAlgorithm::EcdsaP256,
             "Rsa2048" => trustedge_core::backends::AsymmetricAlgorithm::Rsa2048,
             "Rsa4096" => trustedge_core::backends::AsymmetricAlgorithm::Rsa4096,
-            _ => return Err(PubkyAdapterError::InvalidPubkyId(
-                format!("Unsupported algorithm: {}", record.public_key.algorithm)
-            )),
+            _ => {
+                return Err(PubkyAdapterError::InvalidPubkyId(format!(
+                    "Unsupported algorithm: {}",
+                    record.public_key.algorithm
+                )))
+            }
         };
 
         let key_bytes = hex::decode(&record.public_key.key_bytes)
@@ -120,41 +127,49 @@ pub async fn mock_send_trusted_data(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use trustedge_core::{KeyPair, backends::AsymmetricAlgorithm};
     use crate::receive_trusted_data;
+    use trustedge_core::{backends::AsymmetricAlgorithm, KeyPair};
 
     #[tokio::test]
     async fn test_mock_adapter() {
         let storage = Arc::new(Mutex::new(HashMap::new()));
-        
+
         let alice_adapter = MockPubkyAdapter::with_shared_storage(storage.clone());
         let bob_adapter = MockPubkyAdapter::with_shared_storage(storage.clone());
 
         // Generate keys
         let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
             .expect("Failed to generate Alice's key");
-        let bob_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
-            .expect("Failed to generate Bob's key");
+        let bob_keypair =
+            KeyPair::generate(AsymmetricAlgorithm::Rsa2048).expect("Failed to generate Bob's key");
 
         // Publish keys
-        let alice_pubky_id = alice_adapter.publish_public_key(&alice_keypair.public).await
+        let alice_pubky_id = alice_adapter
+            .publish_public_key(&alice_keypair.public)
+            .await
             .expect("Failed to publish Alice's key");
-        let bob_pubky_id = bob_adapter.publish_public_key(&bob_keypair.public).await
+        let bob_pubky_id = bob_adapter
+            .publish_public_key(&bob_keypair.public)
+            .await
             .expect("Failed to publish Bob's key");
 
         // Test key resolution
-        let resolved_alice = bob_adapter.resolve_public_key(&alice_pubky_id).await
+        let resolved_alice = bob_adapter
+            .resolve_public_key(&alice_pubky_id)
+            .await
             .expect("Failed to resolve Alice's key");
-        
+
         assert_eq!(alice_keypair.public.id(), resolved_alice.id());
 
         // Test full workflow
         let message = b"Test message via mock adapter";
-        
-        let envelope = mock_send_trusted_data(message, &bob_pubky_id, storage).await
+
+        let envelope = mock_send_trusted_data(message, &bob_pubky_id, storage)
+            .await
             .expect("Failed to send trusted data");
 
-        let decrypted = receive_trusted_data(&envelope, &bob_keypair.private).await
+        let decrypted = receive_trusted_data(&envelope, &bob_keypair.private)
+            .await
             .expect("Failed to receive trusted data");
 
         assert_eq!(message, decrypted.as_slice());

@@ -18,16 +18,16 @@ use std::collections::HashMap;
 pub enum PubkyError {
     #[error("Network error: {0}")]
     Network(#[from] reqwest::Error),
-    
+
     #[error("Serialization error: {0}")]
     Serialization(#[from] serde_json::Error),
-    
+
     #[error("Pubky client error: {0}")]
     Client(String),
-    
+
     #[error("Identity not found: {0}")]
     IdentityNotFound(String),
-    
+
     #[error("Invalid identity format: {0}")]
     InvalidIdentity(String),
 }
@@ -66,7 +66,7 @@ impl PubkyClient {
     /// Create a client with custom configuration
     pub async fn with_config(keypair: Keypair, homeserver: Option<String>) -> Result<Self> {
         let builder = ClientBuilder::default();
-        
+
         if let Some(_homeserver) = homeserver {
             // Note: This is a placeholder - actual Pubky client configuration may differ
             // builder = builder.homeserver(homeserver);
@@ -91,12 +91,12 @@ impl PubkyClient {
             metadata: None,
         };
 
-        let record_json = serde_json::to_string(&record)
-            .context("Failed to serialize identity record")?;
+        let record_json =
+            serde_json::to_string(&record).context("Failed to serialize identity record")?;
 
         // Store the identity record at a well-known path
         let path = format!("/trustedge/identity");
-        
+
         // Use Pubky client to store the record
         // Note: This is a simplified version - actual Pubky API may differ
         let record_bytes = record_json.into_bytes();
@@ -121,12 +121,13 @@ impl PubkyClient {
 
         // Retrieve the record from the network
         let url = format!("pubky://{}{}", pubky_id, path);
-        let response = self.client
+        let response = self
+            .client
             .get(&url)
             .send()
             .await
             .map_err(|e| PubkyError::Client(format!("Failed to retrieve identity: {:?}", e)))?;
-            
+
         let record_bytes = response
             .bytes()
             .await
@@ -136,19 +137,25 @@ impl PubkyClient {
         let record_str = String::from_utf8(record_bytes.to_vec())
             .map_err(|e| PubkyError::InvalidIdentity(format!("Invalid UTF-8: {:?}", e)))?;
 
-        let record: TrustEdgeIdentityRecord = serde_json::from_str(&record_str)
-            .context("Failed to deserialize identity record")?;
+        let record: TrustEdgeIdentityRecord =
+            serde_json::from_str(&record_str).context("Failed to deserialize identity record")?;
 
         // Verify the identity is valid
         if !record.identity.verify() {
-            return Err(PubkyError::InvalidIdentity("Identity verification failed".to_string()).into());
+            return Err(
+                PubkyError::InvalidIdentity("Identity verification failed".to_string()).into(),
+            );
         }
 
         Ok(record.identity)
     }
 
     /// Update an existing identity record
-    pub async fn update_identity(&self, identity: &PubkyIdentity, metadata: Option<HashMap<String, String>>) -> Result<()> {
+    pub async fn update_identity(
+        &self,
+        identity: &PubkyIdentity,
+        metadata: Option<HashMap<String, String>>,
+    ) -> Result<()> {
         let record = TrustEdgeIdentityRecord {
             identity: identity.clone(),
             created_at: std::time::SystemTime::now()
@@ -159,12 +166,12 @@ impl PubkyClient {
             metadata,
         };
 
-        let record_json = serde_json::to_string(&record)
-            .context("Failed to serialize identity record")?;
+        let record_json =
+            serde_json::to_string(&record).context("Failed to serialize identity record")?;
 
         let path = format!("/trustedge/identity");
         let record_bytes = record_json.into_bytes();
-        
+
         self.client
             .put(&path)
             .body(record_bytes)
@@ -178,7 +185,7 @@ impl PubkyClient {
     /// Delete an identity record
     pub async fn delete_identity(&self) -> Result<()> {
         let path = format!("/trustedge/identity");
-        
+
         self.client
             .delete(&path)
             .send()
@@ -193,9 +200,9 @@ impl PubkyClient {
         // This is a placeholder implementation
         // In practice, this would involve querying the Pubky network for TrustEdge identity records
         // The actual implementation would depend on Pubky's discovery mechanisms
-        
+
         let _limit = limit.unwrap_or(100);
-        
+
         // For now, return empty list
         // TODO: Implement actual discovery logic based on Pubky capabilities
         Ok(Vec::new())
@@ -218,9 +225,12 @@ impl PubkyClient {
     }
 
     /// Batch resolve multiple Pubky IDs
-    pub async fn batch_resolve_encryption_keys(&self, pubky_ids: &[String]) -> Result<HashMap<String, x25519_dalek::PublicKey>> {
+    pub async fn batch_resolve_encryption_keys(
+        &self,
+        pubky_ids: &[String],
+    ) -> Result<HashMap<String, x25519_dalek::PublicKey>> {
         let mut results = HashMap::new();
-        
+
         // TODO: Implement actual batch resolution for efficiency
         // For now, resolve one by one
         for pubky_id in pubky_ids {
@@ -234,7 +244,7 @@ impl PubkyClient {
                 }
             }
         }
-        
+
         Ok(results)
     }
 }
@@ -284,20 +294,20 @@ mod tests {
     async fn test_identity_record_creation() {
         let keys = DualKeyPair::generate();
         let identity = keys.to_pubky_identity(Some("test_user".to_string()));
-        
+
         let record = TrustEdgeIdentityRecord::new(identity.clone());
-        
+
         assert_eq!(record.identity.pubky_id(), identity.pubky_id());
         assert_eq!(record.version, 1);
         assert!(record.metadata.is_none());
-        
+
         // Test with metadata
         let mut metadata = HashMap::new();
         metadata.insert("role".to_string(), "admin".to_string());
-        
-        let record_with_metadata = TrustEdgeIdentityRecord::new(identity)
-            .with_metadata(metadata.clone());
-        
+
+        let record_with_metadata =
+            TrustEdgeIdentityRecord::new(identity).with_metadata(metadata.clone());
+
         assert_eq!(record_with_metadata.metadata, Some(metadata));
     }
 
@@ -306,12 +316,12 @@ mod tests {
         let keys = DualKeyPair::generate();
         let identity = keys.to_pubky_identity(Some("test_user".to_string()));
         let record = TrustEdgeIdentityRecord::new(identity);
-        
+
         // Test JSON serialization
         let json = serde_json::to_string(&record).expect("Failed to serialize");
-        let deserialized: TrustEdgeIdentityRecord = serde_json::from_str(&json)
-            .expect("Failed to deserialize");
-        
+        let deserialized: TrustEdgeIdentityRecord =
+            serde_json::from_str(&json).expect("Failed to deserialize");
+
         assert_eq!(record.identity.pubky_id(), deserialized.identity.pubky_id());
         assert_eq!(record.version, deserialized.version);
     }
@@ -321,10 +331,10 @@ mod tests {
         let keys = DualKeyPair::generate();
         let identity = keys.to_pubky_identity(Some("test_user".to_string()));
         let record = TrustEdgeIdentityRecord::new(identity);
-        
+
         // Fresh record should not be expired
         assert!(!record.is_expired(3600)); // 1 hour
-        
+
         // Test age calculation
         assert!(record.age_seconds() < 10); // Should be very recent
     }

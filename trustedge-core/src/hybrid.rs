@@ -7,7 +7,7 @@
 //! This module provides the high-level API for hybrid encryption that combines
 //! the efficiency of symmetric encryption with the convenience of public key cryptography.
 
-use crate::asymmetric::{PublicKey, PrivateKey, encrypt_key_asymmetric, decrypt_key_asymmetric};
+use crate::asymmetric::{decrypt_key_asymmetric, encrypt_key_asymmetric, PrivateKey, PublicKey};
 use crate::format::AeadAlgorithm;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -17,19 +17,19 @@ use serde::{Deserialize, Serialize};
 pub enum TrustEdgeError {
     #[error("Encryption failed: {0}")]
     EncryptionFailed(String),
-    
+
     #[error("Decryption failed: {0}")]
     DecryptionFailed(String),
-    
+
     #[error("Invalid envelope format: {0}")]
     InvalidEnvelope(String),
-    
+
     #[error("Asymmetric operation failed: {0}")]
     AsymmetricError(#[from] crate::asymmetric::AsymmetricError),
-    
+
     #[error("Serialization failed: {0}")]
     SerializationError(#[from] bincode::Error),
-    
+
     #[error("Internal error: {0}")]
     InternalError(#[from] anyhow::Error),
 }
@@ -101,8 +101,10 @@ pub fn seal_for_recipient(
     let encrypted_payload = encrypt_symmetric(data, &session_key)?;
 
     // 3. Use the recipient's public key to encrypt the session_key
-    let encrypted_session_key = encrypt_key_asymmetric(session_key.as_bytes(), recipient_public_key)
-        .map_err(|e| TrustEdgeError::EncryptionFailed(format!("Key encryption failed: {}", e)))?;
+    let encrypted_session_key =
+        encrypt_key_asymmetric(session_key.as_bytes(), recipient_public_key).map_err(|e| {
+            TrustEdgeError::EncryptionFailed(format!("Key encryption failed: {}", e))
+        })?;
 
     // 4. Assemble the new .trst file structure
     let final_envelope = assemble_envelope(
@@ -129,10 +131,10 @@ pub fn open_envelope(
     let parsed_envelope = parse_envelope(envelope)?;
 
     // 2. Use my private key to decrypt the session key
-    let session_key_bytes = decrypt_key_asymmetric(
-        &parsed_envelope.encrypted_session_key,
-        my_private_key,
-    ).map_err(|e| TrustEdgeError::DecryptionFailed(format!("Key decryption failed: {}", e)))?;
+    let session_key_bytes =
+        decrypt_key_asymmetric(&parsed_envelope.encrypted_session_key, my_private_key).map_err(
+            |e| TrustEdgeError::DecryptionFailed(format!("Key decryption failed: {}", e)),
+        )?;
 
     let session_key = SymmetricKey::from_bytes(session_key_bytes);
 
@@ -171,7 +173,9 @@ fn encrypt_symmetric(data: &[u8], key: &SymmetricKey) -> Result<EncryptedData, T
     let mut ciphertext = data.to_vec();
     cipher
         .encrypt_in_place(nonce, b"", &mut ciphertext)
-        .map_err(|e| TrustEdgeError::EncryptionFailed(format!("AES-GCM encryption failed: {}", e)))?;
+        .map_err(|e| {
+            TrustEdgeError::EncryptionFailed(format!("AES-GCM encryption failed: {}", e))
+        })?;
 
     Ok(EncryptedData {
         ciphertext,
@@ -180,7 +184,10 @@ fn encrypt_symmetric(data: &[u8], key: &SymmetricKey) -> Result<EncryptedData, T
 }
 
 /// Decrypt data using symmetric encryption (AES-256-GCM)
-fn decrypt_symmetric(encrypted: &EncryptedData, key: &SymmetricKey) -> Result<Vec<u8>, TrustEdgeError> {
+fn decrypt_symmetric(
+    encrypted: &EncryptedData,
+    key: &SymmetricKey,
+) -> Result<Vec<u8>, TrustEdgeError> {
     use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
 
     let cipher = Aes256Gcm::new_from_slice(key.as_bytes())
@@ -192,7 +199,9 @@ fn decrypt_symmetric(encrypted: &EncryptedData, key: &SymmetricKey) -> Result<Ve
     let mut plaintext = encrypted.ciphertext.clone();
     cipher
         .decrypt_in_place(nonce, b"", &mut plaintext)
-        .map_err(|e| TrustEdgeError::DecryptionFailed(format!("AES-GCM decryption failed: {}", e)))?;
+        .map_err(|e| {
+            TrustEdgeError::DecryptionFailed(format!("AES-GCM decryption failed: {}", e))
+        })?;
 
     Ok(plaintext)
 }
@@ -214,8 +223,7 @@ fn assemble_envelope(
         algorithm: AeadAlgorithm::Aes256Gcm as u8,
     };
 
-    bincode::serialize(&envelope)
-        .map_err(|e| TrustEdgeError::SerializationError(e))
+    bincode::serialize(&envelope).map_err(|e| TrustEdgeError::SerializationError(e))
 }
 
 /// Parse an envelope from bytes
@@ -226,14 +234,15 @@ fn parse_envelope(envelope_bytes: &[u8]) -> Result<HybridEnvelope, TrustEdgeErro
     // Validate envelope
     if envelope.magic != HYBRID_MAGIC {
         return Err(TrustEdgeError::InvalidEnvelope(
-            "Invalid magic number".to_string()
+            "Invalid magic number".to_string(),
         ));
     }
 
     if envelope.version != HYBRID_VERSION {
-        return Err(TrustEdgeError::InvalidEnvelope(
-            format!("Unsupported version: {}", envelope.version)
-        ));
+        return Err(TrustEdgeError::InvalidEnvelope(format!(
+            "Unsupported version: {}",
+            envelope.version
+        )));
     }
 
     Ok(envelope)
@@ -249,10 +258,10 @@ mod tests {
     fn test_symmetric_key_generation() {
         let key1 = SymmetricKey::generate();
         let key2 = SymmetricKey::generate();
-        
+
         // Keys should be different
         assert_ne!(key1, key2);
-        
+
         // Keys should be 32 bytes
         assert_eq!(key1.as_bytes().len(), 32);
         assert_eq!(key2.as_bytes().len(), 32);
@@ -262,13 +271,11 @@ mod tests {
     fn test_symmetric_encryption_roundtrip() {
         let key = SymmetricKey::generate();
         let data = b"Hello, symmetric world!";
-        
-        let encrypted = encrypt_symmetric(data, &key)
-            .expect("Failed to encrypt data");
-        
-        let decrypted = decrypt_symmetric(&encrypted, &key)
-            .expect("Failed to decrypt data");
-        
+
+        let encrypted = encrypt_symmetric(data, &key).expect("Failed to encrypt data");
+
+        let decrypted = decrypt_symmetric(&encrypted, &key).expect("Failed to decrypt data");
+
         assert_eq!(data, decrypted.as_slice());
     }
 
@@ -276,32 +283,30 @@ mod tests {
     fn test_hybrid_encryption_rsa() {
         let keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
             .expect("Failed to generate RSA key pair");
-        
+
         let data = b"Hello, hybrid world with RSA!";
-        
-        let envelope = seal_for_recipient(data, &keypair.public)
-            .expect("Failed to seal envelope");
-        
-        let decrypted = open_envelope(&envelope, &keypair.private)
-            .expect("Failed to open envelope");
-        
+
+        let envelope = seal_for_recipient(data, &keypair.public).expect("Failed to seal envelope");
+
+        let decrypted =
+            open_envelope(&envelope, &keypair.private).expect("Failed to open envelope");
+
         assert_eq!(data, decrypted.as_slice());
     }
 
     #[test]
     fn test_envelope_structure() {
-        let keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
-            .expect("Failed to generate key pair");
-        
+        let keypair =
+            KeyPair::generate(AsymmetricAlgorithm::Rsa2048).expect("Failed to generate key pair");
+
         let data = b"Test data for envelope structure";
-        
-        let envelope_bytes = seal_for_recipient(data, &keypair.public)
-            .expect("Failed to seal envelope");
-        
+
+        let envelope_bytes =
+            seal_for_recipient(data, &keypair.public).expect("Failed to seal envelope");
+
         // Parse the envelope to check structure
-        let envelope = parse_envelope(&envelope_bytes)
-            .expect("Failed to parse envelope");
-        
+        let envelope = parse_envelope(&envelope_bytes).expect("Failed to parse envelope");
+
         assert_eq!(envelope.magic, HYBRID_MAGIC);
         assert_eq!(envelope.version, HYBRID_VERSION);
         assert_eq!(envelope.recipient_key_id, keypair.public.id());
@@ -313,12 +318,12 @@ mod tests {
     #[test]
     fn test_invalid_envelope() {
         let invalid_data = b"This is not a valid envelope";
-        
+
         let result = parse_envelope(invalid_data);
         assert!(result.is_err());
-        
+
         match result {
-            Err(TrustEdgeError::InvalidEnvelope(_)) => {}, // Expected
+            Err(TrustEdgeError::InvalidEnvelope(_)) => {} // Expected
             _ => panic!("Expected InvalidEnvelope error"),
         }
     }
@@ -327,16 +332,16 @@ mod tests {
     fn test_wrong_private_key() {
         let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
             .expect("Failed to generate Alice's key pair");
-        
+
         let bob_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)
             .expect("Failed to generate Bob's key pair");
-        
+
         let data = b"Secret message for Alice";
-        
+
         // Encrypt for Alice
-        let envelope = seal_for_recipient(data, &alice_keypair.public)
-            .expect("Failed to seal envelope");
-        
+        let envelope =
+            seal_for_recipient(data, &alice_keypair.public).expect("Failed to seal envelope");
+
         // Try to decrypt with Bob's key (should fail)
         let result = open_envelope(&envelope, &bob_keypair.private);
         assert!(result.is_err());
