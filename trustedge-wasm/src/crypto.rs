@@ -6,15 +6,14 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-
-use wasm_bindgen::prelude::*;
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, OsRng},
     Aes256Gcm, Key, Nonce,
 };
+use base64::{engine::general_purpose, Engine as _};
 use rand::RngCore;
-use base64::{Engine as _, engine::general_purpose};
 use serde::{Deserialize, Serialize};
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 extern "C" {
@@ -90,47 +89,51 @@ pub fn generate_nonce() -> String {
 
 // Encrypt data using AES-256-GCM
 #[wasm_bindgen]
-pub fn encrypt(data: &str, key_b64: &str, nonce_b64: Option<String>) -> Result<EncryptedData, JsValue> {
+pub fn encrypt(
+    data: &str,
+    key_b64: &str,
+    nonce_b64: Option<String>,
+) -> Result<EncryptedData, JsValue> {
     console_log!("Starting AES-256-GCM encryption");
-    
+
     // Decode the base64 key
     let key_bytes = general_purpose::STANDARD
         .decode(key_b64)
         .map_err(|e| JsValue::from_str(&format!("Invalid key format: {}", e)))?;
-    
+
     if key_bytes.len() != 32 {
         return Err(JsValue::from_str("Key must be 32 bytes (256 bits)"));
     }
-    
+
     let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
     let cipher = Aes256Gcm::new(key);
-    
+
     // Use provided nonce or generate a new one
     let nonce = if let Some(nonce_str) = nonce_b64 {
         let nonce_bytes = general_purpose::STANDARD
             .decode(nonce_str)
             .map_err(|e| JsValue::from_str(&format!("Invalid nonce format: {}", e)))?;
-        
+
         if nonce_bytes.len() != 12 {
             return Err(JsValue::from_str("Nonce must be 12 bytes (96 bits)"));
         }
-        
+
         *Nonce::from_slice(&nonce_bytes)
     } else {
         Aes256Gcm::generate_nonce(&mut OsRng)
     };
-    
+
     // Encrypt the data
     let ciphertext = cipher
         .encrypt(&nonce, data.as_bytes())
         .map_err(|e| JsValue::from_str(&format!("Encryption failed: {}", e)))?;
-    
+
     let result = EncryptedData {
         ciphertext: general_purpose::STANDARD.encode(&ciphertext),
-        nonce: general_purpose::STANDARD.encode(&nonce),
+        nonce: general_purpose::STANDARD.encode(nonce),
         key_id: None,
     };
-    
+
     console_log!("AES-256-GCM encryption completed successfully");
     Ok(result)
 }
@@ -139,42 +142,42 @@ pub fn encrypt(data: &str, key_b64: &str, nonce_b64: Option<String>) -> Result<E
 #[wasm_bindgen]
 pub fn decrypt(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, JsValue> {
     console_log!("Starting AES-256-GCM decryption");
-    
+
     // Decode the base64 key
     let key_bytes = general_purpose::STANDARD
         .decode(key_b64)
         .map_err(|e| JsValue::from_str(&format!("Invalid key format: {}", e)))?;
-    
+
     if key_bytes.len() != 32 {
         return Err(JsValue::from_str("Key must be 32 bytes (256 bits)"));
     }
-    
+
     let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
     let cipher = Aes256Gcm::new(key);
-    
+
     // Decode the nonce and ciphertext
     let nonce_bytes = general_purpose::STANDARD
         .decode(&encrypted_data.nonce)
         .map_err(|e| JsValue::from_str(&format!("Invalid nonce format: {}", e)))?;
-    
+
     let ciphertext_bytes = general_purpose::STANDARD
         .decode(&encrypted_data.ciphertext)
         .map_err(|e| JsValue::from_str(&format!("Invalid ciphertext format: {}", e)))?;
-    
+
     if nonce_bytes.len() != 12 {
         return Err(JsValue::from_str("Nonce must be 12 bytes (96 bits)"));
     }
-    
+
     let nonce = Nonce::from_slice(&nonce_bytes);
-    
+
     // Decrypt the data
     let plaintext = cipher
         .decrypt(nonce, ciphertext_bytes.as_slice())
         .map_err(|e| JsValue::from_str(&format!("Decryption failed: {}", e)))?;
-    
+
     let result = String::from_utf8(plaintext)
         .map_err(|e| JsValue::from_str(&format!("Invalid UTF-8 in decrypted data: {}", e)))?;
-    
+
     console_log!("AES-256-GCM decryption completed successfully");
     Ok(result)
 }

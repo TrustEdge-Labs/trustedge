@@ -6,14 +6,13 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-
 use wasm_bindgen::prelude::*;
 
-mod utils;
 mod crypto;
+mod utils;
 
-pub use utils::*;
 pub use crypto::*;
+pub use utils::*;
 
 // Import the `console.log` function from the `console` module
 #[wasm_bindgen]

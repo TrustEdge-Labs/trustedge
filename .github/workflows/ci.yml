@@ -11,9 +11,7 @@ on:
     branches: [ main ]
   pull_request:
 
-defaults:
-  run:
-    working-directory: trustedge-core
+# No default working directory - workspace commands run from root
 
 jobs:
   rust:
@@ -29,7 +27,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
-            trustedge-core -> target
+            . -> target
 
       - name: fmt
         run: cargo fmt --all -- --check
@@ -56,24 +54,24 @@ jobs:
             echo "YubiKey PCSC libraries not available"
           fi
 
-      - name: clippy (no audio)
-        run: cargo clippy --all-targets --no-default-features -- -D warnings
+      - name: clippy (workspace - no features)
+        run: cargo clippy --workspace --all-targets --no-default-features -- -D warnings
 
-      - name: clippy (with audio)
+      - name: clippy (trustedge-core with audio)
         if: steps.audio-deps.outputs.audio-available == 'true'
-        run: cargo clippy --all-targets --features audio -- -D warnings
+        run: cargo clippy --package trustedge-core --all-targets --features audio -- -D warnings
 
-      - name: clippy (with yubikey)
+      - name: clippy (trustedge-core with yubikey)
         if: steps.yubikey-deps.outputs.yubikey-available == 'true'
-        run: cargo clippy --all-targets --features yubikey -- -D warnings
+        run: cargo clippy --package trustedge-core --all-targets --features yubikey -- -D warnings
 
-      - name: tests (no audio)
-        run: cargo test --all --no-default-features --locked --verbose
+      - name: tests (workspace - no features)
+        run: cargo test --workspace --no-default-features --locked --verbose
 
-      - name: tests (with audio)
+      - name: tests (trustedge-core with audio)
         if: steps.audio-deps.outputs.audio-available == 'true'
-        run: cargo test --all --features audio --locked --verbose
+        run: cargo test --package trustedge-core --features audio --locked --verbose
 
-      - name: tests (with yubikey)
+      - name: tests (trustedge-core with yubikey)
         if: steps.yubikey-deps.outputs.yubikey-available == 'true'
-        run: cargo test --all --features yubikey --locked --verbose
+        run: cargo test --package trustedge-core --features yubikey --locked --verbose

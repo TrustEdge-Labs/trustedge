@@ -6,6 +6,7 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
+#![allow(clippy::new_without_default)]
 
 use wasm_bindgen::prelude::*;
 
@@ -31,7 +32,7 @@ pub fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, String> {
     if hex.len() % 2 != 0 {
         return Err("Hex string must have even length".to_string());
     }
-    
+
     (0..hex.len())
         .step_by(2)
         .map(|i| u8::from_str_radix(&hex[i..i + 2], 16))
@@ -58,12 +59,12 @@ impl Timer {
         let start_time = js_sys::Date::now();
         Timer { start_time }
     }
-    
+
     #[wasm_bindgen]
     pub fn elapsed(&self) -> f64 {
         js_sys::Date::now() - self.start_time
     }
-    
+
     #[wasm_bindgen]
     pub fn log_elapsed(&self, operation: &str) {
         let elapsed = self.elapsed();
