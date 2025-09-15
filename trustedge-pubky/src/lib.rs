@@ -414,13 +414,15 @@ mod tests {
 
         for &algorithm in &algorithms {
             // Create a test envelope using core functions
-            let alice_keypair = KeyPair::generate(algorithm).expect(&format!(
-                "Failed to generate Alice's key for algorithm {:?}",
-                algorithm
-            ));
+            let alice_keypair = KeyPair::generate(algorithm).unwrap_or_else(|_| {
+                panic!(
+                    "Failed to generate Alice's key for algorithm {:?}",
+                    algorithm
+                )
+            });
 
             // Test with various data sizes and types
-            let test_cases = vec![
+            let test_cases = [
                 b"".to_vec(),                                            // Empty data
                 b"A".to_vec(),                                           // Single byte
                 b"Test message for receive function".to_vec(),           // Text
@@ -435,7 +437,7 @@ mod tests {
 
             for (i, data) in test_cases.iter().enumerate() {
                 let envelope = trustedge_core::seal_for_recipient(data, &alice_keypair.public)
-                    .expect(&format!("Failed to seal envelope for case {}", i));
+                    .unwrap_or_else(|_| panic!("Failed to seal envelope for case {}", i));
 
                 // Verify envelope is not empty and different from original data
                 assert!(!envelope.is_empty(), "Envelope should not be empty");
@@ -446,7 +448,7 @@ mod tests {
 
                 // Test the receive function
                 let decrypted = receive_trusted_data(&envelope, &alice_keypair.private)
-                    .expect(&format!("Failed to receive trusted data for case {}", i));
+                    .unwrap_or_else(|_| panic!("Failed to receive trusted data for case {}", i));
 
                 assert_eq!(
                     data, &decrypted,

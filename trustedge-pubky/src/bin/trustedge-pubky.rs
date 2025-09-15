@@ -263,7 +263,7 @@ fn generate_keypair(output: Option<PathBuf>, seed: Option<String>, id_only: bool
             );
         }
 
-        let seed_bytes = hex::decode(&seed_hex).with_context(|| {
+        let seed_bytes = hex::decode(seed_hex).with_context(|| {
             format!(
                 "❌ Invalid seed format: not valid hexadecimal\n\
                 Seed must contain only characters 0-9 and a-f\n\
@@ -422,7 +422,7 @@ fn encrypt_data(
     // Encrypt data (this will resolve the recipient's key from Pubky network)
     println!("🌐 Resolving recipient's public key from Pubky network...");
     println!("🔒 Encrypting data with hybrid encryption (X25519 + AES-256-GCM)...");
-    let envelope = send_trusted_data(&data, &recipient, &backend).with_context(|| {
+    let envelope = send_trusted_data(&data, recipient, &backend).with_context(|| {
         format!(
             "❌ Failed to encrypt data for recipient: {}\n\
             Possible causes:\n\

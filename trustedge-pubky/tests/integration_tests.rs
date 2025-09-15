@@ -6,11 +6,10 @@
 //!
 //! These tests validate real functionality without mocks or fake data.
 
-use anyhow::Result;
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs;
-use tempfile::{NamedTempFile, TempDir};
+use tempfile::TempDir;
 
 /// Test CLI binary exists and shows help
 #[test]
