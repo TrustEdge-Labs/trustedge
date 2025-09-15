@@ -35,6 +35,8 @@ name = "yubikey-demo"
 path = "src/bin/yubikey-demo.rs"
 required-features = ["yubikey"]
 
+
+
 [dependencies]
 # Use workspace dependencies where possible
 aead = { workspace = true }
@@ -79,10 +81,13 @@ signature = { version = "2.2", optional = true }
 der = { version = "0.7", optional = true }
 spki = { version = "0.7", optional = true }
 
+
+
 [features]
 default = []         # No features by default (CI-friendly)
 audio = ["cpal"]     # Audio capture feature (opt-in)
 yubikey = ["pkcs11", "dep:yubikey", "x509-cert", "der", "spki", "signature"] # YubiKey hardware support with real hardware integration
+
 
 [dev-dependencies]
 assert_cmd = "2"

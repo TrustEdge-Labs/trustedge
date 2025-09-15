@@ -14,6 +14,10 @@ repository = "https://github.com/trustedgelabs/trustedge"
 keywords = ["cryptography", "pubky", "adapter", "bridge"]
 categories = ["cryptography", "network-programming"]
 
+[[bin]]
+name = "trustedge-pubky"
+path = "src/bin/trustedge-pubky.rs"
+
 [dependencies]
 # Core TrustEdge functionality
 trustedge-core = { path = "../trustedge-core" }
@@ -29,9 +33,13 @@ serde_json = { workspace = true }
 hex = { workspace = true }
 thiserror = { workspace = true }
 rand = { workspace = true }
+clap = { workspace = true }
 
 [dev-dependencies]
 tokio-test = "0.4"
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"
 
 # Temporarily exclude broken example
 [[example]]

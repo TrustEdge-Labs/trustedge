@@ -58,6 +58,26 @@ impl BackendRegistry {
     pub fn create_backend(&self, backend_type: &str) -> Result<Box<dyn KeyBackend>> {
         match backend_type {
             "keyring" => Ok(Box::new(KeyringBackend::new()?)),
+            "pubky" => Err(anyhow::anyhow!(
+                "❌ Pubky backend not available in trustedge-core.\n\
+                \n\
+                🔗 Use the separate 'trustedge-pubky' binary for Pubky operations:\n\
+                \n\
+                📝 Generate identity:\n\
+                  trustedge-pubky generate --output my-key.txt\n\
+                \n\
+                🔒 Encrypt for someone:\n\
+                  trustedge-pubky encrypt --input <file> --output <envelope> --recipient <pubky-id>\n\
+                \n\
+                🔓 Decrypt received file:\n\
+                  trustedge-pubky decrypt --input <envelope> --output <file> --key <private-key>\n\
+                \n\
+                🔍 Resolve Pubky ID:\n\
+                  trustedge-pubky resolve <pubky-id> --info\n\
+                \n\
+                📚 Get help:\n\
+                  trustedge-pubky --help"
+            )),
             // Future backends:
             // "tpm" => Ok(Box::new(TpmBackend::new(device_path)?)),
             // "hsm" => Ok(Box::new(HsmBackend::new(pkcs11_lib, slot_id)?)),
@@ -70,6 +90,7 @@ impl BackendRegistry {
     pub fn list_available_backends(&self) -> Vec<&'static str> {
         let backends = vec!["keyring"]; // Always available
 
+        // Note: pubky backend is available via separate trustedge-pubky binary
         // Future: detect TPM, HSM availability
         // if tpm_available() { backends.push("tpm"); }
         // if hsm_available() { backends.push("hsm"); }

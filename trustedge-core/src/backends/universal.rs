@@ -22,7 +22,7 @@ pub enum SymmetricAlgorithm {
     ChaCha20Poly1305,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AsymmetricAlgorithm {
     Ed25519,
     EcdsaP256,

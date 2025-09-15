@@ -184,6 +184,8 @@ struct Args {
     #[arg(long)]
     backend_config: Vec<String>,
 
+
+
     // === Live Audio Capture Options ===
     /// Enable live audio capture from microphone
     #[arg(long)]
@@ -306,21 +308,13 @@ fn list_audio_devices() -> Result<()> {
 
 /// Create a backend from CLI arguments
 fn create_backend_from_args(args: &Args) -> Result<Box<dyn KeyBackend>> {
-    // For now, only keyring is supported
-    match args.backend.as_str() {
-        "keyring" => {
-            let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
-            Ok(Box::new(backend))
-        }
-        other => {
-            anyhow::bail!(
-                "Backend '{}' not yet implemented. Available: keyring\n\
-                Future backends: tpm, hsm, matter\n\
-                Use --list-backends to see all options",
-                other
-            );
-        }
-    }
+    let registry = BackendRegistry::new();
+    registry.create_backend(&args.backend).with_context(|| {
+        format!(
+            "Failed to create '{}' backend. Use --list-backends to see available options",
+            args.backend
+        )
+    })
 }
 
 /// Parse a hex string into a 32-byte array
@@ -331,6 +325,8 @@ fn parse_key_hex(s: &str) -> Result<[u8; 32]> {
     out.copy_from_slice(&bytes);
     Ok(out)
 }
+
+
 
 /// Select the AES key to use for encryption/decryption using the new backend system
 fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {
