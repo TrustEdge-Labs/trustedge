@@ -185,7 +185,7 @@ impl SoftwareHsmBackend {
         // Update metadata
         let metadata = SoftwareHsmKeyMetadata {
             key_id: key_id.to_string(),
-            algorithm: algorithm.clone(),
+            algorithm,
             private_key_path,
             public_key_path,
             created_at: std::time::SystemTime::now()

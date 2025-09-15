@@ -184,8 +184,6 @@ struct Args {
     #[arg(long)]
     backend_config: Vec<String>,
 
-
-
     // === Live Audio Capture Options ===
     /// Enable live audio capture from microphone
     #[arg(long)]
@@ -325,8 +323,6 @@ fn parse_key_hex(s: &str) -> Result<[u8; 32]> {
     out.copy_from_slice(&bytes);
     Ok(out)
 }
-
-
 
 /// Select the AES key to use for encryption/decryption using the new backend system
 fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {

@@ -299,7 +299,7 @@ pub fn create_pubky_backend_from_seed(seed: &[u8; 32]) -> Result<PubkyBackend, P
 /// Extract the private key seed from a PubkyBackend
 /// This is needed for key export functionality
 pub fn extract_private_key_seed(backend: &PubkyBackend) -> [u8; 32] {
-    // This is a temporary implementation - in a real system, 
+    // This is a temporary implementation - in a real system,
     // private keys should be handled more securely
     backend.keypair.secret_key()
 }
@@ -353,15 +353,15 @@ mod tests {
         assert_eq!(record.public_key.key_id, deserialized.public_key.key_id);
         assert_eq!(record.created_at, deserialized.created_at);
         assert_eq!(record.metadata, deserialized.metadata);
-        
+
         // Verify the algorithm string is correct
         assert_eq!(record.public_key.algorithm, "Rsa2048");
-        
+
         // Verify the hex encoding is valid
-        let decoded_bytes = hex::decode(&record.public_key.key_bytes)
-            .expect("Key bytes should be valid hex");
+        let decoded_bytes =
+            hex::decode(&record.public_key.key_bytes).expect("Key bytes should be valid hex");
         assert_eq!(decoded_bytes, keypair.public.key_bytes);
-        
+
         // Verify timestamp is reasonable (within last hour and not in future)
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -376,71 +376,83 @@ mod tests {
         let backend = create_pubky_backend_random().expect("Failed to create backend");
 
         let pubky_id = backend.our_pubky_id();
-        
+
         // Verify Pubky ID format
         assert_eq!(pubky_id.len(), 64); // 32 bytes * 2 hex chars
-        assert!(pubky_id.chars().all(|c| c.is_ascii_hexdigit()), 
-                "Pubky ID should be valid hex: {}", pubky_id);
-        
+        assert!(
+            pubky_id.chars().all(|c| c.is_ascii_hexdigit()),
+            "Pubky ID should be valid hex: {}",
+            pubky_id
+        );
+
         // Verify backend capabilities
         let capabilities = backend.get_capabilities();
         assert!(!capabilities.hardware_backed);
         assert!(!capabilities.supports_key_derivation);
         assert!(!capabilities.supports_key_generation);
         assert!(!capabilities.supports_attestation);
-        
+
         // Verify backend info
         let info = backend.backend_info();
         assert_eq!(info.name, "pubky");
         assert!(info.available);
         assert!(info.description.contains("Pubky network"));
-        
+
         // Test that multiple backends generate different IDs
         let backend2 = create_pubky_backend_random().expect("Failed to create second backend");
         let pubky_id2 = backend2.our_pubky_id();
-        assert_ne!(pubky_id, pubky_id2, "Random backends should generate different IDs");
+        assert_ne!(
+            pubky_id, pubky_id2,
+            "Random backends should generate different IDs"
+        );
     }
 
     #[test]
     fn test_receive_trusted_data() {
         // Test with algorithms supported by hybrid encryption
-        let algorithms = vec![
-            AsymmetricAlgorithm::Rsa2048,
-            AsymmetricAlgorithm::Rsa4096,
-        ];
-        
+        let algorithms = vec![AsymmetricAlgorithm::Rsa2048, AsymmetricAlgorithm::Rsa4096];
+
         for &algorithm in &algorithms {
             // Create a test envelope using core functions
-            let alice_keypair = KeyPair::generate(algorithm)
-                .expect(&format!("Failed to generate Alice's key for algorithm {:?}", algorithm));
+            let alice_keypair = KeyPair::generate(algorithm).expect(&format!(
+                "Failed to generate Alice's key for algorithm {:?}",
+                algorithm
+            ));
 
             // Test with various data sizes and types
             let test_cases = vec![
-                b"".to_vec(), // Empty data
-                b"A".to_vec(), // Single byte
-                b"Test message for receive function".to_vec(), // Text
+                b"".to_vec(),                                            // Empty data
+                b"A".to_vec(),                                           // Single byte
+                b"Test message for receive function".to_vec(),           // Text
                 (0..1000).map(|i| (i % 256) as u8).collect::<Vec<u8>>(), // Binary data
                 serde_json::to_vec(&serde_json::json!({
                     "test": "data",
                     "number": 42,
                     "array": [1, 2, 3]
-                })).unwrap(), // JSON data
+                }))
+                .unwrap(), // JSON data
             ];
-            
+
             for (i, data) in test_cases.iter().enumerate() {
                 let envelope = trustedge_core::seal_for_recipient(data, &alice_keypair.public)
                     .expect(&format!("Failed to seal envelope for case {}", i));
 
                 // Verify envelope is not empty and different from original data
                 assert!(!envelope.is_empty(), "Envelope should not be empty");
-                assert_ne!(envelope, *data, "Envelope should be different from original data");
+                assert_ne!(
+                    envelope, *data,
+                    "Envelope should be different from original data"
+                );
 
                 // Test the receive function
                 let decrypted = receive_trusted_data(&envelope, &alice_keypair.private)
                     .expect(&format!("Failed to receive trusted data for case {}", i));
 
-                assert_eq!(data, &decrypted, 
-                          "Decrypted data should match original for case {}", i);
+                assert_eq!(
+                    data, &decrypted,
+                    "Decrypted data should match original for case {}",
+                    i
+                );
             }
         }
     }
@@ -478,48 +490,57 @@ mod tests {
 
         assert_eq!(message, decrypted.as_slice());
     }
-    
+
     #[test]
     fn test_deterministic_key_generation() {
         let seed = [0x42; 32]; // Fixed seed for deterministic testing
-        
+
         // Create two backends with the same seed
-        let backend1 = create_pubky_backend_from_seed(&seed)
-            .expect("Failed to create first backend");
-        let backend2 = create_pubky_backend_from_seed(&seed)
-            .expect("Failed to create second backend");
-        
+        let backend1 =
+            create_pubky_backend_from_seed(&seed).expect("Failed to create first backend");
+        let backend2 =
+            create_pubky_backend_from_seed(&seed).expect("Failed to create second backend");
+
         // Should produce identical Pubky IDs
         let id1 = backend1.our_pubky_id();
         let id2 = backend2.our_pubky_id();
         assert_eq!(id1, id2, "Same seed should produce same Pubky ID");
-        
+
         // Verify the ID format
         assert_eq!(id1.len(), 64);
         assert!(id1.chars().all(|c| c.is_ascii_hexdigit()));
-        
+
         // Test with different seed produces different ID
         let different_seed = [0x24; 32];
         let backend3 = create_pubky_backend_from_seed(&different_seed)
             .expect("Failed to create third backend");
         let id3 = backend3.our_pubky_id();
-        assert_ne!(id1, id3, "Different seeds should produce different Pubky IDs");
+        assert_ne!(
+            id1, id3,
+            "Different seeds should produce different Pubky IDs"
+        );
     }
-    
+
     #[test]
     fn test_extract_private_key_seed() {
         let original_seed = [0x13; 32];
-        let backend = create_pubky_backend_from_seed(&original_seed)
-            .expect("Failed to create backend");
-        
+        let backend =
+            create_pubky_backend_from_seed(&original_seed).expect("Failed to create backend");
+
         let extracted_seed = extract_private_key_seed(&backend);
-        assert_eq!(original_seed, extracted_seed, "Extracted seed should match original");
-        
+        assert_eq!(
+            original_seed, extracted_seed,
+            "Extracted seed should match original"
+        );
+
         // Verify we can recreate the same backend
-        let recreated_backend = create_pubky_backend_from_seed(&extracted_seed)
-            .expect("Failed to recreate backend");
-        
-        assert_eq!(backend.our_pubky_id(), recreated_backend.our_pubky_id(),
-                  "Recreated backend should have same Pubky ID");
+        let recreated_backend =
+            create_pubky_backend_from_seed(&extracted_seed).expect("Failed to recreate backend");
+
+        assert_eq!(
+            backend.our_pubky_id(),
+            recreated_backend.our_pubky_id(),
+            "Recreated backend should have same Pubky ID"
+        );
     }
 }

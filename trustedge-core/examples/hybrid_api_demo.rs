@@ -7,9 +7,7 @@
 //! This example demonstrates the new high-level hybrid encryption API
 //! that matches the specification in Step 2.
 
-use trustedge_core::{
-    open_envelope, seal_for_recipient, AsymmetricAlgorithm, KeyPair, TrustEdgeError,
-};
+use trustedge_core::{open_envelope, seal_for_recipient, AsymmetricAlgorithm, KeyPair};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🔐 TrustEdge Core Hybrid Encryption API Demo");

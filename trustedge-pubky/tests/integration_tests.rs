@@ -43,7 +43,7 @@ fn test_key_generation() {
     // Verify key file was created and has correct format
     assert!(key_file.exists());
     let key_content = fs::read_to_string(&key_file).unwrap();
-    
+
     // Should be 64 hex characters (32 bytes)
     assert_eq!(key_content.trim().len(), 64);
     assert!(key_content.trim().chars().all(|c| c.is_ascii_hexdigit()));
@@ -53,10 +53,11 @@ fn test_key_generation() {
 #[test]
 fn test_key_generation_with_seed() {
     let seed = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
-    
+
     // Generate key twice with same seed
     let mut cmd1 = Command::cargo_bin("trustedge-pubky").unwrap();
-    let output1 = cmd1.arg("generate")
+    let output1 = cmd1
+        .arg("generate")
         .arg("--seed")
         .arg(seed)
         .arg("--id-only")
@@ -67,7 +68,8 @@ fn test_key_generation_with_seed() {
         .clone();
 
     let mut cmd2 = Command::cargo_bin("trustedge-pubky").unwrap();
-    let output2 = cmd2.arg("generate")
+    let output2 = cmd2
+        .arg("generate")
         .arg("--seed")
         .arg(seed)
         .arg("--id-only")
@@ -79,7 +81,7 @@ fn test_key_generation_with_seed() {
 
     // Should produce identical Pubky IDs
     assert_eq!(output1, output2);
-    
+
     // Should be 64 hex characters
     let pubky_id = String::from_utf8(output1).unwrap();
     assert_eq!(pubky_id.trim().len(), 64);
@@ -104,7 +106,7 @@ fn test_encrypt_invalid_recipient() {
     let temp_dir = TempDir::new().unwrap();
     let input_file = temp_dir.path().join("input.txt");
     let output_file = temp_dir.path().join("output.trst");
-    
+
     fs::write(&input_file, "test data").unwrap();
 
     let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
@@ -117,7 +119,9 @@ fn test_encrypt_invalid_recipient() {
         .arg("invalid_recipient")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Invalid recipient Pubky ID length"));
+        .stderr(predicate::str::contains(
+            "Invalid recipient Pubky ID length",
+        ));
 }
 
 /// Test encryption with valid format but non-existent recipient
@@ -126,7 +130,7 @@ fn test_encrypt_nonexistent_recipient() {
     let temp_dir = TempDir::new().unwrap();
     let input_file = temp_dir.path().join("input.txt");
     let output_file = temp_dir.path().join("output.trst");
-    
+
     fs::write(&input_file, "test data").unwrap();
 
     // Valid format but non-existent recipient
@@ -163,7 +167,7 @@ fn test_decrypt_missing_key() {
     let input_file = temp_dir.path().join("input.trst");
     let output_file = temp_dir.path().join("output.txt");
     let key_file = temp_dir.path().join("nonexistent_key.txt");
-    
+
     // Create dummy envelope file
     fs::write(&input_file, "dummy envelope data").unwrap();
 
@@ -187,10 +191,10 @@ fn test_decrypt_invalid_key_format() {
     let input_file = temp_dir.path().join("input.trst");
     let output_file = temp_dir.path().join("output.txt");
     let key_file = temp_dir.path().join("invalid_key.txt");
-    
+
     // Create dummy envelope file
     fs::write(&input_file, "dummy envelope data").unwrap();
-    
+
     // Create invalid key file
     fs::write(&key_file, "invalid_key_content").unwrap();
 
@@ -215,7 +219,7 @@ fn test_migrate_missing_files() {
     let output_file = temp_dir.path().join("output.trst");
     let v1_key = temp_dir.path().join("v1_key.txt");
     let pubky_key = temp_dir.path().join("pubky_key.txt");
-    
+
     let recipient = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
 
     let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
@@ -240,7 +244,8 @@ fn test_migrate_missing_files() {
 fn test_key_generation_randomness() {
     // Generate two keys without seed
     let mut cmd1 = Command::cargo_bin("trustedge-pubky").unwrap();
-    let output1 = cmd1.arg("generate")
+    let output1 = cmd1
+        .arg("generate")
         .arg("--id-only")
         .assert()
         .success()
@@ -249,7 +254,8 @@ fn test_key_generation_randomness() {
         .clone();
 
     let mut cmd2 = Command::cargo_bin("trustedge-pubky").unwrap();
-    let output2 = cmd2.arg("generate")
+    let output2 = cmd2
+        .arg("generate")
         .arg("--id-only")
         .assert()
         .success()
@@ -267,7 +273,7 @@ fn test_file_io_errors() {
     let temp_dir = TempDir::new().unwrap();
     let nonexistent_input = temp_dir.path().join("nonexistent.txt");
     let output_file = temp_dir.path().join("output.trst");
-    
+
     let recipient = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
 
     let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();

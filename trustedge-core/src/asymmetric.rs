@@ -233,7 +233,7 @@ impl KeyPair {
             .to_public_key_der()
             .context("Failed to encode RSA public key")?;
 
-        let private = PrivateKey::new(algorithm.clone(), private_der.as_bytes().to_vec());
+        let private = PrivateKey::new(algorithm, private_der.as_bytes().to_vec());
         let public = PublicKey::new(algorithm, public_der.as_bytes().to_vec());
 
         Ok(Self::new(public, private))
@@ -251,7 +251,7 @@ pub fn key_exchange(
             ecdh_p256(my_private_key, peer_public_key)
         }
         _ => Err(AsymmetricError::UnsupportedAlgorithm(
-            my_private_key.algorithm.clone(),
+            my_private_key.algorithm,
         )),
     }
 }
@@ -290,7 +290,7 @@ pub fn encrypt_key_asymmetric(
             rsa_encrypt_key(session_key, recipient_public_key)
         }
         _ => Err(AsymmetricError::UnsupportedAlgorithm(
-            recipient_public_key.algorithm.clone(),
+            recipient_public_key.algorithm,
         )),
     }
 }
@@ -305,7 +305,7 @@ pub fn decrypt_key_asymmetric(
             rsa_decrypt_key(encrypted_key, my_private_key)
         }
         _ => Err(AsymmetricError::UnsupportedAlgorithm(
-            my_private_key.algorithm.clone(),
+            my_private_key.algorithm,
         )),
     }
 }
