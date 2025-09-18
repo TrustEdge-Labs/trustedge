@@ -461,11 +461,11 @@ If any validation fails during decryption (e.g., manifest signature, nonce prefi
 ---
 
 **See also:**
-- `src/format.rs` — Centralized format definitions and constants
-- `src/lib.rs` for struct definitions
-- `src/main.rs` for CLI and envelope logic
+- [`src/format.rs`](trustedge-core/src/format.rs) — Centralized format definitions and constants
+- [`src/lib.rs`](trustedge-core/src/lib.rs) for struct definitions
+- [`src/main.rs`](trustedge-core/src/main.rs) for CLI and envelope logic
 - `trustedge-client` and `trustedge-server` for protocol usage
-- `THREAT_MODEL.md` for security rationale
+- [`THREAT_MODEL.md`](THREAT_MODEL.md) for security rationale
 
 ---
 

@@ -351,7 +351,7 @@ cargo test authentication                  # All auth tests
 
 ### Roundtrip Integration Tests
 
-The comprehensive roundtrip test suite (`tests/roundtrip_integration.rs`) provides full workflow validation with **15 tests**:
+The comprehensive roundtrip test suite ([`tests/roundtrip_integration.rs`](trustedge-core/tests/roundtrip_integration.rs)) provides full workflow validation with **15 tests**:
 
 **Test Coverage:**
 ```bash
@@ -374,7 +374,7 @@ cargo test test_comprehensive_chunk_sizes  # Extended chunk testing
 
 ### Network Integration Tests
 
-The network integration test suite (`tests/network_integration.rs`) validates client-server workflows with **7 tests**:
+The network integration test suite ([`tests/network_integration.rs`](trustedge-core/tests/network_integration.rs)) validates client-server workflows with **7 tests**:
 
 **Test Coverage:**
 ```bash
@@ -435,7 +435,7 @@ Universal Backend Integration Tests:
 
 ### Universal Backend Integration Tests
 
-The Universal Backend integration test suite (`tests/universal_backend_integration.rs`) validates the capability-based backend system with **6 tests**:
+The Universal Backend integration test suite ([`tests/universal_backend_integration.rs`](trustedge-core/tests/universal_backend_integration.rs)) validates the capability-based backend system with **6 tests**:
 
 **Test Coverage:**
 ```bash

@@ -378,7 +378,7 @@ The implementation includes comprehensive integration tests:
 2. **Tamper Detection**: Verify corrupted envelopes fail validation  
 3. **CLI Testing**: End-to-end testing via command-line interface
 
-**Test Location**: `tests/vectors.rs` and `src/vectors.rs`
+**Test Location**: [`src/vectors.rs`](trustedge-core/src/vectors.rs) and [`tests/roundtrip_integration.rs`](trustedge-core/tests/roundtrip_integration.rs)
 
 ---
 
@@ -434,9 +434,9 @@ The implementation includes comprehensive integration tests:
 ---
 
 **See Also:**
-- `src/format.rs` - Reference implementation
-- `PROTOCOL.md` - Network protocol specification
-- `THREAT_MODEL.md` - Security analysis
+- [`src/format.rs`](trustedge-core/src/format.rs) - Reference implementation
+- [`PROTOCOL.md`](PROTOCOL.md) - Network protocol specification
+- [`THREAT_MODEL.md`](THREAT_MODEL.md) - Security analysis
 
 ---
 

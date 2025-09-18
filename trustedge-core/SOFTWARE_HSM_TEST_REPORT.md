@@ -14,7 +14,7 @@ The Software HSM implementation now includes a comprehensive test suite with bot
 
 ## Test Coverage Summary
 
-### Unit Tests (33 tests) - `src/backends/software_hsm.rs`
+### Unit Tests (33 tests) - [`src/backends/software_hsm.rs`](src/backends/software_hsm.rs)
 
 **Configuration & Initialization (4 tests)**
 - ✔ Backend creation with custom and default configurations  
