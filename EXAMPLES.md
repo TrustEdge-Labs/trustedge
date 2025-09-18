@@ -270,6 +270,8 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
 # Client will perform mutual authentication and transfer the file securely
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Secure Session Workflow
@@ -351,6 +353,8 @@ flowchart TD
 ```
 
 **🔐 For detailed security flow and implementation details, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md#how-trustedge-secure-session-works).**
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -451,6 +455,8 @@ graph TD
 diff config.json config_restored.json  # Should be identical
 file config_restored.json              # Shows: JSON text data
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -555,6 +561,8 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i interview_decrypted.raw -c:a libmp3lame -b:a 
 # Play directly without conversion (requires sox)
 play -t f32 -r 44100 -c 1 interview_decrypted.raw
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -882,6 +890,8 @@ cargo run --release --bin trustedge-client -- \
   --input audio_stream_b.wav \
   --key-hex "a1b2c3d4e5f6789a1b2c3d4e5f6789a1b2c3d4e5f6789a1b2c3d4e5f6789"
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -1221,6 +1231,8 @@ chmod +x convert_trustedge_core.sh
 ./convert_trustedge_core.sh recording.trst $MY_KEY podcast_episode
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Key Management Scenarios
@@ -1475,6 +1487,8 @@ echo $NEW_KEY > new_key.hex
 shred -u temp_plaintext.bin old_key.hex
 mv new_key.hex current_key.hex
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -1844,6 +1858,8 @@ Backend Health Status:
   4. Registry overhead is minimal - no optimization needed
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Hardware Backend Demonstrations
@@ -2203,6 +2219,8 @@ cargo run --example yubikey_quic_demo --features yubikey
 - **Secure Communications**: QUIC/TLS with hardware-backed certificate validation
 - **Compliance**: Regulatory requirements for hardware security modules
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Integration Examples
@@ -2334,6 +2352,8 @@ docker run -p 8080:8080 -v $(pwd)/data:/data trustedge \
   --output-dir /data
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Performance Examples
@@ -2398,6 +2418,8 @@ dd if=/dev/urandom of=large_test.bin bs=1M count=100
 rm large_test.bin large_test.trst
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Error Handling Examples
@@ -2443,6 +2465,8 @@ encrypt_with_fallback() {
 # Usage example
 encrypt_with_fallback "important_data.txt" "important_data.trst"
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -2626,6 +2650,8 @@ split_and_encrypt_stream() {
 split_and_encrypt_stream "live_audio.wav" "4096"
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Development and Project Management Examples
@@ -2735,6 +2761,10 @@ Progress on #11"
 # 6. Create PR with template
 gh pr create --fill
 ```
+
+---
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
