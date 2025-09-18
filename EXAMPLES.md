@@ -9,9 +9,9 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 Real-world examples and use cases for TrustEdge privacy-preserving edge computing.
 
 ## Table of Contents
-- [Secure Session Workflow](#secure-session-workflow)
+- [Installation Guide](#installation-guide)
+- [Getting Started Examples](#getting-started-examples)
 - [Format-Aware Encryption and Inspection](#format-aware-encryption-and-inspection)
-- [Basic File Encryption](#basic-file-encryption)
 - [Live Audio Capture](#live-audio-capture)
 - [Network Mode Examples](#network-mode-examples)
   - [Connection Resilience & Error Recovery](#connection-resilience--error-recovery)
@@ -23,6 +23,252 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 - [Hardware Backend Demonstrations](#hardware-backend-demonstrations)
 - [Integration Examples](#integration-examples)
 - [Development and Project Management Examples](#development-and-project-management-examples)
+
+---
+
+## Installation Guide
+
+### Basic Installation
+
+**Prerequisites:**
+```bash
+# Install Rust (if needed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+```
+
+**Basic Installation (Core Features Only):**
+```bash
+# Clone the repository
+git clone https://github.com/TrustEdge-Labs/trustedge.git
+cd trustedge
+
+# Build core features only (file encryption, basic operations)
+cargo build --workspace --release --no-default-features
+```
+
+**Full Installation with Audio Support:**
+```bash
+# Install audio system dependencies
+# On Ubuntu/Debian:
+sudo apt-get update
+sudo apt-get install libasound2-dev pkg-config
+
+# On macOS (via Homebrew):
+# Audio libraries included with Xcode/Command Line Tools
+# No additional packages needed
+
+# On Windows:
+# Audio libraries included with Windows SDK
+# No additional packages needed
+
+# Build with audio features
+cargo build --package trustedge-core --release --features audio
+```
+
+**YubiKey Hardware Support:**
+```bash
+# Install PKCS#11 module for YubiKey support
+# On Ubuntu/Debian:
+sudo apt-get install opensc-pkcs11
+
+# On macOS (via Homebrew):
+brew install opensc
+
+# On Windows:
+# Download and install OpenSC from https://github.com/OpenSC/OpenSC/releases
+
+# Build with YubiKey hardware backend
+cargo build --package trustedge-core --release --features yubikey
+
+# Or build with all features
+cargo build --workspace --release --features audio,yubikey
+```
+
+**Verification:**
+```bash
+# Verify installation
+./target/release/trustedge-core --version
+./target/release/trustedge-server --version
+./target/release/trustedge-client --version
+
+# Test basic functionality
+echo "Hello TrustEdge!" > test.txt
+./target/release/trustedge-core --input test.txt --envelope test.trst --key-out test.key
+./target/release/trustedge-core --decrypt --input test.trst --out recovered.txt --key-hex $(cat test.key)
+diff test.txt recovered.txt  # Should show no differences
+```
+
+---
+
+## Getting Started Examples
+
+### Simple File Encryption
+
+**Basic file encryption with random key:**
+```bash
+# Encrypt a document
+./target/release/trustedge-core \
+  --input document.txt \
+  --envelope document.trst \
+  --key-out mykey.hex
+
+# Decrypt the document
+./target/release/trustedge-core \
+  --decrypt \
+  --input document.trst \
+  --out recovered.txt \
+  --key-hex $(cat mykey.hex) \
+  --verbose
+
+# Example verbose output:
+# ● Input Type: File
+#   MIME Type: text/plain
+# ✔ Output: Original file format preserved
+# ✔ Decrypt complete. Wrote 1337 bytes.
+
+# Verify integrity
+diff document.txt recovered.txt  # Should be identical
+```
+
+**Keyring-based encryption (password-derived keys):**
+```bash
+# One-time setup: store passphrase in OS keyring
+./target/release/trustedge-core --set-passphrase "my secure passphrase"
+
+# Encrypt using keyring-derived key
+./target/release/trustedge-core \
+  --input file.txt \
+  --envelope file.trst \
+  --use-keyring \
+  --salt-hex $(openssl rand -hex 16)
+
+# Decrypt using keyring (you'll be prompted for passphrase if needed)
+./target/release/trustedge-core \
+  --decrypt \
+  --input file.trst \
+  --out recovered.txt \
+  --use-keyring \
+  --salt-hex <same-salt-as-encryption>
+```
+
+### Format-Aware Operations
+
+**Inspect encrypted data without decrypting:**
+```bash
+# Create sample data
+echo '{"message": "Hello TrustEdge!", "timestamp": 1234567890}' > data.json
+
+# Encrypt the JSON file
+./target/release/trustedge-core --input data.json --envelope data.trst --key-out key.hex
+
+# Inspect without decrypting
+./target/release/trustedge-core --input data.trst --inspect --verbose
+
+# Example output:
+# TrustEdge Archive Information:
+#   File: data.trst
+#   Data Type: File
+#   MIME Type: application/json
+#   Original Size: 58 bytes
+#   Chunks: 1
+#   Output Behavior: Original file format preserved
+```
+
+**Format-aware decryption:**
+```bash
+# Decrypt preserves original format
+./target/release/trustedge-core \
+  --decrypt \
+  --input data.trst \
+  --out recovered.json \
+  --key-hex $(cat key.hex)
+
+# Verify JSON structure is preserved
+cat recovered.json | jq .  # Pretty-print JSON
+```
+
+### Live Audio Capture Examples
+
+**Basic audio capture:**
+```bash
+# List available audio devices
+./target/release/trustedge-core --list-audio-devices
+
+# Example output:
+# Available Audio Devices:
+#   0: Default Input Device
+#   1: Built-in Microphone
+#   2: USB Audio Device
+
+# Capture 10 seconds of audio
+./target/release/trustedge-core \
+  --live-capture \
+  --envelope voice_note.trst \
+  --key-out voice_key.hex \
+  --max-duration 10
+
+# Decrypt captured audio (produces raw PCM data)
+./target/release/trustedge-core \
+  --decrypt \
+  --input voice_note.trst \
+  --out recovered_audio.raw \
+  --key-hex $(cat voice_key.hex)
+
+# Convert to playable WAV file (requires ffmpeg)
+ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
+```
+
+**Advanced audio capture with specific device and quality:**
+```bash
+# High-quality stereo capture from specific device
+./target/release/trustedge-core \
+  --live-capture \
+  --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
+  --sample-rate 48000 \
+  --channels 2 \
+  --envelope stereo_voice.trst \
+  --use-keyring \
+  --max-duration 30
+
+# The captured audio maintains format information
+./target/release/trustedge-core --input stereo_voice.trst --inspect
+
+# Example output:
+# TrustEdge Archive Information:
+#   File: stereo_voice.trst
+#   Data Type: Audio
+#   Sample Rate: 48000 Hz
+#   Channels: 2 (Stereo)
+#   Duration: ~30 seconds
+#   Output Behavior: Raw PCM data (requires conversion)
+```
+
+### Network Mode Quick Start
+
+**Authenticated server setup:**
+```bash
+# Start server with authentication required
+./target/release/trustedge-server \
+  --listen 127.0.0.1:8080 \
+  --require-auth \
+  --decrypt \
+  --verbose
+
+# Server will generate certificates automatically and display connection info
+```
+
+**Authenticated client connection:**
+```bash
+# Connect client with authentication
+./target/release/trustedge-client \
+  --server 127.0.0.1:8080 \
+  --input file.txt \
+  --require-auth \
+  --verbose
+
+# Client will perform mutual authentication and transfer the file securely
+```
 
 ---
 
@@ -208,58 +454,7 @@ file config_restored.json              # Shows: JSON text data
 
 ---
 
-## Basic File Encryption
-
-### Simple Document Encryption
-
-```bash
-# Create a test document
-echo "Confidential business plan draft" > business_plan.txt
-
-# Encrypt with random key
-./target/release/trustedge-core \
-  --input business_plan.txt \
-  --out roundtrip.txt \
-  --envelope business_plan.trst \
-  --key-out business_key.hex
-
-# Verify round-trip
-diff business_plan.txt roundtrip.txt
-# (no output = success)
-
-# Later: decrypt the envelope
-./target/release/trustedge-core \
-  --decrypt \
-  --input business_plan.trst \
-  --out recovered_plan.txt \
-  --key-hex $(cat business_key.hex)
-```
-
-### Audio File Protection
-
-```bash
-# Encrypt sensitive audio recording
-./target/release/trustedge-core \
-  --input confidential_meeting.wav \
-  --envelope meeting_encrypted.trst \
-  --backend keyring \
-  --salt-hex "meeting2024_salt_1234567890abcdef" \
-  --use-keyring \
-  --no-plaintext  # Don't keep unencrypted copy
-
-# Later: recover the audio
-./target/release/trustedge-core \
-  --decrypt \
-  --input meeting_encrypted.trst \
-  --out recovered_meeting.wav \
-  --backend keyring \
-  --salt-hex "meeting2024_salt_1234567890abcdef" \
-  --use-keyring
-```
-
----
-
-## Live Audio Capture
+## Advanced Live Audio Capture
 
 ### Voice Memo Recording
 
