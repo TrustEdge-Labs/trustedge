@@ -9,6 +9,12 @@
 name = "trustedge-core"
 version = "0.2.0"
 edition = "2021"
+description = "Core cryptographic library and CLI tools for privacy-preserving edge computing"
+authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
+license = "MPL-2.0"
+repository = "https://github.com/TrustEdge-Labs/trustedge"
+keywords = ["cryptography", "privacy", "edge-computing", "encryption", "audio"]
+categories = ["cryptography", "command-line-utilities", "multimedia::audio"]
 
 [lib]
 name = "trustedge_core"

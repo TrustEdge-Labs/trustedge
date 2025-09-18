@@ -361,7 +361,7 @@ Help improve test coverage:
 
 ## 📄 License
 
-By contributing to TrustEdge, you agree that your contributions will be licensed under the [Mozilla Public License 2.0 (MPL-2.0)](./LICENSE).
+By contributing to TrustEdge, you agree that your contributions will be licensed under the [Mozilla Public License 2.0 (MPL-2.0)](LICENSE).
 
 ---
 

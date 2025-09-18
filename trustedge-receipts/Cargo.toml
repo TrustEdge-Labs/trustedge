@@ -7,6 +7,12 @@
 name = "trustedge-receipts"
 version = "0.1.0"
 edition = "2021"
+description = "Digital receipt system with cryptographically secure ownership chains"
+authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
+license = "MPL-2.0"
+repository = "https://github.com/TrustEdge-Labs/trustedge"
+keywords = ["cryptography", "receipts", "ownership", "blockchain", "digital-assets"]
+categories = ["cryptography", "data-structures"]
 
 [[bin]]
 name = "demo"

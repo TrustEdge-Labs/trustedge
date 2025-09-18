@@ -259,8 +259,8 @@ Contributions are welcome! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for 
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/trustedge-labs/trustedge/issues)
-- **Documentation**: [TrustEdge Docs](https://github.com/trustedge-labs/trustedge#readme)
+- **Issues**: [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)
+- **Documentation**: [TrustEdge Docs](https://github.com/TrustEdge-Labs/trustedge#readme)
 - **Enterprise**: [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com)
 
 ## Changelog

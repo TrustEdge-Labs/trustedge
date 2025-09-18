@@ -10,7 +10,7 @@ edition = "2021"
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
 license = "MPL-2.0"
 description = "Pubky integration for TrustEdge - hybrid encryption with decentralized key discovery"
-repository = "https://github.com/trustedgelabs/trustedge"
+repository = "https://github.com/TrustEdge-Labs/trustedge"
 keywords = ["cryptography", "pubky", "decentralized", "encryption", "hybrid"]
 categories = ["cryptography", "network-programming"]
 

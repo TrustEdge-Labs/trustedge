@@ -10,7 +10,7 @@ edition = "2021"
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
 description = "WebAssembly bindings for TrustEdge cryptographic operations"
 license = "MPL-2.0"
-repository = "https://github.com/trustedge-labs/trustedge"
+repository = "https://github.com/TrustEdge-Labs/trustedge"
 keywords = ["cryptography", "wasm", "encryption", "security", "aes"]
 categories = ["cryptography", "wasm", "web-programming"]
 

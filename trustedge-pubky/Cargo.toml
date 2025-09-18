@@ -10,7 +10,7 @@ edition = "2021"
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
 license = "MPL-2.0"
 description = "Clean adapter between TrustEdge core and Pubky network"
-repository = "https://github.com/trustedgelabs/trustedge"
+repository = "https://github.com/TrustEdge-Labs/trustedge"
 keywords = ["cryptography", "pubky", "adapter", "bridge"]
 categories = ["cryptography", "network-programming"]
 

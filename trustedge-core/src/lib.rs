@@ -3,11 +3,58 @@
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-/// Project: trustedge — Privacy and trust at the edge.
+// Project: trustedge — Privacy and trust at the edge.
 //
-/// lib.rs - Core library for privacy-preserving edge data processing
-//
-// Provides audio capture, encryption, authentication, and key management.
+
+//! # TrustEdge Core
+//!
+//! Core cryptographic library and CLI tools for privacy-preserving edge computing.
+//!
+//! TrustEdge Core provides production-ready cryptographic primitives, universal backend systems,
+//! and secure network operations for data-agnostic encryption at the edge.
+//!
+//! ## Key Features
+//!
+//! - **Production Cryptography**: AES-256-GCM encryption with PBKDF2 key derivation
+//! - **Universal Backend System**: Pluggable crypto operations (Software HSM, Keyring, YubiKey)
+//! - **Live Audio Capture**: Real-time microphone input with configurable quality
+//! - **Network Operations**: Secure client-server communication with mutual authentication
+//! - **Hardware Integration**: Full YubiKey PKCS#11 support with real hardware signing
+//! - **Algorithm Agility**: Configurable cryptographic algorithms with forward compatibility
+//! - **Memory Safety**: Proper key material cleanup with zeroization
+//!
+//! ## Quick Start
+//!
+//! ```rust
+//! use trustedge_core::{Envelope, KeyPair, AsymmetricAlgorithm};
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! // Generate key pair
+//! let sender_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
+//! let recipient_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
+//!
+//! // Encrypt data
+//! let data = b"Secret message";
+//! let envelope = Envelope::seal(data, &sender_keys.private, &recipient_keys.public)?;
+//!
+//! // Decrypt data
+//! let decrypted = envelope.unseal(&recipient_keys.private)?;
+//! assert_eq!(decrypted, data);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Architecture
+//!
+//! TrustEdge Core is organized into several key modules:
+//!
+//! - [`envelope`] - Cryptographic envelope format for secure data packaging
+//! - [`backends`] - Universal Backend system for pluggable crypto operations
+//! - [`audio`] - Live audio capture functionality (requires `audio` feature)
+//! - [`auth`] - Network authentication and session management
+//! - [`transport`] - Network transport layer for secure communication
+//! - [`asymmetric`] - Public key cryptography operations
+//! - [`format`] - Data format handling and MIME type detection
 use serde::{Deserialize, Serialize};
 
 /// The length of the nonce used for AES-GCM encryption (12 bytes).

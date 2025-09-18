@@ -6,6 +6,39 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
+//! # TrustEdge WebAssembly
+//!
+//! WebAssembly bindings for TrustEdge cryptographic operations, enabling privacy-preserving
+//! edge computing in browser and Node.js environments.
+//!
+//! This crate provides JavaScript/TypeScript bindings for core TrustEdge functionality,
+//! allowing web applications to perform secure encryption, decryption, and key management
+//! operations directly in the browser.
+//!
+//! ## Features
+//!
+//! - **Browser Compatibility**: Works in all modern browsers with WebAssembly support
+//! - **Node.js Support**: Compatible with Node.js environments
+//! - **TypeScript Definitions**: Includes TypeScript type definitions
+//! - **Memory Safety**: Rust's memory safety guarantees extend to WebAssembly
+//! - **Performance**: Near-native performance for cryptographic operations
+//!
+//! ## Usage
+//!
+//! ```javascript
+//! import init, { encrypt_data, decrypt_data } from 'trustedge-wasm';
+//!
+//! async function example() {
+//!     await init();
+//!     
+//!     const data = new Uint8Array([1, 2, 3, 4, 5]);
+//!     const encrypted = encrypt_data(data, key);
+//!     const decrypted = decrypt_data(encrypted, key);
+//! }
+//! ```
+//!
+//! For detailed usage examples and API documentation, see the crate's README.md.
+
 use wasm_bindgen::prelude::*;
 
 mod crypto;
