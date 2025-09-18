@@ -79,18 +79,20 @@ trustedge-core = "0.2.0"
 **Basic encryption/decryption:**
 
 ```rust
-use trustedge_core::{Envelope, KeyPair, AsymmetricAlgorithm};
+use trustedge_core::Envelope;
+use ed25519_dalek::SigningKey;
+use rand::rngs::OsRng;
 
-// Generate key pair
-let sender_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
-let recipient_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
+// Generate key pairs
+let sender_key = SigningKey::generate(&mut OsRng);
+let recipient_key = SigningKey::generate(&mut OsRng);
 
 // Encrypt data
 let data = b"Secret message";
-let envelope = Envelope::seal(data, &sender_keys.private, &recipient_keys.public)?;
+let envelope = Envelope::seal(data, &sender_key, &recipient_key.verifying_key())?;
 
 // Decrypt data
-let decrypted = envelope.unseal(&recipient_keys.private)?;
+let decrypted = envelope.unseal(&recipient_key)?;
 assert_eq!(decrypted, data);
 ```
 
@@ -169,24 +171,26 @@ if yubikey_backend.supports_operation(&operation) {
 TrustEdge uses a **secure envelope format** for data protection:
 
 ```rust
-use trustedge_core::{Envelope, EnvelopeMetadata};
+use trustedge_core::Envelope;
+use ed25519_dalek::SigningKey;
+use rand::rngs::OsRng;
 
-// Create envelope with metadata
-let envelope = Envelope::seal_with_metadata(
+// Generate keys
+let sender_key = SigningKey::generate(&mut OsRng);
+let recipient_key = SigningKey::generate(&mut OsRng);
+let data = b"example data";
+
+// Create envelope
+let envelope = Envelope::seal(
     data,
-    &sender_private,
-    &recipient_public,
-    EnvelopeMetadata {
-        data_type: DataType::File,
-        mime_type: Some("application/json".to_string()),
-        ..Default::default()
-    }
+    &sender_key,
+    &recipient_key.verifying_key(),
 )?;
 
 // Inspect without decrypting
 let info = envelope.inspect()?;
-println!("Data type: {:?}", info.data_type);
-println!("MIME type: {:?}", info.mime_type);
+println!("Envelope hash: {:?}", envelope.hash());
+println!("Beneficiary: {:?}", envelope.beneficiary());
 ```
 
 ### Audio Capture System
@@ -306,19 +310,21 @@ yubikey-demo -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so generate-cert
 ### Example 1: Basic Library Usage
 
 ```rust
-use trustedge_core::{Envelope, KeyPair, AsymmetricAlgorithm};
+use trustedge_core::Envelope;
+use ed25519_dalek::SigningKey;
+use rand::rngs::OsRng;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Generate keys
-    let alice_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
-    let bob_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
+    let alice_key = SigningKey::generate(&mut OsRng);
+    let bob_key = SigningKey::generate(&mut OsRng);
     
     // Alice encrypts for Bob
     let message = b"Hello Bob from Alice!";
-    let envelope = Envelope::seal(message, &alice_keys.private, &bob_keys.public)?;
+    let envelope = Envelope::seal(message, &alice_key, &bob_key.verifying_key())?;
     
     // Bob decrypts
-    let decrypted = envelope.unseal(&bob_keys.private)?;
+    let decrypted = envelope.unseal(&bob_key)?;
     assert_eq!(decrypted, message);
     
     println!("✅ Encryption/decryption successful");
@@ -351,7 +357,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 #[cfg(feature = "audio")]
-use trustedge_core::{AudioCapture, AudioConfig, Envelope, KeyPair, AsymmetricAlgorithm};
+use trustedge_core::{AudioCapture, AudioConfig, Envelope};
+use ed25519_dalek::SigningKey;
+use rand::rngs::OsRng;
 
 #[cfg(feature = "audio")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -369,8 +377,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Captured {} bytes of audio", audio_data.len());
     
     // Encrypt audio
-    let keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
-    let envelope = Envelope::seal(&audio_data, &keys.private, &keys.public)?;
+    let key = SigningKey::generate(&mut OsRng);
+    let envelope = Envelope::seal(&audio_data, &key, &key.verifying_key())?;
     
     println!("✅ Audio capture and encryption successful");
     Ok(())
@@ -385,20 +393,19 @@ fn main() {
 ### Example 4: Network Operations
 
 ```rust
-use trustedge_core::{
-    auth::{SessionManager, ServerCertificate},
-    KeyPair, AsymmetricAlgorithm
-};
+use trustedge_core::auth::{SessionManager, ServerCertificate};
+use ed25519_dalek::SigningKey;
+use rand::rngs::OsRng;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Server setup
-    let server_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
-    let server_cert = ServerCertificate::new(&server_keys)?;
+    let server_key = SigningKey::generate(&mut OsRng);
+    let server_cert = ServerCertificate::new(&server_key)?;
     let mut session_manager = SessionManager::new();
     
     // Client setup
-    let client_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
+    let client_key = SigningKey::generate(&mut OsRng);
     
     println!("✅ Network authentication setup complete");
     Ok(())
@@ -589,13 +596,16 @@ TrustEdge Core is optimized for performance:
 4. **Backend Selection**: Choose appropriate backend for use case
 
 ```rust
+use ed25519_dalek::SigningKey;
+use rand::rngs::OsRng;
+
 // Efficient batch processing
-let keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
+let key = SigningKey::generate(&mut OsRng);
 let files = vec!["file1.txt", "file2.txt", "file3.txt"];
 
 for file in files {
     let data = std::fs::read(file)?;
-    let envelope = Envelope::seal(&data, &keys.private, &keys.public)?;
+    let envelope = Envelope::seal(&data, &key, &key.verifying_key())?;
     // Process envelope...
 }
 ```
@@ -609,10 +619,11 @@ for file in files {
 ```rust
 // With trustedge-receipts
 use trustedge_receipts::create_receipt;
-use trustedge_core::{KeyPair, AsymmetricAlgorithm};
+use ed25519_dalek::SigningKey;
+use rand::rngs::OsRng;
 
-let keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
-let receipt = create_receipt(&keys.private, &keys.public, 1000, None)?;
+let key = SigningKey::generate(&mut OsRng);
+let receipt = create_receipt(&key, &key.verifying_key(), 1000, None)?;
 
 // With trustedge-wasm
 use trustedge_core::Envelope;

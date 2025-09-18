@@ -26,19 +26,21 @@
 //! ## Quick Start
 //!
 //! ```rust
-//! use trustedge_core::{Envelope, KeyPair, AsymmetricAlgorithm};
+//! use trustedge_core::Envelope;
+//! use ed25519_dalek::SigningKey;
+//! use rand::rngs::OsRng;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! // Generate key pair
-//! let sender_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
-//! let recipient_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
+//! // Generate key pairs
+//! let sender_key = SigningKey::generate(&mut OsRng);
+//! let recipient_key = SigningKey::generate(&mut OsRng);
 //!
 //! // Encrypt data
 //! let data = b"Secret message";
-//! let envelope = Envelope::seal(data, &sender_keys.private, &recipient_keys.public)?;
+//! let envelope = Envelope::seal(data, &sender_key, &recipient_key.verifying_key())?;
 //!
 //! // Decrypt data
-//! let decrypted = envelope.unseal(&recipient_keys.private)?;
+//! let decrypted = envelope.unseal(&recipient_key)?;
 //! assert_eq!(decrypted, data);
 //! # Ok(())
 //! # }
