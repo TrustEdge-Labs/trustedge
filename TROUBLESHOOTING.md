@@ -43,6 +43,8 @@ ls -la your_file.trst
 ./target/release/trustedge-client --input /full/path/to/file.trst
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Configuration Issues
@@ -90,6 +92,8 @@ Error: salt_hex decode. Caused by: Odd number of digits
 # Generate valid salt
 openssl rand -hex 16
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -414,6 +418,8 @@ echo "  Reinitialize: trustedge-core --list-backends"
 echo "  Health check: trustedge-core --backend-info universal_registry"
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Network Problems
@@ -542,6 +548,8 @@ rm *_identity.cert *.key
   --session-timeout 600  # 10 minutes
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Audio System Issues
@@ -662,6 +670,8 @@ ffmpeg -f f32le -ar 44100 -ac 2 -i audio.raw audio.wav
 
 **📋 For comprehensive audio testing and system configuration, see [TESTING.md](TESTING.md#audio-system-testing).**
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Cryptographic Errors
@@ -712,6 +722,8 @@ file suspicious_file.trst
   --envelope new_envelope.trst \
   --key-hex $(openssl rand -hex 32)
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -891,6 +903,8 @@ echo "test data" > test.txt
 diff test.txt recovered.txt
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Debug and Diagnostic Commands
@@ -1023,6 +1037,8 @@ echo "test" | nc 127.0.0.1 8080
 kill $SERVER_PID
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Getting Help
@@ -1058,6 +1074,10 @@ If issues persist after following this guide:
 **Additional context:**
 [any other relevant information]
 ```
+
+---
+
+[↑ Back to top](#table-of-contents)
 
 ---
 

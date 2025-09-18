@@ -48,6 +48,8 @@ cargo test --features yubikey    # Include YubiKey hardware tests
 cargo test --features yubikey    # Include YubiKey hardware tests
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Test Categories
@@ -138,6 +140,8 @@ cargo test --test domain_separation_test
 - Manifest tampering detection
 - Cryptographic domain isolation
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## YubiKey Testing
@@ -184,6 +188,8 @@ cargo test test_phase3_quic_integration
 - **Slot 9d**: PIV Key Management (encryption/decryption)
 - **Slot 9e**: PIV Card Authentication (device certificates)
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Transport Testing
@@ -210,6 +216,8 @@ cargo test tcp::tests   # TCP-specific unit tests
 - **QUIC Preferred**: High throughput, multi-stream scenarios
 - **TCP Fallback**: Legacy compatibility, simple point-to-point
 - **Configuration Testing**: Security-focused settings, extreme limits
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -243,6 +251,8 @@ The golden test vector validates:
 - **Format stability**: Binary format doesn't change between versions
 - **Cross-platform compatibility**: Works identically across different systems
 - **Cryptographic correctness**: All security properties maintained
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -463,6 +473,8 @@ cargo test test_universal_backend_registry_management
 - **Resource Management**: Proper cleanup and resource handling
 - **Edge Cases**: Zero-byte salts, empty contexts, invalid parameters
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Manual Verification
@@ -590,6 +602,8 @@ done
 ./target/release/trustedge-core --backend nonexistent                 # Invalid backend
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Performance Testing
@@ -637,6 +651,8 @@ for chunk_size in 1024 4096 8192 16384 65536; do
     --key-hex $(openssl rand -hex 32)
 done
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -722,6 +738,8 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 # Should fail with "AES-GCM decrypt/verify failed"
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Network Testing
@@ -768,6 +786,8 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
   --verbose
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Envelope Integrity Testing
@@ -788,6 +808,8 @@ cargo test nonce_validation
 cargo test signature_verification
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Continuous Integration Testing
@@ -799,6 +821,8 @@ The CI pipeline runs:
 - ✅ `cargo fmt --check` - Code formatting validation
 - ✅ Cross-platform testing (Linux, macOS, Windows)
 - ✅ Multiple Rust versions (stable, beta, nightly)
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -1188,6 +1212,8 @@ for device in $(./target/release/trustedge-core --list-audio-devices | grep -o '
 done
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Debugging Failed Tests
@@ -1214,6 +1240,10 @@ cargo test --target x86_64-unknown-linux-gnu
 cargo test --target x86_64-pc-windows-msvc
 cargo test --target x86_64-apple-darwin
 ```
+
+---
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
