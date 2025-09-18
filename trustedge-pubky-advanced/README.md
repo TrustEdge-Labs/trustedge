@@ -30,6 +30,8 @@ TrustEdge Pubky Advanced implements **next-generation hybrid encryption** with s
 - **🔒 Memory Safety**: Secure key material handling with automatic zeroization
 - **🧪 Battle-Tested**: Comprehensive security testing and validation
 
+[↑ Back to top](#trustedge-pubky-advanced)
+
 ---
 
 ## Architecture
@@ -68,6 +70,8 @@ graph TD
 - **EnvelopeV2**: Next-generation envelope format with hybrid encryption
 - **PubkyIdentity**: Serializable identity for network storage
 - **PubkyClient**: Advanced client for decentralized operations
+
+[↑ Back to top](#trustedge-pubky-advanced)
 
 ---
 
@@ -158,6 +162,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+[↑ Back to top](#trustedge-pubky-advanced)
 
 ---
 
@@ -252,6 +258,8 @@ pub fn unseal(&self, recipient_keys: &DualKeyPair) -> Result<Vec<u8>>
 4. Decrypt and reassemble chunks
 5. Return original payload
 
+[↑ Back to top](#trustedge-pubky-advanced)
+
 ---
 
 ## Security Properties
@@ -287,6 +295,8 @@ cargo test test_forward_secrecy
 cargo test test_signature_verification
 cargo test test_key_exchange_security
 ```
+
+[↑ Back to top](#trustedge-pubky-advanced)
 
 ---
 
@@ -353,6 +363,8 @@ let envelope = EnvelopeV2::seal(
 send_to_recipient(&envelope)?;
 ```
 
+[↑ Back to top](#trustedge-pubky-advanced)
+
 ---
 
 ## Performance Considerations
@@ -391,6 +403,8 @@ let envelopes: Result<Vec<_>, _> = payloads
     ))
     .collect();
 ```
+
+[↑ Back to top](#trustedge-pubky-advanced)
 
 ---
 
@@ -452,6 +466,8 @@ pub fn encrypt_for_web(
     // Returns serialized envelope
 }
 ```
+
+[↑ Back to top](#trustedge-pubky-advanced)
 
 ---
 
@@ -560,6 +576,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+[↑ Back to top](#trustedge-pubky-advanced)
+
 ---
 
 ## Testing
@@ -604,6 +622,8 @@ cargo run -p trustedge-pubky-advanced --example hybrid_encryption_demo
 # ✅ Envelope created successfully!
 ```
 
+[↑ Back to top](#trustedge-pubky-advanced)
+
 ---
 
 ## Contributing
@@ -634,6 +654,8 @@ cargo run -p trustedge-pubky-advanced --example hybrid_encryption_demo
 cargo fmt --package trustedge-pubky-advanced
 ```
 
+[↑ Back to top](#trustedge-pubky-advanced)
+
 ---
 
 ## Roadmap
@@ -659,6 +681,8 @@ cargo fmt --package trustedge-pubky-advanced
 - 🔮 Advanced identity management
 - 🔮 Cross-platform mobile SDKs
 
+[↑ Back to top](#trustedge-pubky-advanced)
+
 ---
 
 ## Security Considerations
@@ -679,6 +703,8 @@ The advanced Pubky integration has undergone comprehensive security review:
 - **Encryption**: AES-256-GCM provides authenticated encryption with strong security guarantees
 - **Signatures**: Ed25519 provides fast, secure digital signatures
 
+[↑ Back to top](#trustedge-pubky-advanced)
+
 ---
 
 ## License
@@ -686,6 +712,8 @@ The advanced Pubky integration has undergone comprehensive security review:
 This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 
 **Commercial Licensing**: Enterprise licenses available for commercial use without source disclosure requirements. Contact [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com).
+
+[↑ Back to top](#trustedge-pubky-advanced)
 
 ---
 
@@ -695,6 +723,8 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 - **[TrustEdge Pubky](../trustedge-pubky/)** - Basic Pubky adapter
 - **[Universal Backend Guide](../UNIVERSAL_BACKEND.md)** - Backend system architecture
 - **[Security Model](../SECURITY.md)** - Overall security architecture
+
+[↑ Back to top](#trustedge-pubky-advanced)
 
 ---
 

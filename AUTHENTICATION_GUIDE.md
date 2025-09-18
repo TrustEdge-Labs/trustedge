@@ -39,6 +39,8 @@ TrustEdge implements **mutual authentication** using Ed25519 digital signatures 
 ✅ **Replay Protection**: Challenge-response protocol prevents replay attacks  
 ✅ **Forward Security**: Sessions expire automatically with configurable timeouts  
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Quick Start
@@ -74,6 +76,8 @@ TrustEdge implements **mutual authentication** using Ed25519 digital signatures 
 3. **Client connection**: Generates client identity certificate on first use
 4. **Mutual handshake**: Challenge-response authentication between both parties
 5. **Secure session**: Establishes cryptographically secure session for data transfer
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -207,6 +211,8 @@ TrustEdge certificates contain:
 - **Identity String**: Human-readable client/server identity  
 - **Timestamp**: Certificate creation time
 - **Signature**: Self-signed with corresponding private key (64 bytes)
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -353,6 +359,8 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 - **No Certificate Authority**: Eliminates single point of failure and complex PKI infrastructure
 - **Automatic Rotation**: Generate new certificates by deleting existing files and restarting
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Session Management
@@ -386,6 +394,8 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 - **Time-Limited**: All sessions expire automatically 
 - **Single Use**: Each session tied to specific client connection
 - **Memory Protection**: Session data cleared on expiration
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -436,6 +446,8 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
   --key-hex "dev_key_for_testing_only"
 ```
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Security Considerations
@@ -481,6 +493,8 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 - **Industry Standards**: Verify authentication meets your industry requirements
 - **Audit Trails**: Implement comprehensive logging for compliance auditing
 - **Key Management**: Follow organizational key management policies
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -567,6 +581,8 @@ ls -la *_identity.cert *.key
 # View certificate creation time
 stat server_identity.cert client_identity.cert
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -782,6 +798,8 @@ Critical authentication components to backup:
 - Authentication configuration parameters
 - Session management configuration
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Advanced Topics
@@ -815,6 +833,10 @@ For enterprise deployments, consider integrating with existing PKI:
 - Use TrustEdge authentication for application-layer security
 - Combine with TLS client certificates for transport-layer security
 - Implement certificate validation against enterprise CA
+
+---
+
+[↑ Back to top](#table-of-contents)
 
 ---
 

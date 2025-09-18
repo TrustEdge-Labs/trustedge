@@ -73,6 +73,8 @@ gh issue edit <issue-number> --add-label "in-progress"
 
 See **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** for detailed tasks and **[Issue #16](https://github.com/TrustEdge-Labs/trustedge/issues/16)** for progress tracking.
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Project Architecture
@@ -213,6 +215,8 @@ TrustEdge implements chunked encryption for performance and streaming:
 3. **Metadata Protection**: Chunk headers contain encrypted length and integrity data
 4. **Stream Reconstruction**: Chunks can be processed independently and recombined
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Development Roadmap
@@ -276,6 +280,8 @@ TrustEdge implements chunked encryption for performance and streaming:
 - [ ] **Cloud storage integration**
 - [ ] **Compliance reporting**
 - [ ] **Enterprise key management**
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -363,6 +369,8 @@ git add .
 git commit -m "feat: implement TPM backend support"
 git push origin feature/tpm-backend
 ```
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -488,6 +496,8 @@ git push origin feature/tpm-backend
    - Performance impact assessment
    - Documentation review
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Code Quality Standards
@@ -538,6 +548,8 @@ echo "All checks passed!"
 - **Secure Defaults**: All defaults should be secure configurations
 - **Regular Updates**: Dependencies updated monthly for security patches
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Security Considerations
@@ -581,6 +593,8 @@ See [THREAT_MODEL.md](./THREAT_MODEL.md) for complete threat analysis.
    - [ ] Server authentication implemented
    - [ ] Input sanitization on network boundaries
    - [ ] DoS protection mechanisms
+
+[↑ Back to top](#table-of-contents)
 
 ---
 
@@ -632,6 +646,8 @@ GitHub Actions workflow ensures:
 - Documentation builds successfully
 - Example code validates correctly
 
+[↑ Back to top](#table-of-contents)
+
 ---
 
 ## Future Considerations
@@ -666,6 +682,10 @@ GitHub Actions workflow ensures:
 - **Homomorphic Encryption**: Computing on encrypted data
 - **Zero-Knowledge Proofs**: Verification without data exposure
 - **Secure Multi-Party Computation**: Collaborative processing
+
+---
+
+[↑ Back to top](#table-of-contents)
 
 ---
 

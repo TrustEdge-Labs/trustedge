@@ -30,6 +30,8 @@ TrustEdge Core is the **foundational crate** of the TrustEdge ecosystem, providi
 - **📋 Format-Aware Processing**: MIME type detection and format-preserving encryption/decryption
 - **🛡️ Memory Safety**: Proper key material cleanup with zeroization
 
+[↑ Back to top](#trustedge-core)
+
 ---
 
 ## Architecture
@@ -62,6 +64,8 @@ trustedge-core/
 | **transport** | Network operations | `Transport`, `TransportConfig` |
 | **asymmetric** | Public key cryptography | `KeyPair`, `PrivateKey`, `PublicKey` |
 | **format** | Data format handling | `DataType`, `NetworkChunk` |
+
+[↑ Back to top](#trustedge-core)
 
 ---
 
@@ -137,6 +141,8 @@ let result = backend.perform_operation("my_key", operation)?;
 # Connect with authentication
 ./target/release/trustedge-client --server 127.0.0.1:8080 --input file.txt --require-auth
 ```
+
+[↑ Back to top](#trustedge-core)
 
 ---
 
@@ -231,6 +237,8 @@ let client_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
 let auth_result = client_authenticate(&client_keys, &server_cert)?;
 ```
 
+[↑ Back to top](#trustedge-core)
+
 ---
 
 ## CLI Applications
@@ -302,6 +310,8 @@ yubikey-demo -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so -v capabilities
 # Generate certificate
 yubikey-demo -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so generate-cert
 ```
+
+[↑ Back to top](#trustedge-core)
 
 ---
 
@@ -412,6 +422,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+[↑ Back to top](#trustedge-core)
+
 ---
 
 ## Features
@@ -463,6 +475,8 @@ brew install opensc
 # Download OpenSC from https://github.com/OpenSC/OpenSC/releases
 ```
 
+[↑ Back to top](#trustedge-core)
+
 ---
 
 ## Testing
@@ -506,6 +520,8 @@ cargo bench
 # Performance analysis
 cargo run --example transport_demo --release
 ```
+
+[↑ Back to top](#trustedge-core)
 
 ---
 
@@ -564,6 +580,8 @@ match operation_result {
     Err(e) => eprintln!("Other error: {}", e),
 }
 ```
+
+[↑ Back to top](#trustedge-core)
 
 ---
 
@@ -650,6 +668,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+[↑ Back to top](#trustedge-core)
+
 ---
 
 ## Contributing
@@ -685,6 +705,8 @@ cargo run --example transport_demo
 cargo fmt --check
 ```
 
+[↑ Back to top](#trustedge-core)
+
 ---
 
 ## Documentation
@@ -701,6 +723,8 @@ cargo fmt --check
 - **[Examples](../EXAMPLES.md)** - Real-world usage examples
 - **[Universal Backend Guide](../UNIVERSAL_BACKEND.md)** - Backend system architecture
 
+[↑ Back to top](#trustedge-core)
+
 ---
 
 ## License
@@ -709,6 +733,8 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 
 **Commercial Licensing**: Enterprise licenses available for commercial use without source disclosure requirements. Contact [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com).
 
+[↑ Back to top](#trustedge-core)
+
 ---
 
 ## Security
@@ -716,6 +742,8 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 For security issues, please follow our [responsible disclosure policy](../SECURITY.md).
 
 **Security Contact**: [security@trustedgelabs.com](mailto:security@trustedgelabs.com)
+
+[↑ Back to top](#trustedge-core)
 
 ---
 
