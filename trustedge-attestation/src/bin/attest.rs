@@ -11,7 +11,9 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
-use trustedge_attestation::{create_signed_attestation, AttestationConfig, OutputFormat, KeySource};
+use trustedge_attestation::{
+    create_signed_attestation, AttestationConfig, KeySource, OutputFormat,
+};
 
 /// Create software attestation (birth certificate)
 #[derive(Parser, Debug)]
@@ -79,8 +81,7 @@ fn main() -> Result<()> {
     println!("● Analyzing artifact and repository...");
 
     // Create the attestation using the centralized library function
-    let result = create_signed_attestation(config)
-        .context("Failed to create attestation")?;
+    let result = create_signed_attestation(config).context("Failed to create attestation")?;
 
     if args.verbose {
         println!("✔ Attestation created:");
@@ -116,9 +117,15 @@ fn main() -> Result<()> {
                 if let Some(verification_info) = &result.verification_info {
                     println!();
                     println!("● Verification Information (demo mode):");
-                    println!("   • Public Key: {}...", &verification_info.verification_key[..16]);
+                    println!(
+                        "   • Public Key: {}...",
+                        &verification_info.verification_key[..16]
+                    );
                     if let Some(private_key) = &verification_info.private_key {
-                        println!("   • Private Key: {}... (included for demo)", &private_key[..16]);
+                        println!(
+                            "   • Private Key: {}... (included for demo)",
+                            &private_key[..16]
+                        );
                     }
                 }
             }

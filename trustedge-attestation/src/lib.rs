@@ -97,7 +97,9 @@ pub enum KeySource {
     /// Generate ephemeral keys (demo mode)
     Generate,
     /// Use provided signing key (production mode)
-    Provided { signing_key: ed25519_dalek::SigningKey },
+    Provided {
+        signing_key: Box<ed25519_dalek::SigningKey>,
+    },
 }
 
 /// Result of creating a signed attestation
@@ -174,9 +176,7 @@ pub fn create_signed_attestation(config: AttestationConfig) -> Result<Attestatio
                 verification_info: None,
             })
         }
-        OutputFormat::SealedEnvelope => {
-            create_sealed_attestation(attestation, config.key_source)
-        }
+        OutputFormat::SealedEnvelope => create_sealed_attestation(attestation, config.key_source),
     }
 }
 
@@ -194,12 +194,11 @@ fn create_sealed_attestation(
             let mut csprng = rand::rngs::OsRng;
             ed25519_dalek::SigningKey::generate(&mut csprng)
         }
-        KeySource::Provided { signing_key } => signing_key,
+        KeySource::Provided { signing_key } => *signing_key,
     };
 
     // Serialize attestation to JSON for the envelope payload
-    let payload = serde_json::to_vec(&attestation)
-        .context("Failed to serialize attestation")?;
+    let payload = serde_json::to_vec(&attestation).context("Failed to serialize attestation")?;
 
     // For attestations, we use the same key as both sender and beneficiary
     // This makes it a publicly verifiable signature rather than encrypted message
@@ -224,8 +223,8 @@ fn create_sealed_attestation(
     };
 
     // Serialize using bincode
-    let serialized_output = bincode::serialize(&attestation_file)
-        .context("Failed to serialize attestation file")?;
+    let serialized_output =
+        bincode::serialize(&attestation_file).context("Failed to serialize attestation file")?;
 
     // Create verification info
     let verification_info = Some(VerificationInfo {
@@ -323,8 +322,12 @@ pub fn verify_attestation(config: VerificationConfig) -> Result<VerificationResu
     };
 
     // Compute artifact hash
-    let artifact_data = std::fs::read(&config.artifact_path)
-        .with_context(|| format!("Failed to read artifact: {}", config.artifact_path.display()))?;
+    let artifact_data = std::fs::read(&config.artifact_path).with_context(|| {
+        format!(
+            "Failed to read artifact: {}",
+            config.artifact_path.display()
+        )
+    })?;
 
     use sha2::{Digest, Sha256};
     let computed_hash = format!("{:x}", Sha256::digest(&artifact_data));
@@ -366,8 +369,7 @@ fn read_envelope_attestation(path: &PathBuf) -> Result<Attestation> {
     let mut reader = BufReader::new(file);
 
     let attestation_file: AttestationFile =
-        bincode::deserialize_from(&mut reader)
-            .context("Failed to read attestation file")?;
+        bincode::deserialize_from(&mut reader).context("Failed to read attestation file")?;
 
     // Verify the envelope signature
     if !attestation_file.envelope.verify() {
@@ -393,8 +395,7 @@ fn read_json_attestation(path: &PathBuf) -> Result<Attestation> {
     let json_data = std::fs::read_to_string(path)
         .with_context(|| format!("Failed to read attestation file: {}", path.display()))?;
 
-    serde_json::from_str::<Attestation>(&json_data)
-        .context("Failed to parse JSON attestation")
+    serde_json::from_str::<Attestation>(&json_data).context("Failed to parse JSON attestation")
 }
 
 #[cfg(test)]
@@ -423,7 +424,10 @@ mod tests {
 
         // Verify the result
         assert_eq!(result.attestation.builder_id, "test-builder");
-        assert_eq!(result.attestation.artifact_name, test_file.path().file_name().unwrap().to_str().unwrap());
+        assert_eq!(
+            result.attestation.artifact_name,
+            test_file.path().file_name().unwrap().to_str().unwrap()
+        );
         assert!(result.verification_info.is_none()); // JSON only should not have verification info
 
         // Verify the serialized output is valid JSON
@@ -475,7 +479,10 @@ mod tests {
 
         let verification_result = verify_attestation(verification_config)?;
         assert!(verification_result.is_valid);
-        assert_eq!(verification_result.attestation.builder_id, "envelope-builder");
+        assert_eq!(
+            verification_result.attestation.builder_id,
+            "envelope-builder"
+        );
 
         Ok(())
     }
@@ -516,8 +523,10 @@ mod tests {
 
         let verification_result = verify_attestation(verification_config)?;
         assert!(!verification_result.is_valid);
-        assert_ne!(verification_result.verification_details.computed_hash,
-                   verification_result.verification_details.expected_hash);
+        assert_ne!(
+            verification_result.verification_details.computed_hash,
+            verification_result.verification_details.expected_hash
+        );
 
         Ok(())
     }
@@ -537,7 +546,9 @@ mod tests {
             artifact_path: test_path,
             builder_id: "provided-key-builder".to_string(),
             output_format: OutputFormat::SealedEnvelope,
-            key_source: KeySource::Provided { signing_key: signing_key.clone() },
+            key_source: KeySource::Provided {
+                signing_key: Box::new(signing_key.clone()),
+            },
         };
 
         let result = create_signed_attestation(config)?;
@@ -567,7 +578,9 @@ mod tests {
             artifact_path: test_path,
             builder_id: "json-provided-key".to_string(),
             output_format: OutputFormat::JsonOnly,
-            key_source: KeySource::Provided { signing_key },
+            key_source: KeySource::Provided {
+                signing_key: Box::new(signing_key),
+            },
         };
 
         let result = create_signed_attestation(config)?;
@@ -610,7 +623,10 @@ mod tests {
 
         let verification_result = verify_attestation(verification_config)?;
         assert!(verification_result.is_valid);
-        assert_eq!(verification_result.attestation.builder_id, "force-json-test");
+        assert_eq!(
+            verification_result.attestation.builder_id,
+            "force-json-test"
+        );
 
         Ok(())
     }
@@ -639,7 +655,11 @@ mod tests {
 
         // Verify hash is correct SHA-256 format (64 hex chars)
         assert_eq!(result.attestation.artifact_hash.len(), 64);
-        assert!(result.attestation.artifact_hash.chars().all(|c| c.is_ascii_hexdigit()));
+        assert!(result
+            .attestation
+            .artifact_hash
+            .chars()
+            .all(|c| c.is_ascii_hexdigit()));
 
         // Verify timestamp is valid ISO 8601
         assert!(chrono::DateTime::parse_from_rfc3339(&result.attestation.timestamp).is_ok());
@@ -666,8 +686,10 @@ mod tests {
 
         let error_message = format!("{}", result.unwrap_err());
         // The error should mention either "Failed to read artifact" or "Failed to create attestation data"
-        assert!(error_message.contains("Failed to read artifact") ||
-                error_message.contains("Failed to create attestation data"));
+        assert!(
+            error_message.contains("Failed to read artifact")
+                || error_message.contains("Failed to create attestation data")
+        );
 
         Ok(())
     }
@@ -728,12 +750,22 @@ mod tests {
 
         // Check verification details
         assert!(verification_result.is_valid);
-        assert_eq!(verification_result.verification_details.artifact_size, test_content.len() as u64);
-        assert_eq!(verification_result.verification_details.computed_hash,
-                   verification_result.verification_details.expected_hash);
-        assert_eq!(verification_result.verification_details.expected_hash,
-                   result.attestation.artifact_hash);
-        assert!(verification_result.verification_details.envelope_verified.is_none()); // JSON mode
+        assert_eq!(
+            verification_result.verification_details.artifact_size,
+            test_content.len() as u64
+        );
+        assert_eq!(
+            verification_result.verification_details.computed_hash,
+            verification_result.verification_details.expected_hash
+        );
+        assert_eq!(
+            verification_result.verification_details.expected_hash,
+            result.attestation.artifact_hash
+        );
+        assert!(verification_result
+            .verification_details
+            .envelope_verified
+            .is_none()); // JSON mode
 
         Ok(())
     }

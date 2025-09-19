@@ -65,8 +65,7 @@ fn main() -> Result<()> {
 
     println!("● Computing artifact hash...");
 
-    let result = verify_attestation(config)
-        .context("Failed to verify attestation")?;
+    let result = verify_attestation(config).context("Failed to verify attestation")?;
 
     // Display results
     if result.is_valid {
@@ -75,10 +74,16 @@ fn main() -> Result<()> {
         println!("● Artifact Details:");
         println!("   • Name: {}", result.attestation.artifact_name);
         println!("   • Hash: {}...", &result.attestation.artifact_hash[..16]);
-        println!("   • Size: {} bytes", result.verification_details.artifact_size);
+        println!(
+            "   • Size: {} bytes",
+            result.verification_details.artifact_size
+        );
         println!();
         println!("● Provenance Information:");
-        println!("   • Source Commit: {}", result.attestation.source_commit_hash);
+        println!(
+            "   • Source Commit: {}",
+            result.attestation.source_commit_hash
+        );
         println!("   • Builder ID: {}", result.attestation.builder_id);
         println!("   • Created: {}", result.attestation.timestamp);
 
@@ -87,11 +92,21 @@ fn main() -> Result<()> {
             println!("● Cryptographic Verification:");
             println!("   • Hash Algorithm: SHA-256");
             println!("   • Full Hash: {}", result.attestation.artifact_hash);
-            println!("   • Computed Hash: {}", result.verification_details.computed_hash);
+            println!(
+                "   • Computed Hash: {}",
+                result.verification_details.computed_hash
+            );
             println!("   • Integrity: ✔ VERIFIED");
 
             if let Some(envelope_verified) = result.verification_details.envelope_verified {
-                println!("   • Envelope Signature: {}", if envelope_verified { "✔ VERIFIED" } else { "✖ FAILED" });
+                println!(
+                    "   • Envelope Signature: {}",
+                    if envelope_verified {
+                        "✔ VERIFIED"
+                    } else {
+                        "✖ FAILED"
+                    }
+                );
             }
         }
 
@@ -114,4 +129,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-

@@ -8,11 +8,12 @@
 
 [workspace]
 members = [
-    "trustedge-core", 
+    "trustedge-core",
+    "trustedge-attestation",
     "trustedge-receipts",
     "trustedge-wasm",
     "trustedge-pubky",
-    "trustedge-pubky-advanced", "trustedge-attestation",
+    "trustedge-pubky-advanced",
 ]
 resolver = "2"
 
