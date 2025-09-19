@@ -11,10 +11,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
-use trustedge_attestation::Attestation;
-
-#[cfg(feature = "envelope")]
-use trustedge_core::Envelope;
+use trustedge_attestation::{verify_attestation, VerificationConfig};
 
 /// Verify software attestation
 #[derive(Parser, Debug)]
@@ -48,73 +45,54 @@ fn main() -> Result<()> {
         println!();
     }
 
-    // Read the attestation
-    let attestation = if args.json_input {
-        // Read as JSON directly
-        println!("● Reading JSON attestation...");
-        let json_data = std::fs::read_to_string(&args.attestation_file).with_context(|| {
-            format!(
-                "Failed to read attestation file: {}",
-                args.attestation_file.display()
-            )
-        })?;
-
-        serde_json::from_str::<Attestation>(&json_data)
-            .context("Failed to parse JSON attestation")?
-    } else {
-        // Try to read as envelope first, fallback to JSON
-        #[cfg(feature = "envelope")]
-        {
-            println!("● Reading encrypted attestation envelope...");
-            match read_envelope_attestation(&args.attestation_file) {
-                Ok(attestation) => {
-                    println!("✔ Envelope verified and unsealed");
-                    attestation
-                }
-                Err(e) => {
-                    if args.verbose {
-                        println!("⚠ Envelope reading failed ({}), trying JSON fallback...", e);
-                    }
-                    read_json_attestation(&args.attestation_file)?
-                }
-            }
-        }
-
-        #[cfg(not(feature = "envelope"))]
-        {
-            println!("● Reading JSON attestation...");
-            read_json_attestation(&args.attestation_file)?
-        }
+    // Create verification configuration
+    let config = VerificationConfig {
+        artifact_path: args.artifact.clone(),
+        attestation_path: args.attestation_file.clone(),
+        force_json: args.json_input,
     };
 
-    // Verify the artifact hash
+    // Perform verification using the centralized library function
+    if args.json_input {
+        println!("● Reading JSON attestation...");
+    } else {
+        #[cfg(feature = "envelope")]
+        println!("● Reading attestation (trying envelope first, JSON fallback)...");
+
+        #[cfg(not(feature = "envelope"))]
+        println!("● Reading JSON attestation...");
+    }
+
     println!("● Computing artifact hash...");
-    let artifact_data = std::fs::read(&args.artifact)
-        .with_context(|| format!("Failed to read artifact: {}", args.artifact.display()))?;
 
-    use sha2::{Digest, Sha256};
-    let computed_hash = format!("{:x}", Sha256::digest(&artifact_data));
+    let result = verify_attestation(config)
+        .context("Failed to verify attestation")?;
 
-    // Compare hashes
-    if computed_hash == attestation.artifact_hash {
+    // Display results
+    if result.is_valid {
         println!("✔ VERIFICATION SUCCESSFUL");
         println!();
         println!("● Artifact Details:");
-        println!("   • Name: {}", attestation.artifact_name);
-        println!("   • Hash: {}...", &attestation.artifact_hash[..16]);
-        println!("   • Size: {} bytes", artifact_data.len());
+        println!("   • Name: {}", result.attestation.artifact_name);
+        println!("   • Hash: {}...", &result.attestation.artifact_hash[..16]);
+        println!("   • Size: {} bytes", result.verification_details.artifact_size);
         println!();
         println!("● Provenance Information:");
-        println!("   • Source Commit: {}", attestation.source_commit_hash);
-        println!("   • Builder ID: {}", attestation.builder_id);
-        println!("   • Created: {}", attestation.timestamp);
+        println!("   • Source Commit: {}", result.attestation.source_commit_hash);
+        println!("   • Builder ID: {}", result.attestation.builder_id);
+        println!("   • Created: {}", result.attestation.timestamp);
 
         if args.verbose {
             println!();
             println!("● Cryptographic Verification:");
             println!("   • Hash Algorithm: SHA-256");
-            println!("   • Full Hash: {}", attestation.artifact_hash);
+            println!("   • Full Hash: {}", result.attestation.artifact_hash);
+            println!("   • Computed Hash: {}", result.verification_details.computed_hash);
             println!("   • Integrity: ✔ VERIFIED");
+
+            if let Some(envelope_verified) = result.verification_details.envelope_verified {
+                println!("   • Envelope Signature: {}", if envelope_verified { "✔ VERIFIED" } else { "✖ FAILED" });
+            }
         }
 
         println!();
@@ -124,8 +102,8 @@ fn main() -> Result<()> {
         println!("✖ VERIFICATION FAILED");
         println!();
         println!("Hash mismatch detected:");
-        println!("  Expected: {}", attestation.artifact_hash);
-        println!("  Computed: {}", computed_hash);
+        println!("  Expected: {}", result.verification_details.expected_hash);
+        println!("  Computed: {}", result.verification_details.computed_hash);
         println!();
         println!("⚠ WARNING: Artifact may have been tampered with or corrupted!");
 
@@ -137,48 +115,3 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-#[cfg(feature = "envelope")]
-fn read_envelope_attestation(path: &PathBuf) -> Result<Attestation> {
-    use std::fs::File;
-    use std::io::BufReader;
-
-    #[derive(serde::Deserialize)]
-    struct AttestationFile {
-        envelope: Envelope,
-        #[allow(dead_code)]
-        verification_key: [u8; 32],
-        private_key: [u8; 32],
-    }
-
-    let file = File::open(path)
-        .with_context(|| format!("Failed to open attestation file: {}", path.display()))?;
-    let mut reader = BufReader::new(file);
-
-    let attestation_file: AttestationFile =
-        bincode::deserialize_from(&mut reader).context("Failed to read attestation file")?;
-
-    // Verify the envelope signature
-    if !attestation_file.envelope.verify() {
-        return Err(anyhow::anyhow!("Envelope signature verification failed"));
-    }
-
-    // Reconstruct the private key for unsealing
-    let private_key = ed25519_dalek::SigningKey::from_bytes(&attestation_file.private_key);
-
-    let payload = attestation_file
-        .envelope
-        .unseal(&private_key)
-        .context("Failed to unseal envelope")?;
-
-    let attestation: Attestation = serde_json::from_slice(&payload)
-        .context("Failed to parse attestation from envelope payload")?;
-
-    Ok(attestation)
-}
-
-fn read_json_attestation(path: &PathBuf) -> Result<Attestation> {
-    let json_data = std::fs::read_to_string(path)
-        .with_context(|| format!("Failed to read attestation file: {}", path.display()))?;
-
-    serde_json::from_str::<Attestation>(&json_data).context("Failed to parse JSON attestation")
-}

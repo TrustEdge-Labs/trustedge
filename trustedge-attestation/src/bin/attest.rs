@@ -11,10 +11,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
-use trustedge_attestation::create_attestation_data;
-
-#[cfg(feature = "envelope")]
-use trustedge_core::{backends::UniversalBackendRegistry, Envelope};
+use trustedge_attestation::{create_signed_attestation, AttestationConfig, OutputFormat, KeySource};
 
 /// Create software attestation (birth certificate)
 #[derive(Parser, Debug)]
@@ -64,116 +61,74 @@ fn main() -> Result<()> {
         println!("● Output: {}", args.output.display());
     }
 
-    // Step 1-3: Create the attestation data
+    // Determine output format
+    let output_format = if args.json_only {
+        OutputFormat::JsonOnly
+    } else {
+        OutputFormat::SealedEnvelope
+    };
+
+    // Create attestation configuration
+    let config = AttestationConfig {
+        artifact_path: args.file.clone(),
+        builder_id: args.builder_id.clone(),
+        output_format,
+        key_source: KeySource::Generate, // Demo mode with ephemeral keys
+    };
+
     println!("● Analyzing artifact and repository...");
-    let attestation = create_attestation_data(&args.file, &args.builder_id)
+
+    // Create the attestation using the centralized library function
+    let result = create_signed_attestation(config)
         .context("Failed to create attestation")?;
 
     if args.verbose {
         println!("✔ Attestation created:");
-        println!("   ● Artifact: {}", attestation.artifact_name);
-        println!("   ● Hash: {}...", &attestation.artifact_hash[..16]);
-        println!("   ● Commit: {}", attestation.source_commit_hash);
-        println!("   ● Timestamp: {}", attestation.timestamp);
+        println!("   ● Artifact: {}", result.attestation.artifact_name);
+        println!("   ● Hash: {}...", &result.attestation.artifact_hash[..16]);
+        println!("   ● Commit: {}", result.attestation.source_commit_hash);
+        println!("   ● Timestamp: {}", result.attestation.timestamp);
     }
 
-    // JSON-only output (for inspection/debugging)
+    // Write output to file
+    std::fs::write(&args.output, &result.serialized_output)
+        .with_context(|| format!("Failed to write output to {}", args.output.display()))?;
+
+    // Display appropriate success message
     if args.json_only {
-        let json = serde_json::to_string_pretty(&attestation)
-            .context("Failed to serialize attestation to JSON")?;
-
-        std::fs::write(&args.output, json)
-            .with_context(|| format!("Failed to write JSON to {}", args.output.display()))?;
-
         println!("✔ JSON attestation written to: {}", args.output.display());
-        return Ok(());
-    }
+    } else {
+        #[cfg(feature = "envelope")]
+        {
+            println!("✔ Sealed attestation created: {}", args.output.display());
+            println!("● Cryptographically signed software birth certificate");
 
-    // Step 4: Seal in TrustEdge Envelope (if envelope feature is enabled)
-    #[cfg(feature = "envelope")]
-    {
-        println!("● Creating cryptographic envelope...");
+            if args.verbose {
+                println!();
+                println!("● This attestation provides verifiable proof of:");
+                println!("   • Software artifact integrity (SHA-256 hash)");
+                println!("   • Source code provenance (Git commit)");
+                println!("   • Build environment details");
+                println!("   • Builder identity and timestamp");
+                println!();
+                println!("Use 'trustedge-verify' to verify this attestation.");
 
-        // Serialize attestation to JSON
-        let payload =
-            serde_json::to_vec(&attestation).context("Failed to serialize attestation")?;
-
-        // Create backend and keys
-        let registry = UniversalBackendRegistry::new();
-        let _backend = registry.get_backend(&args.backend).ok_or_else(|| {
-            let available_backends = registry.list_backend_names();
-            anyhow::anyhow!(
-                "Backend '{}' not available. Available backends: {:?}",
-                args.backend,
-                available_backends
-            )
-        })?;
-
-        // Generate ephemeral keys for demonstration
-        // In production, these would come from the backend
-        let mut csprng = rand::rngs::OsRng;
-        let signing_key = ed25519_dalek::SigningKey::generate(&mut csprng);
-
-        // For attestations, we use the same key as both sender and beneficiary
-        // This makes it a publicly verifiable signature rather than encrypted message
-        let beneficiary_key = signing_key.verifying_key();
-
-        // Create envelope
-        let envelope = Envelope::seal(&payload, &signing_key, &beneficiary_key)
-            .context("Failed to create envelope")?;
-
-        // Create a simple attestation file format that includes both the envelope
-        // and the private key needed for verification
-        #[derive(serde::Serialize)]
-        struct AttestationFile {
-            envelope: Envelope,
-            verification_key: [u8; 32], // Public key for verification
-            private_key: [u8; 32],      // Private key for unsealing (demo only!)
+                if let Some(verification_info) = &result.verification_info {
+                    println!();
+                    println!("● Verification Information (demo mode):");
+                    println!("   • Public Key: {}...", &verification_info.verification_key[..16]);
+                    if let Some(private_key) = &verification_info.private_key {
+                        println!("   • Private Key: {}... (included for demo)", &private_key[..16]);
+                    }
+                }
+            }
         }
 
-        let attestation_file = AttestationFile {
-            envelope,
-            verification_key: signing_key.verifying_key().to_bytes(),
-            private_key: signing_key.to_bytes(),
-        };
-
-        // Write to file using bincode serialization
-        let output_file = std::fs::File::create(&args.output)
-            .with_context(|| format!("Failed to create output file: {}", args.output.display()))?;
-        let mut writer = std::io::BufWriter::new(output_file);
-
-        bincode::serialize_into(&mut writer, &attestation_file)
-            .context("Failed to write attestation file")?;
-
-        use std::io::Write;
-        writer.flush()?;
-
-        println!("✔ Sealed attestation created: {}", args.output.display());
-        println!("● Cryptographically signed software birth certificate");
-
-        if args.verbose {
-            println!();
-            println!("● This attestation provides verifiable proof of:");
-            println!("   • Software artifact integrity (SHA-256 hash)");
-            println!("   • Source code provenance (Git commit)");
-            println!("   • Build environment details");
-            println!("   • Builder identity and timestamp");
-            println!();
-            println!("Use 'trustedge-verify' to verify this attestation.");
+        #[cfg(not(feature = "envelope"))]
+        {
+            println!("✔ Attestation written to: {}", args.output.display());
+            println!("● Note: Install with --features envelope for cryptographic sealing");
         }
-    }
-
-    #[cfg(not(feature = "envelope"))]
-    {
-        // Fallback: just write JSON if envelope feature is not enabled
-        let json = serde_json::to_string_pretty(&attestation)
-            .context("Failed to serialize attestation to JSON")?;
-
-        std::fs::write(&args.output, json)
-            .with_context(|| format!("Failed to write attestation to {}", args.output.display()))?;
-
-        println!("✔ Attestation written to: {}", args.output.display());
-        println!("● Note: Install with --features envelope for cryptographic sealing");
     }
 
     Ok(())

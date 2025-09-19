@@ -5,100 +5,108 @@ Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
-# TrustEdge Attestation - Software Birth Certificates
+# TrustEdge Attestation
 
-**Hardware-backed software attestation and provenance tracking for TrustEdge applications.**
+**Cryptographically signed software "birth certificates" for provenance and integrity verification.**
 
+[![Crates.io](https://img.shields.io/crates/v/trustedge-attestation.svg)](https://crates.io/crates/trustedge-attestation)
+[![Documentation](https://docs.rs/trustedge-attestation/badge.svg)](https://docs.rs/trustedge-attestation)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-[![Hardware](https://img.shields.io/badge/Hardware-YubiKey%20Supported-green.svg)](https://www.yubico.com/)
 
 ---
 
 ## Overview
 
-TrustEdge Attestation provides cryptographic "birth certificates" for software, enabling verifiable proof of:
+TrustEdge Attestation provides **cryptographically signed software attestations** - essentially "birth certificates" for software artifacts that prove their integrity, provenance, and build context. Think of it as a "Software Notary" that creates tamper-evident records of who built what, when, and from which source code.
 
-- **Source Code Integrity**: Git commit hashes and repository state
-- **Build Environment**: Compiler versions, dependencies, and build flags  
-- **Development Provenance**: Who built what, when, and where
-- **Hardware Attestation**: Cryptographic signatures from YubiKey or HSM
-- **Supply Chain Security**: Complete audit trail from source to binary
+### Key Features
 
-## Key Features
+- **🔐 Cryptographic Signatures**: Ed25519 digital signatures with hardware-backed keys
+- **📦 TrustEdge Envelope Integration**: Sealed attestations using the TrustEdge envelope system
+- **🌐 Git Integration**: Captures source commit hash and repository information
+- **🏗️ Build Provenance**: Records builder identity and timestamp
+- **🛡️ Tamper Evidence**: SHA-256 artifact hashing for integrity verification
+- **⚡ Simple API**: Single function call for complete attestation workflow
+- **🧪 Production Ready**: Comprehensive test suite with real cryptographic operations
 
-- **🔐 Hardware-Backed Signing**: Uses YubiKey PIV or HSM for cryptographic operations
-- **📋 Git Integration**: Captures commit info, branch state, and working directory status
-- **🏗️ Build Environment**: Records Rust/Cargo versions, target arch, and dependencies
-- **🔗 Provenance Chains**: Links attestations to form verifiable build history
-- **🛡️ Tamper Evidence**: Cryptographic proof of software integrity
-- **⚡ Easy Integration**: Simple builder pattern API
+---
 
 ## Architecture
 
-The attestation system follows TrustEdge's separation of concerns:
+The attestation system follows TrustEdge's clean separation of concerns:
 
+```mermaid
+graph TD
+    A[Software Notary] --> B[Attestation Business Logic]
+    B --> C[Security Guard]
+    C --> D[Cryptographic Envelope]
+
+    B --> E[Artifact Hash, Builder ID]
+    B --> F[Git Commit, Timestamp]
+    C --> G[Ed25519 Signatures]
+    C --> H[AES-256-GCM Encryption]
+
+    style A fill:#e1f5fe
+    style C fill:#fff3e0
+    style D fill:#e8f5e8
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Software Attestation                     │
-├─────────────────────────────────────────────────────────────┤
-│  Business Logic (trustedge-attestation)                    │
-│  • GitInfo capture                                         │
-│  • BuildInfo collection                                    │  
-│  • Metadata management                                     │
-│  • Attestation builder                                     │
-├─────────────────────────────────────────────────────────────┤
-│  Security Layer (trustedge-core)                           │
-│  • Hardware-backed signing                                 │
-│  • Envelope encryption                                     │
-│  • Cryptographic operations                                │
-│  • YubiKey/HSM integration                                 │
-└─────────────────────────────────────────────────────────────┘
-```
+
+### Components
+
+- **Attestation**: Simple data structure capturing artifact metadata and provenance
+- **Envelope**: Cryptographic wrapper providing signatures and tamper protection
+- **CLI Tools**: `trustedge-attest` and `trustedge-verify` for command-line operations
+- **Centralized API**: Single library functions for attestation creation and verification
 
 ## Quick Start
 
-### Basic Attestation
+### CLI Usage
 
-```rust
-use trustedge_attestation::{AttestationBuilder, GitInfo, BuildInfo};
-use trustedge_core::backends::UniversalBackendRegistry;
+```bash
+# Create an attestation for a binary
+trustedge-attest --file target/release/my-app \
+                 --builder-id "ci-job-12345" \
+                 --output my-app.trst \
+                 --verbose
 
-// Create hardware-backed attestation
-let registry = UniversalBackendRegistry::with_defaults()?;
-let backend = registry.get_backend("yubikey").unwrap();
-
-let attestation = AttestationBuilder::new()
-    .with_git_info(GitInfo::from_current_repo()?)
-    .with_build_info()?
-    .with_metadata("purpose".to_string(), "release-v1.0.0".to_string())
-    .sign_with_backend(backend, "attestation_key")?;
-
-println!("Software birth certificate created and hardware-signed");
+# Verify the attestation
+trustedge-verify --artifact target/release/my-app \
+                 --attestation-file my-app.trst \
+                 --verbose
 ```
 
-### Git Information Capture
+### Library Usage
 
 ```rust
-let git_info = GitInfo::from_current_repo()?;
+use trustedge_attestation::{
+    create_signed_attestation, verify_attestation,
+    AttestationConfig, VerificationConfig,
+    OutputFormat, KeySource
+};
+use std::path::PathBuf;
 
-println!("Commit: {}", git_info.commit_hash);
-println!("Branch: {}", git_info.branch);
-println!("Clean: {}", git_info.is_clean);
+// Create an attestation
+let config = AttestationConfig {
+    artifact_path: PathBuf::from("target/release/my-app"),
+    builder_id: "developer@company.com".to_string(),
+    output_format: OutputFormat::SealedEnvelope,
+    key_source: KeySource::Generate, // Demo mode
+};
 
-if !git_info.is_clean {
-    println!("Modified files: {:?}", git_info.modified_files);
-}
-```
+let result = create_signed_attestation(config)?;
 
-### Build Environment Capture
+// Write to disk
+std::fs::write("my-app.trst", result.serialized_output)?;
 
-```rust
-let build_info = BuildInfo::capture_current()?;
+// Verify the attestation
+let verification_config = VerificationConfig {
+    artifact_path: PathBuf::from("target/release/my-app"),
+    attestation_path: PathBuf::from("my-app.trst"),
+    force_json: false,
+};
 
-println!("Rust version: {}", build_info.rustc_version);
-println!("Target: {}", build_info.target_arch);
-println!("Profile: {}", build_info.profile);
-println!("Dependencies: {:#?}", build_info.dependencies);
+let verification = verify_attestation(verification_config)?;
+println!("Valid: {}", verification.is_valid);
 ```
 
 ## Use Cases
@@ -110,154 +118,174 @@ Create verifiable attestations for software releases:
 ```bash
 # Build and attest a release
 cargo build --release
-cargo run --bin create-attestation -- --profile release --purpose "v1.0.0-release"
+trustedge-attest --file target/release/my-app \
+                 --builder-id "release-v1.0.0" \
+                 --output releases/my-app-v1.0.0.trst
 ```
 
 ### CI/CD Integration
 
 Integrate into CI pipelines for automated attestation:
 
-```rust
-// In CI environment
-let attestation = AttestationBuilder::new()
-    .with_git_info(GitInfo::from_current_repo()?)
-    .with_build_info()?
-    .with_metadata("ci_job".to_string(), env::var("CI_JOB_ID")?)
-    .with_metadata("ci_runner".to_string(), env::var("CI_RUNNER_ID")?)
-    .sign_with_backend(backend, "ci_attestation_key")?;
+```bash
+#!/bin/bash
+# In CI environment
+trustedge-attest --file "$ARTIFACT_PATH" \
+                 --builder-id "ci-job-${CI_JOB_ID}" \
+                 --output "${ARTIFACT_PATH}.trst" \
+                 --verbose
+
+# Upload both artifact and attestation
+aws s3 cp "$ARTIFACT_PATH" s3://releases/
+aws s3 cp "${ARTIFACT_PATH}.trst" s3://releases/
 ```
 
 ### Supply Chain Verification
 
 Verify software provenance throughout the supply chain:
 
-```rust
-// Verify attestation integrity
-let is_valid = attestation.verify()?;
-println!("Attestation valid: {}", is_valid);
+```bash
+# Download artifact and attestation
+aws s3 cp s3://releases/my-app ./
+aws s3 cp s3://releases/my-app.trst ./
 
-// Check git state was clean
-let git_info = &attestation.git_info;
-if !git_info.is_clean {
-    eprintln!("Warning: Software built from dirty working directory");
-}
+# Verify integrity and provenance
+trustedge-verify --artifact my-app --attestation-file my-app.trst --verbose
 ```
 
 ## Data Structures
 
-### GitInfo
+### Attestation
 
-Captures complete Git repository state:
+The core attestation data structure:
 
 ```rust
-pub struct GitInfo {
-    pub commit_hash: String,        // Full SHA-1 commit hash
-    pub branch: String,             // Current branch name  
-    pub remote_url: Option<String>, // Repository remote URL
-    pub is_clean: bool,             // No uncommitted changes
-    pub modified_files: Vec<String>, // List of modified files
-    pub commit_timestamp: u64,      // Commit time (Unix epoch)
-    pub author: String,             // Commit author
-    pub message: String,            // Commit message
+pub struct Attestation {
+    /// SHA-256 hash of the artifact being attested to
+    pub artifact_hash: String,
+    /// Name of the artifact file
+    pub artifact_name: String,
+    /// Git commit hash from which the artifact was built
+    pub source_commit_hash: String,
+    /// Identifier for the entity that created the attestation
+    pub builder_id: String,
+    /// ISO 8601 timestamp of when the attestation was created
+    pub timestamp: String,
 }
 ```
 
-### BuildInfo
+### Configuration Types
 
-Records complete build environment:
+Configuration for creating attestations:
 
 ```rust
-pub struct BuildInfo {
-    pub rustc_version: String,                    // Rust compiler version
-    pub cargo_version: String,                    // Cargo version
-    pub target_arch: String,                      // Target architecture
-    pub profile: String,                          // debug/release
-    pub build_timestamp: u64,                     // Build time
-    pub build_env: HashMap<String, String>,       // Environment variables
-    pub dependencies: HashMap<String, String>,    // Cargo.lock versions
+pub struct AttestationConfig {
+    /// Path to the software artifact to attest
+    pub artifact_path: PathBuf,
+    /// Builder identifier (e.g., email, CI job ID)
+    pub builder_id: String,
+    /// Output format for the attestation
+    pub output_format: OutputFormat,
+    /// Source of cryptographic keys
+    pub key_source: KeySource,
 }
-```
 
-### SoftwareAttestation
+pub enum OutputFormat {
+    /// Plain JSON attestation (no cryptographic envelope)
+    JsonOnly,
+    /// Cryptographically sealed envelope with attestation
+    SealedEnvelope,
+}
 
-Complete attestation with cryptographic proof:
-
-```rust
-pub struct SoftwareAttestation {
-    pub git_info: GitInfo,                        // Repository state
-    pub build_info: BuildInfo,                    // Build environment
-    pub metadata: HashMap<String, String>,        // Custom metadata
-    pub created_at: u64,                          // Attestation timestamp
-    pub fingerprint: String,                      // Crypto fingerprint
+pub enum KeySource {
+    /// Generate ephemeral keys (demo mode)
+    Generate,
+    /// Use provided signing key (production mode)
+    Provided { signing_key: ed25519_dalek::SigningKey },
 }
 ```
 
 ## Security Model
 
-### Hardware Attestation
+### Cryptographic Operations
 
-- **YubiKey PIV**: Uses hardware-protected private keys for signing
-- **HSM Support**: Integrates with enterprise hardware security modules
-- **Key Isolation**: Signing keys never leave hardware security boundary
-
-### Cryptographic Verification
-
-- **Ed25519 Signatures**: Fast, secure digital signatures
-- **SHA-256 Hashing**: Cryptographic fingerprints of attestation data
-- **Envelope Encryption**: Attestations sealed using TrustEdge envelope system
+- **Ed25519 Signatures**: Fast, secure digital signatures for attestation integrity
+- **SHA-256 Hashing**: Cryptographic fingerprints of software artifacts
+- **AES-256-GCM Encryption**: Envelope encryption for sealed attestations
+- **Hardware Integration**: Support for YubiKey and HSM backends (via TrustEdge Core)
 
 ### Threat Mitigation
 
-- **Supply Chain Attacks**: Verifiable build provenance 
-- **Binary Tampering**: Cryptographic integrity validation
-- **Insider Threats**: Hardware-backed non-repudiation
-- **Build Environment Compromise**: Complete environment fingerprinting
+- **Supply Chain Attacks**: Verifiable build provenance linking artifacts to source commits
+- **Binary Tampering**: SHA-256 hashing detects any modification to artifacts
+- **Replay Attacks**: Timestamps and unique signatures prevent reuse
+- **Forgery**: Ed25519 signatures provide non-repudiation
 
-## Integration Examples
+## Command Line Interface
 
-### Cargo Build Hook
+### trustedge-attest
 
-```rust
-// In build.rs
-use trustedge_attestation::AttestationBuilder;
+Create cryptographically signed attestations:
 
-fn main() {
-    if env::var("TRUSTEDGE_ATTEST").is_ok() {
-        let attestation = AttestationBuilder::new()
-            .with_git_info(GitInfo::from_current_repo().unwrap())
-            .with_build_info().unwrap()
-            .sign_with_backend(get_backend(), "build_key").unwrap();
-            
-        // Save attestation alongside binary
-        fs::write("target/attestation.json", serde_json::to_string(&attestation)?)?;
-    }
-}
+```bash
+Usage: trustedge-attest [OPTIONS] --file <FILE> --builder-id <BUILDER_ID> --output <OUTPUT>
+
+Options:
+  -f, --file <FILE>              Path to the software artifact to attest
+  -b, --builder-id <BUILDER_ID>  Builder identifier (e.g., email, CI job ID)
+  -o, --output <OUTPUT>          Output file for the attestation (.trst file)
+      --backend <BACKEND>        Key management backend [default: software_hsm]
+      --key-id <KEY_ID>          Key ID to use for signing [default: attestation_key]
+      --use-keyring              Use keyring backend
+  -v, --verbose                  Show detailed progress information
+      --json-only                Output JSON attestation without envelope
 ```
 
-### Runtime Verification
+### trustedge-verify
 
-```rust
-// Verify software on startup
-fn verify_self() -> Result<()> {
-    let attestation_data = fs::read_to_string("attestation.json")?;
-    let attestation: SoftwareAttestation = serde_json::from_str(&attestation_data)?;
-    
-    if !attestation.verify()? {
-        return Err(anyhow!("Software attestation verification failed"));
-    }
-    
-    println!("✔ Software attestation verified");
-    Ok(())
-}
+Verify attestations against artifacts:
+
+```bash
+Usage: trustedge-verify [OPTIONS] --artifact <ARTIFACT> --attestation-file <ATTESTATION_FILE>
+
+Options:
+  -a, --artifact <ARTIFACT>                  Path to the software artifact to verify
+  -t, --attestation-file <ATTESTATION_FILE>  Path to the attestation file (.trst or .json)
+  -v, --verbose                              Show detailed verification information
+      --json-input                           Treat attestation file as raw JSON
 ```
 
-## Future Roadmap
+## API Reference
 
-- **Reproducible Builds**: Deterministic build verification
-- **SLSA Framework**: Compliance with SLSA provenance standards  
-- **Container Attestation**: Docker/OCI image attestation
-- **SBOM Integration**: Software Bill of Materials support
-- **Post-Quantum**: Algorithm agility for future crypto standards
+### Main Functions
+
+```rust
+/// Create a cryptographically signed software attestation
+pub fn create_signed_attestation(config: AttestationConfig) -> Result<AttestationResult>
+
+/// Verify a software attestation against an artifact
+pub fn verify_attestation(config: VerificationConfig) -> Result<VerificationResult>
+```
+
+See the [API documentation](https://docs.rs/trustedge-attestation) for complete details.
+
+## Installation
+
+Add to your `Cargo.toml`:
+
+```toml
+[dependencies]
+trustedge-attestation = "0.1"
+
+# For envelope features (cryptographic sealing)
+trustedge-attestation = { version = "0.1", features = ["envelope"] }
+```
+
+Or install the CLI tools:
+
+```bash
+cargo install trustedge-attestation --features envelope
+```
 
 ---
 

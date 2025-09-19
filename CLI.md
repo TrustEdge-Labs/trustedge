@@ -201,6 +201,68 @@ Live audio captures store the original audio parameters in the encrypted envelop
 
 ---
 
+## Software Attestation Commands
+
+TrustEdge provides tools for creating and verifying cryptographically signed software "birth certificates" that prove artifact integrity and provenance.
+
+### trustedge-attest
+
+Create cryptographically signed attestations for software artifacts:
+
+```bash
+# Basic usage
+trustedge-attest --file target/release/my-app \
+                 --builder-id "developer@company.com" \
+                 --output my-app.trst
+
+# CI/CD usage
+trustedge-attest --file "$ARTIFACT_PATH" \
+                 --builder-id "ci-job-${CI_JOB_ID}" \
+                 --output "${ARTIFACT_PATH}.trst" \
+                 --verbose
+
+# JSON-only output (for inspection)
+trustedge-attest --file my-binary \
+                 --builder-id "debug-build" \
+                 --output attestation.json \
+                 --json-only
+```
+
+### trustedge-verify
+
+Verify attestations against artifacts:
+
+```bash
+# Basic verification
+trustedge-verify --artifact target/release/my-app \
+                 --attestation-file my-app.trst
+
+# Verbose verification with details
+trustedge-verify --artifact my-binary \
+                 --attestation-file my-binary.trst \
+                 --verbose
+
+# Force JSON input mode
+trustedge-verify --artifact my-app \
+                 --attestation-file attestation.json \
+                 --json-input
+```
+
+### Attestation Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `-f, --file <FILE>` | Path to the software artifact to attest | `--file target/release/my-app` |
+| `-b, --builder-id <BUILDER_ID>` | Builder identifier (email, CI job ID, etc.) | `--builder-id "ci-job-12345"` |
+| `-o, --output <OUTPUT>` | Output file for the attestation (.trst file) | `--output my-app.trst` |
+| `-a, --artifact <ARTIFACT>` | Path to the software artifact to verify | `--artifact my-binary` |
+| `-t, --attestation-file <FILE>` | Path to the attestation file (.trst or .json) | `--attestation-file my-app.trst` |
+| `--json-only` | Output JSON attestation without envelope | `--json-only` |
+| `--json-input` | Treat attestation file as raw JSON (not envelope) | `--json-input` |
+| `-v, --verbose` | Show detailed progress/verification information | `--verbose` |
+
+---
+
 ## Network Operations
 
 TrustEdge supports secure client-server operations with mutual authentication and robust connection handling.

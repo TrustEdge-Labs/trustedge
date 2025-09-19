@@ -59,6 +59,7 @@ TrustEdge is organized as a Cargo workspace with specialized crates:
 ```
 trustedge/
 ├── trustedge-core/               # Core cryptographic library and CLI tools
+├── trustedge-attestation/        # Software attestation and provenance system
 ├── trustedge-receipts/           # Digital receipt system with ownership chains
 ├── trustedge-wasm/               # WebAssembly bindings for browser integration
 ├── trustedge-pubky/              # Pubky network adapter for decentralized keys
@@ -71,6 +72,7 @@ trustedge/
 | Crate | Purpose | Documentation |
 |-------|---------|---------------|
 | **trustedge-core** | Core cryptographic library with envelope encryption | [Core Documentation](trustedge-core/) |
+| **trustedge-attestation** | Software attestation and provenance tracking with cryptographic "birth certificates" | [Attestation Documentation](trustedge-attestation/) |
 | **trustedge-receipts** | Digital receipt system with cryptographic ownership transfer | [Receipt Documentation](trustedge-receipts/) |
 | **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | [WASM Documentation](trustedge-wasm/) |
 | **trustedge-pubky** | Clean Pubky network adapter for decentralized key discovery | [Pubky Documentation](trustedge-pubky/) |
