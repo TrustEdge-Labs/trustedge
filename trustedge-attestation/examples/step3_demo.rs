@@ -6,7 +6,6 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-
 use anyhow::Result;
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use rand::rngs::OsRng;
