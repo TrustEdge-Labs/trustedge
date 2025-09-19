@@ -52,9 +52,13 @@ fn main() -> Result<()> {
     let attestation = if args.json_input {
         // Read as JSON directly
         println!("● Reading JSON attestation...");
-        let json_data = std::fs::read_to_string(&args.attestation_file)
-            .with_context(|| format!("Failed to read attestation file: {}", args.attestation_file.display()))?;
-        
+        let json_data = std::fs::read_to_string(&args.attestation_file).with_context(|| {
+            format!(
+                "Failed to read attestation file: {}",
+                args.attestation_file.display()
+            )
+        })?;
+
         serde_json::from_str::<Attestation>(&json_data)
             .context("Failed to parse JSON attestation")?
     } else {
@@ -75,7 +79,7 @@ fn main() -> Result<()> {
                 }
             }
         }
-        
+
         #[cfg(not(feature = "envelope"))]
         {
             println!("● Reading JSON attestation...");
@@ -87,8 +91,8 @@ fn main() -> Result<()> {
     println!("● Computing artifact hash...");
     let artifact_data = std::fs::read(&args.artifact)
         .with_context(|| format!("Failed to read artifact: {}", args.artifact.display()))?;
-    
-    use sha2::{Sha256, Digest};
+
+    use sha2::{Digest, Sha256};
     let computed_hash = format!("{:x}", Sha256::digest(&artifact_data));
 
     // Compare hashes
@@ -104,7 +108,7 @@ fn main() -> Result<()> {
         println!("   • Source Commit: {}", attestation.source_commit_hash);
         println!("   • Builder ID: {}", attestation.builder_id);
         println!("   • Created: {}", attestation.timestamp);
-        
+
         if args.verbose {
             println!();
             println!("● Cryptographic Verification:");
@@ -112,7 +116,7 @@ fn main() -> Result<()> {
             println!("   • Full Hash: {}", attestation.artifact_hash);
             println!("   • Integrity: ✔ VERIFIED");
         }
-        
+
         println!();
         println!("✔ This software artifact is AUTHENTICATED and VERIFIED");
         println!("   The artifact matches its cryptographic birth certificate.");
@@ -124,8 +128,10 @@ fn main() -> Result<()> {
         println!("  Computed: {}", computed_hash);
         println!();
         println!("⚠ WARNING: Artifact may have been tampered with or corrupted!");
-        
-        return Err(anyhow::anyhow!("Artifact hash mismatch - integrity check failed"));
+
+        return Err(anyhow::anyhow!(
+            "Artifact hash mismatch - integrity check failed"
+        ));
     }
 
     Ok(())
@@ -147,9 +153,9 @@ fn read_envelope_attestation(path: &PathBuf) -> Result<Attestation> {
     let file = File::open(path)
         .with_context(|| format!("Failed to open attestation file: {}", path.display()))?;
     let mut reader = BufReader::new(file);
-    
-    let attestation_file: AttestationFile = bincode::deserialize_from(&mut reader)
-        .context("Failed to read attestation file")?;
+
+    let attestation_file: AttestationFile =
+        bincode::deserialize_from(&mut reader).context("Failed to read attestation file")?;
 
     // Verify the envelope signature
     if !attestation_file.envelope.verify() {
@@ -159,7 +165,9 @@ fn read_envelope_attestation(path: &PathBuf) -> Result<Attestation> {
     // Reconstruct the private key for unsealing
     let private_key = ed25519_dalek::SigningKey::from_bytes(&attestation_file.private_key);
 
-    let payload = attestation_file.envelope.unseal(&private_key)
+    let payload = attestation_file
+        .envelope
+        .unseal(&private_key)
         .context("Failed to unseal envelope")?;
 
     let attestation: Attestation = serde_json::from_slice(&payload)
@@ -171,7 +179,6 @@ fn read_envelope_attestation(path: &PathBuf) -> Result<Attestation> {
 fn read_json_attestation(path: &PathBuf) -> Result<Attestation> {
     let json_data = std::fs::read_to_string(path)
         .with_context(|| format!("Failed to read attestation file: {}", path.display()))?;
-    
-    serde_json::from_str::<Attestation>(&json_data)
-        .context("Failed to parse JSON attestation")
+
+    serde_json::from_str::<Attestation>(&json_data).context("Failed to parse JSON attestation")
 }

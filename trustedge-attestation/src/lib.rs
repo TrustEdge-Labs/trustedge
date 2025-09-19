@@ -26,16 +26,13 @@ pub struct Attestation {
 }
 
 /// Create a software attestation from an artifact file
-pub fn create_attestation_data(
-    artifact_path: &Path,
-    builder_id: &str,
-) -> Result<Attestation> {
+pub fn create_attestation_data(artifact_path: &Path, builder_id: &str) -> Result<Attestation> {
     use sha2::{Digest, Sha256};
 
     // 1. Hash the artifact
     let artifact_data = std::fs::read(artifact_path)
         .with_context(|| format!("Failed to read artifact: {}", artifact_path.display()))?;
-    
+
     let artifact_hash = format!("{:x}", Sha256::digest(&artifact_data));
 
     // 2. Get commit hash (simplified - just use a placeholder if not in git repo)
@@ -44,7 +41,8 @@ pub fn create_attestation_data(
     // 3. Create attestation
     let attestation = Attestation {
         artifact_hash,
-        artifact_name: artifact_path.file_name()
+        artifact_name: artifact_path
+            .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("unknown")
             .to_string(),
@@ -60,13 +58,12 @@ pub fn create_attestation_data(
 fn get_git_commit_hash() -> Result<String> {
     use git2::Repository;
 
-    let repo = Repository::discover(".")
-        .context("Failed to find Git repository")?;
+    let repo = Repository::discover(".").context("Failed to find Git repository")?;
 
-    let head = repo.head()
-        .context("Failed to get HEAD reference")?;
+    let head = repo.head().context("Failed to get HEAD reference")?;
 
-    let commit = head.peel_to_commit()
+    let commit = head
+        .peel_to_commit()
         .context("Failed to get commit from HEAD")?;
 
     Ok(commit.id().to_string())

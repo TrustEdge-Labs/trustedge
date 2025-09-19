@@ -14,7 +14,7 @@ use std::path::PathBuf;
 use trustedge_attestation::create_attestation_data;
 
 #[cfg(feature = "envelope")]
-use trustedge_core::{Envelope, backends::UniversalBackendRegistry};
+use trustedge_core::{backends::UniversalBackendRegistry, Envelope};
 
 /// Create software attestation (birth certificate)
 #[derive(Parser, Debug)]
@@ -81,10 +81,10 @@ fn main() -> Result<()> {
     if args.json_only {
         let json = serde_json::to_string_pretty(&attestation)
             .context("Failed to serialize attestation to JSON")?;
-        
+
         std::fs::write(&args.output, json)
             .with_context(|| format!("Failed to write JSON to {}", args.output.display()))?;
-        
+
         println!("✔ JSON attestation written to: {}", args.output.display());
         return Ok(());
     }
@@ -93,28 +93,27 @@ fn main() -> Result<()> {
     #[cfg(feature = "envelope")]
     {
         println!("● Creating cryptographic envelope...");
-        
+
         // Serialize attestation to JSON
-        let payload = serde_json::to_vec(&attestation)
-            .context("Failed to serialize attestation")?;
+        let payload =
+            serde_json::to_vec(&attestation).context("Failed to serialize attestation")?;
 
         // Create backend and keys
         let registry = UniversalBackendRegistry::new();
-        let _backend = registry.get_backend(&args.backend)
-            .ok_or_else(|| {
-                let available_backends = registry.list_backend_names();
-                anyhow::anyhow!(
-                    "Backend '{}' not available. Available backends: {:?}", 
-                    args.backend, 
-                    available_backends
-                )
-            })?;
+        let _backend = registry.get_backend(&args.backend).ok_or_else(|| {
+            let available_backends = registry.list_backend_names();
+            anyhow::anyhow!(
+                "Backend '{}' not available. Available backends: {:?}",
+                args.backend,
+                available_backends
+            )
+        })?;
 
         // Generate ephemeral keys for demonstration
         // In production, these would come from the backend
         let mut csprng = rand::rngs::OsRng;
         let signing_key = ed25519_dalek::SigningKey::generate(&mut csprng);
-        
+
         // For attestations, we use the same key as both sender and beneficiary
         // This makes it a publicly verifiable signature rather than encrypted message
         let beneficiary_key = signing_key.verifying_key();
@@ -129,7 +128,7 @@ fn main() -> Result<()> {
         struct AttestationFile {
             envelope: Envelope,
             verification_key: [u8; 32], // Public key for verification
-            private_key: [u8; 32], // Private key for unsealing (demo only!)
+            private_key: [u8; 32],      // Private key for unsealing (demo only!)
         }
 
         let attestation_file = AttestationFile {
@@ -142,16 +141,16 @@ fn main() -> Result<()> {
         let output_file = std::fs::File::create(&args.output)
             .with_context(|| format!("Failed to create output file: {}", args.output.display()))?;
         let mut writer = std::io::BufWriter::new(output_file);
-        
+
         bincode::serialize_into(&mut writer, &attestation_file)
             .context("Failed to write attestation file")?;
-        
+
         use std::io::Write;
         writer.flush()?;
 
         println!("✔ Sealed attestation created: {}", args.output.display());
         println!("● Cryptographically signed software birth certificate");
-        
+
         if args.verbose {
             println!();
             println!("● This attestation provides verifiable proof of:");
@@ -169,10 +168,10 @@ fn main() -> Result<()> {
         // Fallback: just write JSON if envelope feature is not enabled
         let json = serde_json::to_string_pretty(&attestation)
             .context("Failed to serialize attestation to JSON")?;
-        
+
         std::fs::write(&args.output, json)
             .with_context(|| format!("Failed to write attestation to {}", args.output.display()))?;
-        
+
         println!("✔ Attestation written to: {}", args.output.display());
         println!("● Note: Install with --features envelope for cryptographic sealing");
     }
