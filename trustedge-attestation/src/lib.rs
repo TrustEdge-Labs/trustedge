@@ -8,7 +8,7 @@
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 /// Simple software attestation - the "birth certificate" payload
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -25,49 +25,6 @@ pub struct Attestation {
     pub timestamp: String,
 }
 
-/// Create a software attestation from an artifact file
-pub fn create_attestation_data(artifact_path: &Path, builder_id: &str) -> Result<Attestation> {
-    use sha2::{Digest, Sha256};
-
-    // 1. Hash the artifact
-    let artifact_data = std::fs::read(artifact_path)
-        .with_context(|| format!("Failed to read artifact: {}", artifact_path.display()))?;
-
-    let artifact_hash = format!("{:x}", Sha256::digest(&artifact_data));
-
-    // 2. Get commit hash (simplified - just use a placeholder if not in git repo)
-    let source_commit_hash = get_git_commit_hash().unwrap_or_else(|_| "unknown".to_string());
-
-    // 3. Create attestation
-    let attestation = Attestation {
-        artifact_hash,
-        artifact_name: artifact_path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("unknown")
-            .to_string(),
-        source_commit_hash,
-        builder_id: builder_id.to_string(),
-        timestamp: chrono::Utc::now().to_rfc3339(),
-    };
-
-    Ok(attestation)
-}
-
-/// Get the current Git commit hash
-fn get_git_commit_hash() -> Result<String> {
-    use git2::Repository;
-
-    let repo = Repository::discover(".").context("Failed to find Git repository")?;
-
-    let head = repo.head().context("Failed to get HEAD reference")?;
-
-    let commit = head
-        .peel_to_commit()
-        .context("Failed to get commit from HEAD")?;
-
-    Ok(commit.id().to_string())
-}
 
 /// Configuration for creating signed attestations
 #[derive(Debug)]
@@ -160,11 +117,48 @@ pub struct VerificationInfo {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 pub fn create_signed_attestation(config: AttestationConfig) -> Result<AttestationResult> {
-    // Step 1: Create the attestation data
-    let attestation = create_attestation_data(&config.artifact_path, &config.builder_id)
-        .context("Failed to create attestation data")?;
+    use sha2::{Digest, Sha256};
 
-    // Step 2: Handle output format
+    // Step 1: Read and hash the artifact
+    let artifact_data = std::fs::read(&config.artifact_path).with_context(|| {
+        format!(
+            "Failed to read artifact: {}",
+            config.artifact_path.display()
+        )
+    })?;
+
+    let artifact_hash = format!("{:x}", Sha256::digest(&artifact_data));
+
+    // Step 2: Get Git commit hash (use placeholder if not in git repo)
+    let source_commit_hash = {
+        use git2::Repository;
+
+        match Repository::discover(".") {
+            Ok(repo) => {
+                repo.head()
+                    .and_then(|head| head.peel_to_commit())
+                    .map(|commit| commit.id().to_string())
+                    .unwrap_or_else(|_| "unknown".to_string())
+            }
+            Err(_) => "unknown".to_string(),
+        }
+    };
+
+    // Step 3: Create the attestation data structure
+    let attestation = Attestation {
+        artifact_hash,
+        artifact_name: config
+            .artifact_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("unknown")
+            .to_string(),
+        source_commit_hash,
+        builder_id: config.builder_id,
+        timestamp: chrono::Utc::now().to_rfc3339(),
+    };
+
+    // Step 4: Handle output format
     match config.output_format {
         OutputFormat::JsonOnly => {
             let serialized_output = serde_json::to_vec_pretty(&attestation)

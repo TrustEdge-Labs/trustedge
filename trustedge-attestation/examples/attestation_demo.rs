@@ -4,8 +4,11 @@
 
 use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
 use tempfile::tempdir;
-use trustedge_attestation::{create_attestation_data, Attestation};
+use trustedge_attestation::{
+    create_signed_attestation, AttestationConfig, KeySource, OutputFormat,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("● TrustEdge Software Attestation Demo");
@@ -21,35 +24,53 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("● Created demo artifact: {}", artifact_path.display());
 
-    // Method 1: Use the create_attestation_data function (recommended)
-    println!("\n● Creating attestation using create_attestation_data()...");
-    let attestation = create_attestation_data(&artifact_path, "demo-builder@example.com")?;
-
-    println!("✔ Created software birth certificate:");
-    println!("● Artifact: {}", attestation.artifact_name);
-    println!("● Hash: {}...", &attestation.artifact_hash[..16]);
-    println!("● Commit: {}", attestation.source_commit_hash);
-    println!("● Builder: {}", attestation.builder_id);
-    println!("● Timestamp: {}", attestation.timestamp);
-
-    // Method 2: Manual construction for advanced use cases
-    println!("\n● Manual construction example...");
-    use sha2::{Digest, Sha256};
-    let manual_hash = format!("{:x}", Sha256::digest(std::fs::read(&artifact_path)?));
-    let manual_attestation = Attestation {
-        artifact_hash: manual_hash,
-        artifact_name: "manually-created-demo.bin".to_string(),
-        source_commit_hash: "manual123def456789".to_string(),
-        builder_id: "manual-builder@example.com".to_string(),
-        timestamp: chrono::Utc::now().to_rfc3339(),
+    // Method 1: Create JSON attestation (recommended for inspection)
+    println!("\n● Creating JSON attestation...");
+    let json_config = AttestationConfig {
+        artifact_path: artifact_path.clone(),
+        builder_id: "demo-builder@example.com".to_string(),
+        output_format: OutputFormat::JsonOnly,
+        key_source: KeySource::Generate,
     };
 
-    println!("✔ Manual attestation created:");
-    println!("● Hash: {}...", &manual_attestation.artifact_hash[..16]);
+    let json_result = create_signed_attestation(json_config)?;
 
-    println!("● This attestation provides cryptographic proof of:");
-    println!("  • Software artifact integrity (hash verification)");
-    println!("  • Source code provenance (Git commit)");
+    println!("✔ Created software birth certificate:");
+    println!("● Artifact: {}", json_result.attestation.artifact_name);
+    println!("● Hash: {}...", &json_result.attestation.artifact_hash[..16]);
+    println!("● Commit: {}", json_result.attestation.source_commit_hash);
+    println!("● Builder: {}", json_result.attestation.builder_id);
+    println!("● Timestamp: {}", json_result.attestation.timestamp);
+
+    // Method 2: Create sealed envelope attestation (recommended for production)
+    #[cfg(feature = "envelope")]
+    {
+        println!("\n● Creating sealed envelope attestation...");
+        let envelope_config = AttestationConfig {
+            artifact_path: PathBuf::from(artifact_path),
+            builder_id: "demo-builder@example.com".to_string(),
+            output_format: OutputFormat::SealedEnvelope,
+            key_source: KeySource::Generate,
+        };
+
+        let envelope_result = create_signed_attestation(envelope_config)?;
+
+        println!("✔ Created sealed attestation:");
+        println!("● Size: {} bytes", envelope_result.serialized_output.len());
+        if let Some(verification_info) = &envelope_result.verification_info {
+            println!("● Public Key: {}...", &verification_info.verification_key[..16]);
+        }
+    }
+
+    #[cfg(not(feature = "envelope"))]
+    {
+        println!("\n● Envelope feature not enabled - only JSON attestations available");
+        println!("● Enable with: cargo run --example attestation_demo --features envelope");
+    }
+
+    println!("\n● This attestation provides cryptographic proof of:");
+    println!("  • Software artifact integrity (SHA-256 hash verification)");
+    println!("  • Source code provenance (Git commit hash)");
     println!("  • Build environment details");
     println!("  • Builder identity and timestamp");
 
