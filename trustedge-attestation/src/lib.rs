@@ -532,6 +532,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "envelope")]
     fn test_provided_key_source() -> Result<()> {
         // Test production mode with provided keys
         let mut test_file = NamedTempFile::new()?;
@@ -560,6 +561,40 @@ mod tests {
         } else {
             panic!("Expected verification info for envelope output");
         }
+
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(not(feature = "envelope"))]
+    fn test_provided_key_source_json_fallback() -> Result<()> {
+        // Test production mode with provided keys when envelope feature is disabled
+        let mut test_file = NamedTempFile::new()?;
+        test_file.write_all(b"test with provided key")?;
+        let test_path = test_file.path().to_path_buf();
+
+        // Generate a specific key for testing
+        let mut csprng = rand::rngs::OsRng;
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut csprng);
+
+        let config = AttestationConfig {
+            artifact_path: test_path,
+            builder_id: "provided-key-builder".to_string(),
+            output_format: OutputFormat::SealedEnvelope, // Should fallback to JSON
+            key_source: KeySource::Provided {
+                signing_key: Box::new(signing_key),
+            },
+        };
+
+        let result = create_signed_attestation(config)?;
+
+        // When envelope feature is disabled, should fallback to JSON with no verification info
+        assert!(result.verification_info.is_none());
+        assert_eq!(result.attestation.builder_id, "provided-key-builder");
+
+        // Verify the serialized output is valid JSON
+        let parsed: Attestation = serde_json::from_slice(&result.serialized_output)?;
+        assert_eq!(parsed, result.attestation);
 
         Ok(())
     }
