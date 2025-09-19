@@ -90,7 +90,7 @@ impl AudioChunk {
         channels: u16,
         sequence: u64,
     ) -> Result<Self> {
-        if bytes.len() % 4 != 0 {
+        if !bytes.len().is_multiple_of(4) {
             return Err(anyhow!("Invalid byte length for f32 samples"));
         }
 
