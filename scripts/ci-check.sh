@@ -8,26 +8,26 @@ set -e
 echo "● Running pre-commit CI checks..."
 echo
 
-# Change to the trustedge-core directory
-cd "$(dirname "$0")/../trustedge-core"
+# Change to the project root directory
+cd "$(dirname "$0")/.."
 
-echo "■ Step 1: Checking code formatting..."
-cargo fmt --check
+echo "■ Step 1: Checking code formatting for all crates..."
+cargo fmt --check --all
 echo "✔ Formatting check passed"
 echo
 
-echo "■ Step 2: Running clippy with strict warnings..."
-cargo clippy --all-targets --no-default-features -- -D warnings
+echo "■ Step 2: Running clippy with strict warnings for all crates..."
+cargo clippy --all-targets --all-features -- -D warnings
 echo "✔ Clippy check passed"
 echo
 
-echo "■ Step 3: Building all targets..."
-cargo build --all-targets
+echo "■ Step 3: Building all targets for all crates..."
+cargo build --all-targets --all-features
 echo "✔ Build check passed"
 echo
 
-echo "■ Step 4: Running all tests..."
-cargo test
+echo "■ Step 4: Running all tests for all crates..."
+cargo test --all-features
 echo "✔ Test check passed"
 echo
 

@@ -2,11 +2,10 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: trustedge — Privacy and trust at the edge.
 
-use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::Write;
 use tempfile::tempdir;
-use trustedge_attestation::Attestation;
+use trustedge_attestation::{create_attestation_data, Attestation};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("● TrustEdge Software Attestation Demo");
@@ -22,24 +21,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("● Created demo artifact: {}", artifact_path.display());
 
-    // Create attestation using direct construction
-    let artifact_hash = Sha256::digest(std::fs::read(&artifact_path)?)
-        .iter()
-        .map(|b| format!("{:02x}", b))
-        .collect::<String>();
-
-    let attestation = Attestation {
-        artifact_hash,
-        artifact_name: artifact_path
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string(),
-        source_commit_hash: "abc123def456789".to_string(),
-        builder_id: "demo-builder@example.com".to_string(),
-        timestamp: chrono::Utc::now().to_rfc3339(),
-    };
+    // Method 1: Use the create_attestation_data function (recommended)
+    println!("\n● Creating attestation using create_attestation_data()...");
+    let attestation = create_attestation_data(&artifact_path, "demo-builder@example.com")?;
 
     println!("✔ Created software birth certificate:");
     println!("● Artifact: {}", attestation.artifact_name);
@@ -48,15 +32,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("● Builder: {}", attestation.builder_id);
     println!("● Timestamp: {}", attestation.timestamp);
 
-    println!("\n● This attestation provides cryptographic proof of:");
+    // Method 2: Manual construction for advanced use cases
+    println!("\n● Manual construction example...");
+    use sha2::{Digest, Sha256};
+    let manual_hash = format!("{:x}", Sha256::digest(std::fs::read(&artifact_path)?));
+    let manual_attestation = Attestation {
+        artifact_hash: manual_hash,
+        artifact_name: "manually-created-demo.bin".to_string(),
+        source_commit_hash: "manual123def456789".to_string(),
+        builder_id: "manual-builder@example.com".to_string(),
+        timestamp: chrono::Utc::now().to_rfc3339(),
+    };
+
+    println!("✔ Manual attestation created:");
+    println!("● Hash: {}...", &manual_attestation.artifact_hash[..16]);
+
+    println!("● This attestation provides cryptographic proof of:");
     println!("  • Software artifact integrity (hash verification)");
     println!("  • Source code provenance (Git commit)");
     println!("  • Build environment details");
     println!("  • Builder identity and timestamp");
 
-    println!("\n✔ Step 3 implementation complete!");
-    println!("The create_attestation function provides hardware-backed");
-    println!("'birth certificates' for software artifacts.");
+    println!("\n✔ TrustEdge attestation demo complete!");
+    println!("Use the CLI tools (trustedge-attest/trustedge-verify) for production use.");
 
     Ok(())
 }
