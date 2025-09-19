@@ -1,3 +1,7 @@
+// Copyright (c) 2025 TRUSTEDGE LABS LLC
+// MPL-2.0: https://mozilla.org/MPL/2.0/
+// Project: trustedge — Privacy and trust at the edge.
+
 use sha2::{Digest, Sha256};
 use std::fs::File;
 use std::io::Write;
@@ -5,7 +9,7 @@ use tempfile::tempdir;
 use trustedge_attestation::Attestation;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🔐TrustEdgeSoftwareAttestationDemo");
+    println!("● TrustEdge Software Attestation Demo");
     println!("=====================================");
 
     // Create a temporary artifact
@@ -16,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     file.flush()?;
     drop(file);
 
-    println!("📁Createddemoartifact:{}", artifact_path.display());
+    println!("● Created demo artifact: {}", artifact_path.display());
 
     // Create attestation using direct construction
     let artifact_hash = Sha256::digest(std::fs::read(&artifact_path)?)
@@ -37,22 +41,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         timestamp: chrono::Utc::now().to_rfc3339(),
     };
 
-    println!("✅Createdsoftwarebirthcertificate:");
-    println!("📦Artifact:{}", attestation.artifact_name);
-    println!("🔒Hash:{}...", &attestation.artifact_hash[..16]);
-    println!("📋Commit:{}", attestation.source_commit_hash);
-    println!("👤Builder:{}", attestation.builder_id);
-    println!("🕐Timestamp:{}", attestation.timestamp);
+    println!("✔ Created software birth certificate:");
+    println!("● Artifact: {}", attestation.artifact_name);
+    println!("● Hash: {}...", &attestation.artifact_hash[..16]);
+    println!("● Commit: {}", attestation.source_commit_hash);
+    println!("● Builder: {}", attestation.builder_id);
+    println!("● Timestamp: {}", attestation.timestamp);
 
-    println!("\n🔐Thisattestationprovidescryptographicproofof:");
-    println!("•Softwareartifactintegrity(hashverification)");
-    println!("•Sourcecodeprovenance(Gitcommit)");
-    println!("•Buildenvironmentdetails");
-    println!("•Builderidentityandtimestamp");
+    println!("\n● This attestation provides cryptographic proof of:");
+    println!("  • Software artifact integrity (hash verification)");
+    println!("  • Source code provenance (Git commit)");
+    println!("  • Build environment details");
+    println!("  • Builder identity and timestamp");
 
-    println!("\n✨Step3implementationcomplete!");
-    println!("Thecreate_attestationfunctionprovideshardware-backed");
-    println!("'birthcertificates'forsoftwareartifacts.");
+    println!("\n✔ Step 3 implementation complete!");
+    println!("The create_attestation function provides hardware-backed");
+    println!("'birth certificates' for software artifacts.");
 
     Ok(())
 }
