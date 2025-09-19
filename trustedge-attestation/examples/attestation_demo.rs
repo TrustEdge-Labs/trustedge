@@ -37,7 +37,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("✔ Created software birth certificate:");
     println!("● Artifact: {}", json_result.attestation.artifact_name);
-    println!("● Hash: {}...", &json_result.attestation.artifact_hash[..16]);
+    println!(
+        "● Hash: {}...",
+        &json_result.attestation.artifact_hash[..16]
+    );
     println!("● Commit: {}", json_result.attestation.source_commit_hash);
     println!("● Builder: {}", json_result.attestation.builder_id);
     println!("● Timestamp: {}", json_result.attestation.timestamp);
@@ -58,7 +61,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("✔ Created sealed attestation:");
         println!("● Size: {} bytes", envelope_result.serialized_output.len());
         if let Some(verification_info) = &envelope_result.verification_info {
-            println!("● Public Key: {}...", &verification_info.verification_key[..16]);
+            println!(
+                "● Public Key: {}...",
+                &verification_info.verification_key[..16]
+            );
         }
     }
 

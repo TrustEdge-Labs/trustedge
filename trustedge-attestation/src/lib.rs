@@ -25,7 +25,6 @@ pub struct Attestation {
     pub timestamp: String,
 }
 
-
 /// Configuration for creating signed attestations
 #[derive(Debug)]
 pub struct AttestationConfig {
@@ -134,12 +133,11 @@ pub fn create_signed_attestation(config: AttestationConfig) -> Result<Attestatio
         use git2::Repository;
 
         match Repository::discover(".") {
-            Ok(repo) => {
-                repo.head()
-                    .and_then(|head| head.peel_to_commit())
-                    .map(|commit| commit.id().to_string())
-                    .unwrap_or_else(|_| "unknown".to_string())
-            }
+            Ok(repo) => repo
+                .head()
+                .and_then(|head| head.peel_to_commit())
+                .map(|commit| commit.id().to_string())
+                .unwrap_or_else(|_| "unknown".to_string()),
             Err(_) => "unknown".to_string(),
         }
     };
