@@ -29,7 +29,7 @@ pub fn bytes_to_hex(bytes: &[u8]) -> String {
 
 // Convert hex string to bytes
 pub fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, String> {
-    if hex.len() % 2 != 0 {
+    if !hex.len().is_multiple_of(2) {
         return Err("Hex string must have even length".to_string());
     }
 
