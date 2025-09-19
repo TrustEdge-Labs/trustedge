@@ -45,5 +45,3 @@ features = [
 ]
 
 # Profile moved to workspace root
-codegen-units = 1
-panic = "abort"
