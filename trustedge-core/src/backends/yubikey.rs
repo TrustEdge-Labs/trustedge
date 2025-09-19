@@ -3197,8 +3197,17 @@ mod tests {
 
         #[cfg(feature = "yubikey")]
         {
-            // Will fail to initialize without actual hardware, but we can test the error
-            assert!(backend.is_err());
+            // May succeed if hardware is present, or fail if not - both are valid
+            match backend {
+                Ok(backend) => {
+                    // Hardware present - verify backend info works
+                    let info = backend.backend_info();
+                    assert!(info.name.contains("YubiKey") || info.description.contains("YubiKey"));
+                }
+                Err(_) => {
+                    // No hardware present - this is also expected
+                }
+            }
         }
 
         #[cfg(not(feature = "yubikey"))]

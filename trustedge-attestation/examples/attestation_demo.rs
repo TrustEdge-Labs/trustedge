@@ -4,7 +4,6 @@
 
 use std::fs::File;
 use std::io::Write;
-use std::path::PathBuf;
 use tempfile::tempdir;
 use trustedge_attestation::{
     create_signed_attestation, AttestationConfig, KeySource, OutputFormat,
@@ -50,7 +49,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         println!("\n● Creating sealed envelope attestation...");
         let envelope_config = AttestationConfig {
-            artifact_path: PathBuf::from(artifact_path),
+            artifact_path: artifact_path.clone(),
             builder_id: "demo-builder@example.com".to_string(),
             output_format: OutputFormat::SealedEnvelope,
             key_source: KeySource::Generate,
