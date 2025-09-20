@@ -18,7 +18,28 @@ pub fn verify_archive_impl<P: AsRef<Path>>(
     let manifest_bytes = std::fs::read(&manifest_path)
         .map_err(|e| ArchiveError::Format(format!("Cannot read manifest: {}", e)))?;
 
-    verify_manifest_bytes_impl(&manifest_bytes, device_pub)
+    // Parse manifest
+    let manifest: Manifest = serde_json::from_slice(&manifest_bytes).map_err(ArchiveError::Json)?;
+
+    // Verify signature first
+    verify_signature(&manifest, device_pub)?;
+
+    // Verify all chunks exist and have correct hashes
+    verify_chunks(archive_path, &manifest)?;
+
+    // Verify continuity and duration sanity
+    verify_continuity(&manifest)?;
+    verify_duration_sanity(&manifest)?;
+
+    // Calculate duration
+    let duration = manifest.segments.iter().map(|s| s.t1 - s.t0).sum::<f64>();
+
+    Ok(VerifyOutcome {
+        signature: true,
+        continuity: true,
+        segment_count: manifest.segments.len(),
+        duration_seconds: duration,
+    })
 }
 
 pub fn verify_manifest_bytes_impl(
@@ -28,24 +49,25 @@ pub fn verify_manifest_bytes_impl(
     // Parse manifest
     let manifest: Manifest = serde_json::from_slice(manifest_bytes).map_err(ArchiveError::Json)?;
 
-    // Verify signature
-    let signature_valid = verify_signature(&manifest, device_pub)?;
+    // Verify signature only (no chunk verification since we don't have access to files)
+    verify_signature(&manifest, device_pub)?;
 
-    // Verify continuity (simplified - check that segments are sequential)
-    let continuity_valid = verify_continuity(&manifest);
+    // Basic continuity and duration checks that don't require files
+    verify_continuity(&manifest)?;
+    verify_duration_sanity(&manifest)?;
 
     // Calculate duration
     let duration = manifest.segments.iter().map(|s| s.t1 - s.t0).sum::<f64>();
 
     Ok(VerifyOutcome {
-        signature: signature_valid,
-        continuity: continuity_valid,
+        signature: true,
+        continuity: true,
         segment_count: manifest.segments.len(),
         duration_seconds: duration,
     })
 }
 
-fn verify_signature(manifest: &Manifest, device_pub: &str) -> Result<bool, ArchiveError> {
+fn verify_signature(manifest: &Manifest, device_pub: &str) -> Result<(), ArchiveError> {
     use base64::Engine;
     use ed25519_dalek::{Signature, VerifyingKey};
 
@@ -97,18 +119,95 @@ fn verify_signature(manifest: &Manifest, device_pub: &str) -> Result<bool, Archi
 
     // Verify signature
     use ed25519_dalek::Verifier;
-    match verifying_key.verify(&canonical_bytes, &signature) {
-        Ok(_) => Ok(true),
-        Err(_) => Ok(false),
-    }
+    verifying_key
+        .verify(&canonical_bytes, &signature)
+        .map_err(|_| ArchiveError::Signature("signature error".to_string()))?;
+
+    Ok(())
 }
 
-fn verify_continuity(manifest: &Manifest) -> bool {
-    // Simple continuity check - segments should be sequential
+fn verify_chunks<P: AsRef<Path>>(archive_path: P, manifest: &Manifest) -> Result<(), ArchiveError> {
+    let archive_path = archive_path.as_ref();
+    let chunks_dir = archive_path.join("chunks");
+
     for (i, segment) in manifest.segments.iter().enumerate() {
-        if segment.id != i as u32 {
-            return false;
+        // Check if chunk file exists
+        let chunk_filename = format!("{:05}.bin", segment.id);
+        let chunk_path = chunks_dir.join(&chunk_filename);
+
+        let chunk_data = std::fs::read(&chunk_path).map_err(|_| {
+            // If this is the last segment, it's a truncated chain
+            if i == manifest.segments.len() - 1 {
+                ArchiveError::UnexpectedEnd(format!(
+                    "unexpected end: missing final chunk {}",
+                    chunk_filename
+                ))
+            } else {
+                ArchiveError::MissingChunk(format!("missing chunk: {}", chunk_filename))
+            }
+        })?;
+
+        // Verify chunk hash
+        let actual_hash = blake3::hash(&chunk_data);
+        let actual_hash_hex = hex::encode(actual_hash.as_bytes());
+
+        if actual_hash_hex != segment.hash {
+            return Err(ArchiveError::HashMismatch(format!(
+                "hash mismatch in chunk {}",
+                chunk_filename
+            )));
+        }
+
+        // Verify chunk size
+        if chunk_data.len() as u64 != segment.bytes {
+            return Err(ArchiveError::Format(format!(
+                "unexpected end: chunk {} size mismatch",
+                chunk_filename
+            )));
         }
     }
-    true
+
+    Ok(())
+}
+
+fn verify_continuity(manifest: &Manifest) -> Result<(), ArchiveError> {
+    // Check that segments are sequential
+    for (i, segment) in manifest.segments.iter().enumerate() {
+        if segment.id != i as u32 {
+            return Err(ArchiveError::Continuity(format!(
+                "unexpected end: segment {} out of order",
+                segment.id
+            )));
+        }
+    }
+
+    // Check temporal continuity
+    for window in manifest.segments.windows(2) {
+        let current = &window[0];
+        let next = &window[1];
+
+        if current.t1 != next.t0 {
+            return Err(ArchiveError::Continuity(format!(
+                "unexpected end: temporal gap between segments {} and {}",
+                current.id, next.id
+            )));
+        }
+    }
+
+    Ok(())
+}
+
+fn verify_duration_sanity(manifest: &Manifest) -> Result<(), ArchiveError> {
+    // Check for unreasonably long segment durations (> 3.0 seconds per segment is suspicious)
+    for segment in &manifest.segments {
+        let duration = segment.t1 - segment.t0;
+        if duration > 3.0 {
+            return Err(ArchiveError::UnexpectedEnd(format!(
+                "unexpected end: segment {} duration {} exceeds sanity limit",
+                segment.id, duration
+            )));
+        }
+    }
+
+    Ok(())
 }

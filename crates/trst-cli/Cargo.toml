@@ -21,7 +21,7 @@ base64 = "0.22"
 chrono = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 ed25519-dalek = { workspace = true }
-rand_core = { workspace = true }
+rand_core = { workspace = true, features = ["getrandom"] }
 serde_json = { workspace = true }
 trustedge-trst-core = { path = "../trst-core" }
 
