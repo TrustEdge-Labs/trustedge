@@ -16,7 +16,7 @@ categories = ["cryptography", "network-programming"]
 
 [dependencies]
 # Core TrustEdge functionality
-trustedge-core = { path = "../trustedge-core" }
+trustedge-core = { path = "../core" }
 
 # Pubky integration
 pubky = { workspace = true }

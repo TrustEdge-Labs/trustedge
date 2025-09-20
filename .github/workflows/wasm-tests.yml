@@ -1,0 +1,186 @@
+name: WebAssembly Browser Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'trustedge-wasm/**'
+      - 'crates/wasm/**'
+      - 'crates/core/**'
+      - '.github/workflows/wasm-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'trustedge-wasm/**'
+      - 'crates/wasm/**'
+      - 'crates/core/**'
+      - '.github/workflows/wasm-tests.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  wasm-tests:
+    name: WASM Browser Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: wasm32-unknown-unknown
+        override: true
+        components: rustfmt, clippy
+
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache cargo index
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache cargo build
+      uses: actions/cache@v3
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Install wasm-pack
+      run: |
+        curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install Chrome
+      if: matrix.browser == 'chrome'
+      run: |
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install google-chrome-stable
+
+    - name: Install Firefox
+      if: matrix.browser == 'firefox'
+      run: |
+        sudo apt-get update
+        sudo apt-get install firefox-esr
+
+    - name: Install geckodriver
+      if: matrix.browser == 'firefox'
+      run: |
+        wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+        tar -xzf geckodriver-v0.33.0-linux64.tar.gz
+        sudo mv geckodriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/geckodriver
+
+    - name: Test trustedge-wasm in ${{ matrix.browser }}
+      run: |
+        cd trustedge-wasm
+        wasm-pack test --${{ matrix.browser }} --headless
+
+    - name: Test trst-wasm in ${{ matrix.browser }}
+      run: |
+        cd crates/wasm
+        wasm-pack test --${{ matrix.browser }} --headless
+
+    - name: Check WASM build artifacts
+      run: |
+        cd trustedge-wasm
+        wasm-pack build --target web
+        ls -la pkg/
+        cd ../crates/wasm
+        wasm-pack build --target web
+        ls -la pkg/
+
+  wasm-size-check:
+    name: WASM Size Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: wasm32-unknown-unknown
+        override: true
+
+    - name: Install wasm-pack
+      run: |
+        curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Build trustedge-wasm and check size
+      run: |
+        cd trustedge-wasm
+        wasm-pack build --target web --release
+        wasm_size=$(wc -c < pkg/trustedge_wasm_bg.wasm)
+        echo "trustedge-wasm size: $wasm_size bytes"
+        # Fail if WASM is larger than 2MB (reasonable size for crypto operations)
+        if [ $wasm_size -gt 2097152 ]; then
+          echo "❌ trustedge-wasm is too large: $wasm_size bytes (max: 2MB)"
+          exit 1
+        else
+          echo "✅ trustedge-wasm size is acceptable: $wasm_size bytes"
+        fi
+
+    - name: Build trst-wasm and check size
+      run: |
+        cd crates/wasm
+        wasm-pack build --target web --release
+        wasm_size=$(wc -c < pkg/trst_wasm_bg.wasm)
+        echo "trst-wasm size: $wasm_size bytes"
+        # Fail if WASM is larger than 1MB (verification should be lightweight)
+        if [ $wasm_size -gt 1048576 ]; then
+          echo "❌ trst-wasm is too large: $wasm_size bytes (max: 1MB)"
+          exit 1
+        else
+          echo "✅ trst-wasm size is acceptable: $wasm_size bytes"
+        fi
+
+  wasm-performance:
+    name: WASM Performance Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: wasm32-unknown-unknown
+        override: true
+
+    - name: Install wasm-pack
+      run: |
+        curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install Chrome
+      run: |
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install google-chrome-stable
+
+    - name: Run performance tests
+      run: |
+        cd trustedge-wasm
+        # Run performance-focused tests
+        wasm-pack test --chrome --headless -- --grep "performance"

@@ -29,17 +29,21 @@ fn get_server_binary_path() -> PathBuf {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
     // In workspace, binaries are built in workspace root target directory
     PathBuf::from(manifest_dir)
-        .parent()
+        .parent() // crates/
+        .unwrap()
+        .parent() // workspace root
         .unwrap()
         .join("target/debug/trustedge-server")
 }
 
-/// Test helper to get the path to the client binary  
+/// Test helper to get the path to the client binary
 fn get_client_binary_path() -> PathBuf {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
     // In workspace, binaries are built in workspace root target directory
     PathBuf::from(manifest_dir)
-        .parent()
+        .parent() // crates/
+        .unwrap()
+        .parent() // workspace root
         .unwrap()
         .join("target/debug/trustedge-client")
 }

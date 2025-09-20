@@ -129,7 +129,7 @@ fn get_binary_path() -> std::path::PathBuf {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
     // In workspace, binaries are built in workspace root target directory
     let manifest_path = std::path::PathBuf::from(manifest_dir);
-    let workspace_root = manifest_path.parent().unwrap();
+    let workspace_root = manifest_path.parent().unwrap().parent().unwrap(); // crates/core -> crates -> workspace root
 
     let release_path = workspace_root.join("target/release/trustedge-core");
     if release_path.exists() {

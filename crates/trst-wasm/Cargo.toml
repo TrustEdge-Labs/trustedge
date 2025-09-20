@@ -1,0 +1,21 @@
+[package]
+name = "trustedge-trst-wasm"
+version = "0.1.0"
+edition = "2021"
+description = "WASM bindings for TrustEdge verification"
+authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
+license = "MPL-2.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
+trustedge-trst-core = { path = "../trst-core" }
+wasm-bindgen = { workspace = true }
+js-sys = { workspace = true }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"

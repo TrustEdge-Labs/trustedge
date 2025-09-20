@@ -19,7 +19,7 @@ name = "demo"
 path = "src/bin/demo.rs"
 
 [dependencies]
-trustedge-core = { path = "../trustedge-core" }
+trustedge-core = { path = "../core" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 ed25519-dalek = { workspace = true }

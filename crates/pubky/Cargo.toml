@@ -20,7 +20,7 @@ path = "src/bin/trustedge-pubky.rs"
 
 [dependencies]
 # Core TrustEdge functionality
-trustedge-core = { path = "../trustedge-core" }
+trustedge-core = { path = "../core" }
 
 # Pubky network integration
 pubky = { workspace = true }

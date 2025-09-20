@@ -1,0 +1,26 @@
+[package]
+name = "trustedge-trst-cli"
+version = "0.1.0"
+edition = "2021"
+description = "TrustEdge .trst archive CLI"
+authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
+license = "MPL-2.0"
+
+[[bin]]
+name = "trst"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+base64 = "0.22"
+chrono = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+ed25519-dalek = { workspace = true }
+rand_core = { workspace = true }
+serde_json = { workspace = true }
+trustedge-trst-core = { path = "../trst-core" }
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"

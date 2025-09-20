@@ -65,20 +65,26 @@ diff test.txt recovered.txt  # Should be identical
 ## Architecture Overview
 
 ### Workspace Structure
-TrustEdge is a Cargo workspace with specialized crates:
+TrustEdge is a Cargo workspace with specialized crates organized under `crates/`:
 
-- **trustedge-core**: Core cryptographic library and CLI tools (main crate)
+**Core TrustEdge Platform:**
+- **crates/core** (`trustedge-core`): Core cryptographic library and CLI tools
   - Envelope encryption with AES-256-GCM
   - Universal Backend system for key management
   - Network client/server binaries
   - Live audio capture (with `--features audio`)
   - YubiKey hardware integration (with `--features yubikey`)
 
-- **trustedge-receipts**: Digital receipt system with cryptographic ownership transfer
-- **trustedge-wasm**: WebAssembly bindings for browser integration
-- **trustedge-pubky**: Pubky network adapter for decentralized keys
-- **trustedge-pubky-advanced**: Advanced Pubky integration with hybrid encryption
-- **trustedge-attestation**: Attestation and verification system
+- **crates/receipts** (`trustedge-receipts`): Digital receipt system with cryptographic ownership transfer
+- **crates/attestation** (`trustedge-attestation`): Software attestation and verification system
+- **crates/wasm** (`trustedge-wasm`): WebAssembly bindings for browser integration
+- **crates/pubky** (`trustedge-pubky`): Pubky network adapter for decentralized keys
+- **crates/pubky-advanced** (`trustedge-pubky-advanced`): Advanced Pubky integration
+
+**Archive System (.trst format):**
+- **crates/trst-core** (`trustedge-trst-core`): Archive format primitives for .trst files
+- **crates/trst-cli** (`trustedge-trst-cli`): CLI tool for creating/verifying .trst archives (binary: `trst`)
+- **crates/trst-wasm** (`trustedge-trst-wasm`): Browser verification of .trst archives
 
 ### Key Systems
 

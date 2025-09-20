@@ -17,17 +17,17 @@ echo "✔ Formatting check passed"
 echo
 
 echo "■ Step 2: Running clippy with strict warnings for all crates..."
-cargo clippy --all-targets --all-features -- -D warnings
+cargo clippy --workspace --all-targets --all-features -- -D warnings
 echo "✔ Clippy check passed"
 echo
 
 echo "■ Step 3: Building all targets for all crates..."
-cargo build --all-targets --all-features
+cargo build --workspace --all-targets --all-features
 echo "✔ Build check passed"
 echo
 
 echo "■ Step 4: Running all tests for all crates..."
-cargo test --all-features
+cargo test --workspace --all-features
 echo "✔ Test check passed"
 echo
 

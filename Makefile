@@ -21,34 +21,54 @@ install-hooks: ## Install git pre-commit hooks
 	@chmod +x .git/hooks/pre-commit
 	@echo "✅ Pre-commit hook installed"
 
-build: ## Build the project
-	@cd trustedge-core && cargo build --release
+build: ## Build all workspace crates
+	@cargo build --workspace
 
 build-with-audio: ## Build the project with audio features
-	@cd trustedge-core && cargo build --release --features audio
+	@cd crates/core && cargo build --release --features audio
 
-test: ## Run all tests
-	@cd trustedge-core && cargo test
+test: ## Run workspace tests
+	@cargo test --workspace
 
 test-with-audio: ## Run tests with audio features
-	@cd trustedge-core && cargo test --features audio
+	@cd crates/core && cargo test --features audio
+
+demo: ## Produce a sample cam.video archive and verify it
+	@cargo run -p trst-cli -- wrap --profile cam.video --in ./examples/cam.video/sample.bin --out ./examples/cam.video/sample.trst
+	@cargo run -p trst-cli -- verify ./examples/cam.video/sample.trst --device-pub $$(cat device.pub)
 
 clippy: ## Run clippy linting
-	@cd trustedge-core && cargo clippy -- -D warnings
+	@cd crates/core && cargo clippy -- -D warnings
 
 fmt: ## Format code
-	@cd trustedge-core && cargo fmt
+	@cd crates/core && cargo fmt
 
 fmt-check: ## Check code formatting
-	@cd trustedge-core && cargo fmt --check
+	@cd crates/core && cargo fmt --check
 
 audit: ## Run security audit
-	@cd trustedge-core && cargo audit
+	@cd crates/core && cargo audit
 
 clean: ## Clean build artifacts
-	@cd trustedge-core && cargo clean
+	@cd crates/core && cargo clean
 
 full-check: copyright-check clippy fmt-check test audit ## Run all quality checks
+
+test-wasm: ## Run WASM tests in Chrome
+	@echo "Running WASM tests..."
+	@cd crates/wasm && wasm-pack test --chrome --headless
+	@cd crates/trst-wasm && wasm-pack test --chrome --headless
+	@echo "✅ All WASM tests passed"
+
+test-wasm-all: ## Run WASM tests in all browsers
+	@echo "Running WASM tests in all browsers..."
+	@cd crates/wasm && wasm-pack test --chrome --headless && wasm-pack test --firefox --headless
+	@cd crates/trst-wasm && wasm-pack test --chrome --headless && wasm-pack test --firefox --headless
+	@echo "✅ All cross-browser WASM tests passed"
+
+test-wasm-dev: ## Run WASM tests with visible browser (for debugging)
+	@echo "Running WASM tests in development mode..."
+	@cd crates/wasm && wasm-pack test --chrome
 
 ci-check: ## Run the same checks as CI
 	@echo "Running CI checks..."
@@ -59,9 +79,15 @@ ci-check: ## Run the same checks as CI
 	@$(MAKE) audit
 	@echo "✅ All CI checks passed"
 
+ci-check-full: ## Run CI checks including WASM tests
+	@echo "Running full CI checks including WASM..."
+	@$(MAKE) ci-check
+	@$(MAKE) test-wasm
+	@echo "✅ All CI checks including WASM passed"
+
 dev-setup: install-hooks ## Set up development environment
 	@echo "Setting up development environment..."
-	@cd trustedge-core && rustup component add clippy rustfmt
-	@cd trustedge-core && cargo install cargo-audit || true
+	@cd crates/core && rustup component add clippy rustfmt
+	@cd crates/core && cargo install cargo-audit || true
 	@$(MAKE) install-hooks
 	@echo "✅ Development environment ready"

@@ -36,6 +36,10 @@ base64 = "0.22"
 console_error_panic_hook = "0.1"
 wee_alloc = { version = "0.4", optional = true }
 
+# WASM testing dependencies
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
 [dependencies.web-sys]
 version = "0.3"
 features = [
