@@ -4,15 +4,15 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'trustedge-wasm/**'
       - 'crates/wasm/**'
+      - 'crates/trst-wasm/**'
       - 'crates/core/**'
       - '.github/workflows/wasm-tests.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
-      - 'trustedge-wasm/**'
       - 'crates/wasm/**'
+      - 'crates/trst-wasm/**'
       - 'crates/core/**'
       - '.github/workflows/wasm-tests.yml'
 
@@ -87,20 +87,20 @@ jobs:
 
     - name: Test trustedge-wasm in ${{ matrix.browser }}
       run: |
-        cd trustedge-wasm
+        cd crates/wasm
         wasm-pack test --${{ matrix.browser }} --headless
 
     - name: Test trst-wasm in ${{ matrix.browser }}
       run: |
-        cd crates/wasm
+        cd crates/trst-wasm
         wasm-pack test --${{ matrix.browser }} --headless
 
     - name: Check WASM build artifacts
       run: |
-        cd trustedge-wasm
+        cd crates/wasm
         wasm-pack build --target web
         ls -la pkg/
-        cd ../crates/wasm
+        cd ../trst-wasm
         wasm-pack build --target web
         ls -la pkg/
 
@@ -126,7 +126,7 @@ jobs:
 
     - name: Build trustedge-wasm and check size
       run: |
-        cd trustedge-wasm
+        cd crates/wasm
         wasm-pack build --target web --release
         wasm_size=$(wc -c < pkg/trustedge_wasm_bg.wasm)
         echo "trustedge-wasm size: $wasm_size bytes"
@@ -140,9 +140,9 @@ jobs:
 
     - name: Build trst-wasm and check size
       run: |
-        cd crates/wasm
+        cd crates/trst-wasm
         wasm-pack build --target web --release
-        wasm_size=$(wc -c < pkg/trst_wasm_bg.wasm)
+        wasm_size=$(wc -c < pkg/trustedge_trst_wasm_bg.wasm)
         echo "trst-wasm size: $wasm_size bytes"
         # Fail if WASM is larger than 1MB (verification should be lightweight)
         if [ $wasm_size -gt 1048576 ]; then
@@ -181,6 +181,6 @@ jobs:
 
     - name: Run performance tests
       run: |
-        cd trustedge-wasm
+        cd crates/wasm
         # Run performance-focused tests
         wasm-pack test --chrome --headless -- --grep "performance"
