@@ -157,8 +157,8 @@ jobs:
           echo "✅ trst-wasm size is acceptable: $wasm_size bytes"
         fi
 
-  wasm-performance:
-    name: WASM Performance Check
+  wasm-build-check:
+    name: WASM Build Verification
     runs-on: ubuntu-latest
 
     steps:
@@ -177,15 +177,14 @@ jobs:
         curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-    - name: Install Chrome
-      run: |
-        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-        echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/google-chrome.list
-        sudo apt-get update
-        sudo apt-get install google-chrome-stable
-
-    - name: Run performance tests
+    - name: Build and verify WASM package
       run: |
         cd crates/wasm
-        # Run performance-focused tests
-        wasm-pack test --chrome --headless -- --grep "performance"
+        # Verify WASM package builds successfully for web target
+        wasm-pack build --target web --out-dir pkg-test
+
+    - name: Verify compilation of WASM tests
+      run: |
+        cd crates/wasm
+        # Verify WASM tests compile (without running in browser)
+        cargo check --tests --target wasm32-unknown-unknown

@@ -211,7 +211,7 @@ fn test_browser_key_id_functionality() {
     let test_data = "Key ID test";
     let key = generate_key();
 
-    let mut encrypted = encrypt_simple(test_data, &key).expect("Encryption failed");
+    let encrypted = encrypt_simple(test_data, &key).expect("Encryption failed");
 
     // Key ID should initially be None
     assert!(encrypted.key_id().is_none());

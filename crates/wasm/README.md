@@ -255,7 +255,7 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
 
 ## Support
 

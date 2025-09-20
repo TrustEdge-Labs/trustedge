@@ -44,11 +44,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 ## What's New in 0.2.0
 
 - 🔐 **Production-Ready Cryptography** - Real AES-256-GCM encryption with PBKDF2 key derivation
+- 📦 **.trst Archive System** - Secure archival format with Ed25519 signatures and chunk verification
 - 🧾 **Digital Receipt System** - Cryptographically secure transferable receipts
 - 🔑 **YubiKey Hardware Integration** - Real PKCS#11 support with hardware signing
 - 🏗️ **Universal Backend Architecture** - Pluggable crypto backends
 - 🌐 **Production Transport Layer** - Real TCP operations with concurrent connections
-- 🧪 **Comprehensive Test Suite** - 109 tests including security attack scenarios
+- 🧪 **Comprehensive Test Suite** - 150+ tests including security attack scenarios
 
 ---
 
@@ -58,12 +59,17 @@ TrustEdge is organized as a Cargo workspace with specialized crates:
 
 ```
 trustedge/
-├── trustedge-core/               # Core cryptographic library and CLI tools
-├── trustedge-attestation/        # Software attestation and provenance system
-├── trustedge-receipts/           # Digital receipt system with ownership chains
-├── trustedge-wasm/               # WebAssembly bindings for browser integration
-├── trustedge-pubky/              # Pubky network adapter for decentralized keys
-├── trustedge-pubky-advanced/     # Advanced Pubky integration with hybrid encryption
+├── crates/
+│   ├── core/                     # Core cryptographic library and CLI tools (trustedge-core)
+│   ├── trst-cli/                 # .trst archive CLI tool (trustedge-trst-cli, binary: trst)
+│   ├── trst-core/                # .trst archive format library (trustedge-trst-core)
+│   ├── attestation/              # Software attestation and provenance system (trustedge-attestation)
+│   ├── receipts/                 # Digital receipt system with ownership chains (trustedge-receipts)
+│   ├── wasm/                     # Core WebAssembly bindings (trustedge-wasm)
+│   ├── trst-wasm/                # .trst verification WebAssembly bindings (trustedge-trst-wasm)
+│   ├── pubky/                    # Pubky network adapter for decentralized keys (trustedge-pubky)
+│   └── pubky-advanced/           # Advanced Pubky integration with hybrid encryption (trustedge-pubky-advanced)
+├── examples/                     # Example implementations and demos
 └── docs/                         # Documentation and guides
 ```
 
@@ -71,12 +77,15 @@ trustedge/
 
 | Crate | Purpose | Documentation |
 |-------|---------|---------------|
-| **trustedge-core** | Core cryptographic library with envelope encryption | [Core Documentation](trustedge-core/) |
-| **trustedge-attestation** | Software attestation and provenance tracking with cryptographic "birth certificates" | [Attestation Documentation](trustedge-attestation/) |
-| **trustedge-receipts** | Digital receipt system with cryptographic ownership transfer | [Receipt Documentation](trustedge-receipts/) |
-| **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | [WASM Documentation](trustedge-wasm/) |
-| **trustedge-pubky** | Clean Pubky network adapter for decentralized key discovery | [Pubky Documentation](trustedge-pubky/) |
-| **trustedge-pubky-advanced** | Advanced Pubky integration with hybrid encryption | [Advanced Pubky Documentation](trustedge-pubky-advanced/) |
+| **trustedge-core** | Core cryptographic library with envelope encryption | [Core Documentation](crates/core/) |
+| **trustedge-trst-cli** | Command-line tool for .trst archive creation and verification | [Archive CLI Documentation](crates/trst-cli/) |
+| **trustedge-trst-core** | .trst archive format primitives and verification | [Archive Format Documentation](crates/trst-core/) |
+| **trustedge-attestation** | Software attestation and provenance tracking with cryptographic "birth certificates" | [Attestation Documentation](crates/attestation/) |
+| **trustedge-receipts** | Digital receipt system with cryptographic ownership transfer | [Receipt Documentation](crates/receipts/) |
+| **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | [WASM Documentation](crates/wasm/) |
+| **trustedge-trst-wasm** | .trst archive verification WebAssembly bindings | [Archive WASM Documentation](crates/trst-wasm/) |
+| **trustedge-pubky** | Clean Pubky network adapter for decentralized key discovery | [Pubky Documentation](crates/pubky/) |
+| **trustedge-pubky-advanced** | Advanced Pubky integration with hybrid encryption | [Advanced Pubky Documentation](crates/pubky-advanced/) |
 
 ---
 
@@ -103,6 +112,7 @@ cargo build --workspace --release
 
 ### Basic Usage
 
+**Core Envelope Encryption:**
 ```bash
 # Encrypt a file
 ./target/release/trustedge-core --input document.txt --envelope document.trst --key-out mykey.hex
@@ -115,6 +125,15 @@ cargo build --workspace --release
 
 # Network mode (client)
 ./target/release/trustedge-client --server 127.0.0.1:8080 --input file.txt --require-auth
+```
+
+**Archive Creation (.trst format):**
+```bash
+# Create a .trst archive
+./target/release/trst wrap --profile cam.video --in sample.bin --out archive.trst
+
+# Verify a .trst archive
+./target/release/trst verify archive.trst --device-pub "ed25519:GAUpGXoor5gP..."
 ```
 
 ### Next Steps
@@ -150,7 +169,7 @@ TrustEdge includes a **production-ready digital receipt system** that enables cr
 - Attack resistance against tampering, replay, and forgery
 - 23 comprehensive security tests covering all attack scenarios
 
-**📖 For complete receipt system documentation, see [trustedge-receipts/](trustedge-receipts/).**
+**📖 For complete receipt system documentation, see [crates/receipts/](crates/receipts/).**
 
 ### Network Operations
 
@@ -168,21 +187,23 @@ TrustEdge supports secure client-server communication with **mutual authenticati
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **109 automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **150+ automated tests** covering all aspects of the system:
 
-- **86 Core Tests**: Envelope encryption, Universal Backend system, transport layer
+- **101 Core Tests**: Envelope encryption, Universal Backend system, transport layer
 - **23 Receipt Tests**: Digital receipt security, attack resistance, chain validation
+- **7 Archive Tests**: .trst format verification, cryptographic validation, attack resistance
 - **Security Tests**: Cryptographic isolation, tampering resistance, replay protection
 - **Hardware Tests**: YubiKey integration, PKCS#11 operations, certificate workflows
 
 ```bash
 # Run complete test suite
-./ci-check.sh
+./scripts/ci-check.sh
 
 # Run tests by category
-cargo test -p trustedge-core --lib        # Core cryptography tests
-cargo test -p trustedge-receipts          # Receipt system tests
-cargo test --features yubikey             # Hardware integration tests
+cargo test -p trustedge-core --lib                # Core cryptography tests (101)
+cargo test -p trustedge-receipts                  # Receipt system tests (23)
+cargo test -p trustedge-trst-cli --test acceptance # Archive validation tests (7)
+cargo test --features yubikey                     # Hardware integration tests
 ```
 
 **📖 For detailed testing procedures, see [TESTING.md](TESTING.md).**
@@ -263,11 +284,12 @@ git clone https://github.com/TrustEdge-Labs/trustedge.git
 cd trustedge
 
 # Run full test suite
-./ci-check.sh
+./scripts/ci-check.sh
 
 # Run specific component tests
-cargo test -p trustedge-core
-cargo test -p trustedge-receipts
+cargo test -p trustedge-core                      # Core cryptography (101 tests)
+cargo test -p trustedge-receipts                  # Digital receipts (23 tests)
+cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
 ```
 
 ---

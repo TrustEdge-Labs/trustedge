@@ -470,7 +470,7 @@ For security issues, please follow our [responsible disclosure policy](../SECURI
 
 ## Related Documentation
 
-- **[TrustEdge Core](../trustedge-core/)** - Core cryptographic library
+- **[TrustEdge Core](../core/)** - Core cryptographic library
 - **[Authentication Guide](../AUTHENTICATION_GUIDE.md)** - Network security setup
 - **[Security Model](../SECURITY.md)** - Overall security architecture
 - **[Examples](../EXAMPLES.md)** - Real-world usage scenarios

@@ -78,7 +78,7 @@ pub fn greet(name: &str) {
 
 // Initialize panic hook for better error messages
 #[wasm_bindgen(start)]
-pub fn main() {
+pub fn init() {
     console_error_panic_hook::set_once();
     console_log!("TrustEdge WASM module initialized successfully");
 }

@@ -18,7 +18,8 @@ categories = ["cryptography", "wasm", "web-programming"]
 default = ["wee_alloc"]
 
 [lib]
-crate-type = ["cdylib"]
+name = "trustedge_wasm"
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # Use workspace dependencies where possible

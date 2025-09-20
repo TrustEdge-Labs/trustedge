@@ -840,4 +840,4 @@ For enterprise deployments, consider integrating with existing PKI:
 
 ---
 
-This completes the TrustEdge Authentication Guide. For additional technical implementation details, refer to the source code in [`trustedge-core/src/`](trustedge-core/src/) and the integration tests in [`trustedge-core/tests/auth_integration.rs`](trustedge-core/tests/auth_integration.rs).
+This completes the TrustEdge Authentication Guide. For additional technical implementation details, refer to the source code in [`crates/core/src/`](crates/core/src/) and the integration tests in [`crates/core/tests/auth_integration.rs`](crates/core/tests/auth_integration.rs).

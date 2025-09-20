@@ -24,9 +24,10 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo fmt --check --all
 
 # Run tests for specific components
-cargo test -p trustedge-core --lib        # Core cryptography tests (86)
-cargo test -p trustedge-receipts          # Receipt system tests (23)
-cargo test --features yubikey             # Hardware integration tests
+cargo test -p trustedge-core --lib                # Core cryptography tests (101)
+cargo test -p trustedge-receipts                  # Receipt system tests (23)
+cargo test -p trustedge-trst-cli --test acceptance # Archive validation tests (7)
+cargo test --features yubikey                     # Hardware integration tests
 ```
 
 ### Build Variations
@@ -46,7 +47,7 @@ cargo build --workspace --release
 
 ### Testing Commands
 ```bash
-# Full test suite (109 tests total)
+# Full test suite (150+ tests total)
 cargo test --workspace
 
 # Run specific test categories
@@ -164,7 +165,7 @@ TrustEdge is a Cargo workspace with specialized crates organized under `crates/`
 5. Ask clarifying questions about unclear requirements
 
 ### Adding New Cryptographic Operations
-1. Add to Universal Backend trait in `trustedge-core/src/backends/universal.rs`
+1. Add to Universal Backend trait in `crates/core/src/backends/universal.rs`
 2. Implement in relevant backends (software_hsm.rs, yubikey.rs)
 3. Add comprehensive tests including security scenarios
 4. Update capability discovery system
@@ -187,6 +188,19 @@ TrustEdge is a Cargo workspace with specialized crates organized under `crates/`
 ./target/release/trustedge-client --server 127.0.0.1:8080 --input test.txt --key-hex $(cat shared.key)
 ```
 
+### Working with .trst Archives
+The .trst archive system provides secure archival with Ed25519 signatures:
+```bash
+# Create a .trst archive
+./target/release/trst wrap --profile cam.video --in sample.bin --out archive.trst
+
+# Verify a .trst archive
+./target/release/trst verify archive.trst --device-pub "ed25519:GAUpGXoor5gP..."
+
+# Test archive validation
+cargo test -p trustedge-trst-cli --test acceptance
+```
+
 ### Working with YubiKey
 Requires YubiKey with PIV applet and PKCS#11 module installed:
 ```bash
@@ -200,29 +214,33 @@ cargo test --features yubikey --test yubikey_integration
 ## Important Files
 
 ### CLI Binaries
-- `trustedge-core/src/main.rs`: Main CLI application
-- `trustedge-core/src/bin/trustedge-server.rs`: Network server
-- `trustedge-core/src/bin/trustedge-client.rs`: Network client
-- `trustedge-core/src/bin/inspect-trst.rs`: Metadata inspection utility
+- `crates/core/src/main.rs`: Main CLI application
+- `crates/core/src/bin/trustedge-server.rs`: Network server
+- `crates/core/src/bin/trustedge-client.rs`: Network client
+- `crates/core/src/bin/inspect-trst.rs`: Metadata inspection utility
+- `crates/trst-cli/src/main.rs`: .trst archive CLI tool (binary: trst)
 
 ### Key Modules
-- `trustedge-core/src/backends/`: Universal Backend system
-- `trustedge-core/src/transport/`: Network transport abstraction
-- `trustedge-core/src/format.rs`: TrustEdge envelope format
-- `trustedge-core/src/audio.rs`: Live audio capture (feature-gated)
-- `trustedge-core/src/auth.rs`: Ed25519 mutual authentication
+- `crates/core/src/backends/`: Universal Backend system
+- `crates/core/src/transport/`: Network transport abstraction
+- `crates/core/src/format.rs`: TrustEdge envelope format
+- `crates/core/src/audio.rs`: Live audio capture (feature-gated)
+- `crates/core/src/auth.rs`: Ed25519 mutual authentication
+- `crates/trst-core/src/`: .trst archive format primitives
 
 ### Test Suites
-- `trustedge-core/tests/roundtrip_integration.rs`: End-to-end workflows
-- `trustedge-core/tests/network_integration.rs`: Client-server communication
-- `trustedge-core/tests/yubikey_integration.rs`: Hardware integration
-- `trustedge-receipts/tests/`: Digital receipt security tests
+- `crates/core/tests/roundtrip_integration.rs`: End-to-end workflows
+- `crates/core/tests/network_integration.rs`: Client-server communication
+- `crates/core/tests/yubikey_integration.rs`: Hardware integration
+- `crates/trst-cli/tests/acceptance.rs`: Archive validation and security tests
+- `crates/receipts/tests/`: Digital receipt security tests
 
 ## Error Handling Patterns
 
 ### Common Error Types
 - `EncryptionError`: Cryptographic operation failures
 - `FormatError`: Envelope format issues
+- `ArchiveError`: .trst archive format and verification issues
 - `NetworkError`: Connection and transport failures
 - `AuthError`: Authentication and certificate issues
 - `AudioError`: Audio capture and device issues

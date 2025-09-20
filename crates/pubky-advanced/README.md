@@ -719,8 +719,8 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 
 ## Related Documentation
 
-- **[TrustEdge Core](../trustedge-core/)** - Core cryptographic library
-- **[TrustEdge Pubky](../trustedge-pubky/)** - Basic Pubky adapter
+- **[TrustEdge Core](../core/)** - Core cryptographic library
+- **[TrustEdge Pubky](../pubky/)** - Basic Pubky adapter
 - **[Universal Backend Guide](../UNIVERSAL_BACKEND.md)** - Backend system architecture
 - **[Security Model](../SECURITY.md)** - Overall security architecture
 

@@ -50,7 +50,7 @@ trustedge-core/
 ├── src/backends/                # Universal Backend system
 ├── src/transport/               # Network transport layer
 ├── examples/                    # Comprehensive examples
-└── tests/                       # Test suite (86 tests)
+└── tests/                       # Test suite (101 tests)
 ```
 
 ### Core Modules
@@ -481,7 +481,7 @@ brew install opensc
 
 ## Testing
 
-TrustEdge Core includes **86 comprehensive tests** covering all functionality:
+TrustEdge Core includes **101 comprehensive tests** covering all functionality:
 
 ```bash
 # Run all tests
@@ -718,10 +718,10 @@ cargo fmt --check
 - **[SOFTWARE_HSM_TEST_REPORT.md](SOFTWARE_HSM_TEST_REPORT.md)** - Software HSM testing results
 
 ### Project Documentation
-- **[Main README](../README.md)** - Project overview and quick start
-- **[CLI Reference](../CLI.md)** - Complete command-line documentation
-- **[Examples](../EXAMPLES.md)** - Real-world usage examples
-- **[Universal Backend Guide](../UNIVERSAL_BACKEND.md)** - Backend system architecture
+- **[Main README](../../README.md)** - Project overview and quick start
+- **[CLI Reference](../../CLI.md)** - Complete command-line documentation
+- **[Examples](../../EXAMPLES.md)** - Real-world usage examples
+- **[Universal Backend Guide](../../UNIVERSAL_BACKEND.md)** - Backend system architecture
 
 [↑ Back to top](#trustedge-core)
 
