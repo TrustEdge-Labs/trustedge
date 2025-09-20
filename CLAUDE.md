@@ -115,6 +115,7 @@ TrustEdge is a Cargo workspace with specialized crates:
 - No `unwrap()` or `panic!()` in production code
 - All public APIs must have rustdoc documentation
 - Use `anyhow` for CLI errors, `thiserror` for library errors
+- do not add your name to any copyrights or git commit messages
 
 ### API Integration Requirements  
 - ALWAYS read API documentation completely before implementing external service calls
@@ -136,7 +137,8 @@ TrustEdge is a Cargo workspace with specialized crates:
 - Use constant-time operations for sensitive comparisons
 
 ### Testing Approach
-- **109 total tests** covering all components
+- Perform all tests
+- Never use fake data, placeholders or automatic assertions unless clearly allowed and explained
 - Unit tests co-located with code (`#[cfg(test)]`)
 - Integration tests in `tests/` directory
 - Property-based testing for crypto functions
