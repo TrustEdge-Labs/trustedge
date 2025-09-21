@@ -11,12 +11,13 @@ use std::path::{Path, PathBuf};
 use std::process;
 
 use anyhow::{Context, Result};
+use blake3::Hasher;
 use chacha20poly1305::Key;
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Args, Parser, Subcommand};
 use rand::prelude::*;
 use rand_chacha::ChaCha20Rng;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::time::Instant;
 use trustedge_core::{
     chain_next, encrypt_segment, generate_aad, genesis, read_archive, segment_hash, sign_manifest,
@@ -48,6 +49,26 @@ struct VerifyReport {
     out_of_order: Option<bool>, // Whether segments are out of order
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct SegmentRef {
+    index: u32,
+    hash: String, // Formatted as "b3:<hex>"
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct VerifyRequestOptions {
+    return_receipt: bool,
+    device_id: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct VerifyRequest {
+    device_pub: String,
+    manifest: CamVideoManifest,
+    segments: Vec<SegmentRef>,
+    options: VerifyRequestOptions,
+}
+
 #[derive(Parser, Debug)]
 #[command(author, version, about = "TrustEdge .trst archival tool", long_about = None)]
 struct Cli {
@@ -60,6 +81,7 @@ struct Cli {
 enum Commands {
     Wrap(WrapCmd),
     Verify(VerifyCmd),
+    EmitRequest(EmitRequestCmd),
 }
 
 #[derive(Args, Debug)]
@@ -116,24 +138,50 @@ struct VerifyCmd {
     emit_receipt: Option<PathBuf>,
 }
 
+#[derive(Args, Debug)]
+struct EmitRequestCmd {
+    #[arg(
+        long = "archive",
+        value_name = "PATH",
+        help = "Path to .trst archive directory"
+    )]
+    archive: PathBuf,
+    #[arg(
+        long = "device-pub",
+        value_name = "PATH",
+        help = "Path to device public key file"
+    )]
+    device_pub: PathBuf,
+    #[arg(long = "out", value_name = "PATH", help = "Output JSON file path")]
+    out: PathBuf,
+    #[arg(
+        long = "post",
+        value_name = "URL",
+        help = "Optional HTTP POST endpoint"
+    )]
+    post: Option<String>,
+}
+
 fn generate_seeded_nonce24(rng: &mut dyn RngCore) -> [u8; 24] {
     let mut nonce = [0u8; 24];
     rng.fill_bytes(&mut nonce);
     nonce
 }
 
-fn main() {
-    if let Err(err) = run() {
+#[tokio::main]
+async fn main() {
+    if let Err(err) = run().await {
         eprintln!("error: {err}");
         process::exit(1);
     }
 }
 
-fn run() -> Result<()> {
+async fn run() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
         Commands::Wrap(args) => handle_wrap(args),
         Commands::Verify(args) => handle_verify(args),
+        Commands::EmitRequest(args) => handle_emit_request(args).await,
     }
 }
 
@@ -536,4 +584,88 @@ fn load_or_generate_keypair(
 fn current_timestamp() -> Result<String> {
     let now: DateTime<Utc> = Utc::now();
     Ok(now.to_rfc3339_opts(SecondsFormat::Secs, true))
+}
+
+async fn handle_emit_request(args: EmitRequestCmd) -> Result<()> {
+    // Read manifest from archive
+    let (manifest, chunks) = read_archive(&args.archive)
+        .with_context(|| format!("Failed to read archive: {}", args.archive.display()))?;
+
+    // Compute segments by BLAKE3 over each chunk in sorted order
+    let mut segments = Vec::new();
+    for (chunk_index, chunk_data) in chunks.iter() {
+        let mut hasher = Hasher::new();
+        hasher.update(chunk_data);
+        let hash = hasher.finalize();
+        let hash_hex = format!("b3:{}", hex::encode(hash.as_bytes()));
+
+        segments.push(SegmentRef {
+            index: *chunk_index as u32,
+            hash: hash_hex,
+        });
+    }
+
+    // Load device pub from file
+    let device_pub_content = fs::read_to_string(&args.device_pub).with_context(|| {
+        format!(
+            "Failed to read device pub file: {}",
+            args.device_pub.display()
+        )
+    })?;
+    let device_pub = device_pub_content.trim().to_string();
+
+    // Build VerifyRequest
+    let verify_request = VerifyRequest {
+        device_pub: device_pub.clone(),
+        manifest: manifest.clone(),
+        segments,
+        options: VerifyRequestOptions {
+            return_receipt: true,
+            device_id: manifest.device.id.clone(),
+        },
+    };
+
+    // Write JSON to output file
+    let json_output = serde_json::to_string_pretty(&verify_request)?;
+    fs::write(&args.out, &json_output)
+        .with_context(|| format!("Failed to write output file: {}", args.out.display()))?;
+
+    println!("Generated verify request: {}", args.out.display());
+
+    // If --post provided, POST it and handle response
+    if let Some(post_url) = args.post {
+        let client = reqwest::Client::new();
+        let response = client
+            .post(&post_url)
+            .json(&verify_request)
+            .send()
+            .await
+            .with_context(|| format!("Failed to POST to {}", post_url))?;
+
+        let status = response.status();
+        if status.is_success() {
+            let response_text = response.text().await?;
+            // Try to parse as JSON for pretty printing
+            match serde_json::from_str::<serde_json::Value>(&response_text) {
+                Ok(json_value) => {
+                    let pretty_json = serde_json::to_string_pretty(&json_value)?;
+                    println!("{}", pretty_json);
+                }
+                Err(_) => {
+                    println!("{}", response_text);
+                }
+            }
+        } else {
+            let error_text = response.text().await?;
+            eprintln!(
+                "HTTP {} {}",
+                status.as_u16(),
+                status.canonical_reason().unwrap_or("")
+            );
+            eprintln!("{}", error_text);
+            process::exit(status.as_u16() as i32);
+        }
+    }
+
+    Ok(())
 }

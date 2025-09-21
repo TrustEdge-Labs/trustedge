@@ -679,3 +679,186 @@ fn test_a5_continuity_failure_with_json() {
     assert_eq!(json_output["continuity"], "fail");
     assert!(json_output["error"].as_str().is_some());
 }
+
+#[test]
+fn test_emit_request_basic_functionality() {
+    let temp_dir = TempDir::new().unwrap();
+    let temp_path = temp_dir.path();
+
+    // Create test input file
+    let input_file = temp_path.join("test-input.bin");
+    fs::write(&input_file, b"Test data for emit-request").unwrap();
+
+    // Create archive
+    let output_archive = temp_path.join("test-archive.trst");
+    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    wrap_cmd
+        .arg("wrap")
+        .arg("--profile")
+        .arg("cam.video")
+        .arg("--in")
+        .arg(&input_file)
+        .arg("--out")
+        .arg(&output_archive)
+        .current_dir(temp_path);
+
+    wrap_cmd.assert().success();
+
+    // Test emit-request command
+    let device_pub_file = temp_path.join("device.pub");
+    let output_json = temp_path.join("verify_request.json");
+
+    let mut emit_cmd = Command::cargo_bin("trst").unwrap();
+    emit_cmd
+        .arg("emit-request")
+        .arg("--archive")
+        .arg(&output_archive)
+        .arg("--device-pub")
+        .arg(&device_pub_file)
+        .arg("--out")
+        .arg(&output_json)
+        .current_dir(temp_path);
+
+    emit_cmd
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Generated verify request:"));
+
+    // Verify the JSON file was created and has correct structure
+    assert!(output_json.exists());
+    let json_content = fs::read_to_string(&output_json).unwrap();
+    let verify_request: Value = serde_json::from_str(&json_content).unwrap();
+
+    // Check required fields exist
+    assert!(verify_request["device_pub"].is_string());
+    assert!(verify_request["manifest"].is_object());
+    assert!(verify_request["segments"].is_array());
+    assert!(verify_request["options"].is_object());
+
+    // Check options structure
+    assert_eq!(verify_request["options"]["return_receipt"], true);
+    assert!(verify_request["options"]["device_id"].is_string());
+
+    // Check segments have proper b3: hash format
+    let segments = verify_request["segments"].as_array().unwrap();
+    assert!(!segments.is_empty());
+    for segment in segments {
+        assert!(segment["index"].is_number());
+        let hash = segment["hash"].as_str().unwrap();
+        assert!(hash.starts_with("b3:"));
+        assert_eq!(hash.len(), 67); // "b3:" + 64 hex chars
+    }
+}
+
+#[test]
+fn test_emit_request_blake3_computation() {
+    let temp_dir = TempDir::new().unwrap();
+    let temp_path = temp_dir.path();
+
+    // Create test input with known content
+    let input_file = temp_path.join("test-input.bin");
+    let test_data = b"Known test data for BLAKE3 verification";
+    fs::write(&input_file, test_data).unwrap();
+
+    // Create archive
+    let output_archive = temp_path.join("test-archive.trst");
+    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    wrap_cmd
+        .arg("wrap")
+        .arg("--profile")
+        .arg("cam.video")
+        .arg("--in")
+        .arg(&input_file)
+        .arg("--out")
+        .arg(&output_archive)
+        .arg("--chunk-size")
+        .arg("50") // Small chunk size to ensure we get at least one chunk
+        .current_dir(temp_path);
+
+    wrap_cmd.assert().success();
+
+    // Emit request
+    let device_pub_file = temp_path.join("device.pub");
+    let output_json = temp_path.join("verify_request.json");
+
+    let mut emit_cmd = Command::cargo_bin("trst").unwrap();
+    emit_cmd
+        .arg("emit-request")
+        .arg("--archive")
+        .arg(&output_archive)
+        .arg("--device-pub")
+        .arg(&device_pub_file)
+        .arg("--out")
+        .arg(&output_json)
+        .current_dir(temp_path);
+
+    emit_cmd.assert().success();
+
+    // Parse and verify the JSON structure
+    let json_content = fs::read_to_string(&output_json).unwrap();
+    let verify_request: Value = serde_json::from_str(&json_content).unwrap();
+
+    // Verify segments array is properly structured
+    let segments = verify_request["segments"].as_array().unwrap();
+    assert!(!segments.is_empty());
+
+    // Check that segments are indexed properly (0-based)
+    for (i, segment) in segments.iter().enumerate() {
+        assert_eq!(segment["index"], i);
+        let hash = segment["hash"].as_str().unwrap();
+        assert!(hash.starts_with("b3:"));
+
+        // Verify hex chars are valid
+        let hex_part = &hash[3..];
+        assert!(hex_part.chars().all(|c| c.is_ascii_hexdigit()));
+    }
+}
+
+#[test]
+fn test_emit_request_http_error_handling() {
+    let temp_dir = TempDir::new().unwrap();
+    let temp_path = temp_dir.path();
+
+    // Create test input file and archive
+    let input_file = temp_path.join("test-input.bin");
+    fs::write(&input_file, b"Test data for POST request").unwrap();
+
+    let output_archive = temp_path.join("test-archive.trst");
+    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    wrap_cmd
+        .arg("wrap")
+        .arg("--profile")
+        .arg("cam.video")
+        .arg("--in")
+        .arg(&input_file)
+        .arg("--out")
+        .arg(&output_archive)
+        .current_dir(temp_path);
+
+    wrap_cmd.assert().success();
+
+    // Test emit-request with invalid URL (should fail with connection error)
+    let device_pub_file = temp_path.join("device.pub");
+    let output_json = temp_path.join("verify_request.json");
+
+    let mut emit_cmd = Command::cargo_bin("trst").unwrap();
+    emit_cmd
+        .arg("emit-request")
+        .arg("--archive")
+        .arg(&output_archive)
+        .arg("--device-pub")
+        .arg(&device_pub_file)
+        .arg("--out")
+        .arg(&output_json)
+        .arg("--post")
+        .arg("http://localhost:99999/v1/verify") // Invalid port
+        .current_dir(temp_path);
+
+    emit_cmd
+        .assert()
+        .failure() // Should fail due to connection error
+        .stderr(predicate::str::contains("Failed to POST"));
+
+    // Verify the JSON file was still created despite POST failure
+    assert!(output_json.exists());
+}
