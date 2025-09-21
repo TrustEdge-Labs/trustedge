@@ -216,7 +216,10 @@ fn test_verify_missing_chunk_file() {
 
     assert_eq!(json["signature"], "unknown");
     assert_eq!(json["continuity"], "unknown");
-    assert!(json["error"].as_str().unwrap().contains("Missing chunk file"));
+    assert!(json["error"]
+        .as_str()
+        .unwrap()
+        .contains("Missing chunk file"));
 }
 
 #[test]
