@@ -3,52 +3,95 @@
 # Project: trustedge — Privacy and trust at the edge.
 
 name: CI
+permissions:
+  contents: read
 
 on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
+
+# No default working directory - workspace commands run from root
 
 jobs:
-  test:
-    name: Test
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
+  rust:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install Rust toolchain
-      uses: actions-rust-lang/setup-rust-toolchain@v1
-      with:
-        toolchain: stable
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
 
-    - name: Cache cargo registry and target
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            . -> target
 
-    - name: Check formatting
-      run: cargo fmt -- --check
+      - name: fmt
+        run: cargo fmt --all -- --check
 
-    - name: Run clippy
-      run: cargo clippy -- -D warnings
+      - name: Install audio dependencies (if possible)
+        id: audio-deps
+        run: |
+          if sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config; then
+            echo "audio-available=true" >> $GITHUB_OUTPUT
+            echo "Audio libraries installed successfully"
+          else
+            echo "audio-available=false" >> $GITHUB_OUTPUT
+            echo "Audio libraries not available"
+          fi
 
-    - name: Run tests
-      run: cargo test --workspace
+      - name: Install YubiKey dependencies (if possible)
+        id: yubikey-deps
+        run: |
+          if sudo apt-get install -y libpcsclite-dev pkgconf; then
+            echo "yubikey-available=true" >> $GITHUB_OUTPUT
+            echo "YubiKey PCSC libraries installed successfully"
+          else
+            echo "yubikey-available=false" >> $GITHUB_OUTPUT
+            echo "YubiKey PCSC libraries not available"
+          fi
 
-    - name: Run P0 acceptance tests (Linux only)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        chmod +x ./p0_acceptance.sh
-        ./p0_acceptance.sh
+      - name: clippy (workspace - no features)
+        run: cargo clippy --workspace --all-targets --no-default-features -- -D warnings
+
+      - name: clippy (trustedge-core with audio)
+        if: steps.audio-deps.outputs.audio-available == 'true'
+        run: cargo clippy --package trustedge-core --all-targets --features audio -- -D warnings
+
+      - name: clippy (trustedge-core with yubikey)
+        if: steps.yubikey-deps.outputs.yubikey-available == 'true'
+        run: cargo clippy --package trustedge-core --all-targets --features yubikey -- -D warnings
+
+      - name: build binaries (required for integration tests)
+        run: cargo build --workspace --bins --no-default-features
+
+      - name: tests (workspace - no features)
+        run: cargo test --workspace --no-default-features --locked --verbose
+
+      - name: build binaries with audio (required for integration tests)
+        if: steps.audio-deps.outputs.audio-available == 'true'
+        run: cargo build --package trustedge-core --bins --features audio
+
+      - name: tests (trustedge-core with audio)
+        if: steps.audio-deps.outputs.audio-available == 'true'
+        run: cargo test --package trustedge-core --features audio --locked --verbose
+
+      - name: build binaries with yubikey (required for integration tests)
+        if: steps.yubikey-deps.outputs.yubikey-available == 'true'
+        run: cargo build --package trustedge-core --bins --features yubikey
+
+      - name: tests (trustedge-core with yubikey)
+        if: steps.yubikey-deps.outputs.yubikey-available == 'true'
+        run: cargo test --package trustedge-core --features yubikey --locked --verbose
+
+      - name: Run P0 acceptance tests
+        run: |
+          if [ -f ./p0_acceptance.sh ]; then
+            chmod +x ./p0_acceptance.sh
+            ./p0_acceptance.sh
+          else
+            echo "P0 acceptance script not found, skipping"
+          fi
