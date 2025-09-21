@@ -40,7 +40,7 @@ fn main() -> Result<()> {
     println!();
 
     // Step 1: Alice creates an original receipt
-    println!("📋 Step 1: Alice (Contract Writer) creates an original receipt");
+    println!("● Step 1: Alice (Contract Writer) creates an original receipt");
     println!("   - Business Logic: Alice owes Bob 1000 units for consulting services");
     println!("   - Contract Writer creates the Receipt (business logic)");
     println!("   - Security Guard puts it in a secure Envelope");
@@ -52,29 +52,29 @@ fn main() -> Result<()> {
         Some("Payment for Q4 consulting services".to_string()),
     )?;
 
-    println!("   ✅ Receipt created and secured in envelope");
+    println!("   ✔ Receipt created and secured in envelope");
     println!(
-        "   📦 Envelope hash: {}",
+        "   ● Envelope hash: {}",
         hex::encode(original_envelope.hash())
     );
-    println!("   🔐 Cryptographically signed by: Alice");
-    println!("   🎯 Intended beneficiary: Bob");
+    println!("   ● Cryptographically signed by: Alice");
+    println!("   ● Intended beneficiary: Bob");
     println!();
 
     // Step 2: Verify the original envelope
-    println!("🔍 Step 2: Security Guard verifies the original envelope");
+    println!("● Step 2: Security Guard verifies the original envelope");
     let is_valid = original_envelope.verify();
     println!(
         "   Envelope verification: {}",
-        if is_valid { "✅ VALID" } else { "❌ INVALID" }
+        if is_valid { "✔ VALID" } else { "✖ INVALID" }
     );
-    println!("   - Signature check: ✅ Passed");
-    println!("   - Tamper detection: ✅ Passed");
-    println!("   - Chain integrity: ✅ Passed");
+    println!("   - Signature check: ✔ Passed");
+    println!("   - Tamper detection: ✔ Passed");
+    println!("   - Chain integrity: ✔ Passed");
     println!();
 
     // Step 3: Bob assigns the receipt to Charlie
-    println!("📋 Step 3: Bob assigns his receipt to Charlie");
+    println!("● Step 3: Bob assigns his receipt to Charlie");
     println!("   - Business Logic: Bob transfers his 1000 unit claim to Charlie");
     println!("   - Verification: Bob proves he's the current beneficiary");
     println!("   - Contract Writer creates new Assignment Receipt");
@@ -87,13 +87,13 @@ fn main() -> Result<()> {
         Some("Transfer to Charlie for outstanding debt".to_string()),
     )?;
 
-    println!("   ✅ Assignment created and secured in new envelope");
+    println!("   ✔ Assignment created and secured in new envelope");
     println!(
         "   📦 New envelope hash: {}",
         hex::encode(assignment_envelope.hash())
     );
-    println!("   🔐 Cryptographically signed by: Bob");
-    println!("   🎯 New beneficiary: Charlie");
+    println!("   ● Cryptographically signed by: Bob");
+    println!("   ● New beneficiary: Charlie");
     println!(
         "   🔗 Links to previous envelope: {}",
         hex::encode(original_envelope.hash())
@@ -101,12 +101,12 @@ fn main() -> Result<()> {
     println!();
 
     // Step 4: Verify the assignment envelope
-    println!("🔍 Step 4: Security Guard verifies the assignment envelope");
+    println!("● Step 4: Security Guard verifies the assignment envelope");
     let assignment_valid = assignment_envelope.verify();
     println!(
         "   Assignment verification: {}",
         if assignment_valid {
-            "✅ VALID"
+            "✔ VALID"
         } else {
             "❌ INVALID"
         }
@@ -120,7 +120,7 @@ fn main() -> Result<()> {
     println!(
         "   Chain verification: {}",
         if chain_valid {
-            "✅ VALID"
+            "✔ VALID"
         } else {
             "❌ INVALID"
         }
@@ -135,14 +135,14 @@ fn main() -> Result<()> {
     println!();
 
     // Demonstrate the separation of concerns
-    println!("🎯 Architecture Summary: Separation of Concerns");
-    println!("   📋 Contract Writer (trustedge-receipts):");
+    println!("● Architecture Summary: Separation of Concerns");
+    println!("   ● Contract Writer (trustedge-receipts):");
     println!("      - Handles business logic (amounts, ownership, descriptions)");
     println!("      - Validates business rules (non-zero amounts, valid timestamps)");
     println!("      - Creates receipt chains and verifies ownership transfers");
     println!("      - Never worries about cryptography or security details");
     println!();
-    println!("   🛡️  Security Guard (trustedge-core Envelope):");
+    println!("   ● Security Guard (trustedge-core Envelope):");
     println!("      - Provides cryptographic security (encryption, signing, hashing)");
     println!("      - Ensures tamper-proof containers for any payload");
     println!("      - Handles nonces, chunks, manifests, and network protocols");

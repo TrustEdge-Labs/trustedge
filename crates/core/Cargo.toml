@@ -51,6 +51,7 @@ anyhow = { workspace = true }
 async-trait = { workspace = true }
 bincode = { workspace = true }
 blake3 = { workspace = true }
+chacha20poly1305 = "0.10"
 chrono = { workspace = true }
 clap = { workspace = true }
 cpal = { version = "0.15", optional = true }

@@ -17,6 +17,7 @@ members = [
     "crates/trst-core",
     "crates/trst-cli",
     "crates/trst-wasm",
+    "examples/cam.video",
 ]
 resolver = "2"
 

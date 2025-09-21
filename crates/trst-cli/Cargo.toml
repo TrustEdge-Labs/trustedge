@@ -14,6 +14,7 @@ license = "MPL-2.0"
 [[bin]]
 name = "trst"
 path = "src/main.rs"
+test = false
 
 [dependencies]
 anyhow = { workspace = true }
@@ -24,6 +25,9 @@ ed25519-dalek = { workspace = true }
 rand_core = { workspace = true, features = ["getrandom"] }
 serde_json = { workspace = true }
 trustedge-trst-core = { path = "../trst-core" }
+trustedge-core = { path = "../core" }
+hex = { workspace = true }
+chacha20poly1305 = "0.10"
 
 [dev-dependencies]
 assert_cmd = "2"

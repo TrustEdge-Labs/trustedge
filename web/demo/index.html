@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustEdge P0 .trst Archive Verifier</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f8fafc;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            background-color: #f9fafb;
+            cursor: pointer;
+        }
+
+        input[type="file"]:hover {
+            border-color: #3b82f6;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #2563eb;
+        }
+
+        button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .results.success {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+        }
+
+        .results.error {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .pass {
+            color: #059669;
+        }
+
+        .fail {
+            color: #dc2626;
+        }
+
+        .warning {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .warning-title {
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 5px;
+        }
+
+        .instructions {
+            background-color: #eff6ff;
+            border: 1px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .instructions-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .loading {
+            color: #3b82f6;
+            font-style: italic;
+        }
+
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 TrustEdge P0 Archive Verifier</h1>
+        <p class="subtitle">Verify .trst archives using WebAssembly</p>
+
+        <div class="warning">
+            <div class="warning-title">⚠️ Browser Compatibility</div>
+            This demo requires a modern browser with File System Access API support (Chrome 86+, Edge 86+).
+            Other browsers may not support directory selection.
+        </div>
+
+        <div class="instructions">
+            <div class="instructions-title">📋 Instructions</div>
+            1. Select a <code>.trst</code> directory using the button below<br>
+            2. Paste the device public key (starts with <code>ed25519:</code>)<br>
+            3. Click "Verify Archive" to validate the archive
+        </div>
+
+        <form id="verifyForm">
+            <div class="form-group">
+                <label for="archiveDir">📁 Select .trst Archive Directory:</label>
+                <input type="file" id="archiveDir" webkitdirectory directory multiple required>
+                <div id="directoryStatus" style="margin-top: 8px; color: #64748b; font-size: 14px;"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="devicePubKey">🔑 Device Public Key:</label>
+                <textarea
+                    id="devicePubKey"
+                    placeholder="ed25519:ABC123XYZ..."
+                    required
+                ></textarea>
+            </div>
+
+            <button type="submit" id="verifyButton">
+                🔍 Verify Archive
+            </button>
+        </form>
+
+        <div id="results" class="results">
+            <div class="result-item">
+                <span>Signature Verification:</span>
+                <span id="signatureStatus" class="status">-</span>
+            </div>
+            <div class="result-item">
+                <span>Continuity Chain:</span>
+                <span id="continuityStatus" class="status">-</span>
+            </div>
+            <div class="result-item">
+                <span>Segment Count:</span>
+                <span id="segmentCount">-</span>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, { verify_archive } from './pkg/trustedge_trst_wasm.js';
+
+        let wasmInitialized = false;
+        let selectedFiles = null;
+
+        // Initialize WASM module
+        async function initWasm() {
+            try {
+                await init();
+                wasmInitialized = true;
+                console.log('WASM module initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize WASM module:', error);
+                showError('Failed to initialize WebAssembly module. Please refresh the page.');
+            }
+        }
+
+        // Check for File System Access API support
+        function supportsFileSystemAccess() {
+            return 'showDirectoryPicker' in window;
+        }
+
+        // Handle directory selection
+        document.getElementById('archiveDir').addEventListener('change', function(event) {
+            selectedFiles = Array.from(event.target.files);
+
+            // Check if this looks like a .trst directory
+            const hasManifest = selectedFiles.some(file => file.name === 'manifest.json');
+            const hasChunks = selectedFiles.some(file => file.webkitRelativePath.includes('/chunks/'));
+            const hasSignatures = selectedFiles.some(file => file.webkitRelativePath.includes('/signatures/'));
+
+            const status = document.getElementById('directoryStatus');
+            if (hasManifest && hasChunks && hasSignatures) {
+                status.textContent = `✅ Valid .trst archive detected (${selectedFiles.length} files)`;
+                status.style.color = '#059669';
+            } else {
+                status.textContent = `⚠️ Directory may not be a valid .trst archive (${selectedFiles.length} files)`;
+                status.style.color = '#f59e0b';
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('verifyForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!wasmInitialized) {
+                showError('WebAssembly module not initialized. Please wait and try again.');
+                return;
+            }
+
+            const devicePubKey = document.getElementById('devicePubKey').value.trim();
+
+            if (!selectedFiles || selectedFiles.length === 0) {
+                showError('Please select a .trst archive directory.');
+                return;
+            }
+
+            if (!devicePubKey) {
+                showError('Please enter a device public key.');
+                return;
+            }
+
+            await verifyArchive(selectedFiles, devicePubKey);
+        });
+
+        // Verify archive using selected files (fallback for browsers without FileSystemAccess)
+        async function verifyArchive(files, devicePubKey) {
+            const button = document.getElementById('verifyButton');
+            const results = document.getElementById('results');
+
+            try {
+                button.disabled = true;
+                button.textContent = '🔍 Verifying...';
+                results.style.display = 'none';
+
+                // Find manifest.json
+                const manifestFile = files.find(file => file.name === 'manifest.json' || file.webkitRelativePath.endsWith('/manifest.json'));
+                if (!manifestFile) {
+                    throw new Error('manifest.json not found in selected directory');
+                }
+
+                // Read manifest content
+                const manifestContent = await readFileAsBytes(manifestFile);
+
+                // For P0 demo, we'll use the verify_manifest function since we can't easily
+                // create a FileSystemDirectoryHandle from file inputs
+                const { verify_manifest } = await import('./pkg/trustedge_trst_wasm.js');
+                const result = verify_manifest(manifestContent, devicePubKey);
+
+                // Basic continuity check: verify expected chunk files exist
+                const manifest = JSON.parse(new TextDecoder().decode(manifestContent));
+                const expectedChunks = manifest.segments?.map(s => s.chunk_file) || [];
+                const actualChunks = files.filter(f => f.webkitRelativePath.includes('/chunks/')).map(f => f.name);
+
+                const missingChunks = expectedChunks.filter(chunk => !actualChunks.includes(chunk));
+                if (missingChunks.length > 0) {
+                    result.continuity = 'fail';
+                }
+
+                displayResults(result, missingChunks);
+
+            } catch (error) {
+                console.error('Verification error:', error);
+                showError(`Verification failed: ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = '🔍 Verify Archive';
+            }
+        }
+
+        // Read file as byte array
+        function readFileAsBytes(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const arrayBuffer = reader.result;
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    resolve(uint8Array);
+                };
+                reader.onerror = () => reject(reader.error);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Display verification results
+        function displayResults(result, missingChunks = []) {
+            const results = document.getElementById('results');
+            const signatureStatus = document.getElementById('signatureStatus');
+            const continuityStatus = document.getElementById('continuityStatus');
+            const segmentCount = document.getElementById('segmentCount');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Update status displays
+            signatureStatus.textContent = result.signature === 'pass' ? '✅ PASS' : '❌ FAIL';
+            signatureStatus.className = `status ${result.signature}`;
+
+            continuityStatus.textContent = result.continuity === 'pass' ? '✅ PASS' : '❌ FAIL';
+            continuityStatus.className = `status ${result.continuity}`;
+
+            segmentCount.textContent = result.segment_count || '0';
+
+            // Show additional error info if any
+            if (missingChunks.length > 0) {
+                errorMessage.textContent = `Missing chunk files: ${missingChunks.join(', ')}`;
+            } else {
+                errorMessage.textContent = '';
+            }
+
+            // Set overall result styling
+            results.className = `results ${result.signature === 'pass' && result.continuity === 'pass' ? 'success' : 'error'}`;
+            results.style.display = 'block';
+        }
+
+        // Show error message
+        function showError(message) {
+            const results = document.getElementById('results');
+            const errorMessage = document.getElementById('errorMessage');
+
+            document.getElementById('signatureStatus').textContent = '-';
+            document.getElementById('continuityStatus').textContent = '-';
+            document.getElementById('segmentCount').textContent = '-';
+
+            errorMessage.textContent = message;
+            results.className = 'results error';
+            results.style.display = 'block';
+        }
+
+        // Initialize when page loads
+        initWasm();
+    </script>
+</body>
+</html>

@@ -18,9 +18,29 @@ crate-type = ["cdylib"]
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 serde-wasm-bindgen = { workspace = true }
-trustedge-trst-core = { path = "../trst-core" }
 wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = "0.4"
 js-sys = { workspace = true }
+console_error_panic_hook = "0.1"
+
+# WASM-compatible crypto dependencies
+ed25519-dalek = { version = "2", default-features = false, features = ["rand_core"] }
+blake3 = { version = "1.5", default-features = false }
+base64 = "0.22"
+hex = "0.4"
+getrandom = { version = "0.2", features = ["js"] }
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "console",
+  "File",
+  "FileReader",
+  "Blob",
+  "FileSystemDirectoryHandle",
+  "FileSystemFileHandle",
+  "FileSystemHandle",
+]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"

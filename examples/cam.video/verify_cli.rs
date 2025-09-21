@@ -6,30 +6,126 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-
 use std::env;
 use std::error::Error;
 use std::fs;
-use std::path::Path;
 
-use trst_core::verify_archive;
+use trustedge_core::{read_archive, validate_archive, verify_manifest};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let archive_path = env::args()
-        .nth(1)
-        .unwrap_or_else(|| "examples/cam.video/sample.trst".into());
-    let key_path = env::args().nth(2).unwrap_or_else(|| "device.pub".into());
+    println!("TrustEdge P0 cam.video Example: Verify CLI");
 
-    let device_pub = fs::read_to_string(&key_path)?;
-    let report = verify_archive(Path::new(&archive_path), device_pub.trim())?;
+    // Parse command line arguments
+    let args: Vec<String> = env::args().collect();
+    let archive_path = args
+        .get(1)
+        .unwrap_or(&"examples/cam.video/clip.trst".to_string())
+        .clone();
+    let key_path = args
+        .get(2)
+        .unwrap_or(&"examples/cam.video/device.pub".to_string())
+        .clone();
 
-    println!("Signature: {}", if report.signature { "PASS" } else { "FAIL" });
-    println!("Continuity: {}", if report.continuity { "PASS" } else { "FAIL" });
-    println!(
-        "Segments: {}  Duration(s): {:.1}",
-        report.segment_count,
-        report.duration_seconds
-    );
+    println!("Archive: {}", archive_path);
+    println!("Device key: {}", key_path);
+
+    // Read device public key
+    let device_pub = fs::read_to_string(&key_path).map_err(|e| {
+        format!(
+            "Failed to read device public key from '{}': {}",
+            key_path, e
+        )
+    })?;
+    let device_pub = device_pub.trim();
+
+    // Ensure device public key has proper format
+    let device_pub_key = if device_pub.starts_with("ed25519:") {
+        device_pub.to_string()
+    } else {
+        format!("ed25519:{}", device_pub)
+    };
+
+    println!("Device public key: {}", device_pub_key);
+    println!();
+
+    // Read and validate archive
+    let (manifest, _chunks) = read_archive(&archive_path)
+        .map_err(|e| format!("Failed to read archive '{}': {}", archive_path, e))?;
+
+    // Get signature and canonical bytes
+    let signature = manifest
+        .signature
+        .as_ref()
+        .ok_or("Manifest has no signature")?;
+
+    let canonical_bytes = manifest
+        .to_canonical_bytes()
+        .map_err(|e| format!("Failed to canonicalize manifest: {}", e))?;
+
+    // Verify signature
+    print!("Signature: ");
+    match verify_manifest(&device_pub_key, &canonical_bytes, signature) {
+        Ok(true) => {
+            println!("✔ PASS");
+
+            // Validate archive structure and continuity
+            print!("Continuity: ");
+            match validate_archive(&archive_path) {
+                Ok(()) => {
+                    println!("✔ PASS");
+
+                    // Print summary information
+                    let segment_count = manifest.segments.len();
+                    let duration_seconds: f64 =
+                        manifest.segments.iter().map(|s| s.duration_seconds).sum();
+
+                    println!();
+                    println!("● Archive Summary:");
+                    println!("   Segments: {}", segment_count);
+                    println!("   Duration: {:.1}s", duration_seconds);
+                    println!(
+                        "   Chunk size: {:.1}s per segment",
+                        if segment_count > 0 {
+                            duration_seconds / segment_count as f64
+                        } else {
+                            0.0
+                        }
+                    );
+                    println!("   Profile: {}", manifest.profile);
+                    println!(
+                        "   Device: {} ({})",
+                        manifest.device.id, manifest.device.model
+                    );
+                    println!(
+                        "   Resolution: {} @ {} fps",
+                        manifest.capture.resolution, manifest.capture.fps
+                    );
+                    println!("   Started: {}", manifest.capture.started_at);
+                    println!("   Ended: {}", manifest.capture.ended_at);
+
+                    println!();
+                    println!("🎉 Archive verification successful!");
+                }
+                Err(err) => {
+                    println!("❌ FAIL");
+                    eprintln!("Archive validation failed: {}", err);
+                    std::process::exit(1);
+                }
+            }
+        }
+        Ok(false) => {
+            println!("❌ FAIL");
+            println!("Continuity: ⏭️  SKIP");
+            eprintln!("Signature verification failed");
+            std::process::exit(1);
+        }
+        Err(err) => {
+            println!("❌ FAIL");
+            println!("Continuity: ⏭️  SKIP");
+            eprintln!("Signature verification error: {}", err);
+            std::process::exit(1);
+        }
+    }
 
     Ok(())
 }

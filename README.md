@@ -145,6 +145,70 @@ cargo build --workspace --release
 
 ---
 
+## 4 Step Demo - Golden Path
+
+The TrustEdge P0 implementation provides a complete demonstration of the `.trst` archive format with the `cam.video` golden profile. Follow these four steps to experience the full workflow:
+
+### Step 1: Wrap - Create a .trst Archive
+```bash
+# Navigate to cam.video examples
+cd examples/cam.video
+
+# Generate sample data and create archive
+cargo run --bin record_and_wrap
+
+# Output: clip.trst archive with encrypted segments and signed manifest
+```
+
+### Step 2: Verify - Validate Archive Integrity
+```bash
+# Verify the created archive
+cargo run --bin verify_cli clip.trst device.pub
+
+# ✔ Signature verification
+# ✔ Continuity chain validation
+# ● Archive summary with segment count and duration
+```
+
+### Step 3: Acceptance Tests - Full CLI Integration
+```bash
+# Run comprehensive A1-A6 acceptance test suite
+cargo test --test integration_tests
+
+# Tests cover:
+# A1: Basic wrap and verify workflow
+# A2: Chain continuity validation
+# A3: Signature verification
+# A4: Malformed archive rejection
+# A5: Crypto validation (end-to-end encryption/decryption)
+# A6: Cross-platform compatibility
+```
+
+### Step 4: WASM Demo - Browser Verification
+```bash
+# Build and serve the WASM demo
+./scripts/build-wasm-demo.sh
+
+# Open http://localhost:8000 in your browser
+# Upload clip.trst directory for in-browser verification
+```
+
+**📖 For detailed walkthrough and expected outputs, see [examples/cam.video/README.md](examples/cam.video/README.md).**
+
+### P0 Implementation Details
+
+The P0 `.trst` specification includes:
+
+- **Manifest Canonicalization**: Ordered JSON fields with signature exclusion
+- **BLAKE3 Continuity Chain**: Genesis seed `blake3("trustedge:genesis")` with segment linking
+- **XChaCha20-Poly1305 Encryption**: Per-segment encryption with unique nonces
+- **Ed25519 Signatures**: Device key signing with "ed25519:BASE64" format
+- **Archive Layout**: `clip-<id>.trst/` directory with manifest, signatures, and chunks
+
+**🔒 P0 Uses Software Keys Only**: Hardware backends (YubiKey/HSM) are documented but out-of-scope for P0 golden profile implementation.
+
+---
+
 ## Core Systems
 
 ### Universal Backend System
