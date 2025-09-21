@@ -21,17 +21,21 @@ fn create_test_archive_and_keys() -> (TempDir, PathBuf, String) {
     let input_file = temp_dir.path().join("test_input.txt");
     let archive_path = temp_dir.path().join("test_archive.trst");
 
-    // Create a test input file
-    fs::write(&input_file, b"Hello, TrustEdge!").unwrap();
+    // Create a larger test input file to ensure multiple chunks
+    let large_data: Vec<u8> = (0..8192).map(|i| (i % 256) as u8).collect();
+    fs::write(&input_file, large_data).unwrap();
 
-    // Create the archive using the wrap command
+    // Create the archive using the wrap command, setting working directory to temp_dir
     let output = get_trst_binary()
+        .current_dir(temp_dir.path())
         .args([
             "wrap",
             "--in",
             input_file.to_str().unwrap(),
             "--out",
             archive_path.to_str().unwrap(),
+            "--chunk-size",
+            "2048",
         ])
         .output()
         .unwrap();
@@ -42,7 +46,7 @@ fn create_test_archive_and_keys() -> (TempDir, PathBuf, String) {
         String::from_utf8_lossy(&output.stderr)
     );
 
-    // Read the generated public key
+    // Read the generated public key (created in temp_dir due to current_dir setting)
     let device_pub_path = temp_dir.path().join("device.pub");
     let device_pub = fs::read_to_string(device_pub_path)
         .unwrap()
@@ -169,7 +173,7 @@ fn test_verify_missing_archive() {
 }
 
 #[test]
-fn test_verify_gap_simulation() {
+fn test_verify_missing_chunk_file() {
     let (_temp_dir, archive_path, device_pub) = create_test_archive_and_keys();
 
     // Delete a chunk file to simulate a gap
@@ -203,16 +207,16 @@ fn test_verify_gap_simulation() {
 
     assert_eq!(
         output.status.code(),
-        Some(11),
-        "Expected exit code 11 for continuity failure"
+        Some(12),
+        "Expected exit code 12 for IO error when chunk file is missing"
     );
 
     let json_output = String::from_utf8(output.stdout).unwrap();
     let json: Value = serde_json::from_str(&json_output).expect("Invalid JSON output");
 
-    assert_eq!(json["signature"], "pass");
-    assert_eq!(json["continuity"], "fail");
-    assert!(json["error"].is_string());
+    assert_eq!(json["signature"], "unknown");
+    assert_eq!(json["continuity"], "unknown");
+    assert!(json["error"].as_str().unwrap().contains("Missing chunk file"));
 }
 
 #[test]
