@@ -11,7 +11,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 **Date:** September 6, 2025  
 **Status:** Draft
 
-> **Related Documentation**: For security considerations and vulnerability reporting, see [`SECURITY.md`](./SECURITY.md)
+> **Related Documentation**: For security considerations and vulnerability reporting, see [`SECURITY.md`](../../SECURITY.md)
 
 ## Overview
 
@@ -435,8 +435,8 @@ The implementation includes comprehensive integration tests:
 
 **See Also:**
 - [`src/format.rs`](trustedge-core/src/format.rs) - Reference implementation
-- [`PROTOCOL.md`](PROTOCOL.md) - Network protocol specification
-- [`THREAT_MODEL.md`](THREAT_MODEL.md) - Security analysis
+- [protocol.md](protocol.md) - Network protocol specification
+- [threat-model.md](threat-model.md) - Security analysis
 
 ---
 

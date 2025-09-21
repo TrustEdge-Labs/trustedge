@@ -10,7 +10,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 **Version:** 1.0 (Stable)
 **Date:** August 28, 2025
 
-> **Related Documentation**: For security policies and vulnerability reporting, see [`SECURITY.md`](./SECURITY.md)
+> **Related Documentation**: For security policies and vulnerability reporting, see [`SECURITY.md`](../../SECURITY.md)
 
 ## Overview
 
@@ -465,7 +465,7 @@ If any validation fails during decryption (e.g., manifest signature, nonce prefi
 - [`src/lib.rs`](trustedge-core/src/lib.rs) for struct definitions
 - [`src/main.rs`](trustedge-core/src/main.rs) for CLI and envelope logic
 - `trustedge-client` and `trustedge-server` for protocol usage
-- [`THREAT_MODEL.md`](THREAT_MODEL.md) for security rationale
+- [threat-model.md](threat-model.md) for security rationale
 
 ---
 

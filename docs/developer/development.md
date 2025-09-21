@@ -391,7 +391,7 @@ git push origin feature/tpm-backend
 3. **Use Templates**
    - Follow [PR template](./.github/pull_request_template.md) for submissions
    - Use [issue templates](./.github/ISSUE_TEMPLATE/) for bug reports and features
-   - See [CONTRIBUTING.md](./CONTRIBUTING.md) for complete guidelines
+   - See [CONTRIBUTING.md](../../CONTRIBUTING.md) for complete guidelines
 
 ### 🔧 Development Workflow
 
@@ -556,7 +556,7 @@ echo "All checks passed!"
 
 ### Threat Model
 
-See [THREAT_MODEL.md](./THREAT_MODEL.md) for complete threat analysis.
+See [threat-model.md](../technical/threat-model.md) for complete threat analysis.
 
 **Key Security Properties:**
 - Confidentiality: AES-256-GCM encryption
@@ -689,8 +689,8 @@ GitHub Actions workflow ensures:
 
 ---
 
-For testing procedures, see [TESTING.md](./TESTING.md).
+For testing procedures, see [testing.md](./testing.md).
 
-For usage examples, see [EXAMPLES.md](./EXAMPLES.md).
+For usage examples, see [Examples Index](../user/examples/README.md).
 
-For CLI reference, see [CLI.md](./CLI.md).
+For CLI reference, see [cli.md](../user/cli.md).

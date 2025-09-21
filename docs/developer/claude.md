@@ -2,7 +2,7 @@
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 
@@ -155,6 +155,54 @@ TrustEdge is a Cargo workspace with specialized crates organized under `crates/`
 - `audio`: Enables live audio capture (requires system audio libraries)
 - `yubikey`: Enables YubiKey hardware backend (requires PKCS#11)
 
+### Documentation Standards
+
+**IMPORTANT**: All markdown files must have consistent copyright headers and footers.
+
+#### Required Copyright Header
+EVERY .md file must start with this exact header:
+```markdown
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+```
+
+#### Required Footer Template
+ALL documentation files must end with this standardized footer:
+```markdown
+---
+
+*This document is part of the TrustEdge project documentation.*
+
+**📖 Links:**
+- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+
+**⚖️ Legal:**
+- **Copyright**: © 2025 TrustEdge Labs LLC
+- **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
+- **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)
+```
+
+#### Documentation Requirements
+- **Brand Consistency**: Always use `TrustEdge-Labs` organization URL (never `johnzilla`)
+- **Professional Links**: Every page must link to main repository and organization
+- **Legal Clarity**: Copyright and licensing info required on every page
+- **User Navigation**: Include links to issues, documentation, and support
+- **Commercial Contact**: Include enterprise licensing email for business inquiries
+
+#### When Creating New Documentation
+1. **Start with copyright header** (exact format above)
+2. **Write clear, focused content** following existing patterns
+3. **End with standardized footer** (exact format above)
+4. **Check all links work** and point to correct TrustEdge-Labs URLs
+5. **Maintain consistent tone** - professional, technical, enterprise-ready
+
 ## Common Tasks
 
 ### Implementation Process
@@ -264,4 +312,28 @@ ykman piv info
 - Default 4KB chunk size balances memory usage and performance
 - Network operations designed for 100+ concurrent connections
 
-This codebase prioritizes security, performance, and maintainability. When in doubt, favor explicit error handling, comprehensive testing, and clear documentation.
+## Final Reminders
+
+**CRITICAL**: This codebase prioritizes security, performance, and maintainability. When in doubt, favor explicit error handling, comprehensive testing, and clear documentation.
+
+**DOCUMENTATION REQUIREMENT**: Every markdown file you create or modify MUST include:
+1. **Exact copyright header** (see Documentation Standards section)
+2. **Standardized footer** with TrustEdge-Labs links (see Documentation Standards section)
+3. **Professional, enterprise-ready content** consistent with existing documentation
+
+**NO EXCEPTIONS**: This maintains brand consistency and professional appearance across all documentation.
+
+---
+
+*This document is part of the TrustEdge project documentation.*
+
+**📖 Links:**
+- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+
+**⚖️ Legal:**
+- **Copyright**: © 2025 TrustEdge Labs LLC
+- **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
+- **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

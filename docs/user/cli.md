@@ -367,4 +367,19 @@ ykman piv info
 - **Archive**: Ed25519 signing adds ~1ms per archive, BLAKE3 hashing is very fast
 - **Memory**: Streaming design maintains <50MB RAM regardless of file size
 
-For additional examples and advanced usage, see [EXAMPLES.md](EXAMPLES.md).
+For additional examples and advanced usage, see [Examples Index](examples/README.md).
+
+---
+
+*This document is part of the TrustEdge project documentation.*
+
+**📖 Links:**
+- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+
+**⚖️ Legal:**
+- **Copyright**: © 2025 TrustEdge Labs LLC
+- **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
+- **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

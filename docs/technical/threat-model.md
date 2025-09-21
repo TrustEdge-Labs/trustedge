@@ -12,7 +12,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 **Date**: August 2025  
 **Scope**: Edge AI privacy-preserving data processing system
 
-> **Related Documentation**: For vulnerability reporting and security policies, see [`SECURITY.md`](./SECURITY.md)
+> **Related Documentation**: For vulnerability reporting and security policies, see [`SECURITY.md`](../../SECURITY.md)
 
 ## Overview
 

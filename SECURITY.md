@@ -223,5 +223,5 @@ TrustEdge aims to align with:
 *Copyright (c) 2025 TRUSTEDGE LABS LLC. Licensed under the Mozilla Public License 2.0 (MPL-2.0).*
 *See LICENSE file for full license terms.*
 
-*For technical details, see [THREAT_MODEL.md](THREAT_MODEL.md), [PROTOCOL.md](PROTOCOL.md), and [FORMAT.md](FORMAT.md).*
+*For technical details, see [docs/technical/threat-model.md](docs/technical/threat-model.md), [docs/technical/protocol.md](docs/technical/protocol.md), and [docs/technical/format.md](docs/technical/format.md).*
 *For contribution guidelines, see [README.md](README.md).*

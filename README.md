@@ -138,10 +138,10 @@ cargo build --workspace --release
 
 ### Next Steps
 
-- **📖 [CLI Reference](CLI.md)** - Complete command-line options and usage
-- **💡 [Examples](EXAMPLES.md)** - Real-world workflows and use cases  
-- **🔐 [Authentication Guide](AUTHENTICATION_GUIDE.md)** - Secure network setup
-- **🏗️ [Architecture Guide](UNIVERSAL_BACKEND.md)** - System design and backends
+- **📖 [CLI Reference](docs/user/cli.md)** - Complete command-line options and usage
+- **💡 [Examples](docs/user/examples/README.md)** - Real-world workflows and use cases
+- **🔐 [Authentication Guide](docs/user/authentication.md)** - Secure network setup
+- **🏗️ [Architecture Guide](docs/technical/universal-backend.md)** - System design and backends
 
 ---
 
@@ -157,7 +157,7 @@ TrustEdge features a **capability-based Universal Backend system** that provides
 - **Software HSM**: In-memory cryptographic operations for development
 - **TPM Backend**: TPM 2.0 operations and attestation (planned)
 
-**📖 For detailed backend documentation, see [UNIVERSAL_BACKEND.md](UNIVERSAL_BACKEND.md).**
+**📖 For detailed backend documentation, see [docs/technical/universal-backend.md](docs/technical/universal-backend.md).**
 
 ### Digital Receipt System
 
@@ -181,7 +181,7 @@ TrustEdge supports secure client-server communication with **mutual authenticati
 - Replay protection through challenge-response protocols
 - Forward security with automatic session expiration
 
-**📖 For authentication setup and network security, see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md).**
+**📖 For authentication setup and network security, see [docs/user/authentication.md](docs/user/authentication.md).**
 
 ---
 
@@ -206,29 +206,29 @@ cargo test -p trustedge-trst-cli --test acceptance # Archive validation tests (7
 cargo test --features yubikey                     # Hardware integration tests
 ```
 
-**📖 For detailed testing procedures, see [TESTING.md](TESTING.md).**
+**📖 For detailed testing procedures, see [docs/developer/testing.md](docs/developer/testing.md).**
 
 ---
 
 ## Documentation
 
 ### User Guides
-- **[CLI Reference](CLI.md)** - Complete command-line interface documentation
-- **[Examples](EXAMPLES.md)** - Real-world usage examples and workflows
-- **[Authentication Guide](AUTHENTICATION_GUIDE.md)** - Network security setup
-- **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues and solutions
+- **[CLI Reference](docs/user/cli.md)** - Complete command-line interface documentation
+- **[Examples](docs/user/examples/README.md)** - Real-world usage examples and workflows
+- **[Authentication Guide](docs/user/authentication.md)** - Network security setup
+- **[Troubleshooting](docs/user/troubleshooting.md)** - Common issues and solutions
 
 ### Technical Reference
-- **[Universal Backend](UNIVERSAL_BACKEND.md)** - Backend system architecture
-- **[Binary Format](FORMAT.md)** - File format specification
-- **[Network Protocol](PROTOCOL.md)** - Communication protocol details
+- **[Universal Backend](docs/technical/universal-backend.md)** - Backend system architecture
+- **[Binary Format](docs/technical/format.md)** - File format specification
+- **[Network Protocol](docs/technical/protocol.md)** - Communication protocol details
 - **[Security Model](SECURITY.md)** - Security architecture and threat model
 
 ### Development
 - **[Contributing](CONTRIBUTING.md)** - How to contribute to TrustEdge
-- **[Development Guide](DEVELOPMENT.md)** - Development setup and workflows
-- **[Testing Guide](TESTING.md)** - Test procedures and validation
-- **[Coding Standards](CODING_STANDARDS.md)** - Code style and conventions
+- **[Development Guide](docs/developer/development.md)** - Development setup and workflows
+- **[Testing Guide](docs/developer/testing.md)** - Test procedures and validation
+- **[Coding Standards](docs/developer/coding-standards.md)** - Code style and conventions
 
 **📖 For complete documentation index, see [docs/README.md](docs/README.md).**
 
@@ -262,7 +262,7 @@ For security issues, please follow our [responsible disclosure policy](SECURITY.
 - **Memory Safety**: Secure key material handling with automatic cleanup
 - **Hardware Security**: Optional YubiKey integration for hardware-backed operations
 
-**📖 For detailed security analysis, see [SECURITY.md](SECURITY.md) and [THREAT_MODEL.md](THREAT_MODEL.md).**
+**📖 For detailed security analysis, see [SECURITY.md](SECURITY.md) and [docs/technical/threat-model.md](docs/technical/threat-model.md).**
 
 ---
 
@@ -303,7 +303,7 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0). See [LI
 - **Copyright**: © 2025 TrustEdge Labs LLC
 - **License**: Mozilla Public License 2.0
 - **Commercial Licensing**: Available for enterprise use
-- **Contributor Agreement**: [Developer Certificate of Origin](DCO.md)
+- **Contributor Agreement**: [Developer Certificate of Origin](docs/legal/dco.md)
 
 ---
 

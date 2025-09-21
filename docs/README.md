@@ -18,8 +18,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | Document | Purpose | Audience |
 |----------|---------|----------|
 | **[README.md](../README.md)** | Project overview, installation, basic usage | Everyone |
-| **[CLI.md](../CLI.md)** | Complete command-line reference | Users |
-| **[EXAMPLES.md](../EXAMPLES.md)** | Real-world usage examples | Users |
+| **[CLI.md](user/cli.md)** | Complete command-line reference | Users |
+| **[Examples Index](user/examples/README.md)** | Real-world usage examples | Users |
 
 ---
 
@@ -28,16 +28,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 ### Core Usage
 | Document | Description | When to Use |
 |----------|-------------|-------------|
-| **[EXAMPLES.md](../EXAMPLES.md)** | Comprehensive examples and workflows | Learning by example |
-| **[CLI.md](../CLI.md)** | Complete CLI reference and options | Command reference |
-| **[TROUBLESHOOTING.md](../TROUBLESHOOTING.md)** | Error handling and solutions | When things go wrong |
+| **[Examples Index](user/examples/README.md)** | Comprehensive examples and workflows | Learning by example |
+| **[CLI.md](user/cli.md)** | Complete CLI reference and options | Command reference |
+| **[TROUBLESHOOTING.md](user/troubleshooting.md)** | Error handling and solutions | When things go wrong |
 
 ### Authentication & Security
 | Document | Description | When to Use |
 |----------|-------------|-------------|
-| **[AUTHENTICATION_GUIDE.md](../AUTHENTICATION_GUIDE.md)** | Complete authentication setup guide | Setting up secure networks |
+| **[AUTHENTICATION_GUIDE.md](user/authentication.md)** | Complete authentication setup guide | Setting up secure networks |
 | **[SECURITY.md](../SECURITY.md)** | Security model and considerations | Security planning |
-| **[THREAT_MODEL.md](../THREAT_MODEL.md)** | Threat analysis and mitigations | Security assessment |
+| **[THREAT_MODEL.md](technical/threat-model.md)** | Threat analysis and mitigations | Security assessment |
 
 ---
 
@@ -46,15 +46,15 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 ### System Architecture
 | Document | Description | Audience |
 |----------|-------------|----------|
-| **[UNIVERSAL_BACKEND.md](../UNIVERSAL_BACKEND.md)** | Universal Backend system design | Developers |
-| **[FORMAT.md](../FORMAT.md)** | Binary format specification | Developers |
-| **[PROTOCOL.md](../PROTOCOL.md)** | Network protocol specification | Developers |
+| **[UNIVERSAL_BACKEND.md](technical/universal-backend.md)** | Universal Backend system design | Developers |
+| **[FORMAT.md](technical/format.md)** | Binary format specification | Developers |
+| **[PROTOCOL.md](technical/protocol.md)** | Network protocol specification | Developers |
 
 ### Testing & Quality
 | Document | Description | Audience |
 |----------|-------------|----------|
-| **[TESTING.md](../TESTING.md)** | Test procedures and validation | Developers/QA |
-| **[CODING_STANDARDS.md](../CODING_STANDARDS.md)** | Code style and standards | Contributors |
+| **[TESTING.md](developer/testing.md)** | Test procedures and validation | Developers/QA |
+| **[CODING_STANDARDS.md](developer/coding-standards.md)** | Code style and standards | Contributors |
 
 ---
 
@@ -63,15 +63,15 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 ### Project Development
 | Document | Description | Audience |
 |----------|-------------|----------|
-| **[ROADMAP.md](../ROADMAP.md)** | Project roadmap and milestones | Stakeholders |
-| **[DEVELOPMENT.md](../DEVELOPMENT.md)** | Development setup and workflows | Contributors |
+| **[ROADMAP.md](roadmap.md)** | Project roadmap and milestones | Stakeholders |
+| **[DEVELOPMENT.md](developer/development.md)** | Development setup and workflows | Contributors |
 | **[CONTRIBUTING.md](../CONTRIBUTING.md)** | Contribution guidelines | Contributors |
 
 ### Legal & Governance
 | Document | Description | Audience |
 |----------|-------------|----------|
-| **[DCO.md](../DCO.md)** | Developer Certificate of Origin | Contributors |
-| **[COPYRIGHT.md](../COPYRIGHT.md)** | Copyright and licensing | Legal/Contributors |
+| **[DCO.md](legal/dco.md)** | Developer Certificate of Origin | Contributors |
+| **[COPYRIGHT.md](legal/copyright.md)** | Copyright and licensing | Legal/Contributors |
 
 ---
 
@@ -81,42 +81,42 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 #### 👤 **End Users**
 1. [README.md](../README.md) - Start here
-2. [CLI.md](../CLI.md) - Command reference  
-3. [EXAMPLES.md](../EXAMPLES.md) - Usage examples
-4. [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) - Problem solving
-5. [AUTHENTICATION_GUIDE.md](../AUTHENTICATION_GUIDE.md) - Security setup
+2. [CLI.md](user/cli.md) - Command reference
+3. [Examples Index](user/examples/README.md) - Usage examples
+4. [TROUBLESHOOTING.md](user/troubleshooting.md) - Problem solving
+5. [AUTHENTICATION_GUIDE.md](user/authentication.md) - Security setup
 
 #### 👨‍💻 **Developers** 
-1. [UNIVERSAL_BACKEND.md](../UNIVERSAL_BACKEND.md) - Architecture overview
-2. [FORMAT.md](../FORMAT.md) - Binary format
-3. [PROTOCOL.md](../PROTOCOL.md) - Network protocol
-4. [TESTING.md](../TESTING.md) - Test procedures
-5. [DEVELOPMENT.md](../DEVELOPMENT.md) - Dev environment
+1. [UNIVERSAL_BACKEND.md](technical/universal-backend.md) - Architecture overview
+2. [FORMAT.md](technical/format.md) - Binary format
+3. [PROTOCOL.md](technical/protocol.md) - Network protocol
+4. [TESTING.md](developer/testing.md) - Test procedures
+5. [DEVELOPMENT.md](developer/development.md) - Dev environment
 
 #### 🤝 **Contributors**
 1. [CONTRIBUTING.md](../CONTRIBUTING.md) - How to contribute
-2. [CODING_STANDARDS.md](../CODING_STANDARDS.md) - Code standards
-3. [DCO.md](../DCO.md) - Legal requirements
-4. [ROADMAP.md](../ROADMAP.md) - Project direction
+2. [CODING_STANDARDS.md](developer/coding-standards.md) - Code standards
+3. [DCO.md](legal/dco.md) - Legal requirements
+4. [ROADMAP.md](roadmap.md) - Project direction
 
 #### 🔒 **Security Researchers**
 1. [SECURITY.md](../SECURITY.md) - Security model
-2. [THREAT_MODEL.md](../THREAT_MODEL.md) - Threat analysis
-3. [AUTHENTICATION_GUIDE.md](../AUTHENTICATION_GUIDE.md) - Auth system
+2. [THREAT_MODEL.md](technical/threat-model.md) - Threat analysis
+3. [AUTHENTICATION_GUIDE.md](user/authentication.md) - Auth system
 
 ### By Topic
 
 #### 🎯 **Getting Started**
-- [README.md](../README.md) → [CLI.md](../CLI.md) → [EXAMPLES.md](../EXAMPLES.md)
+- [README.md](../README.md) → [CLI.md](user/cli.md) → [Examples Index](user/examples/README.md)
 
 #### 🔐 **Security Implementation**  
-- [AUTHENTICATION_GUIDE.md](../AUTHENTICATION_GUIDE.md) → [SECURITY.md](../SECURITY.md) → [THREAT_MODEL.md](../THREAT_MODEL.md)
+- [AUTHENTICATION_GUIDE.md](user/authentication.md) → [SECURITY.md](../SECURITY.md) → [THREAT_MODEL.md](technical/threat-model.md)
 
 #### 🏗️ **System Architecture**
-- [UNIVERSAL_BACKEND.md](../UNIVERSAL_BACKEND.md) → [FORMAT.md](../FORMAT.md) → [PROTOCOL.md](../PROTOCOL.md)
+- [UNIVERSAL_BACKEND.md](technical/universal-backend.md) → [FORMAT.md](technical/format.md) → [PROTOCOL.md](technical/protocol.md)
 
 #### 🧪 **Development & Testing**
-- [DEVELOPMENT.md](../DEVELOPMENT.md) → [TESTING.md](../TESTING.md) → [CODING_STANDARDS.md](../CODING_STANDARDS.md)
+- [DEVELOPMENT.md](developer/development.md) → [TESTING.md](developer/testing.md) → [CODING_STANDARDS.md](developer/coding-standards.md)
 
 ---
 
@@ -174,22 +174,22 @@ SECURITY.md → THREAT_MODEL.md → AUTHENTICATION_GUIDE.md → TESTING.md
 
 | Task | Primary Document | Supporting Documents |
 |------|-----------------|---------------------|
-| **Install TrustEdge** | [README.md](../README.md) | [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) |
-| **Learn CLI options** | [CLI.md](../CLI.md) | [EXAMPLES.md](../EXAMPLES.md) |
-| **Set up authentication** | [AUTHENTICATION_GUIDE.md](../AUTHENTICATION_GUIDE.md) | [SECURITY.md](../SECURITY.md) |
-| **Understand architecture** | [UNIVERSAL_BACKEND.md](../UNIVERSAL_BACKEND.md) | [FORMAT.md](../FORMAT.md), [PROTOCOL.md](../PROTOCOL.md) |
-| **Contribute code** | [CONTRIBUTING.md](../CONTRIBUTING.md) | [DEVELOPMENT.md](../DEVELOPMENT.md), [CODING_STANDARDS.md](../CODING_STANDARDS.md) |
-| **Run tests** | [TESTING.md](../TESTING.md) | [DEVELOPMENT.md](../DEVELOPMENT.md) |
-| **Report security issue** | [SECURITY.md](../SECURITY.md) | [THREAT_MODEL.md](../THREAT_MODEL.md) |
+| **Install TrustEdge** | [README.md](../README.md) | [TROUBLESHOOTING.md](user/troubleshooting.md) |
+| **Learn CLI options** | [CLI.md](user/cli.md) | [Examples Index](user/examples/README.md) |
+| **Set up authentication** | [AUTHENTICATION_GUIDE.md](user/authentication.md) | [SECURITY.md](../SECURITY.md) |
+| **Understand architecture** | [UNIVERSAL_BACKEND.md](technical/universal-backend.md) | [FORMAT.md](technical/format.md), [PROTOCOL.md](technical/protocol.md) |
+| **Contribute code** | [CONTRIBUTING.md](../CONTRIBUTING.md) | [DEVELOPMENT.md](developer/development.md), [CODING_STANDARDS.md](developer/coding-standards.md) |
+| **Run tests** | [TESTING.md](developer/testing.md) | [DEVELOPMENT.md](developer/development.md) |
+| **Report security issue** | [SECURITY.md](../SECURITY.md) | [THREAT_MODEL.md](technical/threat-model.md) |
 
 ### Emergency Situations
 
 | Problem | Solution Document | Quick Action |
 |---------|------------------|--------------|
-| **Build fails** | [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) | Check dependencies |
-| **Authentication error** | [AUTHENTICATION_GUIDE.md](../AUTHENTICATION_GUIDE.md) | Verify certificates |
-| **Network connection issues** | [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) | Check server status |
-| **Test failures** | [TESTING.md](../TESTING.md) | Run `cargo test --verbose` |
+| **Build fails** | [TROUBLESHOOTING.md](user/troubleshooting.md) | Check dependencies |
+| **Authentication error** | [AUTHENTICATION_GUIDE.md](user/authentication.md) | Verify certificates |
+| **Network connection issues** | [TROUBLESHOOTING.md](user/troubleshooting.md) | Check server status |
+| **Test failures** | [TESTING.md](developer/testing.md) | Run `cargo test --verbose` |
 | **Security concern** | [SECURITY.md](../SECURITY.md) | Follow responsible disclosure |
 
 ---
@@ -198,19 +198,32 @@ SECURITY.md → THREAT_MODEL.md → AUTHENTICATION_GUIDE.md → TESTING.md
 
 ### **For New Users:**
 1. **Always start with [README.md](../README.md)** for project overview
-2. **Use [EXAMPLES.md](../EXAMPLES.md)** to learn by doing  
-3. **Keep [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)** handy for issues
+2. **Use [Examples Index](user/examples/README.md)** to learn by doing
+3. **Keep [TROUBLESHOOTING.md](user/troubleshooting.md)** handy for issues
 
 ### **For Developers:**
-1. **Begin with [UNIVERSAL_BACKEND.md](../UNIVERSAL_BACKEND.md)** for architecture
-2. **Review [TESTING.md](../TESTING.md)** before making changes
-3. **Follow [CODING_STANDARDS.md](../CODING_STANDARDS.md)** for consistency
+1. **Begin with [UNIVERSAL_BACKEND.md](technical/universal-backend.md)** for architecture
+2. **Review [TESTING.md](developer/testing.md)** before making changes
+3. **Follow [CODING_STANDARDS.md](developer/coding-standards.md)** for consistency
 
 ### **For Contributors:**
 1. **Read [CONTRIBUTING.md](../CONTRIBUTING.md)** first
-2. **Understand [DCO.md](../DCO.md)** for legal compliance
-3. **Check [ROADMAP.md](../ROADMAP.md)** for project direction
+2. **Understand [DCO.md](legal/dco.md)** for legal compliance
+3. **Check [ROADMAP.md](roadmap.md)** for project direction
 
 ---
 
 *This documentation index is maintained as part of the TrustEdge project. For updates or suggestions, see [CONTRIBUTING.md](../CONTRIBUTING.md).*
+
+---
+
+**📖 Links:**
+- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+
+**⚖️ Legal:**
+- **Copyright**: © 2025 TrustEdge Labs LLC
+- **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
+- **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

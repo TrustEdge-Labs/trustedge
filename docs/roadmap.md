@@ -87,7 +87,7 @@ TrustEdge welcomes contributions in these areas:
 - **Documentation**: Guides, tutorials, and API documentation
 - **Testing**: Security test scenarios and fuzzing
 
-For contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
+For contribution guidelines, see [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ---
 
@@ -95,7 +95,7 @@ For contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - **GitHub Issues**: Bug reports and feature requests
 - **Discussions**: Architecture discussions and Q&A
-- **Security**: Responsible disclosure via [SECURITY.md](SECURITY.md)
+- **Security**: Responsible disclosure via [SECURITY.md](../SECURITY.md)
 - **Commercial**: Enterprise support at [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com)
 
 ---

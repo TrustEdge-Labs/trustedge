@@ -585,7 +585,7 @@ done
 
 #### 3. Error Handling Validation
 
-**📖 For detailed error testing procedures and expected error messages, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).**
+**📖 For detailed error testing procedures and expected error messages, see [troubleshooting.md](../user/troubleshooting.md).**
 
 **Validation Test Categories:**
 - File system errors (missing files, permissions)
@@ -1247,6 +1247,6 @@ cargo test --target x86_64-apple-darwin
 
 ---
 
-For more information about the security model and threat analysis, see [THREAT_MODEL.md](./THREAT_MODEL.md).
+For more information about the security model and threat analysis, see [threat-model.md](../technical/threat-model.md).
 
-For protocol details and technical specifications, see [PROTOCOL.md](./PROTOCOL.md).
+For protocol details and technical specifications, see [protocol.md](../technical/protocol.md).

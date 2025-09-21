@@ -2,7 +2,7 @@
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 
@@ -183,8 +183,8 @@ TrustEdge offers commercial licensing and enterprise support for organizations r
 5. **Deploy** with confidence and enterprise support
 
 ### **Resources**
-- **Technical Documentation**: [Complete integration guides](./README.md)
-- **Security Whitepaper**: [Architecture and threat model](./SECURITY.md)
+- **Technical Documentation**: [Complete integration guides](../../README.md)
+- **Security Whitepaper**: [Architecture and threat model](../../SECURITY.md)
 - **Compliance Documentation**: Available under NDA for qualified prospects
 - **Reference Architectures**: Industry-specific deployment patterns
 

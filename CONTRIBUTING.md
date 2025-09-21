@@ -21,8 +21,8 @@ Thank you for your interest in contributing to TrustEdge! This document provides
 ## 📋 Before You Start
 
 1. **Check existing work**: Search [issues](https://github.com/TrustEdge-Labs/trustedge/issues) and [PRs](https://github.com/TrustEdge-Labs/trustedge/pulls)
-2. **Read the docs**: Review [DEVELOPMENT.md](./DEVELOPMENT.md) for technical details
-3. **Review coding standards**: See [CODING_STANDARDS.md](./CODING_STANDARDS.md) for style guidelines
+2. **Read the docs**: Review [docs/developer/development.md](./docs/developer/development.md) for technical details
+3. **Review coding standards**: See [docs/developer/coding-standards.md](./docs/developer/coding-standards.md) for style guidelines
 4. **Check progress**: See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) and [Issue #16](https://github.com/TrustEdge-Labs/trustedge/issues/16) for current status
 5. **Understand the code**: Review the codebase structure and patterns
 
@@ -70,7 +70,7 @@ When requesting features:
 
 ### Coding Standards
 
-**Follow the comprehensive coding standards**: See [CODING_STANDARDS.md](./CODING_STANDARDS.md) for detailed guidelines.
+**Follow the comprehensive coding standards**: See [docs/developer/coding-standards.md](./docs/developer/coding-standards.md) for detailed guidelines.
 
 **Key requirements**:
 - **Style**: Follow standard Rust formatting (`cargo fmt`)
@@ -83,7 +83,7 @@ When requesting features:
 
 ### Code Quality Requirements
 
-See [CODING_STANDARDS.md](./CODING_STANDARDS.md) for detailed requirements. Essential checks:
+See [docs/developer/coding-standards.md](./docs/developer/coding-standards.md) for detailed requirements. Essential checks:
 
 - [ ] Code compiles without warnings
 - [ ] All tests pass (`cargo test`)
@@ -196,7 +196,7 @@ Closes #issue-number
 
 ## Developer Certificate of Origin (DCO)
 
-All contributions to this repository must be accompanied by a sign-off indicating that you agree to the [Developer Certificate of Origin (DCO)](./DCO.md). This is a lightweight way for contributors to state that they have the right to submit their work.
+All contributions to this repository must be accompanied by a sign-off indicating that you agree to the [Developer Certificate of Origin (DCO)](./docs/legal/dco.md). This is a lightweight way for contributors to state that they have the right to submit their work.
 
 ### How to Sign Your Commits
 
@@ -218,7 +218,7 @@ The DCO is a simple statement that you, as a contributor, have the legal right t
 
 - You wrote the code or have the right to submit it under the project's license
 - You understand that the contribution and your sign-off are publicly recorded
-- You agree to the terms outlined in the [full DCO text](./DCO.md)
+- You agree to the terms outlined in the [full DCO text](./docs/legal/dco.md)
 
 ### Why Use DCO?
 
@@ -280,7 +280,7 @@ Without the CLA, we couldn't offer commercial licenses, which would limit our ab
 
 ### 📋 CLA Document
 
-The full CLA document is available here: **[TrustEdge CLA](https://github.com/TrustEdge-Labs/trustedge/blob/main/CLA.md)** 
+The full CLA document is available here: **[TrustEdge CLA](https://github.com/TrustEdge-Labs/trustedge/blob/main/docs/legal/cla.md)** 
 
 ### Questions About the CLA?
 

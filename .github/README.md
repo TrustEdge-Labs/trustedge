@@ -16,10 +16,10 @@ This directory contains GitHub-specific configuration and workflows.
 
 ## Quick Links
 
-- **Getting Started:** [README.md](../README.md) → [CLI.md](../CLI.md) → [EXAMPLES.md](../EXAMPLES.md)
-- **Security Setup:** [AUTHENTICATION_GUIDE.md](../AUTHENTICATION_GUIDE.md)
-- **Development:** [CONTRIBUTING.md](../CONTRIBUTING.md) → [DEVELOPMENT.md](../DEVELOPMENT.md)
-- **Architecture:** [UNIVERSAL_BACKEND.md](../UNIVERSAL_BACKEND.md)
+- **Getting Started:** [README.md](../README.md) → [CLI.md](../docs/user/cli.md) → [EXAMPLES.md](../docs/user/examples.md)
+- **Security Setup:** [AUTHENTICATION_GUIDE.md](../docs/user/authentication.md)
+- **Development:** [CONTRIBUTING.md](../CONTRIBUTING.md) → [DEVELOPMENT.md](../docs/developer/development.md)
+- **Architecture:** [UNIVERSAL_BACKEND.md](../docs/technical/universal-backend.md)
 
 ---
 
