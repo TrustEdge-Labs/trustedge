@@ -6,14 +6,14 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
+use chacha20poly1305::Key;
+use chrono::{DateTime, SecondsFormat, Utc};
 use std::error::Error;
 use std::fs;
-use chrono::{DateTime, SecondsFormat, Utc};
-use chacha20poly1305::Key;
 use trustedge_core::{
-    write_archive, CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, SegmentInfo,
-    DeviceKeypair, encrypt_segment, chain_next, genesis, segment_hash, sign_manifest,
-    generate_nonce24, generate_aad
+    chain_next, encrypt_segment, generate_aad, generate_nonce24, genesis, segment_hash,
+    sign_manifest, write_archive, CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo,
+    DeviceKeypair, SegmentInfo,
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -24,7 +24,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let device_id = format!("te:cam:example");
 
     // Save device keys for verification
-    fs::write("examples/cam.video/device.key", device_keypair.export_secret())?;
+    fs::write(
+        "examples/cam.video/device.key",
+        device_keypair.export_secret(),
+    )?;
     fs::write("examples/cam.video/device.pub", &device_keypair.public)?;
 
     println!("Generated device keypair:");
@@ -33,8 +36,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Read sample data
     let input_path = "examples/cam.video/sample.bin";
-    let input_data = fs::read(input_path)
-        .map_err(|e| format!("Failed to read {}: {}", input_path, e))?;
+    let input_data =
+        fs::read(input_path).map_err(|e| format!("Failed to read {}: {}", input_path, e))?;
 
     if input_data.is_empty() {
         return Err("Input file is empty".into());
@@ -97,8 +100,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         segments.push(segment);
         chain_state = next_state;
 
-        println!("  Chunk {}: {} bytes -> {} bytes encrypted",
-                 chunk_id, chunk_data.len(), encrypted_data.len());
+        println!(
+            "  Chunk {}: {} bytes -> {} bytes encrypted",
+            chunk_id,
+            chunk_data.len(),
+            encrypted_data.len()
+        );
     }
 
     // Create manifest
@@ -140,13 +147,24 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Write archive
     let output_path = "examples/cam.video/clip.trst";
     let detached_sig = signature.as_bytes();
-    write_archive(output_path, &signed_manifest, encrypted_chunks, detached_sig)?;
+    write_archive(
+        output_path,
+        &signed_manifest,
+        encrypted_chunks,
+        detached_sig,
+    )?;
 
     println!("✔ Archive created: {}", output_path);
     println!("   Signature: {}", signature);
     println!("   Segments: {}", signed_manifest.segments.len());
-    println!("   Total duration: {:.1}s",
-             signed_manifest.segments.iter().map(|s| s.duration_seconds).sum::<f64>());
+    println!(
+        "   Total duration: {:.1}s",
+        signed_manifest
+            .segments
+            .iter()
+            .map(|s| s.duration_seconds)
+            .sum::<f64>()
+    );
 
     Ok(())
 }

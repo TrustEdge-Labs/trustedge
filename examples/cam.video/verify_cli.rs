@@ -17,10 +17,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Parse command line arguments
     let args: Vec<String> = env::args().collect();
-    let archive_path = args.get(1)
+    let archive_path = args
+        .get(1)
         .unwrap_or(&"examples/cam.video/clip.trst".to_string())
         .clone();
-    let key_path = args.get(2)
+    let key_path = args
+        .get(2)
         .unwrap_or(&"examples/cam.video/device.pub".to_string())
         .clone();
 
@@ -28,8 +30,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Device key: {}", key_path);
 
     // Read device public key
-    let device_pub = fs::read_to_string(&key_path)
-        .map_err(|e| format!("Failed to read device public key from '{}': {}", key_path, e))?;
+    let device_pub = fs::read_to_string(&key_path).map_err(|e| {
+        format!(
+            "Failed to read device public key from '{}': {}",
+            key_path, e
+        )
+    })?;
     let device_pub = device_pub.trim();
 
     // Ensure device public key has proper format
@@ -47,10 +53,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map_err(|e| format!("Failed to read archive '{}': {}", archive_path, e))?;
 
     // Get signature and canonical bytes
-    let signature = manifest.signature.as_ref()
+    let signature = manifest
+        .signature
+        .as_ref()
         .ok_or("Manifest has no signature")?;
 
-    let canonical_bytes = manifest.to_canonical_bytes()
+    let canonical_bytes = manifest
+        .to_canonical_bytes()
         .map_err(|e| format!("Failed to canonicalize manifest: {}", e))?;
 
     // Verify signature
@@ -67,19 +76,30 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                     // Print summary information
                     let segment_count = manifest.segments.len();
-                    let duration_seconds: f64 = manifest.segments.iter()
-                        .map(|s| s.duration_seconds)
-                        .sum();
+                    let duration_seconds: f64 =
+                        manifest.segments.iter().map(|s| s.duration_seconds).sum();
 
                     println!();
                     println!("● Archive Summary:");
                     println!("   Segments: {}", segment_count);
                     println!("   Duration: {:.1}s", duration_seconds);
-                    println!("   Chunk size: {:.1}s per segment",
-                             if segment_count > 0 { duration_seconds / segment_count as f64 } else { 0.0 });
+                    println!(
+                        "   Chunk size: {:.1}s per segment",
+                        if segment_count > 0 {
+                            duration_seconds / segment_count as f64
+                        } else {
+                            0.0
+                        }
+                    );
                     println!("   Profile: {}", manifest.profile);
-                    println!("   Device: {} ({})", manifest.device.id, manifest.device.model);
-                    println!("   Resolution: {} @ {} fps", manifest.capture.resolution, manifest.capture.fps);
+                    println!(
+                        "   Device: {} ({})",
+                        manifest.device.id, manifest.device.model
+                    );
+                    println!(
+                        "   Resolution: {} @ {} fps",
+                        manifest.capture.resolution, manifest.capture.fps
+                    );
                     println!("   Started: {}", manifest.capture.started_at);
                     println!("   Ended: {}", manifest.capture.ended_at);
 

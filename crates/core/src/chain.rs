@@ -1,3 +1,12 @@
+//
+// Copyright (c) 2025 TRUSTEDGE LABS LLC
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+
+
 use thiserror::Error;
 
 /// Genesis seed for the continuity chain
@@ -214,13 +223,13 @@ mod tests {
         let segments = vec![
             ChainSegment {
                 index: 0,
-                stored_hash: hash2,  // Wrong hash for index 0
-                stored_continuity: continuity2,  // Wrong continuity
+                stored_hash: hash2,             // Wrong hash for index 0
+                stored_continuity: continuity2, // Wrong continuity
             },
             ChainSegment {
                 index: 1,
-                stored_hash: hash1,  // Wrong hash for index 1
-                stored_continuity: continuity1,  // Wrong continuity
+                stored_hash: hash1,             // Wrong hash for index 1
+                stored_continuity: continuity1, // Wrong continuity
             },
         ];
 
@@ -260,7 +269,7 @@ mod tests {
             ChainSegment {
                 index: 1,
                 stored_hash: hash2,
-                stored_continuity: continuity3,  // This is wrong - should be continuity2
+                stored_continuity: continuity3, // This is wrong - should be continuity2
             },
         ];
 
@@ -288,7 +297,7 @@ mod tests {
                 stored_continuity: continuity1,
             },
             ChainSegment {
-                index: 2,  // Gap! Should be index 1
+                index: 2, // Gap! Should be index 1
                 stored_hash: hash1,
                 stored_continuity: continuity1,
             },
@@ -317,6 +326,8 @@ mod tests {
 
         // Should be valid base64
         assert_eq!(encoded.len() % 4, 0);
-        assert!(encoded.chars().all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '='));
+        assert!(encoded
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '='));
     }
 }

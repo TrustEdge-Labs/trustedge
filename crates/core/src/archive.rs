@@ -1,3 +1,12 @@
+//
+// Copyright (c) 2025 TRUSTEDGE LABS LLC
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+
+
 use crate::manifest::{CamVideoManifest, ManifestError};
 use std::fs::{self, File};
 use std::io::{Read, Write};
@@ -35,13 +44,11 @@ pub fn write_archive<P: AsRef<Path>>(
 
     // Validate inputs
     if chunk_ciphertexts.len() != manifest.segments.len() {
-        return Err(ArchiveError::SchemaMismatch(
-            format!(
-                "Chunk count mismatch: {} chunks provided, {} segments in manifest",
-                chunk_ciphertexts.len(),
-                manifest.segments.len()
-            )
-        ));
+        return Err(ArchiveError::SchemaMismatch(format!(
+            "Chunk count mismatch: {} chunks provided, {} segments in manifest",
+            chunk_ciphertexts.len(),
+            manifest.segments.len()
+        )));
     }
 
     // Create directory structure
@@ -133,8 +140,9 @@ pub fn validate_archive<P: AsRef<Path>>(base_dir: P) -> Result<(), ArchiveError>
     let (manifest, chunk_data) = read_archive(base_dir)?;
 
     // Validate manifest structure
-    manifest.validate()
-        .map_err(|e| ArchiveError::ValidationFailed(format!("Manifest validation failed: {}", e)))?;
+    manifest.validate().map_err(|e| {
+        ArchiveError::ValidationFailed(format!("Manifest validation failed: {}", e))
+    })?;
 
     // Validate chunk hashes and continuity chain
     let mut chain_segments = Vec::new();
@@ -146,24 +154,25 @@ pub fn validate_archive<P: AsRef<Path>>(base_dir: P) -> Result<(), ArchiveError>
 
         // Check if stored hash matches computed hash
         if segment.blake3_hash != computed_hash_hex {
-            return Err(ArchiveError::ValidationFailed(
-                format!(
-                    "Chunk {} hash mismatch: expected {}, computed {}",
-                    index, segment.blake3_hash, computed_hash_hex
-                )
-            ));
+            return Err(ArchiveError::ValidationFailed(format!(
+                "Chunk {} hash mismatch: expected {}, computed {}",
+                index, segment.blake3_hash, computed_hash_hex
+            )));
         }
 
         // Parse stored continuity hash
-        let stored_continuity = hex::decode(&segment.continuity_hash)
-            .map_err(|_| ArchiveError::ValidationFailed(
-                format!("Invalid continuity hash format: {}", segment.continuity_hash)
-            ))?;
+        let stored_continuity = hex::decode(&segment.continuity_hash).map_err(|_| {
+            ArchiveError::ValidationFailed(format!(
+                "Invalid continuity hash format: {}",
+                segment.continuity_hash
+            ))
+        })?;
 
         if stored_continuity.len() != 32 {
-            return Err(ArchiveError::ValidationFailed(
-                format!("Continuity hash must be 32 bytes, got {}", stored_continuity.len())
-            ));
+            return Err(ArchiveError::ValidationFailed(format!(
+                "Continuity hash must be 32 bytes, got {}",
+                stored_continuity.len()
+            )));
         }
 
         let mut continuity_array = [0u8; 32];
@@ -177,8 +186,9 @@ pub fn validate_archive<P: AsRef<Path>>(base_dir: P) -> Result<(), ArchiveError>
     }
 
     // Validate continuity chain
-    crate::chain::validate_chain(&chain_segments)
-        .map_err(|e| ArchiveError::ValidationFailed(format!("Continuity chain validation failed: {}", e)))?;
+    crate::chain::validate_chain(&chain_segments).map_err(|e| {
+        ArchiveError::ValidationFailed(format!("Continuity chain validation failed: {}", e))
+    })?;
 
     Ok(())
 }
@@ -186,16 +196,16 @@ pub fn validate_archive<P: AsRef<Path>>(base_dir: P) -> Result<(), ArchiveError>
 /// Parse chunk index from filename (e.g., "00002.bin" -> 2)
 fn parse_chunk_index(filename: &str) -> Result<usize, ArchiveError> {
     if !filename.ends_with(".bin") || filename.len() != 9 {
-        return Err(ArchiveError::SchemaMismatch(
-            format!("Invalid chunk filename format: {}", filename)
-        ));
+        return Err(ArchiveError::SchemaMismatch(format!(
+            "Invalid chunk filename format: {}",
+            filename
+        )));
     }
 
     let index_str = &filename[0..5];
-    index_str.parse::<usize>()
-        .map_err(|_| ArchiveError::SchemaMismatch(
-            format!("Invalid chunk index in filename: {}", filename)
-        ))
+    index_str.parse::<usize>().map_err(|_| {
+        ArchiveError::SchemaMismatch(format!("Invalid chunk index in filename: {}", filename))
+    })
 }
 
 /// Get the expected archive directory name for a given ID

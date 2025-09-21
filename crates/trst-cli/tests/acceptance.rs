@@ -208,6 +208,5 @@ fn acceptance_a6_duration_sanity() {
 
     // This test verifies that the archive validates successfully even with unusual durations
     // The P0 implementation doesn't enforce strict duration sanity checks
-    run_verify(&tempdir, &archive, &device_pub)
-        .success();
+    run_verify(&tempdir, &archive, &device_pub).success();
 }

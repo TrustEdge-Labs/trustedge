@@ -26,12 +26,18 @@ fn test_wrap_and_verify_basic_workflow() {
     // Run wrap command
     let mut cmd = Command::cargo_bin("trst").unwrap();
     cmd.arg("wrap")
-        .arg("--profile").arg("cam.video")
-        .arg("--in").arg(&input_file)
-        .arg("--out").arg(&output_archive)
-        .arg("--chunk-size").arg("1048576")
-        .arg("--chunk-seconds").arg("2.0")
-        .arg("--fps").arg("30")
+        .arg("--profile")
+        .arg("cam.video")
+        .arg("--in")
+        .arg(&input_file)
+        .arg("--out")
+        .arg(&output_archive)
+        .arg("--chunk-size")
+        .arg("1048576")
+        .arg("--chunk-seconds")
+        .arg("2.0")
+        .arg("--fps")
+        .arg("30")
         .current_dir(temp_path);
 
     cmd.assert()
@@ -46,7 +52,10 @@ fn test_wrap_and_verify_basic_workflow() {
     assert!(output_archive.exists());
     assert!(output_archive.join("manifest.json").exists());
     assert!(output_archive.join("chunks").join("00000.bin").exists());
-    assert!(output_archive.join("signatures").join("manifest.sig").exists());
+    assert!(output_archive
+        .join("signatures")
+        .join("manifest.sig")
+        .exists());
     assert!(temp_path.join("device.key").exists());
     assert!(temp_path.join("device.pub").exists());
 
@@ -56,12 +65,15 @@ fn test_wrap_and_verify_basic_workflow() {
 
     // Run verify command
     let mut verify_cmd = Command::cargo_bin("trst").unwrap();
-    verify_cmd.arg("verify")
+    verify_cmd
+        .arg("verify")
         .arg(&output_archive)
-        .arg("--device-pub").arg(device_pub)
+        .arg("--device-pub")
+        .arg(device_pub)
         .current_dir(temp_path);
 
-    verify_cmd.assert()
+    verify_cmd
+        .assert()
         .success()
         .stdout(predicate::str::contains("Signature: PASS"))
         .stdout(predicate::str::contains("Continuity: PASS"))
@@ -79,7 +91,11 @@ fn test_wrap_with_existing_device_key() {
 
     // Create device key file
     let device_key_file = temp_path.join("my-device.key");
-    fs::write(&device_key_file, "ed25519:bz45Wwv6bA3XzesTxVt3IaKxWk8iC2MrcMS1+dDHQRs=\n").unwrap();
+    fs::write(
+        &device_key_file,
+        "ed25519:bz45Wwv6bA3XzesTxVt3IaKxWk8iC2MrcMS1+dDHQRs=\n",
+    )
+    .unwrap();
 
     // Create output archive path
     let output_archive = temp_path.join("test-archive.trst");
@@ -87,10 +103,14 @@ fn test_wrap_with_existing_device_key() {
     // Run wrap command with existing key
     let mut cmd = Command::cargo_bin("trst").unwrap();
     cmd.arg("wrap")
-        .arg("--profile").arg("cam.video")
-        .arg("--in").arg(&input_file)
-        .arg("--out").arg(&output_archive)
-        .arg("--device-key").arg(&device_key_file)
+        .arg("--profile")
+        .arg("cam.video")
+        .arg("--in")
+        .arg(&input_file)
+        .arg("--out")
+        .arg(&output_archive)
+        .arg("--device-key")
+        .arg(&device_key_file)
         .current_dir(temp_path);
 
     cmd.assert()
@@ -105,12 +125,15 @@ fn test_wrap_with_existing_device_key() {
 
     // Run verify command
     let mut verify_cmd = Command::cargo_bin("trst").unwrap();
-    verify_cmd.arg("verify")
+    verify_cmd
+        .arg("verify")
         .arg(&output_archive)
-        .arg("--device-pub").arg(expected_pub_key)
+        .arg("--device-pub")
+        .arg(expected_pub_key)
         .current_dir(temp_path);
 
-    verify_cmd.assert()
+    verify_cmd
+        .assert()
         .success()
         .stdout(predicate::str::contains("Signature: PASS"))
         .stdout(predicate::str::contains("Continuity: PASS"));
@@ -130,9 +153,12 @@ fn test_verify_with_wrong_public_key() {
     // Run wrap command
     let mut cmd = Command::cargo_bin("trst").unwrap();
     cmd.arg("wrap")
-        .arg("--profile").arg("cam.video")
-        .arg("--in").arg(&input_file)
-        .arg("--out").arg(&output_archive)
+        .arg("--profile")
+        .arg("cam.video")
+        .arg("--in")
+        .arg(&input_file)
+        .arg("--out")
+        .arg(&output_archive)
         .current_dir(temp_path);
 
     cmd.assert().success();
@@ -141,12 +167,15 @@ fn test_verify_with_wrong_public_key() {
     let wrong_pub_key = "ed25519:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
 
     let mut verify_cmd = Command::cargo_bin("trst").unwrap();
-    verify_cmd.arg("verify")
+    verify_cmd
+        .arg("verify")
         .arg(&output_archive)
-        .arg("--device-pub").arg(wrong_pub_key)
+        .arg("--device-pub")
+        .arg(wrong_pub_key)
         .current_dir(temp_path);
 
-    verify_cmd.assert()
+    verify_cmd
+        .assert()
         .failure()
         .stdout(predicate::str::contains("Signature: FAIL"))
         .stdout(predicate::str::contains("Continuity: SKIP"));
@@ -162,9 +191,12 @@ fn test_wrap_nonexistent_input_file() {
 
     let mut cmd = Command::cargo_bin("trst").unwrap();
     cmd.arg("wrap")
-        .arg("--profile").arg("cam.video")
-        .arg("--in").arg(&nonexistent_file)
-        .arg("--out").arg(&output_archive)
+        .arg("--profile")
+        .arg("cam.video")
+        .arg("--in")
+        .arg(&nonexistent_file)
+        .arg("--out")
+        .arg(&output_archive)
         .current_dir(temp_path);
 
     cmd.assert()
@@ -183,7 +215,8 @@ fn test_verify_nonexistent_archive() {
     let mut cmd = Command::cargo_bin("trst").unwrap();
     cmd.arg("verify")
         .arg(&nonexistent_archive)
-        .arg("--device-pub").arg(pub_key)
+        .arg("--device-pub")
+        .arg(pub_key)
         .current_dir(temp_path);
 
     cmd.assert()
@@ -203,12 +236,15 @@ fn test_invalid_output_directory_name() {
 
     let mut cmd = Command::cargo_bin("trst").unwrap();
     cmd.arg("wrap")
-        .arg("--profile").arg("cam.video")
-        .arg("--in").arg(&input_file)
-        .arg("--out").arg(&invalid_output)
+        .arg("--profile")
+        .arg("cam.video")
+        .arg("--in")
+        .arg(&input_file)
+        .arg("--out")
+        .arg(&invalid_output)
         .current_dir(temp_path);
 
-    cmd.assert()
-        .failure()
-        .stderr(predicate::str::contains("Output directory must end with .trst"));
+    cmd.assert().failure().stderr(predicate::str::contains(
+        "Output directory must end with .trst",
+    ));
 }

@@ -11,14 +11,14 @@ use std::path::{Path, PathBuf};
 use std::process;
 
 use anyhow::{Context, Result};
+use chacha20poly1305::Key;
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Args, Parser, Subcommand};
 use trustedge_core::{
-    write_archive, read_archive, validate_archive, CamVideoManifest, CaptureInfo, ChunkInfo,
-    DeviceInfo, SegmentInfo, DeviceKeypair, encrypt_segment, chain_next, genesis, segment_hash,
-    sign_manifest, verify_manifest, generate_nonce24, generate_aad
+    chain_next, encrypt_segment, generate_aad, generate_nonce24, genesis, read_archive,
+    segment_hash, sign_manifest, validate_archive, verify_manifest, write_archive,
+    CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, DeviceKeypair, SegmentInfo,
 };
-use chacha20poly1305::Key;
 
 #[derive(Debug)]
 struct WrapResult {
@@ -43,11 +43,7 @@ enum Commands {
 
 #[derive(Args, Debug)]
 struct WrapCmd {
-    #[arg(
-        long = "in",
-        value_name = "PATH",
-        help = "Input file to wrap"
-    )]
+    #[arg(long = "in", value_name = "PATH", help = "Input file to wrap")]
     input: PathBuf,
     #[arg(long = "out", value_name = "PATH", help = "Output .trst directory")]
     output: PathBuf,
@@ -113,7 +109,9 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     }
 
     // Create output directory
-    let archive_name = args.output.file_name()
+    let archive_name = args
+        .output
+        .file_name()
         .ok_or_else(|| anyhow::anyhow!("Invalid output path"))?
         .to_string_lossy();
 
@@ -136,7 +134,10 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
 
     // Create timestamp for all operations
     let started_at = current_timestamp()?;
-    let device_id = format!("te:cam:{}", hex::encode(&device_keypair.public.as_bytes()[9..15])); // Skip "ed25519:" prefix
+    let device_id = format!(
+        "te:cam:{}",
+        hex::encode(&device_keypair.public.as_bytes()[9..15])
+    ); // Skip "ed25519:" prefix
 
     for (i, chunk_data) in chunks.iter().enumerate() {
         let chunk_id = i as u32;
@@ -215,7 +216,12 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
 
     // Write archive
     let detached_sig = signature.as_bytes();
-    write_archive(&args.output, &signed_manifest, encrypted_chunks, detached_sig)?;
+    write_archive(
+        &args.output,
+        &signed_manifest,
+        encrypted_chunks,
+        detached_sig,
+    )?;
 
     let result = WrapResult {
         output_dir: args.output,
@@ -246,7 +252,9 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
     };
 
     // Get signature and canonical bytes
-    let signature = manifest.signature.as_ref()
+    let signature = manifest
+        .signature
+        .as_ref()
         .ok_or_else(|| anyhow::anyhow!("Manifest has no signature"))?;
 
     let canonical_bytes = manifest.to_canonical_bytes()?;
@@ -309,12 +317,7 @@ fn load_or_generate_keypair(
             let contents = String::from_utf8_lossy(&key_bytes).trim().to_string();
             let device_keypair = DeviceKeypair::import_secret(&contents)?;
             let public_path = existing.with_extension("pub");
-            Ok((
-                device_keypair,
-                existing.to_path_buf(),
-                public_path,
-                false,
-            ))
+            Ok((device_keypair, existing.to_path_buf(), public_path, false))
         }
         None => {
             let device_keypair = DeviceKeypair::generate()?;

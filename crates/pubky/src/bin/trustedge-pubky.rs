@@ -416,8 +416,8 @@ fn encrypt_data(
 
     // Create Pubky backend (ephemeral keys for forward secrecy)
     println!("● Creating ephemeral encryption keys...");
-    let backend = create_pubky_backend_random()
-        .context("✖ Failed to create Pubky backend for encryption")?;
+    let backend =
+        create_pubky_backend_random().context("✖ Failed to create Pubky backend for encryption")?;
 
     // Encrypt data (this will resolve the recipient's key from Pubky network)
     println!("● Resolving recipient's public key from Pubky network...");
@@ -449,11 +449,7 @@ fn encrypt_data(
 
     println!("✔ Encryption completed successfully!");
     println!("● Encryption Summary:");
-    println!(
-        "   ● Input:     {} ({} bytes)",
-        input.display(),
-        data.len()
-    );
+    println!("   ● Input:     {} ({} bytes)", input.display(), data.len());
     println!(
         "   ● Envelope:  {} ({} bytes)",
         output.display(),

@@ -1,6 +1,15 @@
+//
+// Copyright (c) 2025 TRUSTEDGE LABS LLC
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+
+
 use aead::{Aead, KeyInit};
 use chacha20poly1305::{XChaCha20Poly1305, XNonce};
-use ed25519_dalek::{SigningKey, VerifyingKey, Signature, Signer, Verifier};
+use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand_core::{OsRng, RngCore};
 use serde_json::json;
 use thiserror::Error;
@@ -28,8 +37,8 @@ pub enum CryptoError {
 ///
 /// Note: The secret key is automatically zeroized when dropped for security
 pub struct DeviceKeypair {
-    pub public: String,       // "ed25519:BASE64" format
-    secret: [u8; 32],        // Raw secret key bytes (zeroized on drop)
+    pub public: String, // "ed25519:BASE64" format
+    secret: [u8; 32],   // Raw secret key bytes (zeroized on drop)
 }
 
 impl Drop for DeviceKeypair {
@@ -67,11 +76,15 @@ impl DeviceKeypair {
             hex::decode(secret_str)
                 .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid hex: {}", e)))?
         } else {
-            return Err(CryptoError::InvalidKeyFormat("Must be ed25519:BASE64 or 64-char hex".to_string()));
+            return Err(CryptoError::InvalidKeyFormat(
+                "Must be ed25519:BASE64 or 64-char hex".to_string(),
+            ));
         };
 
         if secret_bytes.len() != 32 {
-            return Err(CryptoError::InvalidKeyFormat("Secret key must be 32 bytes".to_string()));
+            return Err(CryptoError::InvalidKeyFormat(
+                "Secret key must be 32 bytes".to_string(),
+            ));
         }
 
         let mut secret = [0u8; 32];
@@ -88,7 +101,9 @@ impl DeviceKeypair {
     /// Import from public key string for verification only
     pub fn from_public(public_str: &str) -> Result<VerifyingKey, CryptoError> {
         if !public_str.starts_with("ed25519:") {
-            return Err(CryptoError::InvalidKeyFormat("Public key must start with 'ed25519:'".to_string()));
+            return Err(CryptoError::InvalidKeyFormat(
+                "Public key must start with 'ed25519:'".to_string(),
+            ));
         }
 
         let b64_part = &public_str[8..];
@@ -96,7 +111,9 @@ impl DeviceKeypair {
             .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid base64: {}", e)))?;
 
         if pub_bytes.len() != 32 {
-            return Err(CryptoError::InvalidKeyFormat("Public key must be 32 bytes".to_string()));
+            return Err(CryptoError::InvalidKeyFormat(
+                "Public key must be 32 bytes".to_string(),
+            ));
         }
 
         let mut key_bytes = [0u8; 32];
@@ -127,7 +144,9 @@ pub fn format_nonce(nonce: &[u8; 24]) -> String {
 /// Parse nonce from manifest format
 pub fn parse_nonce(nonce_str: &str) -> Result<[u8; 24], CryptoError> {
     if !nonce_str.starts_with("xchacha20:") {
-        return Err(CryptoError::InvalidNonceFormat("Nonce must start with 'xchacha20:'".to_string()));
+        return Err(CryptoError::InvalidNonceFormat(
+            "Nonce must start with 'xchacha20:'".to_string(),
+        ));
     }
 
     let b64_part = &nonce_str[10..];
@@ -135,7 +154,9 @@ pub fn parse_nonce(nonce_str: &str) -> Result<[u8; 24], CryptoError> {
         .map_err(|e| CryptoError::InvalidNonceFormat(format!("Invalid base64: {}", e)))?;
 
     if nonce_bytes.len() != 24 {
-        return Err(CryptoError::InvalidNonceFormat("Nonce must be 24 bytes".to_string()));
+        return Err(CryptoError::InvalidNonceFormat(
+            "Nonce must be 24 bytes".to_string(),
+        ));
     }
 
     let mut nonce = [0u8; 24];
@@ -148,13 +169,22 @@ pub fn encrypt_segment(
     key: &chacha20poly1305::Key,
     nonce24: &[u8; 24],
     plaintext: &[u8],
-    aad: &[u8],  // Additional authenticated data (canonical header fields)
+    aad: &[u8], // Additional authenticated data (canonical header fields)
 ) -> Result<Vec<u8>, CryptoError> {
     let cipher = XChaCha20Poly1305::new(key);
     let nonce = XNonce::from_slice(nonce24);
 
-    cipher.encrypt(nonce, aead::Payload { msg: plaintext, aad })
-        .map_err(|e| CryptoError::EncryptionFailed(format!("XChaCha20Poly1305 encryption failed: {}", e)))
+    cipher
+        .encrypt(
+            nonce,
+            aead::Payload {
+                msg: plaintext,
+                aad,
+            },
+        )
+        .map_err(|e| {
+            CryptoError::EncryptionFailed(format!("XChaCha20Poly1305 encryption failed: {}", e))
+        })
 }
 
 /// Decrypt segment data using XChaCha20Poly1305 with AAD
@@ -162,17 +192,31 @@ pub fn decrypt_segment(
     key: &chacha20poly1305::Key,
     nonce24: &[u8; 24],
     ciphertext: &[u8],
-    aad: &[u8],  // Additional authenticated data (canonical header fields)
+    aad: &[u8], // Additional authenticated data (canonical header fields)
 ) -> Result<Vec<u8>, CryptoError> {
     let cipher = XChaCha20Poly1305::new(key);
     let nonce = XNonce::from_slice(nonce24);
 
-    cipher.decrypt(nonce, aead::Payload { msg: ciphertext, aad })
-        .map_err(|e| CryptoError::DecryptionFailed(format!("XChaCha20Poly1305 decryption failed: {}", e)))
+    cipher
+        .decrypt(
+            nonce,
+            aead::Payload {
+                msg: ciphertext,
+                aad,
+            },
+        )
+        .map_err(|e| {
+            CryptoError::DecryptionFailed(format!("XChaCha20Poly1305 decryption failed: {}", e))
+        })
 }
 
 /// Generate AAD from canonical header fields
-pub fn generate_aad(trst_version: &str, profile: &str, device_id: &str, started_at: &str) -> Vec<u8> {
+pub fn generate_aad(
+    trst_version: &str,
+    profile: &str,
+    device_id: &str,
+    started_at: &str,
+) -> Vec<u8> {
     let aad_json = json!({
         "trst_version": trst_version,
         "profile": profile,
@@ -185,21 +229,33 @@ pub fn generate_aad(trst_version: &str, profile: &str, device_id: &str, started_
 }
 
 /// Sign manifest canonical bytes with device secret key
-pub fn sign_manifest(device_keypair: &DeviceKeypair, canonical_bytes: &[u8]) -> Result<String, CryptoError> {
+pub fn sign_manifest(
+    device_keypair: &DeviceKeypair,
+    canonical_bytes: &[u8],
+) -> Result<String, CryptoError> {
     let signing_key = device_keypair.signing_key();
     let signature = signing_key.sign(canonical_bytes);
 
-    Ok(format!("ed25519:{}", base64_encode(signature.to_bytes().as_ref())))
+    Ok(format!(
+        "ed25519:{}",
+        base64_encode(signature.to_bytes().as_ref())
+    ))
 }
 
 /// Verify manifest signature with device public key
-pub fn verify_manifest(device_public: &str, canonical_bytes: &[u8], signature_str: &str) -> Result<bool, CryptoError> {
+pub fn verify_manifest(
+    device_public: &str,
+    canonical_bytes: &[u8],
+    signature_str: &str,
+) -> Result<bool, CryptoError> {
     // Parse public key
     let verifying_key = DeviceKeypair::from_public(device_public)?;
 
     // Parse signature
     if !signature_str.starts_with("ed25519:") {
-        return Err(CryptoError::InvalidSignatureFormat("Signature must start with 'ed25519:'".to_string()));
+        return Err(CryptoError::InvalidSignatureFormat(
+            "Signature must start with 'ed25519:'".to_string(),
+        ));
     }
 
     let b64_part = &signature_str[8..];
@@ -207,7 +263,9 @@ pub fn verify_manifest(device_public: &str, canonical_bytes: &[u8], signature_st
         .map_err(|e| CryptoError::InvalidSignatureFormat(format!("Invalid base64: {}", e)))?;
 
     if sig_bytes.len() != 64 {
-        return Err(CryptoError::InvalidSignatureFormat("Signature must be 64 bytes".to_string()));
+        return Err(CryptoError::InvalidSignatureFormat(
+            "Signature must be 64 bytes".to_string(),
+        ));
     }
 
     let signature = Signature::from_bytes(&sig_bytes.try_into().unwrap());
@@ -266,7 +324,9 @@ fn base64_decode(s: &str) -> Result<Vec<u8>, String> {
             break;
         }
 
-        let value = chars.find(c).ok_or_else(|| format!("Invalid character: {}", c))? as u32;
+        let value = chars
+            .find(c)
+            .ok_or_else(|| format!("Invalid character: {}", c))? as u32;
         buffer = (buffer << 6) | value;
         bits += 6;
 

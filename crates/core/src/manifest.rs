@@ -1,3 +1,12 @@
+//
+// Copyright (c) 2025 TRUSTEDGE LABS LLC
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+
+
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -101,37 +110,75 @@ impl CamVideoManifest {
     }
 
     /// Serialize the manifest with explicitly ordered keys
-    fn serialize_with_ordered_keys(&self, manifest: &CamVideoManifest) -> Result<String, ManifestError> {
-
+    fn serialize_with_ordered_keys(
+        &self,
+        manifest: &CamVideoManifest,
+    ) -> Result<String, ManifestError> {
         // Build the JSON object with explicit key ordering
         let mut result = String::from("{");
 
         // Add fields in the specified order
-        result.push_str(&format!("\"trst_version\":{}", serde_json::to_string(&manifest.trst_version)?));
-        result.push_str(&format!(",\"profile\":{}", serde_json::to_string(&manifest.profile)?));
+        result.push_str(&format!(
+            "\"trst_version\":{}",
+            serde_json::to_string(&manifest.trst_version)?
+        ));
+        result.push_str(&format!(
+            ",\"profile\":{}",
+            serde_json::to_string(&manifest.profile)?
+        ));
 
         // Device object with ordered keys
         result.push_str(",\"device\":{");
-        result.push_str(&format!("\"id\":{}", serde_json::to_string(&manifest.device.id)?));
-        result.push_str(&format!(",\"model\":{}", serde_json::to_string(&manifest.device.model)?));
-        result.push_str(&format!(",\"firmware_version\":{}", serde_json::to_string(&manifest.device.firmware_version)?));
-        result.push_str(&format!(",\"public_key\":{}", serde_json::to_string(&manifest.device.public_key)?));
+        result.push_str(&format!(
+            "\"id\":{}",
+            serde_json::to_string(&manifest.device.id)?
+        ));
+        result.push_str(&format!(
+            ",\"model\":{}",
+            serde_json::to_string(&manifest.device.model)?
+        ));
+        result.push_str(&format!(
+            ",\"firmware_version\":{}",
+            serde_json::to_string(&manifest.device.firmware_version)?
+        ));
+        result.push_str(&format!(
+            ",\"public_key\":{}",
+            serde_json::to_string(&manifest.device.public_key)?
+        ));
         result.push_str("}");
 
         // Capture object with ordered keys
         result.push_str(",\"capture\":{");
-        result.push_str(&format!("\"started_at\":{}", serde_json::to_string(&manifest.capture.started_at)?));
-        result.push_str(&format!(",\"ended_at\":{}", serde_json::to_string(&manifest.capture.ended_at)?));
-        result.push_str(&format!(",\"timezone\":{}", serde_json::to_string(&manifest.capture.timezone)?));
+        result.push_str(&format!(
+            "\"started_at\":{}",
+            serde_json::to_string(&manifest.capture.started_at)?
+        ));
+        result.push_str(&format!(
+            ",\"ended_at\":{}",
+            serde_json::to_string(&manifest.capture.ended_at)?
+        ));
+        result.push_str(&format!(
+            ",\"timezone\":{}",
+            serde_json::to_string(&manifest.capture.timezone)?
+        ));
         result.push_str(&format!(",\"fps\":{}", manifest.capture.fps));
-        result.push_str(&format!(",\"resolution\":{}", serde_json::to_string(&manifest.capture.resolution)?));
-        result.push_str(&format!(",\"codec\":{}", serde_json::to_string(&manifest.capture.codec)?));
+        result.push_str(&format!(
+            ",\"resolution\":{}",
+            serde_json::to_string(&manifest.capture.resolution)?
+        ));
+        result.push_str(&format!(
+            ",\"codec\":{}",
+            serde_json::to_string(&manifest.capture.codec)?
+        ));
         result.push_str("}");
 
         // Chunk object with ordered keys
         result.push_str(",\"chunk\":{");
         result.push_str(&format!("\"size_bytes\":{}", manifest.chunk.size_bytes));
-        result.push_str(&format!(",\"duration_seconds\":{}", manifest.chunk.duration_seconds));
+        result.push_str(&format!(
+            ",\"duration_seconds\":{}",
+            manifest.chunk.duration_seconds
+        ));
         result.push_str("}");
 
         // Segments array
@@ -141,21 +188,42 @@ impl CamVideoManifest {
                 result.push_str(",");
             }
             result.push_str("{");
-            result.push_str(&format!("\"chunk_file\":{}", serde_json::to_string(&segment.chunk_file)?));
-            result.push_str(&format!(",\"blake3_hash\":{}", serde_json::to_string(&segment.blake3_hash)?));
-            result.push_str(&format!(",\"start_time\":{}", serde_json::to_string(&segment.start_time)?));
-            result.push_str(&format!(",\"duration_seconds\":{}", segment.duration_seconds));
-            result.push_str(&format!(",\"continuity_hash\":{}", serde_json::to_string(&segment.continuity_hash)?));
+            result.push_str(&format!(
+                "\"chunk_file\":{}",
+                serde_json::to_string(&segment.chunk_file)?
+            ));
+            result.push_str(&format!(
+                ",\"blake3_hash\":{}",
+                serde_json::to_string(&segment.blake3_hash)?
+            ));
+            result.push_str(&format!(
+                ",\"start_time\":{}",
+                serde_json::to_string(&segment.start_time)?
+            ));
+            result.push_str(&format!(
+                ",\"duration_seconds\":{}",
+                segment.duration_seconds
+            ));
+            result.push_str(&format!(
+                ",\"continuity_hash\":{}",
+                serde_json::to_string(&segment.continuity_hash)?
+            ));
             result.push_str("}");
         }
         result.push_str("]");
 
         // Claims array
-        result.push_str(&format!(",\"claims\":{}", serde_json::to_string(&manifest.claims)?));
+        result.push_str(&format!(
+            ",\"claims\":{}",
+            serde_json::to_string(&manifest.claims)?
+        ));
 
         // Optional prev_archive_hash
         if let Some(ref prev_hash) = manifest.prev_archive_hash {
-            result.push_str(&format!(",\"prev_archive_hash\":{}", serde_json::to_string(prev_hash)?));
+            result.push_str(&format!(
+                ",\"prev_archive_hash\":{}",
+                serde_json::to_string(prev_hash)?
+            ));
         }
 
         // Note: signature is explicitly excluded from canonicalization
@@ -165,7 +233,6 @@ impl CamVideoManifest {
         Ok(result)
     }
 
-
     /// Set signature on the manifest
     pub fn set_signature(&mut self, signature: String) {
         self.signature = Some(signature);
@@ -174,48 +241,65 @@ impl CamVideoManifest {
     /// Validate manifest structure and required fields
     pub fn validate(&self) -> Result<(), ManifestError> {
         if self.trst_version.is_empty() {
-            return Err(ManifestError::InvalidField("trst_version cannot be empty".to_string()));
+            return Err(ManifestError::InvalidField(
+                "trst_version cannot be empty".to_string(),
+            ));
         }
 
         if self.profile != "cam.video" {
-            return Err(ManifestError::InvalidField("profile must be 'cam.video'".to_string()));
+            return Err(ManifestError::InvalidField(
+                "profile must be 'cam.video'".to_string(),
+            ));
         }
 
         if self.device.id.is_empty() {
-            return Err(ManifestError::InvalidField("device.id cannot be empty".to_string()));
+            return Err(ManifestError::InvalidField(
+                "device.id cannot be empty".to_string(),
+            ));
         }
 
         if self.device.public_key.is_empty() {
-            return Err(ManifestError::InvalidField("device.public_key cannot be empty".to_string()));
+            return Err(ManifestError::InvalidField(
+                "device.public_key cannot be empty".to_string(),
+            ));
         }
 
         if self.capture.started_at.is_empty() {
-            return Err(ManifestError::InvalidField("capture.started_at cannot be empty".to_string()));
+            return Err(ManifestError::InvalidField(
+                "capture.started_at cannot be empty".to_string(),
+            ));
         }
 
         if self.capture.ended_at.is_empty() {
-            return Err(ManifestError::InvalidField("capture.ended_at cannot be empty".to_string()));
+            return Err(ManifestError::InvalidField(
+                "capture.ended_at cannot be empty".to_string(),
+            ));
         }
 
         if self.segments.is_empty() {
-            return Err(ManifestError::InvalidField("segments cannot be empty".to_string()));
+            return Err(ManifestError::InvalidField(
+                "segments cannot be empty".to_string(),
+            ));
         }
 
         for (i, segment) in self.segments.iter().enumerate() {
             if segment.chunk_file.is_empty() {
-                return Err(ManifestError::InvalidField(
-                    format!("segment[{}].chunk_file cannot be empty", i)
-                ));
+                return Err(ManifestError::InvalidField(format!(
+                    "segment[{}].chunk_file cannot be empty",
+                    i
+                )));
             }
             if segment.blake3_hash.is_empty() {
-                return Err(ManifestError::InvalidField(
-                    format!("segment[{}].blake3_hash cannot be empty", i)
-                ));
+                return Err(ManifestError::InvalidField(format!(
+                    "segment[{}].blake3_hash cannot be empty",
+                    i
+                )));
             }
             if segment.continuity_hash.is_empty() {
-                return Err(ManifestError::InvalidField(
-                    format!("segment[{}].continuity_hash cannot be empty", i)
-                ));
+                return Err(ManifestError::InvalidField(format!(
+                    "segment[{}].continuity_hash cannot be empty",
+                    i
+                )));
             }
         }
 

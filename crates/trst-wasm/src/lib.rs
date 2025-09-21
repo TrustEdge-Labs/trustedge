@@ -22,8 +22,8 @@ pub fn main() {
 
 #[derive(Serialize)]
 struct VerificationResult {
-    signature: String,     // "pass" | "fail"
-    continuity: String,    // "pass" | "fail"
+    signature: String,  // "pass" | "fail"
+    continuity: String, // "pass" | "fail"
     segment_count: u32,
 }
 
@@ -84,8 +84,7 @@ impl CamVideoManifest {
 
         // For P0 WASM demo, we'll use simple JSON serialization
         // In production, this would use the exact canonicalization from core
-        serde_json::to_vec(&manifest_copy)
-            .map_err(|e| format!("Canonicalization failed: {}", e))
+        serde_json::to_vec(&manifest_copy).map_err(|e| format!("Canonicalization failed: {}", e))
     }
 
     fn clone_without_signature(&self) -> CamVideoManifestWithoutSig {
@@ -110,13 +109,17 @@ impl CamVideoManifest {
                 size_bytes: self.chunk.size_bytes,
                 duration_seconds: self.chunk.duration_seconds,
             },
-            segments: self.segments.iter().map(|s| SegmentInfoForSig {
-                chunk_file: s.chunk_file.clone(),
-                blake3_hash: s.blake3_hash.clone(),
-                start_time: s.start_time.clone(),
-                duration_seconds: s.duration_seconds,
-                continuity_hash: s.continuity_hash.clone(),
-            }).collect(),
+            segments: self
+                .segments
+                .iter()
+                .map(|s| SegmentInfoForSig {
+                    chunk_file: s.chunk_file.clone(),
+                    blake3_hash: s.blake3_hash.clone(),
+                    start_time: s.start_time.clone(),
+                    duration_seconds: s.duration_seconds,
+                    continuity_hash: s.continuity_hash.clone(),
+                })
+                .collect(),
             claims: self.claims.clone(),
             prev_archive_hash: self.prev_archive_hash.clone(),
         }
@@ -178,11 +181,14 @@ pub fn verify_manifest(manifest_bytes: Vec<u8>, device_pub: String) -> Result<Js
         .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
 
     // Get signature
-    let signature_str = manifest.signature.as_ref()
+    let signature_str = manifest
+        .signature
+        .as_ref()
         .ok_or_else(|| JsValue::from_str("Manifest has no signature"))?;
 
     // Get canonical bytes (simplified for WASM)
-    let canonical_bytes = manifest.to_canonical_bytes()
+    let canonical_bytes = manifest
+        .to_canonical_bytes()
         .map_err(|e| JsValue::from_str(&e))?;
 
     // Ensure device public key has proper format
@@ -193,15 +199,20 @@ pub fn verify_manifest(manifest_bytes: Vec<u8>, device_pub: String) -> Result<Js
     };
 
     // Verify signature
-    let signature_result = match verify_ed25519_signature(&device_pub_key, &canonical_bytes, signature_str) {
-        Ok(true) => "pass",
-        Ok(false) => "fail",
-        Err(_) => "fail",
-    };
+    let signature_result =
+        match verify_ed25519_signature(&device_pub_key, &canonical_bytes, signature_str) {
+            Ok(true) => "pass",
+            Ok(false) => "fail",
+            Err(_) => "fail",
+        };
 
     // For manifest-only verification, we can't verify continuity without chunk files
     // So we'll mark continuity as "pass" if signature passes (basic validation)
-    let continuity_result = if signature_result == "pass" { "pass" } else { "fail" };
+    let continuity_result = if signature_result == "pass" {
+        "pass"
+    } else {
+        "fail"
+    };
 
     let result = VerificationResult {
         signature: signature_result.to_string(),
@@ -214,7 +225,10 @@ pub fn verify_manifest(manifest_bytes: Vec<u8>, device_pub: String) -> Result<Js
 
 /// Verify a complete .trst archive from a directory handle
 #[wasm_bindgen]
-pub async fn verify_archive(dir_handle: FileSystemDirectoryHandle, device_pub: String) -> Result<JsValue, JsValue> {
+pub async fn verify_archive(
+    dir_handle: FileSystemDirectoryHandle,
+    device_pub: String,
+) -> Result<JsValue, JsValue> {
     // Read manifest.json from the directory
     let manifest_content = read_file_from_directory(&dir_handle, "manifest.json").await?;
 
@@ -223,11 +237,14 @@ pub async fn verify_archive(dir_handle: FileSystemDirectoryHandle, device_pub: S
         .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
 
     // Get signature
-    let signature_str = manifest.signature.as_ref()
+    let signature_str = manifest
+        .signature
+        .as_ref()
         .ok_or_else(|| JsValue::from_str("Manifest has no signature"))?;
 
     // Get canonical bytes
-    let canonical_bytes = manifest.to_canonical_bytes()
+    let canonical_bytes = manifest
+        .to_canonical_bytes()
         .map_err(|e| JsValue::from_str(&e))?;
 
     // Ensure device public key has proper format
@@ -238,11 +255,12 @@ pub async fn verify_archive(dir_handle: FileSystemDirectoryHandle, device_pub: S
     };
 
     // Verify signature
-    let signature_result = match verify_ed25519_signature(&device_pub_key, &canonical_bytes, signature_str) {
-        Ok(true) => "pass",
-        Ok(false) => "fail",
-        Err(_) => "fail",
-    };
+    let signature_result =
+        match verify_ed25519_signature(&device_pub_key, &canonical_bytes, signature_str) {
+            Ok(true) => "pass",
+            Ok(false) => "fail",
+            Err(_) => "fail",
+        };
 
     // Verify continuity by checking chunk files exist and match manifest
     let mut continuity_result = "fail";
@@ -263,15 +281,19 @@ pub async fn verify_archive(dir_handle: FileSystemDirectoryHandle, device_pub: S
 }
 
 /// Verify Ed25519 signature
-fn verify_ed25519_signature(device_pub: &str, canonical_bytes: &[u8], signature_str: &str) -> Result<bool, String> {
+fn verify_ed25519_signature(
+    device_pub: &str,
+    canonical_bytes: &[u8],
+    signature_str: &str,
+) -> Result<bool, String> {
     // Parse public key
     if !device_pub.starts_with("ed25519:") {
         return Err("Public key must start with 'ed25519:'".to_string());
     }
 
     let b64_part = &device_pub[8..];
-    let pub_bytes = base64::decode(b64_part)
-        .map_err(|e| format!("Invalid public key base64: {}", e))?;
+    let pub_bytes =
+        base64::decode(b64_part).map_err(|e| format!("Invalid public key base64: {}", e))?;
 
     if pub_bytes.len() != 32 {
         return Err("Public key must be 32 bytes".to_string());
@@ -280,8 +302,8 @@ fn verify_ed25519_signature(device_pub: &str, canonical_bytes: &[u8], signature_
     let mut key_bytes = [0u8; 32];
     key_bytes.copy_from_slice(&pub_bytes);
 
-    let verifying_key = VerifyingKey::from_bytes(&key_bytes)
-        .map_err(|e| format!("Invalid public key: {}", e))?;
+    let verifying_key =
+        VerifyingKey::from_bytes(&key_bytes).map_err(|e| format!("Invalid public key: {}", e))?;
 
     // Parse signature
     if !signature_str.starts_with("ed25519:") {
@@ -289,8 +311,8 @@ fn verify_ed25519_signature(device_pub: &str, canonical_bytes: &[u8], signature_
     }
 
     let sig_b64_part = &signature_str[8..];
-    let sig_bytes = base64::decode(sig_b64_part)
-        .map_err(|e| format!("Invalid signature base64: {}", e))?;
+    let sig_bytes =
+        base64::decode(sig_b64_part).map_err(|e| format!("Invalid signature base64: {}", e))?;
 
     if sig_bytes.len() != 64 {
         return Err("Signature must be 64 bytes".to_string());
@@ -315,9 +337,15 @@ async fn read_file_from_directory(
 ) -> Result<Vec<u8>, JsValue> {
     let file_handle = JsFuture::from(dir_handle.get_file_handle(filename))
         .await
-        .map_err(|e| JsValue::from_str(&format!("Failed to get file handle for {}: {:?}", filename, e)))?;
+        .map_err(|e| {
+            JsValue::from_str(&format!(
+                "Failed to get file handle for {}: {:?}",
+                filename, e
+            ))
+        })?;
 
-    let file_handle: web_sys::FileSystemFileHandle = file_handle.dyn_into()
+    let file_handle: web_sys::FileSystemFileHandle = file_handle
+        .dyn_into()
         .map_err(|_| JsValue::from_str("Failed to cast to FileSystemFileHandle"))?;
 
     let file: File = JsFuture::from(file_handle.get_file())
@@ -345,14 +373,18 @@ async fn verify_archive_continuity(
         .await
         .map_err(|_| JsValue::from_str("Failed to access chunks directory"))?;
 
-    let chunks_handle: FileSystemDirectoryHandle = chunks_handle.dyn_into()
+    let chunks_handle: FileSystemDirectoryHandle = chunks_handle
+        .dyn_into()
         .map_err(|_| JsValue::from_str("Failed to cast chunks to DirectoryHandle"))?;
 
     // Check that all expected chunk files exist
     for segment in &manifest.segments {
         let chunk_exists = check_file_exists(&chunks_handle, &segment.chunk_file).await;
         if !chunk_exists {
-            return Err(JsValue::from_str(&format!("Missing chunk file: {}", segment.chunk_file)));
+            return Err(JsValue::from_str(&format!(
+                "Missing chunk file: {}",
+                segment.chunk_file
+            )));
         }
     }
 
