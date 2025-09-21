@@ -144,7 +144,7 @@ impl CamVideoManifest {
             ",\"public_key\":{}",
             serde_json::to_string(&manifest.device.public_key)?
         ));
-        result.push_str("}");
+        result.push('}');
 
         // Capture object with ordered keys
         result.push_str(",\"capture\":{");
@@ -169,7 +169,7 @@ impl CamVideoManifest {
             ",\"codec\":{}",
             serde_json::to_string(&manifest.capture.codec)?
         ));
-        result.push_str("}");
+        result.push('}');
 
         // Chunk object with ordered keys
         result.push_str(",\"chunk\":{");
@@ -178,15 +178,15 @@ impl CamVideoManifest {
             ",\"duration_seconds\":{}",
             manifest.chunk.duration_seconds
         ));
-        result.push_str("}");
+        result.push('}');
 
         // Segments array
         result.push_str(",\"segments\":[");
         for (i, segment) in manifest.segments.iter().enumerate() {
             if i > 0 {
-                result.push_str(",");
+                result.push(',');
             }
-            result.push_str("{");
+            result.push('{');
             result.push_str(&format!(
                 "\"chunk_file\":{}",
                 serde_json::to_string(&segment.chunk_file)?
@@ -207,9 +207,9 @@ impl CamVideoManifest {
                 ",\"continuity_hash\":{}",
                 serde_json::to_string(&segment.continuity_hash)?
             ));
-            result.push_str("}");
+            result.push('}');
         }
-        result.push_str("]");
+        result.push(']');
 
         // Claims array
         result.push_str(&format!(
@@ -227,7 +227,7 @@ impl CamVideoManifest {
 
         // Note: signature is explicitly excluded from canonicalization
 
-        result.push_str("}");
+        result.push('}');
 
         Ok(result)
     }

@@ -12,6 +12,9 @@ use std::io::{Read, Write};
 use std::path::Path;
 use thiserror::Error;
 
+/// Type alias for chunk data (index, bytes)
+type ChunkData = Vec<(usize, Vec<u8>)>;
+
 #[derive(Error, Debug)]
 pub enum ArchiveError {
     #[error("IO error: {0}")]
@@ -78,7 +81,7 @@ pub fn write_archive<P: AsRef<Path>>(
 /// Read a complete .trst archive and return manifest and chunk data
 pub fn read_archive<P: AsRef<Path>>(
     base_dir: P,
-) -> Result<(CamVideoManifest, Vec<(usize, Vec<u8>)>), ArchiveError> {
+) -> Result<(CamVideoManifest, ChunkData), ArchiveError> {
     let base_path = base_dir.as_ref();
 
     // Read and parse manifest.json

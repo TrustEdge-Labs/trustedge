@@ -65,9 +65,8 @@ impl DeviceKeypair {
 
     /// Import a keypair from secret key string (accepts "ed25519:BASE64" or hex)
     pub fn import_secret(secret_str: &str) -> Result<Self, CryptoError> {
-        let secret_bytes = if secret_str.starts_with("ed25519:") {
+        let secret_bytes = if let Some(b64_part) = secret_str.strip_prefix("ed25519:") {
             // Base64 format
-            let b64_part = &secret_str[8..];
             base64_decode(b64_part)
                 .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid base64: {}", e)))?
         } else if secret_str.len() == 64 {

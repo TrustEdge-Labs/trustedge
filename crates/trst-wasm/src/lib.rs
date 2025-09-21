@@ -12,6 +12,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{File, FileSystemDirectoryHandle};
 
+use base64::{engine::general_purpose, Engine as _};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 
 // Initialize panic hook for better error messages in debug
@@ -80,7 +81,7 @@ impl CamVideoManifest {
     /// This is a simplified version for WASM - excludes signature field
     fn to_canonical_bytes(&self) -> Result<Vec<u8>, String> {
         // Create a copy without the signature field for canonicalization
-        let mut manifest_copy = self.clone_without_signature();
+        let manifest_copy = self.clone_without_signature();
 
         // For P0 WASM demo, we'll use simple JSON serialization
         // In production, this would use the exact canonicalization from core
@@ -292,8 +293,9 @@ fn verify_ed25519_signature(
     }
 
     let b64_part = &device_pub[8..];
-    let pub_bytes =
-        base64::decode(b64_part).map_err(|e| format!("Invalid public key base64: {}", e))?;
+    let pub_bytes = general_purpose::STANDARD
+        .decode(b64_part)
+        .map_err(|e| format!("Invalid public key base64: {}", e))?;
 
     if pub_bytes.len() != 32 {
         return Err("Public key must be 32 bytes".to_string());
@@ -311,8 +313,9 @@ fn verify_ed25519_signature(
     }
 
     let sig_b64_part = &signature_str[8..];
-    let sig_bytes =
-        base64::decode(sig_b64_part).map_err(|e| format!("Invalid signature base64: {}", e))?;
+    let sig_bytes = general_purpose::STANDARD
+        .decode(sig_b64_part)
+        .map_err(|e| format!("Invalid signature base64: {}", e))?;
 
     if sig_bytes.len() != 64 {
         return Err("Signature must be 64 bytes".to_string());
@@ -395,8 +398,5 @@ async fn verify_archive_continuity(
 
 /// Check if a file exists in a directory handle
 async fn check_file_exists(dir_handle: &FileSystemDirectoryHandle, filename: &str) -> bool {
-    match JsFuture::from(dir_handle.get_file_handle(filename)).await {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    (JsFuture::from(dir_handle.get_file_handle(filename)).await).is_ok()
 }

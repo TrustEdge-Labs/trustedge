@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Generate device keypair
     let device_keypair = DeviceKeypair::generate()?;
-    let device_id = format!("te:cam:example");
+    let device_id = "te:cam:example".to_string();
 
     // Save device keys for verification
     fs::write(
@@ -61,7 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Create timestamps
     let started_at = current_timestamp()?;
-    let capture_end_time = if chunks.len() > 0 {
+    let capture_end_time = if !chunks.is_empty() {
         let total_duration = chunks.len() as f64 * chunk_seconds;
         let end_timestamp = chrono::DateTime::parse_from_rfc3339(&started_at)?
             + chrono::Duration::milliseconds((total_duration * 1000.0) as i64);
@@ -78,7 +78,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Generate nonce and encrypt
         let nonce = generate_nonce24();
         let aad = generate_aad("0.1.0", "cam.video", &device_id, &started_at);
-        let encrypted_data = encrypt_segment(&encryption_key, &nonce, chunk_data, &aad)?;
+        let encrypted_data = encrypt_segment(encryption_key, &nonce, chunk_data, &aad)?;
         encrypted_chunks.push(encrypted_data.clone());
 
         // Calculate hash and update chain (hash the encrypted data)
@@ -91,10 +91,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let segment = SegmentInfo {
             chunk_file: chunk_filename,
-            blake3_hash: hex::encode(&hash),
+            blake3_hash: hex::encode(hash),
             start_time,
             duration_seconds: chunk_seconds,
-            continuity_hash: hex::encode(&next_state),
+            continuity_hash: hex::encode(next_state),
         };
 
         segments.push(segment);
