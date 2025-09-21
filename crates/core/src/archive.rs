@@ -31,6 +31,8 @@ pub enum ArchiveError {
     InvalidChunkIndex { expected: usize, found: usize },
     #[error("Signature mismatch: manifest.signature does not match signatures/manifest.sig")]
     SignatureMismatch,
+    #[error("Continuity chain error: {0}")]
+    Chain(#[from] crate::chain::ChainError),
     #[error("Archive validation failed: {0}")]
     ValidationFailed(String),
 }
@@ -188,9 +190,7 @@ pub fn validate_archive<P: AsRef<Path>>(base_dir: P) -> Result<(), ArchiveError>
     }
 
     // Validate continuity chain
-    crate::chain::validate_chain(&chain_segments).map_err(|e| {
-        ArchiveError::ValidationFailed(format!("Continuity chain validation failed: {}", e))
-    })?;
+    crate::chain::validate_chain(&chain_segments)?;
 
     Ok(())
 }

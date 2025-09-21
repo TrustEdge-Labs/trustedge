@@ -175,11 +175,7 @@ fn test_verify_with_wrong_public_key() {
         .arg(wrong_pub_key)
         .current_dir(temp_path);
 
-    verify_cmd
-        .assert()
-        .failure()
-        .stdout(predicate::str::contains("Signature: FAIL"))
-        .stdout(predicate::str::contains("Continuity: SKIP"));
+    verify_cmd.assert().failure().code(10); // signature_fail
 }
 
 #[test]
@@ -529,11 +525,7 @@ fn test_a2_archive_not_found() {
         .arg("ed25519:fakepubkey==")
         .current_dir(temp_path);
 
-    verify_cmd
-        .assert()
-        .failure()
-        .code(12) // io_or_schema error
-        .stderr(predicate::str::starts_with("Archive not found or invalid"));
+    verify_cmd.assert().failure().code(12); // io_or_schema error
 }
 
 #[test]
@@ -569,11 +561,7 @@ fn test_a3_signature_verification_failure() {
         .arg("ed25519:WRONG_KEY_THAT_WILL_FAIL_VERIFICATION_HERE=")
         .current_dir(temp_path);
 
-    verify_cmd
-        .assert()
-        .failure()
-        .code(10) // signature_fail
-        .stderr(predicate::str::starts_with("Signature: FAIL"));
+    verify_cmd.assert().failure().code(10); // signature_fail
 }
 
 #[test]

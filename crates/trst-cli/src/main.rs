@@ -302,30 +302,24 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
     let (manifest, _chunks) = match read_archive(&args.archive) {
         Ok(data) => data,
         Err(e) => {
-            let error_msg = format!("{}", e);
             report.error = Some(format!("Archive read failed: {}", e));
             report.verify_time_ms = start_time.elapsed().as_millis() as u64;
 
-            // Check for specific error types to provide expected messages
-            let first_line = if error_msg.contains("No such file")
-                || error_msg.contains("not found")
-                || error_msg.contains("missing")
-            {
-                if error_msg.contains("chunk")
-                    || error_msg.contains(".bin")
-                    || error_msg.contains("00")
-                {
+            // Map error types to human messages
+            let first_line = match e {
+                trustedge_core::archive::ArchiveError::MissingChunk(_) => "Missing chunk file",
+                trustedge_core::archive::ArchiveError::InvalidChunkIndex { .. } => {
                     "Missing chunk file"
-                } else {
-                    "Archive not found or invalid"
                 }
-            } else if error_msg.contains("00000.bin")
-                || error_msg.contains("00001.bin")
-                || error_msg.contains("chunks/")
-            {
-                "Missing chunk file"
-            } else {
-                "Archive not found or invalid"
+                trustedge_core::archive::ArchiveError::Json(_) => "Invalid manifest format",
+                trustedge_core::archive::ArchiveError::SignatureMismatch => {
+                    "Signature verification failed"
+                }
+                trustedge_core::archive::ArchiveError::Io(_) => "Archive read error",
+                trustedge_core::archive::ArchiveError::SchemaMismatch(_) => "Schema error",
+                trustedge_core::archive::ArchiveError::Manifest(_) => "Manifest error",
+                trustedge_core::archive::ArchiveError::Chain(_) => "Continuity chain error",
+                trustedge_core::archive::ArchiveError::ValidationFailed(_) => "Validation error",
             };
 
             output_error(&args, &report, first_line)?;
@@ -391,14 +385,17 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
                     let error_msg = format!("{}", e);
                     report.error = Some(error_msg.clone());
 
-                    // Try to extract gap index from error message
-                    if let Some(gap_idx) = extract_gap_index(&error_msg) {
-                        report.first_gap_index = Some(gap_idx);
-                    }
-
-                    // Check for out of order indication
-                    if error_msg.contains("out of order") || error_msg.contains("ordering") {
-                        report.out_of_order = Some(true);
+                    // Extract structured information from chain errors
+                    if let trustedge_core::archive::ArchiveError::Chain(chain_err) = &e {
+                        match chain_err {
+                            trustedge_core::chain::ChainError::Gap(index) => {
+                                report.first_gap_index = Some(*index as u32);
+                            }
+                            trustedge_core::chain::ChainError::OutOfOrder { .. } => {
+                                report.out_of_order = Some(true);
+                            }
+                            _ => {} // Other chain errors don't have specific structured data
+                        }
                     }
 
                     report.verify_time_ms = start_time.elapsed().as_millis() as u64;
@@ -508,41 +505,8 @@ fn output_continuity_error(args: &VerifyCmd, report: &VerifyReport) -> Result<()
     Ok(())
 }
 
-fn extract_gap_index(error_msg: &str) -> Option<u32> {
-    // Try to extract index from various error message patterns
-    if let Some(start) = error_msg.find("index ") {
-        let index_part = &error_msg[start + 6..];
-        if let Some(end) = index_part.find(|c: char| !c.is_ascii_digit()) {
-            if let Ok(idx) = index_part[..end].parse::<u32>() {
-                return Some(idx);
-            }
-        } else if let Ok(idx) = index_part.parse::<u32>() {
-            return Some(idx);
-        }
-    }
-
-    // Try "Chunk N" pattern (capital C)
-    if let Some(start) = error_msg.find("Chunk ") {
-        let index_part = &error_msg[start + 6..];
-        if let Some(end) = index_part.find(|c: char| !c.is_ascii_digit()) {
-            if let Ok(idx) = index_part[..end].parse::<u32>() {
-                return Some(idx);
-            }
-        }
-    }
-
-    // Try "chunk N" pattern (lowercase c)
-    if let Some(start) = error_msg.find("chunk ") {
-        let index_part = &error_msg[start + 6..];
-        if let Some(end) = index_part.find(|c: char| !c.is_ascii_digit()) {
-            if let Ok(idx) = index_part[..end].parse::<u32>() {
-                return Some(idx);
-            }
-        }
-    }
-
-    None
-}
+// Removed: extract_gap_index() function eliminated string parsing
+// Gap index information should come from structured error types, not string parsing
 
 fn load_or_generate_keypair(
     path: Option<&Path>,
