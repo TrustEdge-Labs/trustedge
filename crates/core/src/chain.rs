@@ -6,7 +6,6 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-
 use thiserror::Error;
 
 /// Genesis seed for the continuity chain

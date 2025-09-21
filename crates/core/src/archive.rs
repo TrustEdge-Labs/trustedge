@@ -6,7 +6,6 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-
 use crate::manifest::{CamVideoManifest, ManifestError};
 use std::fs::{self, File};
 use std::io::{Read, Write};

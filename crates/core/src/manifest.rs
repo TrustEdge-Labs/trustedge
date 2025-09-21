@@ -6,7 +6,6 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 

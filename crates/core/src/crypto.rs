@@ -6,7 +6,6 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-
 use aead::{Aead, KeyInit};
 use chacha20poly1305::{XChaCha20Poly1305, XNonce};
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
