@@ -193,8 +193,9 @@ impl VerifyReport {
             }
         );
 
+        // Print errors to stderr for backward compatibility with acceptance tests
         if let Some(ref error) = self.error {
-            println!("Error: {}", error);
+            eprintln!("{}", error);
         }
     }
 }
