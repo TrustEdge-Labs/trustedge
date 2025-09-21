@@ -12,6 +12,7 @@ on:
   pull_request:
 
 # No default working directory - workspace commands run from root
+# Updated: Force GitHub Actions to use ubuntu-only configuration
 
 jobs:
   rust:
