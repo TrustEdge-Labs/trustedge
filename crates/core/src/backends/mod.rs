@@ -63,19 +63,19 @@ impl BackendRegistry {
                 \n\
                 🔗 Use the separate 'trustedge-pubky' binary for Pubky operations:\n\
                 \n\
-                📝 Generate identity:\n\
+                ● Generate identity:\n\
                   trustedge-pubky generate --output my-key.txt\n\
                 \n\
-                🔒 Encrypt for someone:\n\
+                ● Encrypt for someone:\n\
                   trustedge-pubky encrypt --input <file> --output <envelope> --recipient <pubky-id>\n\
                 \n\
-                🔓 Decrypt received file:\n\
+                ● Decrypt received file:\n\
                   trustedge-pubky decrypt --input <envelope> --output <file> --key <private-key>\n\
                 \n\
-                🔍 Resolve Pubky ID:\n\
+                ● Resolve Pubky ID:\n\
                   trustedge-pubky resolve <pubky-id> --info\n\
                 \n\
-                📚 Get help:\n\
+                ● Get help:\n\
                   trustedge-pubky --help"
             )),
             // Future backends:

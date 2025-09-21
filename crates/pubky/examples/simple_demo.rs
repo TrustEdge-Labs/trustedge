@@ -16,40 +16,40 @@ use trustedge_pubky::{
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🧪 TrustEdge Pubky Simple Demo (Mock Network)");
+    println!("● TrustEdge Pubky Simple Demo (Mock Network)");
     println!("==============================================\n");
 
     // Step 1: Create shared mock storage
-    println!("📋 Step 1: Setting up mock Pubky network...");
+    println!("● Step 1: Setting up mock Pubky network...");
     let storage = Arc::new(Mutex::new(HashMap::new()));
 
     let alice_backend = MockPubkyBackend::with_shared_storage(storage.clone());
     let bob_backend = MockPubkyBackend::with_shared_storage(storage.clone());
 
-    println!("✅ Alice's mock Pubky ID: {}", alice_backend.our_pubky_id());
-    println!("✅ Bob's mock Pubky ID: {}", bob_backend.our_pubky_id());
+    println!("✔ Alice's mock Pubky ID: {}", alice_backend.our_pubky_id());
+    println!("✔ Bob's mock Pubky ID: {}", bob_backend.our_pubky_id());
     println!();
 
     // Step 2: Generate TrustEdge key pairs
-    println!("📋 Step 2: Generating TrustEdge key pairs...");
+    println!("● Step 2: Generating TrustEdge key pairs...");
     let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)?;
     let bob_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)?;
 
-    println!("✅ Alice's TrustEdge key: {}", alice_keypair.public.id());
-    println!("✅ Bob's TrustEdge key: {}", bob_keypair.public.id());
+    println!("✔ Alice's TrustEdge key: {}", alice_keypair.public.id());
+    println!("✔ Bob's TrustEdge key: {}", bob_keypair.public.id());
     println!();
 
     // Step 3: Publish keys to mock network
-    println!("📋 Step 3: Publishing keys to mock network...");
+    println!("● Step 3: Publishing keys to mock network...");
     let alice_pubky_id = alice_backend.publish_public_key(&alice_keypair.public)?;
     let bob_pubky_id = bob_backend.publish_public_key(&bob_keypair.public)?;
 
-    println!("✅ Alice published: {}", alice_pubky_id);
-    println!("✅ Bob published: {}", bob_pubky_id);
+    println!("✔ Alice published: {}", alice_pubky_id);
+    println!("✔ Bob published: {}", bob_pubky_id);
     println!();
 
     // Step 4: Demonstrate the clean API
-    println!("📋 Step 4: Using the clean backend API...");
+    println!("● Step 4: Using the clean backend API...");
     let secret_message = b"Hello from Alice to Bob via clean Pubky backend!";
 
     println!(
@@ -64,15 +64,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         storage.clone(), // mock network storage
     )?;
 
-    println!("✅ Message sealed using clean API!");
+    println!("✔ Message sealed using clean API!");
     println!("   Envelope size: {} bytes", sealed_envelope.len());
     println!();
 
     // Step 5: Bob receives the message
-    println!("📋 Step 5: Bob receives the message...");
+    println!("● Step 5: Bob receives the message...");
     let decrypted_message = receive_trusted_data(&sealed_envelope, &bob_keypair.private)?;
 
-    println!("✅ Message decrypted successfully!");
+    println!("✔ Message decrypted successfully!");
     println!(
         "   Decrypted: {:?}",
         std::str::from_utf8(&decrypted_message).unwrap()
@@ -84,10 +84,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
 
     // Step 6: Show key resolution works
-    println!("📋 Step 6: Testing key resolution...");
+    println!("● Step 6: Testing key resolution...");
     let resolved_key = alice_backend.resolve_public_key(&bob_pubky_id)?;
 
-    println!("✅ Key resolution successful!");
+    println!("✔ Key resolution successful!");
     println!("   Original key ID: {}", bob_keypair.public.id());
     println!("   Resolved key ID: {}", resolved_key.id());
     println!(
@@ -98,10 +98,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("🎉 Simple Demo completed successfully!");
     println!("   This demonstrates the clean architecture:");
-    println!("   ✅ trustedge-core: Handles all cryptography");
-    println!("   ✅ trustedge-pubky: Bridges to Pubky network");
-    println!("   ✅ Clean separation of concerns");
-    println!("   ✅ Simple, easy-to-use API");
+    println!("   ✔ trustedge-core: Handles all cryptography");
+    println!("   ✔ trustedge-pubky: Bridges to Pubky network");
+    println!("   ✔ Clean separation of concerns");
+    println!("   ✔ Simple, easy-to-use API");
 
     Ok(())
 }

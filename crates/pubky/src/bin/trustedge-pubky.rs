@@ -313,16 +313,16 @@ fn generate_keypair(output: Option<PathBuf>, seed: Option<String>, id_only: bool
             )
         })?;
 
-        println!("✅ Private key saved to: {}", output_path.display());
-        println!("🔐 Key file contains: 64 hexadecimal characters (32 bytes)");
-        println!("⚠️  SECURITY WARNING: Keep this file secure!");
+        println!("✔ Private key saved to: {}", output_path.display());
+        println!("● Key file contains: 64 hexadecimal characters (32 bytes)");
+        println!("⚠ SECURITY WARNING: Keep this file secure!");
         println!("   • Never share this file with anyone");
         println!("   • Store it in a secure location");
         println!("   • Consider encrypting it with a password");
         println!("   • Loss of this file means permanent loss of encrypted data");
     } else {
-        println!("💡 Use --output to save the private key to a file");
-        println!("⚠️  Without saving, this identity cannot be recovered!");
+        println!("● Use --output to save the private key to a file");
+        println!("⚠ Without saving, this identity cannot be recovered!");
         println!("   Example: trustedge-pubky generate --output my-key.txt");
     }
 
@@ -363,7 +363,7 @@ fn resolve_key(pubky_id: String, output: Option<PathBuf>, info: bool) -> Result<
 
         std::fs::write(&output_path, key_data).context("Failed to write public key file")?;
 
-        println!("✅ Public key saved to: {}", output_path.display());
+        println!("✔ Public key saved to: {}", output_path.display());
     }
 
     Ok(())
@@ -398,10 +398,10 @@ fn encrypt_data(
     }
 
     // Read input data
-    println!("📖 Reading input file: {}", input.display());
+    println!("● Reading input file: {}", input.display());
     let data = std::fs::read(&input).with_context(|| {
         format!(
-            "❌ Failed to read input file: {}\n\
+            "✖ Failed to read input file: {}\n\
             Check that:\n\
             • The file exists\n\
             • You have read permissions\n\
@@ -411,20 +411,20 @@ fn encrypt_data(
     })?;
 
     if data.is_empty() {
-        println!("⚠️  Warning: Input file is empty");
+        println!("⚠ Warning: Input file is empty");
     }
 
     // Create Pubky backend (ephemeral keys for forward secrecy)
-    println!("🔑 Creating ephemeral encryption keys...");
+    println!("● Creating ephemeral encryption keys...");
     let backend = create_pubky_backend_random()
-        .context("❌ Failed to create Pubky backend for encryption")?;
+        .context("✖ Failed to create Pubky backend for encryption")?;
 
     // Encrypt data (this will resolve the recipient's key from Pubky network)
-    println!("🌐 Resolving recipient's public key from Pubky network...");
-    println!("🔒 Encrypting data with hybrid encryption (X25519 + AES-256-GCM)...");
+    println!("● Resolving recipient's public key from Pubky network...");
+    println!("● Encrypting data with hybrid encryption (X25519 + AES-256-GCM)...");
     let envelope = send_trusted_data(&data, recipient, &backend).with_context(|| {
         format!(
-            "❌ Failed to encrypt data for recipient: {}\n\
+            "✖ Failed to encrypt data for recipient: {}\n\
             Possible causes:\n\
             • Recipient's Pubky ID not found on network\n\
             • Network connectivity issues\n\
@@ -434,10 +434,10 @@ fn encrypt_data(
     })?;
 
     // Write envelope
-    println!("💾 Writing encrypted envelope...");
+    println!("● Writing encrypted envelope...");
     std::fs::write(&output, &envelope).with_context(|| {
         format!(
-            "❌ Failed to write envelope to: {}\n\
+            "✖ Failed to write envelope to: {}\n\
             Check that:\n\
             • The directory exists\n\
             • You have write permissions\n\
@@ -447,27 +447,27 @@ fn encrypt_data(
         )
     })?;
 
-    println!("✅ Encryption completed successfully!");
-    println!("📊 Encryption Summary:");
+    println!("✔ Encryption completed successfully!");
+    println!("● Encryption Summary:");
     println!(
-        "   📁 Input:     {} ({} bytes)",
+        "   ● Input:     {} ({} bytes)",
         input.display(),
         data.len()
     );
     println!(
-        "   📦 Envelope:  {} ({} bytes)",
+        "   ● Envelope:  {} ({} bytes)",
         output.display(),
         envelope.len()
     );
-    println!("   👤 Recipient: {}", recipient);
-    println!("   🔐 Format:    v2 Pubky envelope (X25519 + AES-256-GCM)");
+    println!("   ● Recipient: {}", recipient);
+    println!("   ● Format:    v2 Pubky envelope (X25519 + AES-256-GCM)");
     println!(
-        "   📈 Overhead:  {} bytes ({:.1}%)",
+        "   ● Overhead:  {} bytes ({:.1}%)",
         envelope.len() - data.len(),
         (envelope.len() - data.len()) as f64 / data.len() as f64 * 100.0
     );
 
-    println!("\n💡 Next steps:");
+    println!("\n● Next steps:");
     println!("   • Send {} to the recipient", output.display());
     println!("   • Recipient can decrypt with: trustedge-pubky decrypt --input {} --output <file> --key <their-key>", output.display());
 
@@ -502,7 +502,7 @@ fn decrypt_data(input: PathBuf, output: PathBuf, key: PathBuf) -> Result<()> {
     // Write decrypted data
     std::fs::write(&output, &decrypted_data).context("Failed to write decrypted data")?;
 
-    println!("✅ Decryption complete");
+    println!("✔ Decryption complete");
     println!("   Input: {} ({} bytes)", input.display(), envelope.len());
     println!(
         "   Output: {} ({} bytes)",
@@ -520,12 +520,12 @@ fn migrate_envelope(
     v1_key: PathBuf,
     _pubky_key: PathBuf,
 ) -> Result<()> {
-    println!("🔄 Migrating envelope from v1 to v2 Pubky format...");
+    println!("● Migrating envelope from v1 to v2 Pubky format...");
 
     // Step 1: Read the v1 envelope
     let v1_envelope_data = std::fs::read(&input).context("Failed to read v1 envelope file")?;
 
-    println!("   📖 Read v1 envelope: {} bytes", v1_envelope_data.len());
+    println!("   ● Read v1 envelope: {} bytes", v1_envelope_data.len());
 
     // Step 2: Decrypt the v1 envelope using the old key
     // For now, this is a placeholder - we need to implement v1 decryption

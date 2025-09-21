@@ -1,0 +1,25 @@
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# MPL-2.0: https://mozilla.org/MPL/2.0/
+# Project: trustedge — Privacy and trust at the edge.
+
+[package]
+name = "trustedge-cam-video-examples"
+version = "0.1.0"
+edition = "2021"
+description = "TrustEdge cam.video P0 implementation examples"
+authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
+license = "MPL-2.0"
+
+[[bin]]
+name = "record_and_wrap"
+path = "record_and_wrap.rs"
+
+[[bin]]
+name = "verify_cli"
+path = "verify_cli.rs"
+
+[dependencies]
+trustedge-core = { path = "../../crates/core" }
+chrono = { version = "0.4", features = ["serde"] }
+chacha20poly1305 = "0.10"
+hex = "0.4"
