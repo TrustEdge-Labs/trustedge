@@ -9,6 +9,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
+use std::time::Instant;
 
 use anyhow::{Context, Result};
 use chacha20poly1305::Key;
@@ -20,6 +21,9 @@ use trustedge_core::{
     CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, DeviceKeypair, SegmentInfo,
 };
 
+mod report;
+use report::{ExitCode, VerifyReport};
+
 #[derive(Debug)]
 struct WrapResult {
     output_dir: PathBuf,
@@ -28,7 +32,12 @@ struct WrapResult {
 }
 
 #[derive(Parser, Debug)]
-#[command(author, version, about = "TrustEdge .trst archival tool", long_about = None)]
+#[command(
+    author,
+    version,
+    about = "TrustEdge .trst archival tool",
+    long_about = "TrustEdge .trst archival tool\n\nExit codes for verify command:\n  0  = success (signature pass, continuity pass)\n  10 = signature failure\n  11 = continuity failure (gap, out-of-order, truncation)\n  12 = IO/schema error (missing files, unreadable JSON, bad layout)\n  13 = invalid CLI args\n  14 = internal error"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -79,19 +88,28 @@ struct VerifyCmd {
         help = "Device public key (ed25519:<base64>)"
     )]
     device_pub: String,
+    #[arg(long, help = "Output results as JSON")]
+    json: bool,
 }
 
 fn main() {
-    if let Err(err) = run() {
-        eprintln!("error: {err}");
-        process::exit(1);
-    }
+    let exit_code = match run() {
+        Ok(code) => code as i32,
+        Err(err) => {
+            eprintln!("error: {err}");
+            ExitCode::Internal as i32
+        }
+    };
+    process::exit(exit_code);
 }
 
-fn run() -> Result<()> {
+fn run() -> Result<ExitCode> {
     let cli = Cli::parse();
     match cli.command {
-        Commands::Wrap(args) => handle_wrap(args),
+        Commands::Wrap(args) => {
+            handle_wrap(args)?;
+            Ok(ExitCode::Ok)
+        }
         Commands::Verify(args) => handle_verify(args),
     }
 }
@@ -240,69 +258,147 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     Ok(())
 }
 
-fn handle_verify(args: VerifyCmd) -> Result<()> {
-    // Read and validate archive
-    let (manifest, _chunks) = read_archive(&args.archive)?;
+fn handle_verify(args: VerifyCmd) -> Result<ExitCode> {
+    let start_time = Instant::now();
+    let mut report = VerifyReport::new();
 
-    // Parse device public key
+    // Helper to set timing and exit
+    let finalize_report = |report: &mut VerifyReport| {
+        let elapsed = start_time.elapsed();
+        report.set_verify_time(elapsed.as_millis() as u64);
+        let exit_code = report.exit_code();
+
+        if args.json {
+            if let Err(err) = report.print_json() {
+                eprintln!("Failed to serialize JSON: {}", err);
+                return ExitCode::Internal;
+            }
+        } else {
+            report.print_human();
+        }
+        exit_code
+    };
+
+    // Parse device public key early to catch argument errors
     let device_pub_key = if args.device_pub.starts_with("ed25519:") {
         args.device_pub
     } else {
         format!("ed25519:{}", args.device_pub)
     };
 
-    // Get signature and canonical bytes
-    let signature = manifest
-        .signature
-        .as_ref()
-        .ok_or_else(|| anyhow::anyhow!("Manifest has no signature"))?;
+    // Read and parse manifest
+    let (manifest, _chunks) = match read_archive(&args.archive) {
+        Ok(result) => result,
+        Err(err) => {
+            report.set_error(format!("Failed to read archive: {}", err));
+            return Ok(finalize_report(&mut report));
+        }
+    };
 
-    let canonical_bytes = manifest.to_canonical_bytes()?;
+    // Extract metadata from manifest
+    let segment_count = manifest.segments.len() as u32;
+    let duration_seconds = if segment_count > 0 {
+        manifest
+            .segments
+            .iter()
+            .map(|s| s.duration_seconds as f32)
+            .sum()
+    } else {
+        0.0
+    };
+    let profile = manifest.profile.clone();
+    let device_id = manifest.device.id.clone();
+
+    report.set_metadata(segment_count, duration_seconds, profile, device_id);
 
     // Verify signature
+    let signature = match manifest.signature.as_ref() {
+        Some(sig) => sig,
+        None => {
+            report.set_error("Manifest has no signature".to_string());
+            return Ok(finalize_report(&mut report));
+        }
+    };
+
+    let canonical_bytes = match manifest.to_canonical_bytes() {
+        Ok(bytes) => bytes,
+        Err(err) => {
+            report.set_error(format!("Failed to create canonical bytes: {}", err));
+            return Ok(finalize_report(&mut report));
+        }
+    };
+
     match verify_manifest(&device_pub_key, &canonical_bytes, signature) {
         Ok(true) => {
-            println!("Signature: PASS");
+            report.set_signature_pass();
 
-            // Validate archive structure and continuity
+            // Only proceed with continuity checks if signature passed
             match validate_archive(&args.archive) {
                 Ok(()) => {
-                    println!("Continuity: PASS");
-
-                    let segment_count = manifest.segments.len();
-                    let duration_seconds = if segment_count > 0 {
-                        manifest.segments.iter().map(|s| s.duration_seconds).sum()
-                    } else {
-                        0.0
-                    };
-
-                    println!(
-                        "Segments: {}  Duration(s): {:.1}  Chunk(s): {:.1}",
-                        segment_count,
-                        duration_seconds,
-                        if segment_count > 0 {
-                            duration_seconds / segment_count as f64
-                        } else {
-                            0.0
-                        }
-                    );
-                    Ok(())
+                    report.set_continuity_pass();
+                    Ok(finalize_report(&mut report))
                 }
                 Err(err) => {
-                    println!("Continuity: FAIL");
-                    anyhow::bail!("Archive validation failed: {}", err);
+                    // Parse specific continuity errors
+                    let err_str = err.to_string();
+                    if err_str.contains("gap") {
+                        // Try to extract gap index from error message
+                        if let Some(captures) = regex::Regex::new(r"gap at index (\d+)")
+                            .ok()
+                            .and_then(|re| re.captures(&err_str))
+                        {
+                            if let Some(index_str) = captures.get(1) {
+                                if let Ok(index) = index_str.as_str().parse::<u32>() {
+                                    report.set_continuity_gap(index);
+                                } else {
+                                    report.set_continuity_fail();
+                                }
+                            } else {
+                                report.set_continuity_fail();
+                            }
+                        } else {
+                            report.set_continuity_fail();
+                        }
+                    } else if err_str.contains("out of order") {
+                        // Try to extract expected/found values
+                        if let Some(captures) = regex::Regex::new(r"expected (\d+), found (\d+)")
+                            .ok()
+                            .and_then(|re| re.captures(&err_str))
+                        {
+                            if let (Some(exp_str), Some(found_str)) =
+                                (captures.get(1), captures.get(2))
+                            {
+                                if let (Ok(expected), Ok(found)) = (
+                                    exp_str.as_str().parse::<u32>(),
+                                    found_str.as_str().parse::<u32>(),
+                                ) {
+                                    report.set_out_of_order(expected, found);
+                                } else {
+                                    report.set_continuity_fail();
+                                }
+                            } else {
+                                report.set_continuity_fail();
+                            }
+                        } else {
+                            report.set_continuity_fail();
+                        }
+                    } else {
+                        report.set_continuity_fail();
+                    }
+                    report.set_error(err_str);
+                    Ok(finalize_report(&mut report))
                 }
             }
         }
         Ok(false) => {
-            println!("Signature: FAIL");
-            println!("Continuity: SKIP");
-            anyhow::bail!("Signature verification failed");
+            report.set_signature_fail();
+            report.set_error("Signature verification failed".to_string());
+            Ok(finalize_report(&mut report))
         }
         Err(err) => {
-            println!("Signature: FAIL");
-            println!("Continuity: SKIP");
-            anyhow::bail!("Signature verification error: {}", err);
+            report.set_signature_fail();
+            report.set_error(format!("Signature verification error: {}", err));
+            Ok(finalize_report(&mut report))
         }
     }
 }
