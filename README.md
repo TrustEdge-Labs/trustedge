@@ -162,13 +162,25 @@ cargo run --bin record_and_wrap
 
 ### Step 2: Verify - Validate Archive Integrity
 ```bash
-# Verify the created archive
+# Verify the created archive (human-readable output)
 cargo run --bin verify_cli clip.trst device.pub
 
 # ✔ Signature verification
 # ✔ Continuity chain validation
 # ● Archive summary with segment count and duration
+
+# Or use the CLI directly with JSON output
+trst verify clip.trst --device-pub "$(cat device.pub)" --json
+# {"signature":"pass","continuity":"pass","segments":32,"duration_s":64.0,"profile":"cam.video","device_id":"te:cam:XYZ123","verify_time_ms":137}
 ```
+
+**Exit Codes for trst verify:**
+- `0` = success (signature pass, continuity pass)
+- `10` = signature failure
+- `11` = continuity failure (gap, out-of-order, truncation)
+- `12` = IO/schema error (missing files, unreadable JSON, bad layout)
+- `13` = invalid CLI args
+- `14` = internal error
 
 ### Step 3: Acceptance Tests - Full CLI Integration
 ```bash
