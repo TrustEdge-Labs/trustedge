@@ -409,8 +409,8 @@ mod tests {
 
     #[test]
     fn test_receive_trusted_data() {
-        // Test with algorithms supported by hybrid encryption
-        let algorithms = vec![AsymmetricAlgorithm::Rsa2048, AsymmetricAlgorithm::Rsa4096];
+        // Test with algorithms supported by hybrid encryption (excluding RSA4096 due to slow key generation)
+        let algorithms = vec![AsymmetricAlgorithm::Rsa2048];
 
         for &algorithm in &algorithms {
             // Create a test envelope using core functions

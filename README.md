@@ -36,11 +36,13 @@ head -c 32M </dev/urandom > sample.bin   # Windows note: use 'fsutil file create
 {"signature":"pass","continuity":"pass","segments":32,"duration_s":64.0,"profile":"cam.video","device_id":"te:cam:a1b2c3","verify_time_ms":45}
 ```
 
+**🌐 Browser Verification:** Open `web/demo/index.html` (or serve locally) and drag the `.trst` directory for client-side verification.
+
 **Resources:**
 - [Manifest specification](docs/manifest_cam_video.md)
 - [Acceptance tests](crates/trst-cli/tests/acceptance.rs)
 - [P0 test script](p0_acceptance.sh)
-- [Browser verifier](web/demo/) - Drag-and-drop the .trst directory and paste device pubkey for in-browser verification
+- [Browser verifier demo](web/demo/) - WebAssembly-powered verification in your browser
 
 ---
 
