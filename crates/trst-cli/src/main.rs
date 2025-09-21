@@ -14,10 +14,14 @@ use anyhow::{Context, Result};
 use chacha20poly1305::Key;
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Args, Parser, Subcommand};
+use rand::prelude::*;
+use rand_chacha::ChaCha20Rng;
+use serde::Serialize;
+use std::time::Instant;
 use trustedge_core::{
-    chain_next, encrypt_segment, generate_aad, generate_nonce24, genesis, read_archive,
-    segment_hash, sign_manifest, validate_archive, verify_manifest, write_archive,
-    CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, DeviceKeypair, SegmentInfo,
+    chain_next, encrypt_segment, generate_aad, genesis, read_archive, segment_hash, sign_manifest,
+    validate_archive, verify_manifest, write_archive, CamVideoManifest, CaptureInfo, ChunkInfo,
+    DeviceInfo, DeviceKeypair, SegmentInfo,
 };
 
 #[derive(Debug)]
@@ -25,6 +29,23 @@ struct WrapResult {
     output_dir: PathBuf,
     signature: String,
     chunk_count: usize,
+}
+
+#[derive(Serialize, Default)]
+struct VerifyReport {
+    signature: String,  // "pass" | "fail" | "unknown"
+    continuity: String, // "pass" | "fail" | "skip" | "unknown"
+    segments: u32,
+    duration_s: f32,
+    profile: String,
+    device_id: String,
+    verify_time_ms: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error: Option<String>, // Error description for failures
+    #[serde(skip_serializing_if = "Option::is_none")]
+    first_gap_index: Option<u32>, // Index of first continuity gap
+    #[serde(skip_serializing_if = "Option::is_none")]
+    out_of_order: Option<bool>, // Whether segments are out of order
 }
 
 #[derive(Parser, Debug)]
@@ -67,6 +88,12 @@ struct WrapCmd {
         help = "Path to device public key file"
     )]
     device_pub: Option<PathBuf>,
+    #[arg(
+        long = "seed",
+        value_name = "U64",
+        help = "Seed RNG for deterministic output (for testing/CI, not cryptographically secure)"
+    )]
+    seed: Option<u64>,
 }
 
 #[derive(Args, Debug)]
@@ -79,6 +106,20 @@ struct VerifyCmd {
         help = "Device public key (ed25519:<base64>)"
     )]
     device_pub: String,
+    #[arg(long, help = "Output results as JSON")]
+    json: bool,
+    #[arg(
+        long = "emit-receipt",
+        value_name = "PATH",
+        help = "Write JSON verification receipt to file"
+    )]
+    emit_receipt: Option<PathBuf>,
+}
+
+fn generate_seeded_nonce24(rng: &mut dyn RngCore) -> [u8; 24] {
+    let mut nonce = [0u8; 24];
+    rng.fill_bytes(&mut nonce);
+    nonce
 }
 
 fn main() {
@@ -123,6 +164,12 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     fs::create_dir_all(args.output.join("chunks"))?;
     fs::create_dir_all(args.output.join("signatures"))?;
 
+    // Initialize RNG - seeded if provided, otherwise use default
+    let mut rng: Box<dyn RngCore> = match args.seed {
+        Some(seed) => Box::new(ChaCha20Rng::seed_from_u64(seed)),
+        None => Box::new(rand::thread_rng()),
+    };
+
     // Process chunks
     let chunks = input_data.chunks(args.chunk_size).collect::<Vec<_>>();
     let mut segments = Vec::new();
@@ -132,8 +179,13 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     // Generate a symmetric key for encryption (simplified for P0)
     let encryption_key = Key::from_slice(b"0123456789abcdef0123456789abcdef"); // 32 bytes for demo
 
-    // Create timestamp for all operations
-    let started_at = current_timestamp()?;
+    // Create timestamp for all operations - deterministic if seeded
+    let started_at = if args.seed.is_some() {
+        // Use deterministic timestamp for seeded runs
+        "2025-01-01T00:00:00Z".to_string()
+    } else {
+        current_timestamp()?
+    };
     let device_id = format!(
         "te:cam:{}",
         hex::encode(&device_keypair.public.as_bytes()[9..15])
@@ -142,8 +194,8 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     for (i, chunk_data) in chunks.iter().enumerate() {
         let chunk_id = i as u32;
 
-        // Generate nonce and encrypt
-        let nonce = generate_nonce24();
+        // Generate nonce - seeded if provided
+        let nonce = generate_seeded_nonce24(&mut *rng);
         let aad = generate_aad("0.1.0", &args.profile, &device_id, &started_at);
         let encrypted_data = encrypt_segment(encryption_key, &nonce, chunk_data, &aad)?;
         encrypted_chunks.push(encrypted_data.clone());
@@ -241,70 +293,255 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
 }
 
 fn handle_verify(args: VerifyCmd) -> Result<()> {
-    // Read and validate archive
-    let (manifest, _chunks) = read_archive(&args.archive)?;
+    let start_time = Instant::now();
 
-    // Parse device public key
+    // Initialize report with defaults
+    let mut report = VerifyReport::default();
+
+    // Handle IO/Schema errors (exit 12)
+    let (manifest, _chunks) = match read_archive(&args.archive) {
+        Ok(data) => data,
+        Err(e) => {
+            let error_msg = format!("{}", e);
+            report.error = Some(format!("Archive read failed: {}", e));
+            report.verify_time_ms = start_time.elapsed().as_millis() as u64;
+
+            // Check for specific error types to provide expected messages
+            let first_line = if error_msg.contains("No such file")
+                || error_msg.contains("not found")
+                || error_msg.contains("missing")
+            {
+                if error_msg.contains("chunk")
+                    || error_msg.contains(".bin")
+                    || error_msg.contains("00")
+                {
+                    "Missing chunk file"
+                } else {
+                    "Archive not found or invalid"
+                }
+            } else if error_msg.contains("00000.bin")
+                || error_msg.contains("00001.bin")
+                || error_msg.contains("chunks/")
+            {
+                "Missing chunk file"
+            } else {
+                "Archive not found or invalid"
+            };
+
+            output_error(&args, &report, first_line)?;
+            process::exit(12);
+        }
+    };
+
+    // Parse device public key (invalid args would be caught by clap)
     let device_pub_key = if args.device_pub.starts_with("ed25519:") {
-        args.device_pub
+        args.device_pub.clone()
     } else {
         format!("ed25519:{}", args.device_pub)
     };
 
-    // Get signature and canonical bytes
-    let signature = manifest
-        .signature
-        .as_ref()
-        .ok_or_else(|| anyhow::anyhow!("Manifest has no signature"))?;
+    // Populate report with manifest data
+    report.profile = manifest.profile.clone();
+    report.device_id = manifest.device.id.clone();
+    report.segments = manifest.segments.len() as u32;
+    report.duration_s = manifest
+        .segments
+        .iter()
+        .map(|s| s.duration_seconds as f32)
+        .sum();
 
-    let canonical_bytes = manifest.to_canonical_bytes()?;
+    // Check for signature presence (schema error)
+    let signature = match manifest.signature.as_ref() {
+        Some(sig) => sig,
+        None => {
+            report.signature = "fail".to_string();
+            report.continuity = "skip".to_string();
+            report.error = Some("Manifest missing signature".to_string());
+            report.verify_time_ms = start_time.elapsed().as_millis() as u64;
+            output_error(&args, &report, "Manifest missing signature")?;
+            process::exit(12);
+        }
+    };
 
-    // Verify signature
+    // Get canonical bytes (internal error if this fails)
+    let canonical_bytes = match manifest.to_canonical_bytes() {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            report.signature = "fail".to_string();
+            report.continuity = "skip".to_string();
+            report.error = Some(format!("Canonical serialization failed: {}", e));
+            report.verify_time_ms = start_time.elapsed().as_millis() as u64;
+            output_error(&args, &report, "Internal canonicalization error")?;
+            process::exit(14);
+        }
+    };
+
+    // Verify signature (exit 10 on failure)
     match verify_manifest(&device_pub_key, &canonical_bytes, signature) {
         Ok(true) => {
-            println!("Signature: PASS");
+            report.signature = "pass".to_string();
 
-            // Validate archive structure and continuity
+            // Validate archive structure and continuity (exit 11 on failure)
             match validate_archive(&args.archive) {
                 Ok(()) => {
-                    println!("Continuity: PASS");
-
-                    let segment_count = manifest.segments.len();
-                    let duration_seconds = if segment_count > 0 {
-                        manifest.segments.iter().map(|s| s.duration_seconds).sum()
-                    } else {
-                        0.0
-                    };
-
-                    println!(
-                        "Segments: {}  Duration(s): {:.1}  Chunk(s): {:.1}",
-                        segment_count,
-                        duration_seconds,
-                        if segment_count > 0 {
-                            duration_seconds / segment_count as f64
-                        } else {
-                            0.0
-                        }
-                    );
-                    Ok(())
+                    report.continuity = "pass".to_string();
                 }
-                Err(err) => {
-                    println!("Continuity: FAIL");
-                    anyhow::bail!("Archive validation failed: {}", err);
+                Err(e) => {
+                    report.continuity = "fail".to_string();
+                    let error_msg = format!("{}", e);
+                    report.error = Some(error_msg.clone());
+
+                    // Try to extract gap index from error message
+                    if let Some(gap_idx) = extract_gap_index(&error_msg) {
+                        report.first_gap_index = Some(gap_idx);
+                    }
+
+                    // Check for out of order indication
+                    if error_msg.contains("out of order") || error_msg.contains("ordering") {
+                        report.out_of_order = Some(true);
+                    }
+
+                    report.verify_time_ms = start_time.elapsed().as_millis() as u64;
+                    output_continuity_error(&args, &report)?;
+                    process::exit(11);
                 }
             }
         }
         Ok(false) => {
-            println!("Signature: FAIL");
-            println!("Continuity: SKIP");
-            anyhow::bail!("Signature verification failed");
+            report.signature = "fail".to_string();
+            report.continuity = "skip".to_string();
+            report.error = Some("Signature verification failed".to_string());
+            report.verify_time_ms = start_time.elapsed().as_millis() as u64;
+            output_error(&args, &report, "Signature verification failed")?;
+            process::exit(10);
         }
-        Err(err) => {
-            println!("Signature: FAIL");
-            println!("Continuity: SKIP");
-            anyhow::bail!("Signature verification error: {}", err);
+        Err(e) => {
+            report.signature = "fail".to_string();
+            report.continuity = "skip".to_string();
+            report.error = Some(format!("Signature verification error: {}", e));
+            report.verify_time_ms = start_time.elapsed().as_millis() as u64;
+            output_error(&args, &report, "Signature verification failed")?;
+            process::exit(10);
         }
     }
+
+    // Success case
+    report.verify_time_ms = start_time.elapsed().as_millis() as u64;
+    output_success(&args, &report)?;
+    Ok(())
+}
+
+fn output_success(args: &VerifyCmd, report: &VerifyReport) -> Result<()> {
+    if args.json {
+        let json_output = serde_json::to_string(report)?;
+        println!("{}", json_output);
+    } else {
+        println!("Signature: PASS");
+        println!("Continuity: PASS");
+        println!(
+            "Segments: {}  Duration(s): {:.1}  Chunk(s): {:.1}",
+            report.segments,
+            report.duration_s,
+            if report.segments > 0 {
+                report.duration_s / report.segments as f32
+            } else {
+                0.0
+            }
+        );
+    }
+
+    // Emit receipt if requested
+    if let Some(receipt_path) = &args.emit_receipt {
+        let json_output = serde_json::to_string_pretty(report)?;
+        fs::write(receipt_path, json_output)?;
+    }
+
+    Ok(())
+}
+
+fn output_error(args: &VerifyCmd, report: &VerifyReport, first_line: &str) -> Result<()> {
+    if args.json {
+        let json_output = serde_json::to_string(report)?;
+        println!("{}", json_output);
+    } else {
+        eprintln!("{}", first_line);
+    }
+
+    // Emit receipt if requested
+    if let Some(receipt_path) = &args.emit_receipt {
+        let json_output = serde_json::to_string_pretty(report)?;
+        fs::write(receipt_path, json_output)?;
+    }
+
+    Ok(())
+}
+
+fn output_continuity_error(args: &VerifyCmd, report: &VerifyReport) -> Result<()> {
+    if args.json {
+        let json_output = serde_json::to_string(report)?;
+        println!("{}", json_output);
+    } else {
+        // Check if error message contains hash mismatch for legacy compatibility
+        if let Some(error) = &report.error {
+            if error.contains("hash mismatch") {
+                eprintln!("hash mismatch");
+                return Ok(());
+            }
+        }
+
+        // Extract concise first line for continuity errors
+        if let Some(gap_idx) = report.first_gap_index {
+            eprintln!("Continuity: FAIL (gap at index {})", gap_idx);
+        } else if report.out_of_order == Some(true) {
+            eprintln!("Continuity: FAIL (segments out of order)");
+        } else {
+            eprintln!("Continuity: FAIL");
+        }
+    }
+
+    // Emit receipt if requested
+    if let Some(receipt_path) = &args.emit_receipt {
+        let json_output = serde_json::to_string_pretty(report)?;
+        fs::write(receipt_path, json_output)?;
+    }
+
+    Ok(())
+}
+
+fn extract_gap_index(error_msg: &str) -> Option<u32> {
+    // Try to extract index from various error message patterns
+    if let Some(start) = error_msg.find("index ") {
+        let index_part = &error_msg[start + 6..];
+        if let Some(end) = index_part.find(|c: char| !c.is_ascii_digit()) {
+            if let Ok(idx) = index_part[..end].parse::<u32>() {
+                return Some(idx);
+            }
+        } else if let Ok(idx) = index_part.parse::<u32>() {
+            return Some(idx);
+        }
+    }
+
+    // Try "Chunk N" pattern (capital C)
+    if let Some(start) = error_msg.find("Chunk ") {
+        let index_part = &error_msg[start + 6..];
+        if let Some(end) = index_part.find(|c: char| !c.is_ascii_digit()) {
+            if let Ok(idx) = index_part[..end].parse::<u32>() {
+                return Some(idx);
+            }
+        }
+    }
+
+    // Try "chunk N" pattern (lowercase c)
+    if let Some(start) = error_msg.find("chunk ") {
+        let index_part = &error_msg[start + 6..];
+        if let Some(end) = index_part.find(|c: char| !c.is_ascii_digit()) {
+            if let Ok(idx) = index_part[..end].parse::<u32>() {
+                return Some(idx);
+            }
+        }
+    }
+
+    None
 }
 
 fn load_or_generate_keypair(

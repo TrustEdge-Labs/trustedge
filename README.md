@@ -7,12 +7,40 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge — Trustable Edge AI
 
-[![CI](https://github.com/TrustEdge-Labs/trustedge/workflows/CI/badge.svg)](https://github.com/TrustEdge-Labs/trustedge/actions)
+[![CI Status](https://github.com/TrustEdge-Labs/trustedge/workflows/CI/badge.svg)](https://github.com/TrustEdge-Labs/trustedge/actions)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
 [![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v0.2.0)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
+
+---
+
+## P0 Golden Path (2 minutes)
+
+```bash
+cargo build --release -p cli
+head -c 32M </dev/urandom > sample.bin   # Windows note: use 'fsutil file createnew sample.bin 33554432'
+./target/release/trst wrap --profile cam.video --in ./sample.bin --out ./clip.trst
+./target/release/trst verify ./clip.trst --device-pub "$(cat device.pub)" --json
+
+# Emit receipt to file (works with or without --json)
+./target/release/trst verify ./clip.trst --device-pub "$(cat device.pub)" --emit-receipt receipt.json
+
+# Deterministic output for CI/testing (not cryptographically secure)
+./target/release/trst wrap --profile cam.video --in ./sample.bin --out ./clip.trst --seed 42
+```
+
+**Example JSON output:**
+```json
+{"signature":"pass","continuity":"pass","segments":32,"duration_s":64.0,"profile":"cam.video","device_id":"te:cam:a1b2c3","verify_time_ms":45}
+```
+
+**Resources:**
+- [Manifest specification](docs/manifest_cam_video.md)
+- [Acceptance tests](crates/trst-cli/tests/acceptance.rs)
+- [P0 test script](p0_acceptance.sh)
+- [Browser verifier](web/demo/) - Drag-and-drop the .trst directory and paste device pubkey for in-browser verification
 
 ---
 

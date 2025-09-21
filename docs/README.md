@@ -49,6 +49,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | **[UNIVERSAL_BACKEND.md](technical/universal-backend.md)** | Universal Backend system design | Developers |
 | **[FORMAT.md](technical/format.md)** | Binary format specification | Developers |
 | **[PROTOCOL.md](technical/protocol.md)** | Network protocol specification | Developers |
+| **[manifest_cam_video.md](manifest_cam_video.md)** | cam.video manifest specification | Developers |
 
 ### Testing & Quality
 | Document | Description | Audience |
