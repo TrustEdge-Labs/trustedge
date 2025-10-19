@@ -77,14 +77,14 @@ impl EncryptedData {
 #[wasm_bindgen]
 pub fn generate_key() -> String {
     let key = Aes256Gcm::generate_key(&mut OsRng);
-    general_purpose::STANDARD.encode(key.as_slice())
+    general_purpose::STANDARD.encode(&key[..])
 }
 
 // Generate a random nonce for AES-256-GCM
 #[wasm_bindgen]
 pub fn generate_nonce() -> String {
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
-    general_purpose::STANDARD.encode(nonce.as_slice())
+    general_purpose::STANDARD.encode(&nonce[..])
 }
 
 // Encrypt data using AES-256-GCM
