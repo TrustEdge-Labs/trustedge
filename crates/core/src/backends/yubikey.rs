@@ -2470,7 +2470,7 @@ impl YubiKeyBackend {
 
         // Perform the signature
         let signature = pkcs11
-            .sign(session, hash.as_slice())
+            .sign(session, &hash)
             .context("Failed to sign with YubiKey private key")?;
 
         if self.config.verbose {
