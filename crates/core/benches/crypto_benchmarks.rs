@@ -39,8 +39,7 @@ fn bench_aes_gcm_encryption(c: &mut Criterion) {
     // Generate a consistent key for benchmarking
     let mut key_bytes = [0u8; 32];
     OsRng.fill_bytes(&mut key_bytes);
-    let key = aes_gcm::Key::<Aes256Gcm>::from_slice(&key_bytes);
-    let cipher = Aes256Gcm::new(key);
+    let cipher = Aes256Gcm::new((&key_bytes).into());
 
     for &size in SIZES {
         let data = generate_test_data(size);
@@ -72,8 +71,7 @@ fn bench_aes_gcm_decryption(c: &mut Criterion) {
     // Generate a consistent key for benchmarking
     let mut key_bytes = [0u8; 32];
     OsRng.fill_bytes(&mut key_bytes);
-    let key = aes_gcm::Key::<Aes256Gcm>::from_slice(&key_bytes);
-    let cipher = Aes256Gcm::new(key);
+    let cipher = Aes256Gcm::new((&key_bytes).into());
 
     for &size in SIZES {
         let data = generate_test_data(size);
