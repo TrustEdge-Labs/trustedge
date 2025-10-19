@@ -9,7 +9,7 @@
 ///
 use aes_gcm::{
     aead::{Aead, KeyInit, OsRng, Payload},
-    Aes256Gcm, Key, Nonce,
+    Aes256Gcm, Key,
 };
 
 use anyhow::{anyhow, Context, Result};
@@ -551,9 +551,14 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             mh.as_bytes(),
             m.chunk_len,
         );
+        let nonce_array: &[u8; 12] = rec
+            .nonce
+            .as_slice()
+            .try_into()
+            .map_err(|_| anyhow!("Invalid nonce length"))?;
         let pt = cipher
             .decrypt(
-                Nonce::from_slice(&rec.nonce),
+                nonce_array.into(),
                 Payload {
                     msg: &rec.ct,
                     aad: &aad,
@@ -1062,7 +1067,7 @@ fn main() -> Result<()> {
         seq = seq.checked_add(1).ok_or_else(|| anyhow!("seq overflow"))?;
         nonce_bytes[..4].copy_from_slice(&header.nonce_prefix);
         nonce_bytes[4..].copy_from_slice(&seq.to_be_bytes());
-        let nonce = Nonce::from_slice(&nonce_bytes);
+        let nonce = (&nonce_bytes).into();
 
         let pt_hash = blake3::hash(&buf[..n]);
         let ts_ms = SystemTime::now()
@@ -1159,7 +1164,7 @@ fn main() -> Result<()> {
         );
         let pt = cipher
             .decrypt(
-                Nonce::from_slice(&nonce_bytes),
+                (&nonce_bytes).into(),
                 Payload {
                     msg: &ct,
                     aad: &aad_rx,

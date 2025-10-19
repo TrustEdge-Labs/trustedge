@@ -24,7 +24,7 @@ use trustedge_core::{
 // --- Cryptograph ---
 use aes_gcm::{
     aead::{Aead, KeyInit, OsRng, Payload},
-    Aes256Gcm, Key, Nonce,
+    Aes256Gcm, Key,
 };
 use ed25519_dalek::{Signature, SigningKey};
 use rand_core::RngCore;
@@ -375,7 +375,7 @@ async fn send_encrypted_file(
 
         // Nonce = prefix || counter(seq)
         let nonce_bytes = make_nonce(nonce_prefix, sequence);
-        let nonce = Nonce::from_slice(&nonce_bytes);
+        let nonce = (&nonce_bytes).into();
 
         // Build manifest
         let pt_hash = blake3::hash(&buffer[..bytes_read]);
@@ -491,7 +491,7 @@ async fn send_encrypted_test_chunks(
         }
 
         let nonce_bytes = make_nonce(nonce_prefix, seq);
-        let nonce = Nonce::from_slice(&nonce_bytes);
+        let nonce = (&nonce_bytes).into();
 
         let pt_hash = blake3::hash(&pt);
         let manifest = Manifest {
@@ -690,7 +690,7 @@ async fn send_encrypted_test_chunks_hardened(
         }
 
         let nonce_bytes = make_nonce(nonce_prefix, seq);
-        let nonce = Nonce::from_slice(&nonce_bytes);
+        let nonce = (&nonce_bytes).into();
 
         let pt_hash = blake3::hash(&pt);
         let manifest = Manifest {
@@ -809,7 +809,7 @@ async fn send_encrypted_file_hardened(
 
         let pt = &buffer[..bytes_read];
         let nonce_bytes = make_nonce(nonce_prefix, seq);
-        let nonce = Nonce::from_slice(&nonce_bytes);
+        let nonce = (&nonce_bytes).into();
 
         let pt_hash = blake3::hash(pt);
         let manifest = Manifest {

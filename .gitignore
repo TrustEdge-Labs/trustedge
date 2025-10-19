@@ -37,3 +37,7 @@ tarpaulin-report.html
 resp*.txt
 segments.json
 verify_body.json
+
+# Generated test certificates (regenerated during tests)
+*_client.cert
+*_server.cert

@@ -225,7 +225,7 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     let mut encrypted_chunks = Vec::new();
 
     // Generate a symmetric key for encryption (simplified for P0)
-    let encryption_key = Key::from_slice(b"0123456789abcdef0123456789abcdef"); // 32 bytes for demo
+    let encryption_key = &Key::from(*b"0123456789abcdef0123456789abcdef"); // 32 bytes for demo
 
     // Create timestamp for all operations - deterministic if seeded
     let started_at = if args.seed.is_some() {

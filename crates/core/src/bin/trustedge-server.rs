@@ -28,7 +28,7 @@ use trustedge_core::{
 
 use aes_gcm::{
     aead::{Aead, KeyInit, Payload},
-    Aes256Gcm, Key, Nonce,
+    Aes256Gcm, Key,
 };
 use ed25519_dalek::{Signature, VerifyingKey};
 
@@ -915,11 +915,15 @@ async fn process_and_decrypt_chunk(
         mh.as_bytes(),
         m.chunk_len,
     );
-    let nonce = Nonce::from_slice(&chunk.nonce);
+    let nonce_array: &[u8; 12] = chunk
+        .nonce
+        .as_slice()
+        .try_into()
+        .map_err(|_| anyhow!("Invalid nonce length"))?;
 
     let pt = cipher
         .decrypt(
-            nonce,
+            nonce_array.into(),
             Payload {
                 msg: &chunk.data,
                 aad: &aad,

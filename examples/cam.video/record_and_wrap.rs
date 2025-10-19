@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut encrypted_chunks = Vec::new();
 
     // Generate a symmetric key for encryption (simplified for P0)
-    let encryption_key = Key::from_slice(b"example_demo_key_32_bytes_long__"); // 32 bytes
+    let encryption_key = &Key::from(*b"example_demo_key_32_bytes_long__"); // 32 bytes
 
     // Create timestamps
     let started_at = current_timestamp()?;
