@@ -262,7 +262,7 @@ impl EnvelopeV2 {
 
     /// Encrypt the session key using AES-256-GCM
     fn encrypt_session_key(session_key: &[u8; 32], encryption_key: &[u8; 32]) -> Result<Vec<u8>> {
-        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
+        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
         use rand::{rngs::OsRng, RngCore};
 
         let cipher = Aes256Gcm::new_from_slice(encryption_key)
@@ -271,7 +271,7 @@ impl EnvelopeV2 {
         // Generate random nonce
         let mut nonce_bytes = [0u8; 12];
         OsRng.fill_bytes(&mut nonce_bytes);
-        let nonce = Nonce::from_slice(&nonce_bytes);
+        let nonce = (&nonce_bytes).into();
 
         // Encrypt session key
         let mut ciphertext = session_key.to_vec();
@@ -288,7 +288,7 @@ impl EnvelopeV2 {
 
     /// Decrypt the session key
     fn decrypt_session_key(encrypted_data: &[u8], encryption_key: &[u8; 32]) -> Result<[u8; 32]> {
-        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
+        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
 
         if encrypted_data.len() < 12 {
             return Err(anyhow::anyhow!("Encrypted session key too short"));
@@ -298,7 +298,10 @@ impl EnvelopeV2 {
             .context("Failed to create cipher for session key decryption")?;
 
         // Extract nonce and ciphertext
-        let nonce = Nonce::from_slice(&encrypted_data[..12]);
+        let nonce_array: &[u8; 12] = encrypted_data[..12]
+            .try_into()
+            .context("Invalid nonce length")?;
+        let nonce = nonce_array.into();
         let mut ciphertext = encrypted_data[12..].to_vec();
 
         // Decrypt
@@ -323,7 +326,7 @@ impl EnvelopeV2 {
         session_key: &[u8; 32],
         header: &EnvelopeHeaderV2,
     ) -> Result<Vec<NetworkChunk>> {
-        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
+        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
         use rand::{rngs::OsRng, RngCore};
 
         let cipher = Aes256Gcm::new_from_slice(session_key)
@@ -335,7 +338,7 @@ impl EnvelopeV2 {
             // Generate random nonce for this chunk
             let mut nonce_bytes = [0u8; NONCE_LEN];
             OsRng.fill_bytes(&mut nonce_bytes);
-            let nonce = Nonce::from_slice(&nonce_bytes);
+            let nonce = (&nonce_bytes).into();
 
             // Create AAD for this chunk
             let aad = Self::build_chunk_aad(header, i as u64, &nonce_bytes, chunk_data.len())?;
@@ -371,7 +374,7 @@ impl EnvelopeV2 {
         session_key: &[u8; 32],
         header: &EnvelopeHeaderV2,
     ) -> Result<Vec<u8>> {
-        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
+        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
 
         let cipher = Aes256Gcm::new_from_slice(session_key)
             .context("Failed to create cipher for payload decryption")?;
@@ -388,7 +391,12 @@ impl EnvelopeV2 {
                 .context("Failed to deserialize chunk manifest")?;
 
             // Create nonce
-            let nonce = Nonce::from_slice(&chunk.nonce);
+            let nonce_array: &[u8; 12] = chunk
+                .nonce
+                .as_slice()
+                .try_into()
+                .context("Invalid nonce length in chunk")?;
+            let nonce = nonce_array.into();
 
             // Create AAD using the same method as encryption
             let aad = Self::build_chunk_aad(
