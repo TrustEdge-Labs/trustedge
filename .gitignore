@@ -29,3 +29,11 @@ trustedge-core/test*.txt
 # Coverage files (no longer used)
 cobertura.xml
 tarpaulin-report.html
+
+# Test artifacts and temporary files
+*.bin
+*.pem
+*.trst/
+resp*.txt
+segments.json
+verify_body.json

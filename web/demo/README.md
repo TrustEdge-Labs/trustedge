@@ -10,6 +10,10 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 This directory contains a WebAssembly-powered demo for verifying TrustEdge P0 `.trst` archives in the browser.
 
+> **📚 For complete WASM documentation**, see:
+> - **[WASM.md](../../WASM.md)** - Comprehensive build/test/deploy guide
+> - **[FEATURES.md](../../FEATURES.md)** - Feature flag reference
+
 ## 🎯 Features
 
 - **Client-side verification**: No server required - all verification runs in the browser

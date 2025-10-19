@@ -10,6 +10,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 WebAssembly bindings for TrustEdge cryptographic operations, providing high-performance encryption and decryption in web browsers and Node.js environments.
 
+> **📚 Complete WASM Guide**: See **[WASM.md](../../WASM.md)** for comprehensive build, test, and deployment documentation.
+
 ## Features
 
 - **AES-256-GCM Encryption**: Industry-standard authenticated encryption

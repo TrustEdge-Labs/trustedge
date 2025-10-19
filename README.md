@@ -44,6 +44,17 @@ head -c 32M </dev/urandom > sample.bin   # Windows note: use 'fsutil file create
 - [P0 test script](p0_acceptance.sh)
 - [Browser verifier demo](web/demo/) - WebAssembly-powered verification in your browser
 
+## End-to-End One-Liner
+
+Complete workflow from archive creation to remote verification:
+
+```bash
+trst wrap --profile cam.video --in sample.bin --out clip.trst && \
+trst emit-request --archive clip.trst --device-pub ./device.pub --out verify_request.json --post http://localhost:8080/v1/verify
+```
+
+This creates a `.trst` archive, generates a verification request, and posts it to a remote verification service in a single command chain.
+
 ---
 
 ## Overview
@@ -138,7 +149,10 @@ cargo build --workspace --release
 - **YubiKey Support**: Add `--features yubikey` for hardware security keys
 - **All Features**: Use `--features audio,yubikey` for complete functionality
 
-**📖 For detailed installation instructions including system dependencies, see [EXAMPLES.md](EXAMPLES.md#installation-guide).**
+**📖 Documentation:**
+- **[FEATURES.md](FEATURES.md)** - Complete feature flag reference with dependencies and examples
+- **[WASM.md](WASM.md)** - WebAssembly build, test, and deployment guide
+- **[docs/user/examples/installation.md](docs/user/examples/installation.md)** - Detailed installation with system dependencies
 
 ### Basic Usage
 

@@ -5,59 +5,139 @@ Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
-
 # TrustEdge AI Coding Agent Instructions
 
 ## 🏗️ Project Architecture
 
-**TrustEdge** is a privacy-preserving edge data encryption platform built in Rust with a modular architecture:
+**TrustEdge** is a privacy-preserving edge data encryption platform built as a **Cargo workspace** with specialized crates:
 
-- **Core Library** (`trustedge-core/src/lib.rs`): Data-agnostic encryption with NetworkChunk abstraction
-- **Universal Backend System** (`src/backends/`): Capability-based crypto operations (Software HSM, Keyring, future TPM/YubiKey)
-- **Transport Layer** (`src/transport/`): Async trait abstraction over TCP/QUIC for network operations
-- **Format Detection** (`src/format.rs`): MIME type detection and C2PA-inspired signed manifests
-- **Authentication** (`src/auth.rs`): Ed25519-based mutual authentication with session management
+### Workspace Structure (9 Crates)
+```
+trustedge/
+├── crates/core/              # trustedge-core: Core crypto library + CLI binaries
+├── crates/trst-cli/          # trustedge-trst-cli: .trst archive CLI (binary: trst)
+├── crates/trst-core/         # trustedge-trst-core: Archive format primitives
+├── crates/attestation/       # trustedge-attestation: Software attestation system
+├── crates/receipts/          # trustedge-receipts: Digital receipt ownership chains
+├── crates/wasm/              # trustedge-wasm: Core WebAssembly bindings
+├── crates/trst-wasm/         # trustedge-trst-wasm: Archive verification WASM
+├── crates/pubky/             # trustedge-pubky: Decentralized key discovery
+└── crates/pubky-advanced/    # trustedge-pubky-advanced: Hybrid encryption
+```
+
+### Core Architectural Components (`crates/core/src/`)
+
+- **Universal Backend System** (`backends/`): Capability-based crypto operations (Software HSM, Keyring, YubiKey)
+- **Transport Layer** (`transport/`): Async trait abstraction over TCP/QUIC
+- **Archive System** (`archive.rs`): .trst directory format with manifest + signatures
+- **Continuity Chain** (`chain.rs`): BLAKE3-based segment linking with genesis seed
+- **Crypto Operations** (`crypto.rs`): XChaCha20-Poly1305 encryption, Ed25519 signing
+- **Manifest** (`manifest.rs`): Canonical JSON serialization for cam.video profile
+- **Authentication** (`auth.rs`): Ed25519-based mutual authentication with sessions
 
 ### Key Architectural Patterns
 
-1. **Universal Backend Pattern**: All crypto operations use `CryptoOperation` enum → `CryptoResult` pattern with capability discovery
-2. **Transport Abstraction**: Unified async interface over TCP (length-prefixed) and QUIC (built-in framing)
-3. **Provenance by Design**: Each data chunk carries signed manifest bound to AEAD AAD
-4. **Streaming Architecture**: Fixed nonce discipline (prefix||counter) for real-time processing
+1. **Universal Backend Pattern**: All crypto operations use `CryptoOperation` enum → `CryptoResult` with capability discovery
+2. **Workspace Organization**: Each crate has specific responsibility - use correct package with `cargo run -p <package-name>`
+3. **P0 Golden Profile**: `cam.video` profile is locked specification - cannot change after P0 completion
+4. **Continuity Chain**: BLAKE3 genesis seed `blake3("trustedge:genesis")` links segments with hash chains
+5. **Canonical Manifests**: Ordered JSON keys with signature field excluded from canonicalization
 
 ## 🔧 Essential Development Commands
 
 ### Quality Checks (Run Before Every Commit)
 ```bash
-# Run from trustedge-core/ directory
-./ci-check.sh                    # Prevents GitHub CI failures
+# From workspace root - checks ALL crates
+./scripts/ci-check.sh         # Auto-formats, clippy, build, test entire workspace
+
+# From crates/core/ - checks only core crate
+./ci-check.sh                 # Auto-formats, clippy with features, build, test
 ```
 
-This script runs the **exact same checks** as GitHub CI:
-- `cargo fmt --check` (formatting)
-- `cargo clippy --all-targets --no-default-features -- -D warnings` (strict linting)
-- `cargo build --all-targets` (build validation)
-- `cargo test` (all 93 tests)
+**Critical CI alignment**: These scripts run the **exact same checks** as GitHub CI to prevent failures:
+- `cargo fmt --check --all` (workspace) or `cargo fmt` (core - auto-fixes)
+- `cargo clippy --workspace --all-targets --all-features -- -D warnings`
+- `cargo build --workspace --all-targets --all-features`
+- `cargo test --workspace --all-features`
 
-### Test Categories
+### Workspace Commands (from project root)
 ```bash
-cargo test --lib                                    # Unit tests (53)
-cargo test --test software_hsm_integration          # Software HSM integration (9)
-cargo test --test roundtrip_integration             # End-to-end workflows (15)
-cargo test --test auth_integration                  # Authentication (3)
-cargo test --test network_integration               # Network operations (7)
-cargo test --test universal_backend_integration     # Backend selection (6)
+# Build specific crate
+cargo build -p trustedge-trst-cli
+cargo build -p trustedge-core --features audio,yubikey
+
+# Run specific binary
+cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in input.bin --out archive.trst
+cargo run -p trustedge-core --bin software-hsm-demo generate ed25519 test_key
+
+# Test specific crate
+cargo test -p trustedge-core
+cargo test -p trustedge-receipts
+cargo test -p trustedge-trst-cli --test acceptance  # Acceptance tests only
+
+# Run all workspace tests
+cargo test --workspace --all-features
+
+# Makefile shortcuts
+make build              # Build entire workspace
+make test               # Test entire workspace
+make demo               # P0 golden path demo (wrap + verify)
+make ci-check           # Full CI validation
 ```
 
-### Development Workflow
+### P0 Golden Path (cam.video)
 ```bash
-# Feature development pattern
-cargo run --example transport_demo                  # Test transport abstraction
-cargo run --bin software-hsm-demo generate ed25519 test_key  # Test crypto backends
-cargo run -- --input test.txt --envelope out.trst --key-hex $(openssl rand -hex 32)  # Test encryption
+# Complete P0 workflow in 4 commands
+head -c 32M </dev/urandom > sample.bin
+cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in sample.bin --out clip.trst
+cargo run -p trustedge-trst-cli -- verify clip.trst --device-pub "$(cat device.pub)" --json
+cargo test -p trustedge-trst-cli --test acceptance  # A1-A6 test suite
+
+# Deterministic testing (CI)
+cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in sample.bin --out clip.trst --seed 42
 ```
 
 ## 🎯 Project-Specific Conventions
+
+### Copyright Headers (Required)
+**Every source file MUST have the correct copyright header**:
+
+**Rust files (.rs):**
+```rust
+//
+// Copyright (c) 2025 TRUSTEDGE LABS LLC
+// This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Project: trustedge — Privacy and trust at the edge.
+//
+```
+
+**Markdown files (.md):**
+```markdown
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+```
+
+**Run `./scripts/fix-copyright.sh` to auto-add headers to missing files.**
+
+### Terminal Output Standards
+**Always use professional UTF-8 symbols** (never emojis):
+- Success: `✔` (U+2714)
+- Error: `✖` (U+2716)
+- Warning: `⚠` (U+26A0)
+- Info: `●` (U+25CF)
+- Audio: `♪` (U+266A)
+- Video: `■` (U+25A0)
+
+### Crate Naming Convention
+- **Package name**: `trustedge-<name>` (with hyphens, lowercase)
+- **Binary name**: Short form without prefix (e.g., `trst`, `trustedge-attest`)
+- **Library name**: `trustedge_<name>` (with underscores for Rust imports)
 
 ### Universal Backend Implementation
 When implementing new backends (TPM, YubiKey, HSM, etc.):
@@ -75,6 +155,28 @@ When implementing new backends (TPM, YubiKey, HSM, etc.):
 
 2. **Capability Discovery Pattern**: Use `supports_operation()` for runtime checks, `get_capabilities()` for static discovery
 3. **Registry Integration**: Register with `UniversalBackendRegistry` using preference-based selection
+
+### Archive (.trst) Format Patterns
+```rust
+// Archive directory structure:
+// clip-<id>.trst/
+//   ├── manifest.json          # Canonical cam.video manifest
+//   ├── signatures/
+//   │   └── manifest.sig        # Detached Ed25519 signature
+//   └── chunks/
+//       ├── 00000.bin           # Zero-padded 5-digit chunk filenames
+//       ├── 00001.bin
+//       └── ...
+
+// Key functions in crates/core/src/archive.rs:
+write_archive(dir, manifest, chunks)  // Create .trst archive
+read_archive(dir)                      // Load archive for verification
+validate_archive(dir)                  // Full integrity check
+
+// Key functions in crates/trst-core/src/:
+wrap::wrap_archive()                   // CLI wrap implementation
+verify::verify_archive()               // CLI verify implementation
+```
 
 ### Specific Backend Examples
 
@@ -181,6 +283,15 @@ let signature = {
 }
 ```
 
+### Acceptance Test Pattern (P0)
+See `crates/trst-cli/tests/acceptance.rs` for the A1-A6 test suite:
+- **A1**: Basic wrap and verify workflow
+- **A2**: Signature validation failure detection
+- **A3**: Continuity chain gap detection
+- **A4**: Out-of-order chunk detection
+- **A5**: Truncated archive detection
+- **A6**: Comprehensive JSON verification output
+
 ## 🔍 Key Files for Understanding
 
 - `UNIVERSAL_BACKEND.md`: Comprehensive backend system documentation
@@ -203,6 +314,8 @@ let signature = {
 - `CODING_STANDARDS.md`: Code quality requirements
 - `CONTRIBUTING.md`: Contribution guidelines
 - `TESTING.md`: Testing strategy and execution
+- `FEATURES.md`: **Comprehensive feature flag reference** - All cargo features, dependencies, and usage
+- `WASM.md`: **Complete WASM build and deployment guide** - Browser/Node.js integration
 
 **Security & Operations:**
 - `SECURITY.md`: Security policy and features
@@ -210,13 +323,19 @@ let signature = {
 - `ROADMAP.md`: Future development plans
 - `TROUBLESHOOTING.md`: Common issues and solutions
 
+**Future Enhancements:**
+- `RFC_K256_SUPPORT.md`: **secp256k1 (Bitcoin/Ethereum) integration plan** - K1 curve support alongside P-256
+
 ## ⚠️ Common Pitfalls
 
-1. **CI Failures**: Always run `./ci-check.sh` before commits
-2. **Backend Mutability**: Some operations need `&mut self` - clone backend for demos
-3. **Transport Framing**: TCP needs length-prefixed messages, QUIC has built-in framing
-4. **Capability Checks**: Always verify `supports_operation()` before calling `perform_operation()`
-5. **Professional Output**: Use UTF-8 symbols, not emojis in terminal output
-6. **Backend Config**: Each backend type has specific `config_requirements` - check `BackendInfo`
+1. **CI Failures**: Always run `./scripts/ci-check.sh` (workspace) or `./ci-check.sh` (core crate) before commits
+2. **Feature Flags**: Check `FEATURES.md` for complete feature documentation - audio/yubikey must be explicitly enabled
+3. **WASM Builds**: See `WASM.md` for complete build/test/deploy guide - requires `wasm-pack` installation
+4. **Backend Mutability**: Some operations need `&mut self` - clone backend for demos
+5. **Transport Framing**: TCP needs length-prefixed messages, QUIC has built-in framing
+6. **Capability Checks**: Always verify `supports_operation()` before calling `perform_operation()`
+7. **Professional Output**: Use UTF-8 symbols, not emojis in terminal output
+8. **Backend Config**: Each backend type has specific `config_requirements` - check `BackendInfo`
+9. **Curve Selection**: P-256 (R1) for YubiKey/TPM hardware, K1 for Bitcoin/Ethereum (see `RFC_K256_SUPPORT.md`)
 
-Focus on the Universal Backend system for extensibility - it's the foundation for all future crypto integrations (TPM, HSM, YubiKey, post-quantum).
+Focus on the Universal Backend system for extensibility - it's the foundation for all future crypto integrations (TPM, HSM, YubiKey, post-quantum, K1 curves).

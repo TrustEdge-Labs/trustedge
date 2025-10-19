@@ -6,9 +6,11 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
 
-# TrustEdge WASM
+# TrustEdge .trst Archive Verification WASM
 
-WebAssembly bindings for TrustEdge cryptographic operations, providing high-performance encryption and decryption in web browsers and Node.js environments.
+WebAssembly bindings for TrustEdge .trst archive verification in web browsers, providing client-side cryptographic validation.
+
+> **📚 Complete WASM Guide**: See **[WASM.md](../../WASM.md)** for comprehensive build, test, and deployment documentation.
 
 ## Features
 

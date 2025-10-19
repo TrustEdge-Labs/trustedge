@@ -9,18 +9,26 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 Basic examples to get you started with TrustEdge encryption and decryption.
 
+> **📦 Workspace Note**: TrustEdge is organized as a Cargo workspace. Use `cargo run -p package-name` for development, or `./target/release/binary-name` for installed binaries.
+
 ## Simple File Encryption
 
 **Basic file encryption with random key:**
 ```bash
-# Encrypt a document
+# Development (from workspace root)
+cargo run -p trustedge-core -- \
+  --input document.txt \
+  --envelope document.trst \
+  --key-out mykey.hex
+
+# OR using installed binary
 ./target/release/trustedge-core \
   --input document.txt \
   --envelope document.trst \
   --key-out mykey.hex
 
 # Decrypt the document
-./target/release/trustedge-core \
+cargo run -p trustedge-core -- \
   --decrypt \
   --input document.trst \
   --out recovered.txt \
@@ -40,17 +48,17 @@ diff document.txt recovered.txt  # Should be identical
 **Keyring-based encryption (password-derived keys):**
 ```bash
 # One-time setup: store passphrase in OS keyring
-./target/release/trustedge-core --set-passphrase "my secure passphrase"
+cargo run -p trustedge-core -- --set-passphrase "my secure passphrase"
 
 # Encrypt using keyring-derived key
-./target/release/trustedge-core \
+cargo run -p trustedge-core -- \
   --input file.txt \
   --envelope file.trst \
   --use-keyring \
   --salt-hex $(openssl rand -hex 16)
 
 # Decrypt using keyring (you'll be prompted for passphrase if needed)
-./target/release/trustedge-core \
+cargo run -p trustedge-core -- \
   --decrypt \
   --input file.trst \
   --out recovered.txt \
@@ -66,10 +74,10 @@ diff document.txt recovered.txt  # Should be identical
 echo '{"message": "Hello TrustEdge!", "timestamp": 1234567890}' > data.json
 
 # Encrypt the JSON file
-./target/release/trustedge-core --input data.json --envelope data.trst --key-out key.hex
+cargo run -p trustedge-core -- --input data.json --envelope data.trst --key-out key.hex
 
 # Inspect without decrypting
-./target/release/trustedge-core --input data.trst --inspect --verbose
+cargo run -p trustedge-core -- --input data.trst --inspect --verbose
 
 # Example output:
 # TrustEdge Archive Information:
@@ -84,7 +92,7 @@ echo '{"message": "Hello TrustEdge!", "timestamp": 1234567890}' > data.json
 **Format-aware decryption:**
 ```bash
 # Decrypt preserves original format
-./target/release/trustedge-core \
+cargo run -p trustedge-core -- \
   --decrypt \
   --input data.trst \
   --out recovered.json \

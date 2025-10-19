@@ -9,6 +9,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 This document provides comprehensive guidance for testing TrustEdge WebAssembly modules in browser environments.
 
+> **📚 See Also**: **[WASM.md](../../WASM.md)** - Complete WASM build and deployment guide (primary reference)
+
 ## Overview
 
 TrustEdge includes two WebAssembly crates with comprehensive browser integration testing:
