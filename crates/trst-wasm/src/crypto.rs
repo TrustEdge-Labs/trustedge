@@ -8,7 +8,7 @@
 
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, OsRng},
-    Aes256Gcm, Key, Nonce,
+    Aes256Gcm, Key,
 };
 use base64::{engine::general_purpose, Engine as _};
 use rand::RngCore;
@@ -105,8 +105,11 @@ pub fn encrypt(
         return Err(JsValue::from_str("Key must be 32 bytes (256 bits)"));
     }
 
-    let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
-    let cipher = Aes256Gcm::new(key);
+    // Convert slice to array, then to Key (avoids deprecated GenericArray::from_slice)
+    let key_array: [u8; 32] = key_bytes.as_slice().try_into()
+        .map_err(|_| JsValue::from_str("Key conversion failed"))?;
+    let key: Key<Aes256Gcm> = key_array.into();
+    let cipher = Aes256Gcm::new(&key);
 
     // Use provided nonce or generate a new one
     let nonce = if let Some(nonce_str) = nonce_b64 {
@@ -118,7 +121,10 @@ pub fn encrypt(
             return Err(JsValue::from_str("Nonce must be 12 bytes (96 bits)"));
         }
 
-        *Nonce::from_slice(&nonce_bytes)
+        // Convert slice to array, then to Nonce (avoids deprecated GenericArray::from_slice)
+        let nonce_array: [u8; 12] = nonce_bytes.as_slice().try_into()
+            .map_err(|_| JsValue::from_str("Nonce conversion failed"))?;
+        nonce_array.into()
     } else {
         Aes256Gcm::generate_nonce(&mut OsRng)
     };
@@ -152,8 +158,11 @@ pub fn decrypt(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, 
         return Err(JsValue::from_str("Key must be 32 bytes (256 bits)"));
     }
 
-    let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
-    let cipher = Aes256Gcm::new(key);
+    // Convert slice to array, then to Key (avoids deprecated GenericArray::from_slice)
+    let key_array: [u8; 32] = key_bytes.as_slice().try_into()
+        .map_err(|_| JsValue::from_str("Key conversion failed"))?;
+    let key: Key<Aes256Gcm> = key_array.into();
+    let cipher = Aes256Gcm::new(&key);
 
     // Decode the nonce and ciphertext
     let nonce_bytes = general_purpose::STANDARD
@@ -168,10 +177,13 @@ pub fn decrypt(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, 
         return Err(JsValue::from_str("Nonce must be 12 bytes (96 bits)"));
     }
 
-    let nonce = Nonce::from_slice(&nonce_bytes);
+    // Convert slice to array reference (avoids deprecated GenericArray::from_slice)
+    let nonce_array: &[u8; 12] = nonce_bytes.as_slice().try_into()
+        .map_err(|_| JsValue::from_str("Nonce conversion failed"))?;
 
     // Decrypt the data
     let plaintext = cipher
+        .decrypt(nonce_array.into(), ciphertext_bytes.as_slice())
         .decrypt(nonce, ciphertext_bytes.as_slice())
         .map_err(|e| JsValue::from_str(&format!("Decryption failed: {}", e)))?;
 
