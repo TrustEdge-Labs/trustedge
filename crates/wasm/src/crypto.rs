@@ -106,7 +106,9 @@ pub fn encrypt(
     }
 
     // Convert slice to array, then to Key (avoids deprecated GenericArray::from_slice)
-    let key_array: [u8; 32] = key_bytes.as_slice().try_into()
+    let key_array: [u8; 32] = key_bytes
+        .as_slice()
+        .try_into()
         .map_err(|_| JsValue::from_str("Key conversion failed"))?;
     let key: Key<Aes256Gcm> = key_array.into();
     let cipher = Aes256Gcm::new(&key);
@@ -122,7 +124,9 @@ pub fn encrypt(
         }
 
         // Convert slice to array, then to Nonce (avoids deprecated GenericArray::from_slice)
-        let nonce_array: [u8; 12] = nonce_bytes.as_slice().try_into()
+        let nonce_array: [u8; 12] = nonce_bytes
+            .as_slice()
+            .try_into()
             .map_err(|_| JsValue::from_str("Nonce conversion failed"))?;
         nonce_array.into()
     } else {
@@ -159,7 +163,9 @@ pub fn decrypt(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, 
     }
 
     // Convert slice to array, then to Key (avoids deprecated GenericArray::from_slice)
-    let key_array: [u8; 32] = key_bytes.as_slice().try_into()
+    let key_array: [u8; 32] = key_bytes
+        .as_slice()
+        .try_into()
         .map_err(|_| JsValue::from_str("Key conversion failed"))?;
     let key: Key<Aes256Gcm> = key_array.into();
     let cipher = Aes256Gcm::new(&key);
@@ -178,7 +184,9 @@ pub fn decrypt(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, 
     }
 
     // Convert slice to array reference (avoids deprecated GenericArray::from_slice)
-    let nonce_array: &[u8; 12] = nonce_bytes.as_slice().try_into()
+    let nonce_array: &[u8; 12] = nonce_bytes
+        .as_slice()
+        .try_into()
         .map_err(|_| JsValue::from_str("Nonce conversion failed"))?;
 
     // Decrypt the data
