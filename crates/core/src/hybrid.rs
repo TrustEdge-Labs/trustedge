@@ -158,7 +158,7 @@ struct EncryptedData {
 
 /// Encrypt data using symmetric encryption (AES-256-GCM)
 fn encrypt_symmetric(data: &[u8], key: &SymmetricKey) -> Result<EncryptedData, TrustEdgeError> {
-    use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
+    use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
     use rand::{rngs::OsRng, RngCore};
 
     let cipher = Aes256Gcm::new_from_slice(key.as_bytes())
@@ -167,12 +167,11 @@ fn encrypt_symmetric(data: &[u8], key: &SymmetricKey) -> Result<EncryptedData, T
     // Generate random nonce
     let mut nonce_bytes = [0u8; 12];
     OsRng.fill_bytes(&mut nonce_bytes);
-    let nonce = Nonce::from_slice(&nonce_bytes);
 
     // Encrypt data
     let mut ciphertext = data.to_vec();
     cipher
-        .encrypt_in_place(nonce, b"", &mut ciphertext)
+        .encrypt_in_place((&nonce_bytes).into(), b"", &mut ciphertext)
         .map_err(|e| {
             TrustEdgeError::EncryptionFailed(format!("AES-GCM encryption failed: {}", e))
         })?;
@@ -188,17 +187,21 @@ fn decrypt_symmetric(
     encrypted: &EncryptedData,
     key: &SymmetricKey,
 ) -> Result<Vec<u8>, TrustEdgeError> {
-    use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
+    use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
 
     let cipher = Aes256Gcm::new_from_slice(key.as_bytes())
         .map_err(|e| TrustEdgeError::DecryptionFailed(format!("Failed to create cipher: {}", e)))?;
 
-    let nonce = Nonce::from_slice(&encrypted.nonce);
+    let nonce_array: &[u8; 12] = encrypted
+        .nonce
+        .as_slice()
+        .try_into()
+        .map_err(|_| TrustEdgeError::DecryptionFailed("Nonce conversion failed".to_string()))?;
 
     // Decrypt data
     let mut plaintext = encrypted.ciphertext.clone();
     cipher
-        .decrypt_in_place(nonce, b"", &mut plaintext)
+        .decrypt_in_place(nonce_array.into(), b"", &mut plaintext)
         .map_err(|e| {
             TrustEdgeError::DecryptionFailed(format!("AES-GCM decryption failed: {}", e))
         })?;

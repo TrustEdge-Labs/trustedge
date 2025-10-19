@@ -7,7 +7,7 @@
 //
 
 use aead::{Aead, KeyInit};
-use chacha20poly1305::{XChaCha20Poly1305, XNonce};
+use chacha20poly1305::XChaCha20Poly1305;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand_core::{OsRng, RngCore};
 use serde_json::json;
@@ -170,11 +170,10 @@ pub fn encrypt_segment(
     aad: &[u8], // Additional authenticated data (canonical header fields)
 ) -> Result<Vec<u8>, CryptoError> {
     let cipher = XChaCha20Poly1305::new(key);
-    let nonce = XNonce::from_slice(nonce24);
 
     cipher
         .encrypt(
-            nonce,
+            nonce24.into(),
             aead::Payload {
                 msg: plaintext,
                 aad,
@@ -193,11 +192,10 @@ pub fn decrypt_segment(
     aad: &[u8], // Additional authenticated data (canonical header fields)
 ) -> Result<Vec<u8>, CryptoError> {
     let cipher = XChaCha20Poly1305::new(key);
-    let nonce = XNonce::from_slice(nonce24);
 
     cipher
         .decrypt(
-            nonce,
+            nonce24.into(),
             aead::Payload {
                 msg: ciphertext,
                 aad,

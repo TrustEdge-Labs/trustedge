@@ -33,7 +33,7 @@ mod tests {
     /// crypto (test-only)
     use aes_gcm::{
         aead::{Aead, KeyInit, Payload},
-        Aes256Gcm, Key,
+        Aes256Gcm,
     };
     use ed25519_dalek::{Signature, SigningKey, VerifyingKey};
 
@@ -117,7 +117,7 @@ mod tests {
     /// Produce a deterministic `.trst` envelope for `input`, chunked with `chunk_size`.
     fn deterministic_trst(input: &[u8], chunk_size: usize) -> Vec<u8> {
         // Keys / crypto (fixed for tests)
-        let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&TEST_AES_KEY));
+        let cipher = Aes256Gcm::new((&TEST_AES_KEY).into());
         let signing = SigningKey::from_bytes(&TEST_SIGNING_SEED);
         let verify: VerifyingKey = signing.verifying_key();
 
@@ -151,7 +151,7 @@ mod tests {
             seq = seq.checked_add(1).expect("seq overflow");
 
             let nonce_bytes = make_nonce(nonce_prefix, seq);
-            let nonce = aes_gcm::Nonce::from_slice(&nonce_bytes);
+            let nonce = (&nonce_bytes).into();
 
             // Plaintext hash
             let pt_hash = blake3::hash(pt);

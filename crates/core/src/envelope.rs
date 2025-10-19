@@ -224,7 +224,7 @@ impl Envelope {
         beneficiary_key: &VerifyingKey,
         metadata: &EnvelopeMetadata,
     ) -> Result<NetworkChunk> {
-        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
+        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
         use rand::RngCore;
 
         // Generate a random salt for key derivation
@@ -284,10 +284,13 @@ impl Envelope {
             Aes256Gcm::new_from_slice(&encryption_key).context("Failed to create cipher")?;
 
         let mut ciphertext = chunk_data.to_vec();
-        let nonce_obj = Nonce::from_slice(&nonce);
+        let nonce_array: &[u8; 12] = nonce
+            .as_slice()
+            .try_into()
+            .context("Nonce conversion failed")?;
 
         cipher
-            .encrypt_in_place(nonce_obj, &aad, &mut ciphertext)
+            .encrypt_in_place(nonce_array.into(), &aad, &mut ciphertext)
             .map_err(|e| anyhow::anyhow!("Encryption failed: {:?}", e))?;
 
         // Clear the encryption key from memory
@@ -359,7 +362,7 @@ impl Envelope {
 
     /// Decrypt a single chunk (internal engine work)
     fn decrypt_chunk(&self, chunk: &NetworkChunk, decryption_key: &SigningKey) -> Result<Vec<u8>> {
-        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit, Nonce};
+        use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
 
         // Deserialize the signed manifest to get chunk metadata
         let signed_manifest: SignedManifest = bincode::deserialize(&chunk.manifest)
@@ -389,7 +392,11 @@ impl Envelope {
             .context("Failed to create cipher for decryption")?;
 
         // Get the nonce from the chunk
-        let nonce_obj = Nonce::from_slice(&chunk.nonce);
+        let nonce_array: &[u8; 12] = chunk
+            .nonce
+            .as_slice()
+            .try_into()
+            .context("Nonce conversion failed")?;
 
         // Recreate the AAD used during encryption
         let header_hash = blake3::hash(b"ENVELOPE_V1");
@@ -405,7 +412,7 @@ impl Envelope {
         // Decrypt the chunk data
         let mut plaintext = chunk.data.clone();
         cipher
-            .decrypt_in_place(nonce_obj, &aad, &mut plaintext)
+            .decrypt_in_place(nonce_array.into(), &aad, &mut plaintext)
             .map_err(|e| anyhow::anyhow!("Decryption failed: {:?}", e))?;
 
         // Clear the encryption key from memory

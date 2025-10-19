@@ -16,7 +16,7 @@ use crate::backends::traits::{BackendInfo, KeyMetadata};
 use crate::backends::universal::*;
 use aes_gcm::{
     aead::{Aead, KeyInit},
-    Aes256Gcm, Nonce,
+    Aes256Gcm,
 };
 use anyhow::{anyhow, Result};
 use pbkdf2::pbkdf2_hmac;
@@ -120,11 +120,10 @@ impl UniversalKeyringBackend {
         // Generate a random nonce
         let mut nonce_bytes = [0u8; 12];
         OsRng.fill_bytes(&mut nonce_bytes);
-        let nonce = Nonce::from_slice(&nonce_bytes);
 
         // Encrypt the data
         let ciphertext = cipher
-            .encrypt(nonce, plaintext)
+            .encrypt((&nonce_bytes).into(), plaintext)
             .map_err(|e| anyhow!("AES-GCM encryption failed: {}", e))?;
 
         // Prepend nonce to ciphertext
@@ -145,11 +144,13 @@ impl UniversalKeyringBackend {
 
         // Extract nonce and ciphertext
         let (nonce_bytes, encrypted_data) = ciphertext.split_at(12);
-        let nonce = Nonce::from_slice(nonce_bytes);
+        let nonce_array: &[u8; 12] = nonce_bytes
+            .try_into()
+            .map_err(|_| anyhow!("Nonce conversion failed"))?;
 
         // Decrypt the data
         let plaintext = cipher
-            .decrypt(nonce, encrypted_data)
+            .decrypt(nonce_array.into(), encrypted_data)
             .map_err(|e| anyhow!("AES-GCM decryption failed: {}", e))?;
 
         Ok(plaintext)
