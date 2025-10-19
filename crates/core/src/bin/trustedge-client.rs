@@ -24,7 +24,7 @@ use trustedge_core::{
 // --- Cryptograph ---
 use aes_gcm::{
     aead::{Aead, KeyInit, OsRng, Payload},
-    Aes256Gcm, Key,
+    Aes256Gcm,
 };
 use ed25519_dalek::{Signature, SigningKey};
 use rand_core::RngCore;
@@ -353,7 +353,7 @@ async fn send_encrypted_file(
     println!("Encrypting and sending file: {:?}", file_path);
 
     let signing = SigningKey::generate(&mut OsRng);
-    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
+    let cipher = Aes256Gcm::new(key_bytes.into());
 
     // Build a real header (mirrors main.rs)
     let (header_hash, nonce_prefix, key_id) = build_session_header(chunk_size)?;
@@ -478,7 +478,7 @@ async fn send_encrypted_test_chunks(
     println!("[SEND] Sending {} encrypted test chunks...", num_chunks);
 
     let signing = SigningKey::generate(&mut OsRng);
-    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
+    let cipher = Aes256Gcm::new(key_bytes.into());
 
     // Real header (so server can lock invariants)
     let (header_hash, nonce_prefix, key_id) = build_session_header(chunk_size)?;
@@ -677,7 +677,7 @@ async fn send_encrypted_test_chunks_hardened(
     );
 
     let signing = SigningKey::generate(&mut OsRng);
-    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
+    let cipher = Aes256Gcm::new(key_bytes.into());
 
     // Real header (so server can lock invariants)
     let (header_hash, nonce_prefix, key_id) = build_session_header(chunk_size)?;
@@ -789,7 +789,7 @@ async fn send_encrypted_file_hardened(
         .with_context(|| format!("Failed to open file: {:?}", file_path))?;
 
     let signing = SigningKey::generate(&mut OsRng);
-    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key_bytes));
+    let cipher = Aes256Gcm::new(key_bytes.into());
 
     // Real header (so server can lock invariants)
     let (header_hash, nonce_prefix, key_id) = build_session_header(chunk_size)?;
