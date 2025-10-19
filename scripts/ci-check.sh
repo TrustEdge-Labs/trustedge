@@ -14,6 +14,11 @@ echo
 # Change to the project root directory
 cd "$(dirname "$0")/.."
 
+echo "■ Step 0: Cleaning build cache (ensures fresh build like CI)..."
+cargo clean
+echo "✔ Cache cleared"
+echo
+
 echo "■ Step 1: Checking code formatting..."
 cargo fmt --all -- --check
 echo "✔ Formatting check passed"

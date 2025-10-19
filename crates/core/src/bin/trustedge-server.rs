@@ -28,7 +28,7 @@ use trustedge_core::{
 
 use aes_gcm::{
     aead::{Aead, KeyInit, Payload},
-    Aes256Gcm, Key,
+    Aes256Gcm,
 };
 use ed25519_dalek::{Signature, VerifyingKey};
 
@@ -175,7 +175,8 @@ async fn main() -> Result<()> {
                 "Either --key-hex or --use-keyring is required for --decrypt"
             ));
         };
-        Some(Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes)))
+        let key_array: [u8; 32] = key_bytes.as_slice().try_into()?;
+        Some(Aes256Gcm::new((&key_array).into()))
     } else {
         None
     };

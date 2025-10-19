@@ -9,7 +9,7 @@
 ///
 use aes_gcm::{
     aead::{Aead, KeyInit, OsRng, Payload},
-    Aes256Gcm, Key,
+    Aes256Gcm,
 };
 
 use anyhow::{anyhow, Context, Result};
@@ -375,7 +375,8 @@ fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {
 fn decrypt_envelope(args: &Args) -> Result<()> {
     // key
     let mut key_bytes = select_aes_key_with_backend(args, Mode::Decrypt)?;
-    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
+    let key_array: [u8; 32] = key_bytes.as_slice().try_into()?;
+    let cipher = Aes256Gcm::new((&key_array).into());
 
     // io
     let input = args
@@ -944,7 +945,8 @@ fn main() -> Result<()> {
 
     // keys
     let mut key_bytes = select_aes_key_with_backend(&args, Mode::Encrypt)?;
-    let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&key_bytes));
+    let key_array: [u8; 32] = key_bytes.as_slice().try_into()?;
+    let cipher = Aes256Gcm::new((&key_array).into());
     let signing = SigningKey::generate(&mut OsRng); // demo only
     let verify: VerifyingKey = signing.verifying_key();
 
