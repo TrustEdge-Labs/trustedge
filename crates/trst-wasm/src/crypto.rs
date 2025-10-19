@@ -7,8 +7,8 @@
 //
 
 use aes_gcm::{
-    aead::{generic_array::GenericArray, Aead, AeadCore, KeyInit, OsRng},
-    Aes256Gcm, Key,
+    aead::{Aead, AeadCore, KeyInit, OsRng},
+    Aes256Gcm, Key, Nonce,
 };
 use base64::{engine::general_purpose, Engine as _};
 use rand::RngCore;
@@ -105,8 +105,8 @@ pub fn encrypt(
         return Err(JsValue::from_str("Key must be 32 bytes (256 bits)"));
     }
 
-    let key = Key::<Aes256Gcm>::clone_from_slice(&key_bytes);
-    let cipher = Aes256Gcm::new(&key);
+    let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
+    let cipher = Aes256Gcm::new(key);
 
     // Use provided nonce or generate a new one
     let nonce = if let Some(nonce_str) = nonce_b64 {
@@ -118,7 +118,7 @@ pub fn encrypt(
             return Err(JsValue::from_str("Nonce must be 12 bytes (96 bits)"));
         }
 
-        GenericArray::clone_from_slice(&nonce_bytes)
+        *Nonce::from_slice(&nonce_bytes)
     } else {
         Aes256Gcm::generate_nonce(&mut OsRng)
     };
@@ -152,8 +152,8 @@ pub fn decrypt(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, 
         return Err(JsValue::from_str("Key must be 32 bytes (256 bits)"));
     }
 
-    let key = Key::<Aes256Gcm>::clone_from_slice(&key_bytes);
-    let cipher = Aes256Gcm::new(&key);
+    let key = Key::<Aes256Gcm>::from_slice(&key_bytes);
+    let cipher = Aes256Gcm::new(key);
 
     // Decode the nonce and ciphertext
     let nonce_bytes = general_purpose::STANDARD
@@ -168,11 +168,11 @@ pub fn decrypt(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, 
         return Err(JsValue::from_str("Nonce must be 12 bytes (96 bits)"));
     }
 
-    let nonce = GenericArray::clone_from_slice(&nonce_bytes);
+    let nonce = Nonce::from_slice(&nonce_bytes);
 
     // Decrypt the data
     let plaintext = cipher
-        .decrypt(&nonce, ciphertext_bytes.as_slice())
+        .decrypt(nonce, ciphertext_bytes.as_slice())
         .map_err(|e| JsValue::from_str(&format!("Decryption failed: {}", e)))?;
 
     let result = String::from_utf8(plaintext)

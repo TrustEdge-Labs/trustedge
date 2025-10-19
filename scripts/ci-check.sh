@@ -21,12 +21,22 @@ cargo clippy --workspace --all-targets --all-features -- -D warnings
 echo "✔ Clippy check passed"
 echo
 
-echo "■ Step 3: Building all targets for all crates..."
+echo "■ Step 3: Running clippy on WASM targets..."
+if rustup target list --installed | grep -q wasm32-unknown-unknown; then
+    cargo clippy -p trustedge-wasm -p trustedge-trst-wasm --target wasm32-unknown-unknown -- -D warnings
+    echo "✔ WASM clippy check passed"
+else
+    echo "⚠ WASM target not installed - skipping WASM clippy check"
+    echo "  Install with: rustup target add wasm32-unknown-unknown"
+fi
+echo
+
+echo "■ Step 4: Building all targets for all crates..."
 cargo build --workspace --all-targets --all-features
 echo "✔ Build check passed"
 echo
 
-echo "■ Step 4: Running all tests for all crates..."
+echo "■ Step 5: Running all tests for all crates..."
 cargo test --workspace --all-features
 echo "✔ Test check passed"
 echo
