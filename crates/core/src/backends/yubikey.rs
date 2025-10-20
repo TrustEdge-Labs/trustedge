@@ -1087,6 +1087,10 @@ impl UniversalBackend for YubiKeyBackend {
                 let proof = self.hardware_attest(&challenge)?;
                 Ok(CryptoResult::AttestationProof(proof))
             }
+            CryptoOperation::GetPublicKey => {
+                let pubkey = self.extract_public_key(key_id)?;
+                Ok(CryptoResult::PublicKey(pubkey))
+            }
             _ => Err(anyhow!(
                 "Operation {:?} not supported by YubiKey backend",
                 operation
@@ -1097,7 +1101,9 @@ impl UniversalBackend for YubiKeyBackend {
     fn supports_operation(&self, operation: &CryptoOperation) -> bool {
         matches!(
             operation,
-            CryptoOperation::Sign { .. } | CryptoOperation::Attest { .. }
+            CryptoOperation::Sign { .. }
+                | CryptoOperation::Attest { .. }
+                | CryptoOperation::GetPublicKey
         )
     }
 
