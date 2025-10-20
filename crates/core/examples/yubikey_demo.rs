@@ -74,7 +74,7 @@ fn main() -> anyhow::Result<()> {
     let config = YubiKeyConfig {
         pkcs11_module_path: "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so".to_string(),
         pin,
-        slot: None,                      // Auto-detect
+        slot: None, // Auto-detect
         verbose: true,
     };
 
@@ -109,7 +109,7 @@ fn main() -> anyhow::Result<()> {
 
     for (slot, name) in test_slots.iter().zip(slot_names.iter()) {
         print!("   {} ({}): ", slot, name);
-        
+
         // First try to get the public key (may return placeholder)
         match backend.perform_operation(slot, CryptoOperation::GetPublicKey) {
             Ok(CryptoResult::PublicKey(pubkey)) => {
