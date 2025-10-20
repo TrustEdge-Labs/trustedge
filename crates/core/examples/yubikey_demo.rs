@@ -28,7 +28,14 @@
 //!
 //! ## Usage
 //! ```bash
+//! # With custom PIN
+//! cargo run --example yubikey_demo --features yubikey -- YOUR_PIN
+//!
+//! # With default PIN (123456)
 //! cargo run --example yubikey_demo --features yubikey
+//!
+//! # Without PIN (public key operations only)
+//! cargo run --example yubikey_demo --features yubikey -- no-pin
 //! ```
 
 #[cfg(feature = "yubikey")]
@@ -48,10 +55,25 @@ fn main() -> anyhow::Result<()> {
     println!("• Hardware-backed certificate signing");
     println!("• Certificate validation and export");
 
+    // Get PIN from command line or use default
+    let args: Vec<String> = std::env::args().collect();
+    let pin = if args.len() > 1 {
+        if args[1] == "no-pin" {
+            None
+        } else {
+            Some(args[1].clone())
+        }
+    } else {
+        println!("\n⚠ Usage: cargo run --example yubikey_demo --features yubikey -- YOUR_PIN");
+        println!("   Or:   cargo run --example yubikey_demo --features yubikey -- no-pin");
+        println!("\n   Default PIN (123456) will be used. Press Ctrl+C to cancel.\n");
+        Some("123456".to_string())
+    };
+
     // Configure YubiKey backend with verbose output
     let config = YubiKeyConfig {
         pkcs11_module_path: "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so".to_string(),
-        pin: Some("123456".to_string()), // Default YubiKey PIN
+        pin,
         slot: None,                      // Auto-detect
         verbose: true,
     };
@@ -87,10 +109,30 @@ fn main() -> anyhow::Result<()> {
 
     for (slot, name) in test_slots.iter().zip(slot_names.iter()) {
         print!("   {} ({}): ", slot, name);
+        
+        // First try to get the public key (may return placeholder)
         match backend.perform_operation(slot, CryptoOperation::GetPublicKey) {
             Ok(CryptoResult::PublicKey(pubkey)) => {
-                println!("✔ Key found ({} bytes)", pubkey.len());
-                available_keys.push((*slot, pubkey));
+                // Verify the slot actually has a hardware key by attempting a test signature
+                let test_data = b"test";
+                match backend.perform_operation(
+                    slot,
+                    CryptoOperation::Sign {
+                        data: test_data.to_vec(),
+                        algorithm: SignatureAlgorithm::EcdsaP256,
+                    },
+                ) {
+                    Ok(CryptoResult::Signed(_)) => {
+                        println!("✔ Key found ({} bytes)", pubkey.len());
+                        available_keys.push((*slot, pubkey));
+                    }
+                    Err(_) => {
+                        println!("⚠ Public key extracted but signing failed (no hardware key)");
+                    }
+                    Ok(_) => {
+                        println!("✖ Unexpected signing result");
+                    }
+                }
             }
             Ok(_) => {
                 println!("✖ Unexpected result type");
