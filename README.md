@@ -5,8 +5,6 @@ Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
-# TrustEdge — Trustable Edge AI
-
 [![CI Status](https://github.com/TrustEdge-Labs/trustedge/workflows/CI/badge.svg)](https://github.com/TrustEdge-Labs/trustedge/actions)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
@@ -14,46 +12,53 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v0.2.0)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
----
+# TrustEdge: Hardware-Backed Security for IoT Devices
 
-## P0 Golden Path (2 minutes)
+Open-source cryptographic engine with YubiKey/TPM integration for edge devices and IoT.
 
-```bash
-cargo build --release -p cli
-head -c 32M </dev/urandom > sample.bin   # Windows note: use 'fsutil file createnew sample.bin 33554432'
-./target/release/trst wrap --profile cam.video --in ./sample.bin --out ./clip.trst
-./target/release/trst verify ./clip.trst --device-pub "$(cat device.pub)" --json
+**[▶️ Watch YubiKey Hardware Signing Demo (2 min)](https://asciinema.org/a/aMaUEmOfw42TNYdXwAgtefcsy)**
 
-# Emit receipt to file (works with or without --json)
-./target/release/trst verify ./clip.trst --device-pub "$(cat device.pub)" --emit-receipt receipt.json
+## Why TrustEdge?
 
-# Deterministic output for CI/testing (not cryptographically secure)
-./target/release/trst wrap --profile cam.video --in ./sample.bin --out ./clip.trst --seed 42
-```
+Most IoT devices use software-only encryption with keys in memory. TrustEdge provides hardware-backed security via industry-standard PKCS#11.
 
-**Example JSON output:**
-```json
-{"signature":"pass","continuity":"pass","segments":32,"duration_s":64.0,"profile":"cam.video","device_id":"te:cam:a1b2c3","verify_time_ms":45}
-```
+✅ **Hardware-backed signing** (YubiKey, TPM, HSM)  
+✅ **PKCS#11 standard** interface  
+✅ **X.509 certificates** with hardware signing  
+✅ **Cross-platform** (Linux, macOS, Windows, ESP32, WASM)  
+✅ **Open source** and fully auditable  
 
-**🌐 Browser Verification:** Open `web/demo/index.html` (or serve locally) and drag the `.trst` directory for client-side verification.
+## Quick Start
 
-**Resources:**
-- [Manifest specification](docs/manifest_cam_video.md)
-- [Acceptance tests](crates/trst-cli/tests/acceptance.rs)
-- [P0 test script](p0_acceptance.sh)
-- [Browser verifier demo](web/demo/) - WebAssembly-powered verification in your browser
+Prerequisites: YubiKey with default PIN (123456)
+Generate key on YubiKey
 
-## End-to-End One-Liner
+ykman piv keys generate 9a /tmp/pubkey.pem --algorithm ECCP256
+ykman piv certificates generate 9a /tmp/pubkey.pem --subject "CN=Test"
 
-Complete workflow from archive creation to remote verification:
+### Run Demo
 
-```bash
-trst wrap --profile cam.video --in sample.bin --out clip.trst && \
-trst emit-request --archive clip.trst --device-pub ./device.pub --out verify_request.json --post http://localhost:8080/v1/verify
-```
+git clone https://github.com/trustedge-labs/trustedge.git
+cd trustedge
+cargo run --example yubikey_demo --features yubikey -- 123456
 
-This creates a `.trst` archive, generates a verification request, and posts it to a remote verification service in a single command chain.
+## Commercial Support
+
+📧 **Pilot program:** pilot@trustedgelabs.com
+
+Building IoT devices that need hardware-backed security? We offer:
+- Commercial SDK with priority support ($199/month)
+- Custom hardware integration (TPM, HSM, secure elements)
+- Fleet management and key rotation
+- Compliance consulting
+
+## License
+
+Open Core Model:
+- Core engine: Apache 2.0 / MIT
+- Commercial features: Proprietary license available
+
+🌐 [trustedgelabs.com](https://trustedgelabs.com)
 
 ---
 
