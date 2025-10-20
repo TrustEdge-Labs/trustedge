@@ -56,7 +56,7 @@ cargo run --example yubikey_demo --features yubikey -- 123456
 📧 **Pilot program:** pilot@trustedgelabs.com
 
 Building IoT devices that need hardware-backed security? We offer:
-- Commercial SDK with priority support ($199/month)
+- Commercial SDK with priority support
 - Custom hardware integration (TPM, HSM, secure elements)
 - Fleet management and key rotation
 - Compliance consulting
