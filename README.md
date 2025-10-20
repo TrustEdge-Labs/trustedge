@@ -31,7 +31,8 @@ Most IoT devices use software-only encryption with keys in memory. TrustEdge pro
 ## Quick Start
 
 Prerequisites: YubiKey with default PIN (123456)
-Generate key on YubiKey
+
+### Generate key on YubiKey
 
 ykman piv keys generate 9a /tmp/pubkey.pem --algorithm ECCP256
 ykman piv certificates generate 9a /tmp/pubkey.pem --subject "CN=Test"
