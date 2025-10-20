@@ -38,45 +38,53 @@ Universal Backend system and hardware integration examples.
 
 ## Hardware Backend Demonstrations
 
-### YubiKey PKCS#11 Operations
+### YubiKey Examples (Library-Based)
+
+YubiKey functionality is accessed through **Rust examples**, not CLI flags:
 
 ```bash
-# List available YubiKey slots
-./target/release/trustedge-core --backend yubikey --list-slots
+# Verify YubiKey connectivity (auto-detects OpenSC)
+cargo run --example verify_yubikey --features yubikey
 
-# Generate key pair in YubiKey slot
-./target/release/trustedge-core \
-  --backend yubikey \
-  --slot 9a \
-  --generate-key-pair \
-  --pin-prompt
+# Verify with custom PIN
+cargo run --example verify_yubikey_custom_pin --features yubikey -- YOUR_PIN
 
-# Sign with YubiKey
-./target/release/trustedge-core \
-  --input document.txt \
-  --envelope document.trst \
-  --backend yubikey \
-  --slot 9a \
-  --pin-prompt
+# Full YubiKey integration demo
+cargo run --example yubikey_demo --features yubikey
+
+# Hardware certificate generation
+cargo run --example yubikey_certificate_demo --features yubikey
+
+# Hardware signing operations
+cargo run --example yubikey_hardware_signing_demo --features yubikey
+
+# QUIC with hardware-backed certificates
+cargo run --example yubikey_quic_hardware_demo --features yubikey
 ```
 
-### YubiKey Integration Testing
+**Note**: YubiKey operations require:
+- YubiKey with PIV applet
+- OpenSC PKCS#11 module: `sudo apt install opensc-pkcs11`
+- See `YUBIKEY_VERIFICATION.md` for setup guide
+
+### YubiKey Integration with CLI
+
+The CLI supports YubiKey through the backend system:
 
 ```bash
-# Test YubiKey connectivity
-./target/release/trustedge-core \
-  --backend yubikey \
-  --test-connection \
-  --verbose
+# List available backends (includes yubikey if compiled with feature)
+./target/release/trustedge-core --list-backends
 
-# YubiKey-based encryption workflow
+# Use YubiKey backend for encryption (requires backend implementation)
 ./target/release/trustedge-core \
   --input sensitive.pdf \
   --envelope sensitive.trst \
   --backend yubikey \
-  --slot 9c \
-  --pin "123456"
+  --backend-config "pin=YOUR_PIN" \
+  --backend-config "slot=9c"
 ```
+
+**Current Status**: YubiKey examples are fully functional, CLI integration is in development.
 
 ### Cross-Backend Compatibility
 
