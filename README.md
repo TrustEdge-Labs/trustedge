@@ -64,7 +64,7 @@ Building IoT devices that need hardware-backed security? We offer:
 ## License
 
 Open Core Model:
-- Core engine: Apache 2.0 / MIT
+- Core engine: Mozilla Public License 2.0
 - Commercial features: Proprietary license available
 
 🌐 [trustedgelabs.com](https://trustedgelabs.com)
