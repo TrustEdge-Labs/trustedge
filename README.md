@@ -35,13 +35,17 @@ Prerequisites: YubiKey with default PIN (123456)
 ### Generate key on YubiKey
 
 ykman piv keys generate 9a /tmp/pubkey.pem --algorithm ECCP256
+
 ykman piv certificates generate 9a /tmp/pubkey.pem --subject "CN=Test"
 
 ### Run Demo
 
 git clone https://github.com/trustedge-labs/trustedge.git
+
 cd trustedge
+
 cargo run --example yubikey_demo --features yubikey -- 123456
+
 
 ## Commercial Support
 
