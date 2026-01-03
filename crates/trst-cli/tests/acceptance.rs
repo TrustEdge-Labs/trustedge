@@ -6,6 +6,10 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
+// Allow deprecated cargo_bin usage - the replacement cargo_bin_cmd! macro
+// is not yet stable across all assert_cmd versions
+#![allow(deprecated)]
+
 use assert_cmd::prelude::*;
 use base64::Engine;
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
