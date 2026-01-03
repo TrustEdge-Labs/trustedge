@@ -7,7 +7,7 @@ GitHub: https://github.com/johnzilla/trustedge
 
 # TrustEdge Secure Node MVP (ESP32-WROOM-32SE)
 
-The Secure Node MVP is a small ESP32-based reference board that demonstrates how to run TrustEdge on a device with a hardware secure element and a verifiable boot chain.[web:48][web:49][web:51][web:79]
+The Secure Node MVP is a small ESP32-based reference board that demonstrates how to run TrustEdge on a device with a hardware secure element and a verifiable boot chain.
 
 It uses an **ESP32-WROOM-32SE** module (ESP32 + Microchip ATECC608A secure element) and exposes TrustEdge over both USB (for development) and a dedicated UART header for host devices.
 
@@ -18,15 +18,15 @@ It uses an **ESP32-WROOM-32SE** module (ESP32 + Microchip ATECC608A secure eleme
 - **MCU / module:** ESP32-WROOM-32SE  
   - Wi‑Fi + BLE  
   - ESP-IDF secure boot and flash encryption  
-  - Integrated ATECC608A secure element on I²C for device keys and ECDSA operations.[web:48][web:49][web:38]
+  - Integrated ATECC608A secure element on I²C for device keys and ECDSA operations.
 
 - **Power:**  
   - USB‑C 5 V input → MP2315‑class 3.3 V buck regulator (≥800 mA).  
-  - ESD, over‑current (0.5 A PPTC), and reverse‑polarity protection on VBUS.[web:38][web:46][web:60]
+  - ESD, over‑current (0.5 A PPTC), and reverse‑polarity protection on VBUS.
 
 - **Connectivity:**  
   - USB‑C → CP2102N → ESP32 UART0 (flashing + debug console).  
-  - 4‑pin 2.54 mm header exposing UART2 (TXD2/RXD2, 3V3, GND) as the **host interface** for TrustEdge.[web:54][web:60]
+  - 4‑pin 2.54 mm header exposing UART2 (TXD2/RXD2, 3V3, GND) as the **host interface** for TrustEdge.
 
 - **User I/O:**  
   - Buttons: **BOOT**, **Reset**, **Secure Reset/Provision**.  
@@ -38,18 +38,18 @@ It uses an **ESP32-WROOM-32SE** module (ESP32 + Microchip ATECC608A secure eleme
 
 - **Hardware root of trust:**  
   - ATECC608A holds long‑term device identity keys; private keys never leave the secure element.  
-  - ESP32 uses the secure element for ECDSA sign/verify (mutual TLS, attestation, manifest signing).[web:38][web:48][web:49]
+  - ESP32 uses the secure element for ECDSA sign/verify (mutual TLS, attestation, manifest signing).
 
 - **Boot and storage security:**  
   - ESP-IDF **Secure Boot v2** and **Flash Encryption** enabled.  
-  - Firmware images are encrypted at rest and must be correctly signed before execution; production keys stored in eFuses.[web:51][web:58][web:61]
+  - Firmware images are encrypted at rest and must be correctly signed before execution; production keys stored in eFuses.
 
 - **Host integration:**  
   - External MCU or SBC connects over UART2 and treats the board as a “crypto + attestation module on a cable.”  
   - Planned TrustEdge UART protocol operations:
     - Request attestation report  
     - Sign/verify blobs  
-    - Encrypt/decrypt payloads under device/session keys.[web:79]
+    - Encrypt/decrypt payloads under device/session keys.
 
 ---
 
@@ -65,7 +65,7 @@ It uses an **ESP32-WROOM-32SE** module (ESP32 + Microchip ATECC608A secure eleme
 - 0.5 A PPTC polyfuse + SS14 Schottky diode on VBUS  
 - 3 × 6×6 mm tactile buttons (BOOT, Reset, Secure Provision)  
 - 3 × LEDs (Power, Secure Boot, Secure Session) + 1 kΩ resistors  
-- Decoupling capacitors near ESP32 and regulator per datasheets.[web:38][web:46][web:60]
+- Decoupling capacitors near ESP32 and regulator per datasheets.
 
 A full 3e8‑generated schematic and BOM live alongside this file (see `/hardware/` directory in this repo).
 
@@ -81,7 +81,7 @@ A full 3e8‑generated schematic and BOM live alongside this file (see `/hardwar
 4. **Production‑like mode:**
    - Burn eFuses for Secure Boot v2 and Flash Encryption with production keys.  
    - Permanently disable JTAG and (optionally) depopulate debug headers.  
-   - Use **Secure Reset/Provision** button at power‑on to enter a limited provisioning flow.[web:51][web:61][web:63]
+   - Use **Secure Reset/Provision** button at power‑on to enter a limited provisioning flow.
 
 ---
 
@@ -90,7 +90,7 @@ A full 3e8‑generated schematic and BOM live alongside this file (see `/hardwar
 Firmware on this board is a thin hardware backend for TrustEdge:
 
 - Uses ESP-IDF crypto + ATECC608A for AES‑GCM, hashing, and ECDSA.  
-- Implements the TrustEdge “universal backend” over UART2 and/or Wi‑Fi (mTLS) so higher‑level TrustEdge clients can offload crypto and retrieve attestation reports.[file:1][web:76][web:79]
+- Implements the TrustEdge “universal backend” over UART2 and/or Wi‑Fi (mTLS) so higher‑level TrustEdge clients can offload crypto and retrieve attestation reports.
 
 See the `hardware/` and `examples/` directories for firmware and host‑side examples (WIP).
 
