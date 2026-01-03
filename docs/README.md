@@ -51,6 +51,11 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | **[PROTOCOL.md](technical/protocol.md)** | Network protocol specification | Developers |
 | **[manifest_cam_video.md](manifest_cam_video.md)** | cam.video manifest specification | Developers |
 
+### Hardware
+| Document | Description | Audience |
+|----------|-------------|----------|
+| **[SECURE_NODE_MVP.md](hardware/SECURE_NODE_MVP.md)** | small ESP32-based reference board | Developers & Builders |
+
 ### Testing & Quality
 | Document | Description | Audience |
 |----------|-------------|----------|
