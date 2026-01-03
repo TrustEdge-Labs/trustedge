@@ -6,6 +6,10 @@
 //!
 //! These tests validate real functionality without mocks or fake data.
 
+// Allow deprecated cargo_bin usage - the replacement cargo_bin_cmd! macro
+// is not yet stable across all assert_cmd versions
+#![allow(deprecated)]
+
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs;
