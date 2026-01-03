@@ -99,3 +99,15 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 ---
 
 *For additional help, see the [main documentation index](../../README.md) or [CLI reference](../cli.md).*
+
+---
+
+**📖 Links:**
+- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[Documentation](../../README.md)** - Complete docs index
+- **[CLI Reference](../cli.md)** - Command reference
+
+**⚖️ Legal:**
+- **Copyright**: © 2025 TrustEdge Labs LLC
+- **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
+- **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

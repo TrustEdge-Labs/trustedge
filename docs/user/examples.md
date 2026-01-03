@@ -29,3 +29,15 @@ The examples are now organized into focused, topic-specific guides:
 ---
 
 **👉 [Go to Examples Index](examples/README.md)** for the complete guide.
+
+---
+
+**📖 Links:**
+- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[Documentation](../README.md)** - Complete docs index
+- **[CLI Reference](cli.md)** - Command reference
+
+**⚖️ Legal:**
+- **Copyright**: © 2025 TrustEdge Labs LLC
+- **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
+- **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

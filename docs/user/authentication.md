@@ -841,3 +841,15 @@ For enterprise deployments, consider integrating with existing PKI:
 ---
 
 This completes the TrustEdge Authentication Guide. For additional technical implementation details, refer to the source code in [`crates/core/src/`](crates/core/src/) and the integration tests in [`crates/core/tests/auth_integration.rs`](crates/core/tests/auth_integration.rs).
+
+---
+
+**📖 Links:**
+- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[Documentation](../README.md)** - Complete docs index
+- **[CLI Reference](cli.md)** - Command reference
+
+**⚖️ Legal:**
+- **Copyright**: © 2025 TrustEdge Labs LLC
+- **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
+- **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

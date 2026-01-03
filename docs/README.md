@@ -49,6 +49,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | **[UNIVERSAL_BACKEND.md](technical/universal-backend.md)** | Universal Backend system design | Developers |
 | **[FORMAT.md](technical/format.md)** | Binary format specification | Developers |
 | **[PROTOCOL.md](technical/protocol.md)** | Network protocol specification | Developers |
+| **[WASM.md](../WASM.md)** | WebAssembly build and deployment guide | Developers |
 | **[manifest_cam_video.md](manifest_cam_video.md)** | cam.video manifest specification | Developers |
 
 ### Hardware
@@ -60,6 +61,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | Document | Description | Audience |
 |----------|-------------|----------|
 | **[TESTING.md](developer/testing.md)** | Test procedures and validation | Developers/QA |
+| **[TESTING_PATTERNS.md](developer/testing-patterns.md)** | Advanced testing patterns and best practices | Developers |
+| **[WASM_TESTING.md](developer/wasm-testing.md)** | WebAssembly testing in browser environments | Developers |
 | **[CODING_STANDARDS.md](developer/coding-standards.md)** | Code style and standards | Contributors |
 
 ---
@@ -77,7 +80,10 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | Document | Description | Audience |
 |----------|-------------|----------|
 | **[DCO.md](legal/dco.md)** | Developer Certificate of Origin | Contributors |
+| **[CLA.md](legal/cla.md)** | Contributor License Agreement | Contributors |
 | **[COPYRIGHT.md](legal/copyright.md)** | Copyright and licensing | Legal/Contributors |
+| **[LICENSING.md](legal/licensing.md)** | Dual licensing strategy (MPL-2.0 + Commercial) | Legal/Business |
+| **[ENTERPRISE.md](legal/enterprise.md)** | Enterprise licensing and support options | Business/Enterprise |
 
 ---
 
@@ -98,6 +104,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 3. [PROTOCOL.md](technical/protocol.md) - Network protocol
 4. [TESTING.md](developer/testing.md) - Test procedures
 5. [DEVELOPMENT.md](developer/development.md) - Dev environment
+6. [CLAUDE.md](developer/claude.md) - AI assistant coding guidelines
 
 #### 🤝 **Contributors**
 1. [CONTRIBUTING.md](../CONTRIBUTING.md) - How to contribute

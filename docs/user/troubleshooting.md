@@ -1081,4 +1081,16 @@ If issues persist after following this guide:
 
 ---
 
-This troubleshooting guide covers the most common TrustEdge issues. For authentication-specific problems, also see [AUTHENTICATION_GUIDE.md](AUTHENTICATION_GUIDE.md#troubleshooting).
+This troubleshooting guide covers the most common TrustEdge issues. For authentication-specific problems, also see [AUTHENTICATION_GUIDE.md](authentication.md#troubleshooting).
+
+---
+
+**📖 Links:**
+- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[Documentation](../README.md)** - Complete docs index
+- **[CLI Reference](cli.md)** - Command reference
+
+**⚖️ Legal:**
+- **Copyright**: © 2025 TrustEdge Labs LLC
+- **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
+- **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)
