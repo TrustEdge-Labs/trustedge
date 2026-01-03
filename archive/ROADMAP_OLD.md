@@ -3,13 +3,6 @@ Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
-
-* ✅ A reader implemented from the spec (no repo code) can verify test vectors.
-* ✅ Deterministic test vectors with golden hash: `4c658188fa25fb7fd2baa1148566db86dbdf3581c0b7ebf9e5de876f4f8656f3`
-* ✅ Network stack: complete client/server with chunk validation and ACK protocol
-* ✅ Comprehensive validation: all security invariants enforced during processing
-* ✅ DoS protection: bounds checking for chunk sizes, record counts, and stream limits
-* [ ] Fuzz on `deserialize(Record)` doesn't crash (see M3).Privacy and trust at the edge.
 -->
 
 # TrustEdge Roadmap
