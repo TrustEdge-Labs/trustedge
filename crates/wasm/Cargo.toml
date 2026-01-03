@@ -15,7 +15,7 @@ keywords = ["cryptography", "wasm", "encryption", "security", "aes"]
 categories = ["cryptography", "wasm", "web-programming"]
 
 [features]
-default = ["wee_alloc"]
+default = []
 
 [lib]
 name = "trustedge_wasm"
@@ -35,7 +35,6 @@ base64 = "0.22"
 
 # Console logging for debugging
 console_error_panic_hook = "0.1"
-wee_alloc = { version = "0.4", optional = true }
 
 # WASM testing dependencies
 [dev-dependencies]

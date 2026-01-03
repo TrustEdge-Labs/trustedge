@@ -59,11 +59,6 @@ macro_rules! console_log {
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
 }
 
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
 // This is like the `extern` block, but for importing JS functions
 #[wasm_bindgen]
 extern "C" {
