@@ -7,21 +7,13 @@
 name = "trustedge-trst-core"
 version = "0.1.0"
 edition = "2021"
-description = "TrustEdge .trst archive format primitives"
+description = "Canonical cam.video manifest types for .trst archives (WASM-compatible)"
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
 license = "MPL-2.0"
 
 [dependencies]
-anyhow = { workspace = true }
-base64 = "0.22"
-chrono = { workspace = true }
-ed25519-dalek = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-blake3 = { workspace = true }
 thiserror = { workspace = true }
-rand_core = { workspace = true }
-hex = { workspace = true }
 
 [dev-dependencies]
-tempfile = "3.8"

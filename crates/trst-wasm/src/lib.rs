@@ -6,7 +6,12 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-use serde::{Deserialize, Serialize};
+//! WASM bindings for TrustEdge .trst archive verification.
+//!
+//! This crate provides browser-compatible verification of .trst archives
+//! using the canonical manifest types from `trustedge-trst-core`.
+
+use serde::Serialize;
 use serde_wasm_bindgen::to_value;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
@@ -14,6 +19,9 @@ use web_sys::{File, FileSystemDirectoryHandle};
 
 use base64::{engine::general_purpose, Engine as _};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
+
+// Import canonical manifest types from trst-core
+use trustedge_trst_core::CamVideoManifest;
 
 // Initialize panic hook for better error messages in debug
 #[wasm_bindgen(start)]
@@ -28,156 +36,10 @@ struct VerificationResult {
     segment_count: u32,
 }
 
-#[derive(Deserialize)]
-struct CamVideoManifest {
-    pub trst_version: String,
-    pub profile: String,
-    pub device: DeviceInfo,
-    pub capture: CaptureInfo,
-    pub chunk: ChunkInfo,
-    pub segments: Vec<SegmentInfo>,
-    pub claims: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub prev_archive_hash: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub signature: Option<String>,
-}
-
-#[derive(Deserialize)]
-struct DeviceInfo {
-    pub id: String,
-    pub model: String,
-    pub firmware_version: String,
-    pub public_key: String,
-}
-
-#[derive(Deserialize)]
-struct CaptureInfo {
-    pub started_at: String,
-    pub ended_at: String,
-    pub timezone: String,
-    pub fps: f64,
-    pub resolution: String,
-    pub codec: String,
-}
-
-#[derive(Deserialize)]
-struct ChunkInfo {
-    pub size_bytes: u64,
-    pub duration_seconds: f64,
-}
-
-#[derive(Deserialize)]
-struct SegmentInfo {
-    pub chunk_file: String,
-    pub blake3_hash: String,
-    pub start_time: String,
-    pub duration_seconds: f64,
-    pub continuity_hash: String,
-}
-
-impl CamVideoManifest {
-    /// Convert manifest to canonical bytes for signature verification
-    /// This is a simplified version for WASM - excludes signature field
-    fn to_canonical_bytes(&self) -> Result<Vec<u8>, String> {
-        // Create a copy without the signature field for canonicalization
-        let manifest_copy = self.clone_without_signature();
-
-        // For P0 WASM demo, we'll use simple JSON serialization
-        // In production, this would use the exact canonicalization from core
-        serde_json::to_vec(&manifest_copy).map_err(|e| format!("Canonicalization failed: {}", e))
-    }
-
-    fn clone_without_signature(&self) -> CamVideoManifestWithoutSig {
-        CamVideoManifestWithoutSig {
-            trst_version: self.trst_version.clone(),
-            profile: self.profile.clone(),
-            device: DeviceInfoForSig {
-                id: self.device.id.clone(),
-                model: self.device.model.clone(),
-                firmware_version: self.device.firmware_version.clone(),
-                public_key: self.device.public_key.clone(),
-            },
-            capture: CaptureInfoForSig {
-                started_at: self.capture.started_at.clone(),
-                ended_at: self.capture.ended_at.clone(),
-                timezone: self.capture.timezone.clone(),
-                fps: self.capture.fps,
-                resolution: self.capture.resolution.clone(),
-                codec: self.capture.codec.clone(),
-            },
-            chunk: ChunkInfoForSig {
-                size_bytes: self.chunk.size_bytes,
-                duration_seconds: self.chunk.duration_seconds,
-            },
-            segments: self
-                .segments
-                .iter()
-                .map(|s| SegmentInfoForSig {
-                    chunk_file: s.chunk_file.clone(),
-                    blake3_hash: s.blake3_hash.clone(),
-                    start_time: s.start_time.clone(),
-                    duration_seconds: s.duration_seconds,
-                    continuity_hash: s.continuity_hash.clone(),
-                })
-                .collect(),
-            claims: self.claims.clone(),
-            prev_archive_hash: self.prev_archive_hash.clone(),
-        }
-    }
-}
-
-// Structs for canonical serialization (without signature)
-#[derive(Serialize)]
-struct CamVideoManifestWithoutSig {
-    pub trst_version: String,
-    pub profile: String,
-    pub device: DeviceInfoForSig,
-    pub capture: CaptureInfoForSig,
-    pub chunk: ChunkInfoForSig,
-    pub segments: Vec<SegmentInfoForSig>,
-    pub claims: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub prev_archive_hash: Option<String>,
-}
-
-#[derive(Serialize)]
-struct DeviceInfoForSig {
-    pub id: String,
-    pub model: String,
-    pub firmware_version: String,
-    pub public_key: String,
-}
-
-#[derive(Serialize)]
-struct CaptureInfoForSig {
-    pub started_at: String,
-    pub ended_at: String,
-    pub timezone: String,
-    pub fps: f64,
-    pub resolution: String,
-    pub codec: String,
-}
-
-#[derive(Serialize)]
-struct ChunkInfoForSig {
-    pub size_bytes: u64,
-    pub duration_seconds: f64,
-}
-
-#[derive(Serialize)]
-struct SegmentInfoForSig {
-    pub chunk_file: String,
-    pub blake3_hash: String,
-    pub start_time: String,
-    pub duration_seconds: f64,
-    pub continuity_hash: String,
-}
-
 /// Verify a manifest directly from bytes
 #[wasm_bindgen]
 pub fn verify_manifest(manifest_bytes: Vec<u8>, device_pub: String) -> Result<JsValue, JsValue> {
-    // Parse the manifest
+    // Parse the manifest using canonical types from trst-core
     let manifest: CamVideoManifest = serde_json::from_slice(&manifest_bytes)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
 
@@ -187,10 +49,10 @@ pub fn verify_manifest(manifest_bytes: Vec<u8>, device_pub: String) -> Result<Js
         .as_ref()
         .ok_or_else(|| JsValue::from_str("Manifest has no signature"))?;
 
-    // Get canonical bytes (simplified for WASM)
+    // Get canonical bytes using trst-core's canonicalization
     let canonical_bytes = manifest
         .to_canonical_bytes()
-        .map_err(|e| JsValue::from_str(&e))?;
+        .map_err(|e| JsValue::from_str(&format!("Canonicalization failed: {}", e)))?;
 
     // Ensure device public key has proper format
     let device_pub_key = if device_pub.starts_with("ed25519:") {
@@ -233,7 +95,7 @@ pub async fn verify_archive(
     // Read manifest.json from the directory
     let manifest_content = read_file_from_directory(&dir_handle, "manifest.json").await?;
 
-    // Parse the manifest
+    // Parse the manifest using canonical types from trst-core
     let manifest: CamVideoManifest = serde_json::from_slice(&manifest_content)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
 
@@ -243,10 +105,10 @@ pub async fn verify_archive(
         .as_ref()
         .ok_or_else(|| JsValue::from_str("Manifest has no signature"))?;
 
-    // Get canonical bytes
+    // Get canonical bytes using trst-core's canonicalization
     let canonical_bytes = manifest
         .to_canonical_bytes()
-        .map_err(|e| JsValue::from_str(&e))?;
+        .map_err(|e| JsValue::from_str(&format!("Canonicalization failed: {}", e)))?;
 
     // Ensure device public key has proper format
     let device_pub_key = if device_pub.starts_with("ed25519:") {
