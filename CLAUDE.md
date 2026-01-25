@@ -47,9 +47,11 @@ TrustEdge is a Cargo workspace with 10 crates under `crates/`:
 - `trustedge-attestation` - Software attestation and provenance tracking
 - `trustedge-wasm` - WebAssembly bindings for browser integration
 
-**Pubky Network Integration:**
-- `trustedge-pubky` - Simple adapter for key publishing/resolution using existing Ed25519 keys
-- `trustedge-pubky-advanced` - Hybrid encryption with X25519 ECDH, forward secrecy, large file handling
+**Pubky Network Integration (Community/Experimental):**
+- `trustedge-pubky` - Simple adapter for Pubky network key publishing/resolution
+- `trustedge-pubky-advanced` - Hybrid encryption with X25519 ECDH for Pubky
+
+> Note: Pubky crates are community contributions for [Pubky](https://pubky.org) ecosystem integration. They are not part of the core product roadmap. Core functionality uses `trustedge-core` directly.
 
 **Archive System (.trst format):**
 - `trustedge-trst-core` - Archive format primitives
@@ -62,12 +64,14 @@ TrustEdge is a Cargo workspace with 10 crates under `crates/`:
 |--------|---------|
 | `backends/` | Universal Backend system - pluggable crypto ops (Software HSM, Keyring, YubiKey) |
 | `transport/` | Network transport abstraction (TCP with framing, QUIC with TLS) |
-| `envelope.rs` | Cryptographic envelope format with Ed25519 signatures |
+| `envelope.rs` | **Core envelope format** - Ed25519 signed, AES-256-GCM encrypted chunks (used by receipts, attestation) |
 | `crypto.rs` | XChaCha20-Poly1305 encryption, Ed25519 signing |
 | `chain.rs` | BLAKE3-based continuity chain with genesis seed |
 | `manifest.rs` | Canonical JSON serialization for cam.video profile |
 | `auth.rs` | Ed25519 mutual authentication with sessions |
 | `audio.rs` | Live audio capture (feature-gated) |
+| `hybrid.rs` | RSA hybrid encryption (Pubky integration only) |
+| `envelope_v2_bridge.rs` | Format detection bridge (Pubky integration only) |
 
 ### Data Flow
 

@@ -13,6 +13,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![Documentation](https://docs.rs/trustedge-pubky/badge.svg)](https://docs.rs/trustedge-pubky)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 
+> **Community/Experimental**: This crate provides integration with the [Pubky](https://pubky.org) decentralized network. It is maintained as a community contribution and is not part of the core TrustEdge product. For core TrustEdge functionality (receipts, attestation, envelope encryption), use `trustedge-core` directly.
+
 ---
 
 ## Which Pubky Crate Should I Use?
