@@ -15,6 +15,19 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
+## Which Pubky Crate Should I Use?
+
+| Crate | Use Case |
+|-------|----------|
+| **trustedge-pubky** (this crate) | Simple key publishing/resolution using existing TrustEdge keys |
+| **trustedge-pubky-advanced** | Hybrid encryption with X25519 ECDH, forward secrecy, large file handling |
+
+**Choose this crate if:** You want a lightweight adapter for publishing and resolving TrustEdge public keys via the Pubky network, using your existing Ed25519 keys.
+
+**Choose pubky-advanced if:** You need hybrid encryption (X25519 + Ed25519 dual keys), perfect forward secrecy, or are building a new system that can adopt the V2 envelope format.
+
+---
+
 ## Overview
 
 TrustEdge Pubky Adapter provides a **clean, simple bridge** between TrustEdge's core cryptographic primitives and the Pubky decentralized network. It maintains clean architecture by keeping Pubky network logic separate from core crypto operations while enabling seamless integration.

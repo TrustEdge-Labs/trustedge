@@ -1,0 +1,42 @@
+#
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# Project: trustedge — Privacy and trust at the edge.
+#
+[package]
+name = "trustedge-cli"
+version = "0.2.0"
+edition = "2021"
+description = "Command-line interface for TrustEdge envelope encryption"
+authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
+license = "MPL-2.0"
+repository = "https://github.com/TrustEdge-Labs/trustedge"
+keywords = ["cryptography", "privacy", "encryption", "cli"]
+categories = ["command-line-utilities", "cryptography"]
+
+[[bin]]
+name = "trustedge"
+path = "src/main.rs"
+
+[dependencies]
+trustedge-core = { path = "../core" }
+
+# Cryptography
+aead = { workspace = true }
+aes-gcm = { workspace = true }
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true }
+rand_core = { workspace = true }
+
+# CLI and utilities
+anyhow = { workspace = true }
+bincode = { workspace = true }
+clap = { workspace = true }
+hex = { workspace = true }
+zeroize = { workspace = true }
+
+[features]
+default = []
+audio = ["trustedge-core/audio"]

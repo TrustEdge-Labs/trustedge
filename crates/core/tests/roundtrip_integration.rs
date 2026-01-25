@@ -131,11 +131,11 @@ fn get_binary_path() -> std::path::PathBuf {
     let manifest_path = std::path::PathBuf::from(manifest_dir);
     let workspace_root = manifest_path.parent().unwrap().parent().unwrap(); // crates/core -> crates -> workspace root
 
-    let release_path = workspace_root.join("target/release/trustedge-core");
+    let release_path = workspace_root.join("target/release/trustedge");
     if release_path.exists() {
         release_path
     } else {
-        workspace_root.join("target/debug/trustedge-core")
+        workspace_root.join("target/debug/trustedge")
     }
 }
 

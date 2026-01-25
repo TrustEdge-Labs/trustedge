@@ -9,6 +9,7 @@
 [workspace]
 members = [
     "crates/core",
+    "crates/trustedge-cli",
     "crates/attestation",
     "crates/receipts",
     "crates/wasm",

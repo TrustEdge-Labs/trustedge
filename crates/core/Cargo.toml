@@ -21,10 +21,6 @@ name = "trustedge_core"
 path = "src/lib.rs"
 
 [[bin]]
-name = "trustedge-core"
-path = "src/main.rs"
-
-[[bin]]
 name = "trustedge-server"
 path = "src/bin/trustedge-server.rs"
 

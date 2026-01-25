@@ -126,7 +126,7 @@ impl InputReader for AudioInputReader {
 
 /// CLI Arguments
 #[derive(Parser, Debug)]
-#[command(name = "trustedge-core", version, about)]
+#[command(name = "trustedge", version, about)]
 struct Args {
     /// Input file (opaque bytes)
     #[arg(short, long)]
@@ -299,8 +299,7 @@ fn list_audio_devices() -> Result<()> {
     println!("✖ Audio support not available in this build");
     println!("● To enable audio support:");
     println!("   1. Install audio libraries: sudo apt install libasound2-dev pkg-config");
-    println!("   2. Rebuild with: cargo build --features audio");
-    println!("   3. Or use default build (audio enabled): cargo build");
+    println!("   2. Rebuild with: cargo build -p trustedge-cli --features audio");
     Ok(())
 }
 
@@ -1028,7 +1027,7 @@ fn main() -> Result<()> {
             #[cfg(not(feature = "audio"))]
             {
                 return Err(anyhow!(
-                    "Audio capture not available - rebuild with --features audio"
+                    "Audio capture not available - rebuild with: cargo build -p trustedge-cli --features audio"
                 ));
             }
         }
