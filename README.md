@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v0.2.0)
+[![Version](https://img.shields.io/badge/version-0.3.1-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v0.3.1)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge: Hardware-Backed Security for IoT Devices
@@ -96,15 +96,19 @@ Open Core Model:
 
 ---
 
-## What's New in 0.2.0
+## What's New in 0.3.1
 
-- 🔐 **Production-Ready Cryptography** - Real AES-256-GCM encryption with PBKDF2 key derivation
-- 📦 **.trst Archive System** - Secure archival format with Ed25519 signatures and chunk verification
-- 🧾 **Digital Receipt System** - Cryptographically secure transferable receipts
-- 🔑 **YubiKey Hardware Integration** - Real PKCS#11 support with hardware signing
-- 🏗️ **Universal Backend Architecture** - Pluggable crypto backends
-- 🌐 **Production Transport Layer** - Real TCP operations with concurrent connections
-- 🧪 **Comprehensive Test Suite** - 150+ tests including security attack scenarios
+- 🏗️ **CLI Extraction** - Main CLI moved to dedicated `trustedge-cli` crate for cleaner architecture
+- 📦 **Manifest Consolidation** - Canonical `CamVideoManifest` types unified in `trustedge-trst-core`
+- 🔐 **Security Fix** - Removed unmaintained `wee_alloc` dependency
+- 🔑 **YubiKey Improvements** - Added `GetPublicKey` operation, fixed slot validation
+- 🧪 **Deprecation Fixes** - Updated all `GenericArray::from_slice` calls
+
+### Previous Releases
+
+**v0.3.0 (P0 Release):** .trst archive system with cam.video profile, Ed25519 signatures, BLAKE3 chains, browser verification
+
+**v0.2.0:** YubiKey PKCS#11 integration, Universal Backend architecture, production transport layer, 150+ tests
 
 ---
 
