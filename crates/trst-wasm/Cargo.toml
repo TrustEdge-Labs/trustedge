@@ -5,7 +5,7 @@
 
 [package]
 name = "trustedge-trst-wasm"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "WASM bindings for TrustEdge verification"
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]

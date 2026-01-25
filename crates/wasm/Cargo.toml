@@ -5,7 +5,7 @@
 
 [package]
 name = "trustedge-wasm"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
 description = "WebAssembly bindings for TrustEdge cryptographic operations"

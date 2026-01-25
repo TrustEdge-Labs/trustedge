@@ -119,7 +119,7 @@ impl BackendInfo {
             name: "tpm",
             description: "TPM 2.0 hardware security module",
             version: "1.0.0",
-            available: false, // TODO: detect TPM availability
+            available: false, // NOTE: TPM detection planned for post-P0
             config_requirements: vec!["device_path", "key_handle"],
         }
     }
@@ -129,7 +129,7 @@ impl BackendInfo {
             name: "hsm",
             description: "Hardware Security Module (PKCS#11)",
             version: "1.0.0",
-            available: false, // TODO: detect HSM availability
+            available: false, // NOTE: HSM detection planned for post-P0
             config_requirements: vec!["pkcs11_lib", "slot_id", "pin"],
         }
     }
