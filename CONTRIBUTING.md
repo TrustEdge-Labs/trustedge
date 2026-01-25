@@ -75,7 +75,7 @@ When requesting features:
 **Key requirements**:
 - **Style**: Follow standard Rust formatting (`cargo fmt`)
 - **Linting**: Pass all Clippy checks (`cargo clippy -- -D warnings`)
-- **Terminal output**: Use professional UTF-8 symbols (✔, ✖, ⚠, ●, ♪, ■) instead of emojis
+- **Terminal output**: Use professional UTF-8 symbols (✔, ✖, ⚠, ●, ♪, ■) instead of emojis in code and terminal output. Emojis are acceptable in documentation files only.
 - **Testing**: Add tests for new functionality
 - **Documentation**: Include doc comments for public APIs
 - **Error handling**: Use proper error types and actionable messages
