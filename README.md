@@ -115,15 +115,16 @@ TrustEdge is organized as a Cargo workspace with specialized crates:
 ```
 trustedge/
 ├── crates/
-│   ├── core/                     # Core cryptographic library and CLI tools (trustedge-core)
+│   ├── core/                     # Core cryptographic library (trustedge-core)
+│   ├── trustedge-cli/            # Main envelope encryption CLI (binary: trustedge)
 │   ├── trst-cli/                 # .trst archive CLI tool (trustedge-trst-cli, binary: trst)
-│   ├── trst-core/                # .trst archive format library (trustedge-trst-core)
-│   ├── attestation/              # Software attestation and provenance system (trustedge-attestation)
-│   ├── receipts/                 # Digital receipt system with ownership chains (trustedge-receipts)
-│   ├── wasm/                     # Core WebAssembly bindings (trustedge-wasm)
-│   ├── trst-wasm/                # .trst verification WebAssembly bindings (trustedge-trst-wasm)
-│   ├── pubky/                    # Pubky network adapter for decentralized keys (trustedge-pubky)
-│   └── pubky-advanced/           # Advanced Pubky integration with hybrid encryption (trustedge-pubky-advanced)
+│   ├── trst-core/                # Canonical cam.video manifest types (WASM-compatible)
+│   ├── trst-wasm/                # .trst verification WebAssembly bindings
+│   ├── attestation/              # Software attestation and provenance system
+│   ├── receipts/                 # Digital receipt system with ownership chains
+│   ├── wasm/                     # Core WebAssembly bindings
+│   ├── pubky/                    # Pubky network adapter (community/experimental)
+│   └── pubky-advanced/           # Advanced Pubky integration (community/experimental)
 ├── examples/                     # Example implementations and demos
 └── docs/                         # Documentation and guides
 ```
@@ -133,14 +134,15 @@ trustedge/
 | Crate | Purpose | Documentation |
 |-------|---------|---------------|
 | **trustedge-core** | Core cryptographic library with envelope encryption | [Core Documentation](crates/core/) |
-| **trustedge-trst-cli** | Command-line tool for .trst archive creation and verification | [Archive CLI Documentation](crates/trst-cli/) |
-| **trustedge-trst-core** | .trst archive format primitives and verification | [Archive Format Documentation](crates/trst-core/) |
-| **trustedge-attestation** | Software attestation and provenance tracking with cryptographic "birth certificates" | [Attestation Documentation](crates/attestation/) |
+| **trustedge-cli** | Main CLI for envelope encryption (binary: `trustedge`) | [CLI Documentation](crates/trustedge-cli/) |
+| **trustedge-trst-cli** | CLI for .trst archive creation and verification (binary: `trst`) | [Archive CLI Documentation](crates/trst-cli/) |
+| **trustedge-trst-core** | Canonical cam.video manifest types (WASM-compatible) | [Archive Format Documentation](crates/trst-core/) |
+| **trustedge-attestation** | Software attestation and provenance tracking | [Attestation Documentation](crates/attestation/) |
 | **trustedge-receipts** | Digital receipt system with cryptographic ownership transfer | [Receipt Documentation](crates/receipts/) |
 | **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | [WASM Documentation](crates/wasm/) |
-| **trustedge-trst-wasm** | .trst archive verification WebAssembly bindings | [Archive WASM Documentation](crates/trst-wasm/) |
-| **trustedge-pubky** | Clean Pubky network adapter for decentralized key discovery | [Pubky Documentation](crates/pubky/) |
-| **trustedge-pubky-advanced** | Advanced Pubky integration with hybrid encryption | [Advanced Pubky Documentation](crates/pubky-advanced/) |
+| **trustedge-trst-wasm** | .trst archive verification in the browser | [Archive WASM Documentation](crates/trst-wasm/) |
+| **trustedge-pubky** | Pubky network adapter (community/experimental) | [Pubky Documentation](crates/pubky/) |
+| **trustedge-pubky-advanced** | Hybrid encryption for Pubky (community/experimental) | [Advanced Pubky Documentation](crates/pubky-advanced/) |
 
 ---
 
@@ -173,10 +175,10 @@ cargo build --workspace --release
 **Core Envelope Encryption:**
 ```bash
 # Encrypt a file
-./target/release/trustedge-core --input document.txt --envelope document.trst --key-out mykey.hex
+./target/release/trustedge --input document.txt --envelope document.trst --key-out mykey.hex
 
 # Decrypt a file
-./target/release/trustedge-core --decrypt --input document.trst --out recovered.txt --key-hex $(cat mykey.hex)
+./target/release/trustedge --decrypt --input document.trst --out recovered.txt --key-hex $(cat mykey.hex)
 
 # Network mode (server)
 ./target/release/trustedge-server --listen 127.0.0.1:8080 --require-auth

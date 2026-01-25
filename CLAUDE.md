@@ -54,9 +54,9 @@ TrustEdge is a Cargo workspace with 10 crates under `crates/`:
 > Note: Pubky crates are community contributions for [Pubky](https://pubky.org) ecosystem integration. They are not part of the core product roadmap. Core functionality uses `trustedge-core` directly.
 
 **Archive System (.trst format):**
-- `trustedge-trst-core` - Archive format primitives
+- `trustedge-trst-core` - Canonical cam.video manifest types (WASM-compatible, minimal dependencies)
 - `trustedge-trst-cli` - CLI tool (binary: `trst`) for wrap/verify operations
-- `trustedge-trst-wasm` - Browser verification
+- `trustedge-trst-wasm` - Browser verification (imports manifest types from trst-core)
 
 ### Key Modules in `crates/core/src/`
 
