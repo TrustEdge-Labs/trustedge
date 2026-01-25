@@ -11,17 +11,19 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
-## Current Status (v0.2.0)
+## Current Status (v0.3.1)
 
-TrustEdge 0.2.0 provides a **production-ready foundation** with:
+TrustEdge 0.3.1 provides a **production-ready foundation** with:
 
-- ✅ **Real Cryptography**: AES-256-GCM encryption with PBKDF2 key derivation
+- ✅ **P0 cam.video Profile**: Locked .trst archive specification with Ed25519 signatures
+- ✅ **Real Cryptography**: AES-256-GCM encryption, BLAKE3 continuity chains, XChaCha20-Poly1305
 - ✅ **Digital Receipt System**: Cryptographically secure transferable receipts
 - ✅ **YubiKey Hardware Integration**: PKCS#11 support with real hardware operations
 - ✅ **Universal Backend Architecture**: Pluggable crypto backends
 - ✅ **Live Audio Capture**: Cross-platform microphone input with encryption
 - ✅ **Network Transport**: TCP client-server with mutual authentication
-- ✅ **Comprehensive Testing**: 109 tests including security attack scenarios
+- ✅ **Browser Verification**: WASM-based .trst archive verification
+- ✅ **Comprehensive Testing**: 150+ tests including security attack scenarios
 
 ---
 

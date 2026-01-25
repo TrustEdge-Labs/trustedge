@@ -62,7 +62,7 @@ ykman piv info
 The simplest working example to test:
 
 ```bash
-cd /home/john/projects/github.com/trustedge
+cd /path/to/trustedge
 
 # Run the basic YubiKey demo
 cargo run --example yubikey_demo --features yubikey
@@ -195,7 +195,7 @@ NOT as a CLI with arguments like `--list-slots`.
 Run this one-liner to test everything:
 
 ```bash
-cd /home/john/projects/github.com/trustedge && \
+cd /path/to/trustedge && \
   ykman piv info && \
   echo "---" && \
   cargo run --example yubikey_demo --features yubikey 2>&1 | head -50
