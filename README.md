@@ -28,27 +28,34 @@ Most IoT devices use software-only encryption with keys in memory. TrustEdge pro
 ✅ **Cross-platform** (Linux, macOS, Windows, ESP32, WASM)  
 ✅ **Open source** and fully auditable  
 
-## Quick Start
+## Golden Path: YubiKey Hardware Signing Demo
 
-Prerequisites: YubiKey with default PIN (123456)
+TrustEdge's flagship demo: real cryptographic operations backed by YubiKey hardware.
+This showcases hardware-backed signing, key extraction from PIV slots, X.509 certificate
+generation, and certificate validation — all using your physical security key.
 
-### Generate key on YubiKey
+**Prerequisites:** YubiKey with PIV applet, [OpenSC](https://github.com/OpenSC/OpenSC) PKCS#11 module, [ykman](https://developers.yubico.com/yubikey-manager/) CLI
 
-```
+### Step 1: Generate a key on YubiKey
+
+```bash
 ykman piv keys generate 9a /tmp/pubkey.pem --algorithm ECCP256
-
 ykman piv certificates generate 9a /tmp/pubkey.pem --subject "CN=Test"
 ```
 
-### Run Demo
+### Step 2: Run the hardware signing demo
 
-```
+```bash
 git clone https://github.com/trustedge-labs/trustedge.git
-
 cd trustedge
-
 cargo run --example yubikey_demo --features yubikey -- 123456
 ```
+
+**What happens:** TrustEdge connects to your YubiKey via PKCS#11, extracts the public key
+from PIV slot 9a, performs a hardware-backed ECDSA-P256 signature, generates a complete
+X.509 certificate signed by the YubiKey, and exports it in standard DER format.
+
+**No YubiKey?** See the [Software-Only Archive Demo](#software-only-archive-demo) below.
 
 
 ## Commercial Support
@@ -209,9 +216,9 @@ cargo build --workspace --release
 
 ---
 
-## 4 Step Demo - Golden Path
+## Software-Only Archive Demo
 
-The TrustEdge P0 implementation provides a complete demonstration of the `.trst` archive format with the `cam.video` golden profile. Follow these four steps to experience the full workflow:
+No hardware required. This demo walks through the `.trst` archive format using the `cam.video` profile with software-generated keys:
 
 ### Step 1: Wrap - Create a .trst Archive
 ```bash
@@ -269,7 +276,7 @@ The P0 `.trst` specification includes:
 - **Ed25519 Signatures**: Device key signing with "ed25519:BASE64" format
 - **Archive Layout**: `clip-<id>.trst/` directory with manifest, signatures, and chunks
 
-**🔒 P0 Uses Software Keys Only**: Hardware backends (YubiKey/HSM) are documented but out-of-scope for P0 golden profile implementation.
+For hardware-backed signing, see the [Golden Path: YubiKey Hardware Signing Demo](#golden-path-yubikey-hardware-signing-demo) above.
 
 ---
 
