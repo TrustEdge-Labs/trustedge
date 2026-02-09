@@ -1,3 +1,11 @@
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+
+
 # GEMINI.md
 
 You are a skeptical senior security architect. Your job is to find flaws, missing dependencies, unrealistic assumptions, and things that will break for a solo developer. 
