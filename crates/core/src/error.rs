@@ -95,15 +95,8 @@ pub enum AsymmetricError {
     BackendError(String),
 }
 
-/// Errors related to manifest processing
-#[derive(Error, Debug)]
-pub enum ManifestError {
-    #[error("Serialization error: {0}")]
-    Serialization(#[from] serde_json::Error),
-
-    #[error("Invalid field value: {0}")]
-    InvalidField(String),
-}
+/// Re-export ManifestFormatError from trst-protocols as ManifestError for backward compatibility
+pub use trustedge_trst_protocols::archive::manifest::ManifestFormatError as ManifestError;
 
 /// Errors related to archive operations
 #[derive(Error, Debug)]

@@ -446,4 +446,25 @@ mod tests {
         assert_eq!(bytes1, bytes2);
         assert_eq!(bytes2, bytes3);
     }
+
+    #[test]
+    fn test_decimal_precision() {
+        let mut manifest = CamVideoManifest::new();
+        manifest.capture.fps = 29.97;
+        manifest.capture.started_at = "2025-01-15T10:30:00Z".to_string();
+        manifest.capture.ended_at = "2025-01-15T10:30:02Z".to_string();
+        manifest.device.id = "TEST001".to_string();
+        manifest.device.public_key = "ed25519:test_key".to_string();
+        manifest.segments.push(SegmentInfo {
+            chunk_file: "00000.bin".to_string(),
+            blake3_hash: "abc123".to_string(),
+            start_time: "2025-01-15T10:30:00Z".to_string(),
+            duration_seconds: 2.0,
+            continuity_hash: "def456".to_string(),
+        });
+
+        let canonical_bytes = manifest.to_canonical_bytes().unwrap();
+        let json_str = String::from_utf8(canonical_bytes).unwrap();
+        assert!(json_str.contains("29.97"));
+    }
 }

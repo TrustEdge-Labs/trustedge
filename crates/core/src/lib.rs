@@ -74,7 +74,6 @@ pub mod envelope_v2_bridge;
 pub mod error;
 pub mod format;
 pub mod hybrid;
-pub mod manifest;
 pub mod transport;
 pub mod vectors;
 
@@ -136,9 +135,10 @@ pub use envelope_v2_bridge::{
 };
 pub use format::*;
 pub use hybrid::{open_envelope, seal_for_recipient, HybridEncryptionError, SymmetricKey};
-pub use manifest::{
-    CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, ManifestError, SegmentInfo,
+pub use trustedge_trst_protocols::archive::manifest::{
+    CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, SegmentInfo,
 };
+pub use error::ManifestError;  // ManifestError is re-exported from error.rs (which aliases ManifestFormatError)
 pub use transport::{Transport, TransportConfig, TransportFactory};
 
 /// Represents a chunk of data sent over the network, including encrypted data,

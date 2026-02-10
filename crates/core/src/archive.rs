@@ -6,7 +6,7 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-use crate::manifest::CamVideoManifest;
+use crate::CamVideoManifest;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::Path;
@@ -197,7 +197,7 @@ pub fn archive_dir_name(id: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::manifest::{CamVideoManifest, SegmentInfo};
+    use crate::{CamVideoManifest, SegmentInfo};
     use tempfile::TempDir;
 
     fn create_test_manifest() -> CamVideoManifest {
