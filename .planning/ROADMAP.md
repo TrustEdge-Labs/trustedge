@@ -94,10 +94,10 @@ Plans:
   2. Attestation tests preserved and passing
   3. Envelope integration unified (no feature flag drift)
   4. Provenance tracking available through core API
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] TBD
+- [ ] 05-01-PLAN.md — Move attestation into core, convert binaries to examples, validate workspace
 
 ### Phase 6: Feature Flags
 **Goal**: Unified feature flag architecture preventing combinatorial explosion
@@ -153,7 +153,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 2. Error Handling | 3/3 | ✓ Complete | 2026-02-09 |
 | 3. trst-core Integration | 2/2 | ✓ Complete | 2026-02-10 |
 | 4. Receipts Integration | 1/1 | ✓ Complete | 2026-02-10 |
-| 5. Attestation Integration | 0/TBD | Not started | - |
+| 5. Attestation Integration | 0/1 | Not started | - |
 | 6. Feature Flags | 0/TBD | Not started | - |
 | 7. Backward Compatibility | 0/TBD | Not started | - |
 | 8. Validation | 0/TBD | Not started | - |
