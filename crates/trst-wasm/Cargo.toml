@@ -15,8 +15,8 @@ license = "MPL-2.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-# Canonical manifest types from trst-core
-trustedge-trst-core = { path = "../trst-core" }
+# Protocol definitions from trst-protocols
+trustedge-trst-protocols = { path = "../trst-protocols" }
 
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

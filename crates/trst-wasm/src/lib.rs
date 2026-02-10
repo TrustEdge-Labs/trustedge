@@ -9,7 +9,7 @@
 //! WASM bindings for TrustEdge .trst archive verification.
 //!
 //! This crate provides browser-compatible verification of .trst archives
-//! using the canonical manifest types from `trustedge-trst-core`.
+//! using the canonical manifest types from `trustedge-trst-protocols`.
 
 use serde::Serialize;
 use serde_wasm_bindgen::to_value;
@@ -20,8 +20,8 @@ use web_sys::{File, FileSystemDirectoryHandle};
 use base64::{engine::general_purpose, Engine as _};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 
-// Import canonical manifest types from trst-core
-use trustedge_trst_core::CamVideoManifest;
+// Import canonical manifest types from trst-protocols
+use trustedge_trst_protocols::CamVideoManifest;
 
 // Initialize panic hook for better error messages in debug
 #[wasm_bindgen(start)]
@@ -39,7 +39,7 @@ struct VerificationResult {
 /// Verify a manifest directly from bytes
 #[wasm_bindgen]
 pub fn verify_manifest(manifest_bytes: Vec<u8>, device_pub: String) -> Result<JsValue, JsValue> {
-    // Parse the manifest using canonical types from trst-core
+    // Parse the manifest using canonical types from trst-protocols
     let manifest: CamVideoManifest = serde_json::from_slice(&manifest_bytes)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
 
@@ -49,7 +49,7 @@ pub fn verify_manifest(manifest_bytes: Vec<u8>, device_pub: String) -> Result<Js
         .as_ref()
         .ok_or_else(|| JsValue::from_str("Manifest has no signature"))?;
 
-    // Get canonical bytes using trst-core's canonicalization
+    // Get canonical bytes using trst-protocols's canonicalization
     let canonical_bytes = manifest
         .to_canonical_bytes()
         .map_err(|e| JsValue::from_str(&format!("Canonicalization failed: {}", e)))?;
@@ -95,7 +95,7 @@ pub async fn verify_archive(
     // Read manifest.json from the directory
     let manifest_content = read_file_from_directory(&dir_handle, "manifest.json").await?;
 
-    // Parse the manifest using canonical types from trst-core
+    // Parse the manifest using canonical types from trst-protocols
     let manifest: CamVideoManifest = serde_json::from_slice(&manifest_content)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
 
@@ -105,7 +105,7 @@ pub async fn verify_archive(
         .as_ref()
         .ok_or_else(|| JsValue::from_str("Manifest has no signature"))?;
 
-    // Get canonical bytes using trst-core's canonicalization
+    // Get canonical bytes using trst-protocols's canonicalization
     let canonical_bytes = manifest
         .to_canonical_bytes()
         .map_err(|e| JsValue::from_str(&format!("Canonicalization failed: {}", e)))?;
