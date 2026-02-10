@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 
 /// Errors that can occur during hybrid encryption operations
 #[derive(Debug, thiserror::Error)]
-pub enum TrustEdgeError {
+pub enum HybridEncryptionError {
     #[error("Encryption failed: {0}")]
     EncryptionFailed(String),
 
@@ -93,7 +93,7 @@ const HYBRID_VERSION: u8 = 1;
 pub fn seal_for_recipient(
     data: &[u8],
     recipient_public_key: &PublicKey,
-) -> Result<Vec<u8>, TrustEdgeError> {
+) -> Result<Vec<u8>, HybridEncryptionError> {
     // 1. Generate a new, random one-time symmetric key (AES-256-GCM)
     let session_key = SymmetricKey::generate();
 
@@ -103,7 +103,7 @@ pub fn seal_for_recipient(
     // 3. Use the recipient's public key to encrypt the session_key
     let encrypted_session_key =
         encrypt_key_asymmetric(session_key.as_bytes(), recipient_public_key).map_err(|e| {
-            TrustEdgeError::EncryptionFailed(format!("Key encryption failed: {}", e))
+            HybridEncryptionError::EncryptionFailed(format!("Key encryption failed: {}", e))
         })?;
 
     // 4. Assemble the new .trst file structure
@@ -126,14 +126,14 @@ pub fn seal_for_recipient(
 pub fn open_envelope(
     envelope: &[u8],
     my_private_key: &PrivateKey,
-) -> Result<Vec<u8>, TrustEdgeError> {
+) -> Result<Vec<u8>, HybridEncryptionError> {
     // 1. Parse the envelope to get the encrypted_session_key
     let parsed_envelope = parse_envelope(envelope)?;
 
     // 2. Use my private key to decrypt the session key
     let session_key_bytes =
         decrypt_key_asymmetric(&parsed_envelope.encrypted_session_key, my_private_key).map_err(
-            |e| TrustEdgeError::DecryptionFailed(format!("Key decryption failed: {}", e)),
+            |e| HybridEncryptionError::DecryptionFailed(format!("Key decryption failed: {}", e)),
         )?;
 
     let session_key = SymmetricKey::from_bytes(session_key_bytes);
@@ -157,12 +157,12 @@ struct EncryptedData {
 }
 
 /// Encrypt data using symmetric encryption (AES-256-GCM)
-fn encrypt_symmetric(data: &[u8], key: &SymmetricKey) -> Result<EncryptedData, TrustEdgeError> {
+fn encrypt_symmetric(data: &[u8], key: &SymmetricKey) -> Result<EncryptedData, HybridEncryptionError> {
     use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
     use rand::{rngs::OsRng, RngCore};
 
     let cipher = Aes256Gcm::new_from_slice(key.as_bytes())
-        .map_err(|e| TrustEdgeError::EncryptionFailed(format!("Failed to create cipher: {}", e)))?;
+        .map_err(|e| HybridEncryptionError::EncryptionFailed(format!("Failed to create cipher: {}", e)))?;
 
     // Generate random nonce
     let mut nonce_bytes = [0u8; 12];
@@ -173,7 +173,7 @@ fn encrypt_symmetric(data: &[u8], key: &SymmetricKey) -> Result<EncryptedData, T
     cipher
         .encrypt_in_place((&nonce_bytes).into(), b"", &mut ciphertext)
         .map_err(|e| {
-            TrustEdgeError::EncryptionFailed(format!("AES-GCM encryption failed: {}", e))
+            HybridEncryptionError::EncryptionFailed(format!("AES-GCM encryption failed: {}", e))
         })?;
 
     Ok(EncryptedData {
@@ -186,24 +186,24 @@ fn encrypt_symmetric(data: &[u8], key: &SymmetricKey) -> Result<EncryptedData, T
 fn decrypt_symmetric(
     encrypted: &EncryptedData,
     key: &SymmetricKey,
-) -> Result<Vec<u8>, TrustEdgeError> {
+) -> Result<Vec<u8>, HybridEncryptionError> {
     use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
 
     let cipher = Aes256Gcm::new_from_slice(key.as_bytes())
-        .map_err(|e| TrustEdgeError::DecryptionFailed(format!("Failed to create cipher: {}", e)))?;
+        .map_err(|e| HybridEncryptionError::DecryptionFailed(format!("Failed to create cipher: {}", e)))?;
 
     let nonce_array: &[u8; 12] = encrypted
         .nonce
         .as_slice()
         .try_into()
-        .map_err(|_| TrustEdgeError::DecryptionFailed("Nonce conversion failed".to_string()))?;
+        .map_err(|_| HybridEncryptionError::DecryptionFailed("Nonce conversion failed".to_string()))?;
 
     // Decrypt data
     let mut plaintext = encrypted.ciphertext.clone();
     cipher
         .decrypt_in_place(nonce_array.into(), b"", &mut plaintext)
         .map_err(|e| {
-            TrustEdgeError::DecryptionFailed(format!("AES-GCM decryption failed: {}", e))
+            HybridEncryptionError::DecryptionFailed(format!("AES-GCM decryption failed: {}", e))
         })?;
 
     Ok(plaintext)
@@ -215,7 +215,7 @@ fn assemble_envelope(
     encrypted_session_key: &[u8],
     encrypted_payload: &[u8],
     nonce: &[u8; 12],
-) -> Result<Vec<u8>, TrustEdgeError> {
+) -> Result<Vec<u8>, HybridEncryptionError> {
     let envelope = HybridEnvelope {
         magic: HYBRID_MAGIC,
         version: HYBRID_VERSION,
@@ -226,23 +226,23 @@ fn assemble_envelope(
         algorithm: AeadAlgorithm::Aes256Gcm as u8,
     };
 
-    bincode::serialize(&envelope).map_err(TrustEdgeError::SerializationError)
+    bincode::serialize(&envelope).map_err(HybridEncryptionError::SerializationError)
 }
 
 /// Parse an envelope from bytes
-fn parse_envelope(envelope_bytes: &[u8]) -> Result<HybridEnvelope, TrustEdgeError> {
+fn parse_envelope(envelope_bytes: &[u8]) -> Result<HybridEnvelope, HybridEncryptionError> {
     let envelope: HybridEnvelope = bincode::deserialize(envelope_bytes)
-        .map_err(|e| TrustEdgeError::InvalidEnvelope(format!("Deserialization failed: {}", e)))?;
+        .map_err(|e| HybridEncryptionError::InvalidEnvelope(format!("Deserialization failed: {}", e)))?;
 
     // Validate envelope
     if envelope.magic != HYBRID_MAGIC {
-        return Err(TrustEdgeError::InvalidEnvelope(
+        return Err(HybridEncryptionError::InvalidEnvelope(
             "Invalid magic number".to_string(),
         ));
     }
 
     if envelope.version != HYBRID_VERSION {
-        return Err(TrustEdgeError::InvalidEnvelope(format!(
+        return Err(HybridEncryptionError::InvalidEnvelope(format!(
             "Unsupported version: {}",
             envelope.version
         )));
@@ -326,7 +326,7 @@ mod tests {
         assert!(result.is_err());
 
         match result {
-            Err(TrustEdgeError::InvalidEnvelope(_)) => {} // Expected
+            Err(HybridEncryptionError::InvalidEnvelope(_)) => {} // Expected
             _ => panic!("Expected InvalidEnvelope error"),
         }
     }

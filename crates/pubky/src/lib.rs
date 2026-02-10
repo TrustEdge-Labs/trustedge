@@ -34,7 +34,7 @@ pub enum PubkyAdapterError {
     InvalidPubkyId(String),
 
     #[error("TrustEdge core error: {0}")]
-    CoreError(#[from] trustedge_core::TrustEdgeError),
+    CoreError(#[from] trustedge_core::HybridEncryptionError),
 
     #[error("Serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),

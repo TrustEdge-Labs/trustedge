@@ -8,7 +8,7 @@
 //! and the advanced v2 envelope system with Pubky support.
 
 use crate::asymmetric::{PrivateKey, PublicKey};
-use crate::hybrid::{open_envelope, seal_for_recipient, TrustEdgeError};
+use crate::hybrid::{open_envelope, seal_for_recipient, HybridEncryptionError};
 use anyhow::Result;
 
 /// Envelope format detection
@@ -51,7 +51,7 @@ impl UnifiedEnvelope {
     pub fn seal_auto(
         data: &[u8],
         recipient_public_key: &PublicKey,
-    ) -> Result<Vec<u8>, TrustEdgeError> {
+    ) -> Result<Vec<u8>, HybridEncryptionError> {
         // For now, use the core hybrid format
         // TODO: Integrate with trustedge-pubky when available
         seal_for_recipient(data, recipient_public_key)
@@ -61,21 +61,21 @@ impl UnifiedEnvelope {
     pub fn open_auto(
         envelope_bytes: &[u8],
         private_key: &PrivateKey,
-    ) -> Result<Vec<u8>, TrustEdgeError> {
+    ) -> Result<Vec<u8>, HybridEncryptionError> {
         let format = detect_envelope_format(envelope_bytes)
-            .map_err(|e| TrustEdgeError::InvalidEnvelope(e.to_string()))?;
+            .map_err(|e| HybridEncryptionError::InvalidEnvelope(e.to_string()))?;
 
         match format {
             EnvelopeFormat::CoreHybrid => open_envelope(envelope_bytes, private_key),
             EnvelopeFormat::V1 => {
                 // TODO: Implement v1 envelope opening
-                Err(TrustEdgeError::InvalidEnvelope(
+                Err(HybridEncryptionError::InvalidEnvelope(
                     "V1 envelope format not yet supported in unified API".to_string(),
                 ))
             }
             EnvelopeFormat::V2Pubky => {
                 // TODO: Integrate with trustedge-pubky
-                Err(TrustEdgeError::InvalidEnvelope(
+                Err(HybridEncryptionError::InvalidEnvelope(
                     "V2 Pubky envelope format requires trustedge-pubky integration".to_string(),
                 ))
             }

@@ -130,7 +130,7 @@ pub use envelope_v2_bridge::{
     detect_envelope_format, EnvelopeFormat, EnvelopeInfo, UnifiedEnvelope,
 };
 pub use format::*;
-pub use hybrid::{open_envelope, seal_for_recipient, SymmetricKey, TrustEdgeError};
+pub use hybrid::{open_envelope, seal_for_recipient, HybridEncryptionError, SymmetricKey};
 pub use manifest::{
     CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, ManifestError, SegmentInfo,
 };
