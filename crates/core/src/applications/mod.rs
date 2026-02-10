@@ -78,8 +78,12 @@
 //!
 //! ## Status
 //!
-//! **Phase 1 scaffolding - no code yet**
+//! **Phase 4 migration - receipts live**
 //!
 //! This module structure was created in Phase 1 to establish the layer hierarchy.
 //! Actual code migration happens in Phase 2-8 of the consolidation roadmap.
+//!
+//! - ✔ `receipts/` - Digital receipt system with cryptographic ownership (1,281 LOC, 23 tests)
+
+pub mod receipts;
 

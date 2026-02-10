@@ -8,7 +8,7 @@
 
 //! # TrustEdge Receipts - The Contract Writer
 //!
-//! This crate represents the "Contract Writer" in our office analogy.
+//! This module represents the "Contract Writer" in our office analogy.
 //! It handles business logic for transferable claims (receipts) without worrying
 //! about cryptographic details. That's the job of the "Security Guard" (trustedge-core).
 //!
@@ -16,14 +16,14 @@
 //!
 //! A Receipt represents a transferable claim with these properties:
 //! - **Issuer**: Who is making the claim (current owner)
-//! - **Beneficiary**: Who is receiving the claim (new owner)  
+//! - **Beneficiary**: Who is receiving the claim (new owner)
 //! - **Amount**: The value being claimed
 //! - **Chain Link**: Reference to the previous receipt in the ownership chain
 //!
 //! ## Usage
 //!
 //! ```rust
-//! use trustedge_receipts::{Receipt, create_receipt, assign_receipt};
+//! use trustedge_core::{Receipt, create_receipt, assign_receipt};
 //! use ed25519_dalek::SigningKey;
 //! use rand::rngs::OsRng;
 //!
@@ -43,7 +43,7 @@
 use anyhow::{Context, Result};
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
-use trustedge_core::Envelope;
+use crate::Envelope;
 
 /// Represents a transferable claim, forming the payload of a TrustEdge Envelope.
 ///

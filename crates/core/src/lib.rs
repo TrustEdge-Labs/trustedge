@@ -141,6 +141,9 @@ pub use trustedge_trst_protocols::archive::manifest::{
 pub use error::ManifestError;  // ManifestError is re-exported from error.rs (which aliases ManifestFormatError)
 pub use transport::{Transport, TransportConfig, TransportFactory};
 
+// Receipt system re-exports (Layer 4 applications)
+pub use applications::receipts::{Receipt, create_receipt, assign_receipt, extract_receipt, verify_receipt_chain};
+
 /// Represents a chunk of data sent over the network, including encrypted data,
 /// a signed manifest, the nonce used for encryption, and a timestamp.
 #[derive(Serialize, Deserialize, Debug, Clone)]
