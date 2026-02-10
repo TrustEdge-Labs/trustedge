@@ -14,10 +14,6 @@ repository = "https://github.com/TrustEdge-Labs/trustedge"
 keywords = ["cryptography", "receipts", "ownership", "blockchain", "digital-assets"]
 categories = ["cryptography", "data-structures"]
 
-[[bin]]
-name = "demo"
-path = "src/bin/demo.rs"
-
 [dependencies]
 trustedge-core = { path = "../core" }
 serde = { workspace = true }
