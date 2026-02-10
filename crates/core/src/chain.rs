@@ -6,20 +6,10 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-use thiserror::Error;
-
 /// Genesis seed for the continuity chain
 const GENESIS_SEED: &[u8] = b"trustedge:genesis";
 
-#[derive(Error, Debug)]
-pub enum ChainError {
-    #[error("Gap in chain at segment index {0}")]
-    Gap(usize),
-    #[error("Segments out of order: expected continuity hash {expected}, found {found}")]
-    OutOfOrder { expected: String, found: String },
-    #[error("End of chain truncated")]
-    EndOfChainTruncated,
-}
+pub use crate::error::ChainError;
 
 /// Convert BLAKE3 hash bytes to base64 with "b3:" prefix for manifest storage
 pub fn blake3_hex_or_b64(bytes: &[u8]) -> String {

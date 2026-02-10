@@ -11,26 +11,9 @@ use chacha20poly1305::XChaCha20Poly1305;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand_core::{OsRng, RngCore};
 use serde_json::json;
-use thiserror::Error;
 use zeroize::Zeroize;
 
-#[derive(Error, Debug)]
-pub enum CryptoError {
-    #[error("Invalid key format: {0}")]
-    InvalidKeyFormat(String),
-    #[error("Invalid signature format: {0}")]
-    InvalidSignatureFormat(String),
-    #[error("Encryption failed: {0}")]
-    EncryptionFailed(String),
-    #[error("Decryption failed: {0}")]
-    DecryptionFailed(String),
-    #[error("Signature verification failed")]
-    SignatureVerificationFailed,
-    #[error("Key generation failed: {0}")]
-    KeyGenerationFailed(String),
-    #[error("Invalid nonce format: {0}")]
-    InvalidNonceFormat(String),
-}
+pub use crate::error::CryptoError;
 
 /// Device keypair for Ed25519 signing operations
 ///

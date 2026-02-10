@@ -7,15 +7,8 @@
 //
 
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
-#[derive(Error, Debug)]
-pub enum ManifestError {
-    #[error("Serialization error: {0}")]
-    Serialization(#[from] serde_json::Error),
-    #[error("Invalid field value: {0}")]
-    InvalidField(String),
-}
+pub use crate::error::ManifestError;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CamVideoManifest {
