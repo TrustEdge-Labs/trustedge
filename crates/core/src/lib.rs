@@ -71,6 +71,7 @@ pub mod chain;
 pub mod crypto;
 pub mod envelope;
 pub mod envelope_v2_bridge;
+pub mod error;
 pub mod format;
 pub mod hybrid;
 pub mod manifest;
