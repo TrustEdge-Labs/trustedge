@@ -126,6 +126,11 @@ pub use crypto::{
     sign_manifest, verify_manifest, CryptoError, DeviceKeypair,
 };
 pub use envelope::{Envelope, EnvelopeMetadata};
+pub use error::{
+    TrustEdgeError,
+    BackendError,
+    TransportError,
+};
 pub use envelope_v2_bridge::{
     detect_envelope_format, EnvelopeFormat, EnvelopeInfo, UnifiedEnvelope,
 };
