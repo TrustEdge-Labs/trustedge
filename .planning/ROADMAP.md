@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Baseline and module hierarchy ✓
 - [x] **Phase 2: Error Handling** - Unified error types ✓
-- [ ] **Phase 3: trst-core Integration** - WASM-safe manifest types
+- [x] **Phase 3: trst-core Integration** - WASM-safe manifest types ✓
 - [ ] **Phase 4: Receipts Integration** - Digital receipt system
 - [ ] **Phase 5: Attestation Integration** - Software attestation
 - [ ] **Phase 6: Feature Flags** - Consolidate feature architecture
@@ -68,8 +68,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Rename trst-core to trst-protocols and restructure into domain submodules
-- [ ] 03-02-PLAN.md — Wire core to trst-protocols, delete duplicate manifest.rs, update consumers
+- [x] 03-01-PLAN.md — Rename trst-core to trst-protocols and restructure into domain submodules
+- [x] 03-02-PLAN.md — Wire core to trst-protocols, delete duplicate manifest.rs, update consumers
 
 ### Phase 4: Receipts Integration
 **Goal**: Digital receipt system merged into core
@@ -151,7 +151,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | ✓ Complete | 2026-02-10 |
 | 2. Error Handling | 3/3 | ✓ Complete | 2026-02-09 |
-| 3. trst-core Integration | 0/TBD | Not started | - |
+| 3. trst-core Integration | 2/2 | ✓ Complete | 2026-02-10 |
 | 4. Receipts Integration | 0/TBD | Not started | - |
 | 5. Attestation Integration | 0/TBD | Not started | - |
 | 6. Feature Flags | 0/TBD | Not started | - |
