@@ -32,10 +32,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Test inventory baseline documents exact count per crate (150+ total accounted for)
   3. Layered module skeleton exists in trustedge-core (primitives/backends/protocols/applications/transport/io)
   4. API surface snapshot captured for semver validation
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] TBD
+- [ ] 01-01-PLAN.md — Install analysis tools and integrate into CI
+- [ ] 01-02-PLAN.md — Create layered module hierarchy scaffolding
+- [ ] 01-03-PLAN.md — Generate test baseline and workspace dependency graph
+- [ ] 01-04-PLAN.md — Conduct duplication audit and capture API baselines
 
 ### Phase 2: Error Handling
 **Goal**: Unified error type hierarchy across all crates
@@ -113,7 +116,7 @@ Plans:
 **Requirements**: COMPAT-01, COMPAT-02
 **Success Criteria** (what must be TRUE):
   1. Deprecated re-export facades created for merged crates (receipts, attestation, trst-core)
-  2. Migration guide documents import path changes (old → new)
+  2. Migration guide documents import path changes (old -> new)
   3. All thin shells (trustedge-cli, trst-cli, wasm, trst-wasm) build successfully
   4. Deprecation warnings visible but not breaking (6-month migration window)
 **Plans**: TBD
@@ -139,11 +142,11 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 0/4 | Planned | - |
 | 2. Error Handling | 0/TBD | Not started | - |
 | 3. trst-core Integration | 0/TBD | Not started | - |
 | 4. Receipts Integration | 0/TBD | Not started | - |
