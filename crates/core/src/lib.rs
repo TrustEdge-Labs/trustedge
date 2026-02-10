@@ -77,6 +77,12 @@ pub mod manifest;
 pub mod transport;
 pub mod vectors;
 
+// Layer hierarchy (Phase 1 scaffolding -- populated in later phases)
+pub mod primitives;
+pub mod protocols;
+pub mod applications;
+pub mod io;
+
 pub use archive::{archive_dir_name, read_archive, validate_archive, write_archive, ArchiveError};
 pub use asymmetric::{
     decrypt_key_asymmetric, encrypt_key_asymmetric, key_exchange, AsymmetricError, KeyPair,
