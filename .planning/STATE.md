@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations with production-quality YubiKey integration — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 2 (Error Handling)
+**Current focus:** Phase 3 (trst-core Integration)
 
 ## Current Position
 
-Phase: 2 of 8 (Error Handling)
-Plan: 3 of 3 complete
-Status: Complete — Phase 2 finished
-Last activity: 2026-02-10 — Completed 02-03: Backend error migration (2/2 tasks)
+Phase: 3 of 8 (trst-core Integration)
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-02-10 — Completed 03-01: Rename trst-core to trst-protocols (2/2 tasks)
 
 Progress: [██░░░░░░░░] 25.0% (2/8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: ~6.3 minutes
-- Total execution time: ~0.8 hours
+- Total plans completed: 8
+- Average duration: ~6.1 minutes
+- Total execution time: ~0.9 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [██░░░░░░░░] 25.0% (2/8 phases)
 |-------|-------|-------|----------|
 | 01-foundation | 4 | ~32 min | ~8 min |
 | 02-error-handling | 3 | ~16 min | ~5.3 min |
+| 03-trst-core-integration | 1 | ~4.6 min | ~4.6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-04 (10 min), 02-01 (4 min), 02-02 (6 min), 02-03 (6 min)
-- Trend: Consistent execution (error handling phase completed efficiently)
+- Last 5 plans: 02-01 (4 min), 02-02 (6 min), 02-03 (6 min), 03-01 (4.6 min)
+- Trend: Efficient execution continuing into Phase 3
 
 *Updated after each plan completion*
 
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 - Backend traits use BackendError (not anyhow) — library code requires structured errors (02-03)
 - CLI binaries use ? operator for auto-conversion — BackendError implements std::error::Error (02-03)
 - Semantic error mapping: KeyNotFound for missing keys, UnsupportedOperation for unsupported ops (02-03)
+- [Phase 03]: Renamed trst-core to trst-protocols to better reflect purpose as protocol definitions
+- [Phase 03]: Structured into archive and capture domain submodules for clear separation
+- [Phase 03]: Created scoped error types per submodule (ManifestFormatError, ChunkFormatError, etc.)
 
 ### Pending Todos
 
@@ -75,5 +79,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 02-03-PLAN.md (backend error migration) — Phase 2 complete
-Resume file: .planning/phases/02-error-handling/02-03-SUMMARY.md
+Stopped at: Completed 03-01-PLAN.md (rename trst-core to trst-protocols)
+Resume file: .planning/phases/03-trst-core-integration/03-01-SUMMARY.md
