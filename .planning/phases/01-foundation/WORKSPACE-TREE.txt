@@ -1,0 +1,149 @@
+trustedge-attestation v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/attestation)
+├── anyhow v1.0.100
+├── bincode v1.3.3
+├── chrono v0.4.43
+├── clap v4.5.54
+├── ed25519-dalek v2.2.0
+├── git2 v0.18.3
+├── hex v0.4.3
+├── rand v0.8.5
+├── serde v1.0.228
+├── serde_json v1.0.149
+├── sha2 v0.10.9
+├── tempfile v3.24.0
+├── thiserror v1.0.69
+└── trustedge-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/core)
+    [dev-dependencies]
+[dev-dependencies]
+├── rand v0.8.5 (*)
+└── tempfile v3.24.0 (*)
+
+trustedge-cam-video-examples v0.1.0 (/home/john/vault/projects/github.com/trustedge/examples/cam.video)
+├── chacha20poly1305 v0.10.1
+├── chrono v0.4.43 (*)
+├── hex v0.4.3
+└── trustedge-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/core) (*)
+
+trustedge-cli v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/trustedge-cli)
+├── aead v0.5.2
+├── aes-gcm v0.10.3
+├── anyhow v1.0.100
+├── bincode v1.3.3 (*)
+├── blake3 v1.8.3
+│   [build-dependencies]
+├── clap v4.5.54 (*)
+├── ed25519-dalek v2.2.0 (*)
+├── hex v0.4.3
+├── rand_core v0.6.4
+├── trustedge-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/core) (*)
+└── zeroize v1.8.2
+
+trustedge-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/core) (*)
+
+trustedge-pubky v0.1.0 (/home/john/vault/projects/github.com/trustedge/crates/pubky)
+├── anyhow v1.0.100
+├── clap v4.5.54 (*)
+├── hex v0.4.3
+├── pubky v0.5.4
+├── rand v0.8.5 (*)
+├── serde v1.0.228 (*)
+├── serde_json v1.0.149 (*)
+├── thiserror v1.0.69 (*)
+├── tokio v1.49.0
+└── trustedge-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/core) (*)
+[dev-dependencies]
+├── assert_cmd v2.1.2
+├── predicates v3.1.3
+├── tempfile v3.24.0 (*)
+└── tokio-test v0.4.5
+
+trustedge-pubky-advanced v0.1.0 (/home/john/vault/projects/github.com/trustedge/crates/pubky-advanced)
+├── aes-gcm v0.10.3 (*)
+├── anyhow v1.0.100
+├── bincode v1.3.3 (*)
+├── blake3 v1.8.3 (*)
+├── ed25519-dalek v2.2.0 (*)
+├── hex v0.4.3
+├── hkdf v0.12.4
+├── pubky v0.5.4 (*)
+├── rand v0.8.5 (*)
+├── reqwest v0.11.27
+├── serde v1.0.228 (*)
+├── serde_json v1.0.149 (*)
+├── sha2 v0.10.9 (*)
+├── thiserror v1.0.69 (*)
+├── tokio v1.49.0 (*)
+├── trustedge-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/core) (*)
+├── x25519-dalek v2.0.1
+└── zeroize v1.8.2 (*)
+[dev-dependencies]
+└── tokio-test v0.4.5 (*)
+
+trustedge-receipts v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/receipts)
+├── anyhow v1.0.100
+├── ed25519-dalek v2.2.0 (*)
+├── hex v0.4.3
+├── rand v0.8.5 (*)
+├── serde v1.0.228 (*)
+├── serde_json v1.0.149 (*)
+└── trustedge-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/core) (*)
+
+trustedge-trst-cli v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/trst-cli)
+├── anyhow v1.0.100
+├── base64 v0.22.1
+├── blake3 v1.8.3 (*)
+├── chacha20poly1305 v0.10.1 (*)
+├── chrono v0.4.43 (*)
+├── clap v4.5.54 (*)
+├── ed25519-dalek v2.2.0 (*)
+├── hex v0.4.3
+├── rand v0.8.5 (*)
+├── rand_chacha v0.3.1
+├── rand_core v0.6.4 (*)
+├── reqwest v0.11.27 (*)
+├── serde v1.0.228 (*)
+├── serde_json v1.0.149 (*)
+├── tokio v1.49.0 (*)
+├── trustedge-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/core) (*)
+└── trustedge-trst-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/trst-core)
+[dev-dependencies]
+├── assert_cmd v2.1.2 (*)
+├── predicates v3.1.3 (*)
+├── tempfile v3.24.0 (*)
+└── warp v0.3.7
+
+trustedge-trst-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/trst-core) (*)
+
+trustedge-trst-wasm v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/trst-wasm)
+├── base64 v0.22.1
+├── blake3 v1.8.3 (*)
+├── console_error_panic_hook v0.1.7
+├── ed25519-dalek v2.2.0 (*)
+├── getrandom v0.2.17
+├── hex v0.4.3
+├── js-sys v0.3.85
+├── serde v1.0.228 (*)
+├── serde-wasm-bindgen v0.6.5
+├── serde_json v1.0.149 (*)
+├── trustedge-trst-core v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/trst-core) (*)
+├── wasm-bindgen v0.2.108
+│   [build-dependencies]
+├── wasm-bindgen-futures v0.4.58
+└── web-sys v0.3.85
+[dev-dependencies]
+└── wasm-bindgen-test v0.3.58
+
+trustedge-wasm v0.2.0 (/home/john/vault/projects/github.com/trustedge/crates/wasm)
+├── aes-gcm v0.10.3 (*)
+├── base64 v0.22.1
+├── console_error_panic_hook v0.1.7 (*)
+├── getrandom v0.2.17 (*)
+├── js-sys v0.3.85 (*)
+├── rand v0.8.5 (*)
+├── serde v1.0.228 (*)
+├── serde-wasm-bindgen v0.6.5 (*)
+├── serde_json v1.0.149 (*)
+├── wasm-bindgen v0.2.108 (*)
+└── web-sys v0.3.85 (*)
+[dev-dependencies]
+└── wasm-bindgen-test v0.3.58 (*)
