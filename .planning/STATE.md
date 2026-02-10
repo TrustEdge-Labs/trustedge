@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations with production-quality YubiKey integration — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 3 (trst-core Integration)
+**Current focus:** Phase 4 (Receipts Integration)
 
 ## Current Position
 
-Phase: 3 of 8 (trst-core Integration)
-Plan: 2 of 2 complete
+Phase: 4 of 8 (Receipts Integration)
+Plan: 1 of 1 complete
 Status: Complete
-Last activity: 2026-02-10 — Completed 03-02: Wire core to trst-protocols (2/2 tasks)
+Last activity: 2026-02-10 — Completed 04-01: Move receipts into core (2/2 tasks)
 
-Progress: [███░░░░░░░] 37.5% (3/8 phases)
+Progress: [████░░░░░░] 50% (4/8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: ~6.2 minutes
+- Total plans completed: 10
+- Average duration: ~6.0 minutes
 - Total execution time: ~1.0 hours
 
 **By Phase:**
@@ -30,10 +30,11 @@ Progress: [███░░░░░░░] 37.5% (3/8 phases)
 | 01-foundation | 4 | ~32 min | ~8 min |
 | 02-error-handling | 3 | ~16 min | ~5.3 min |
 | 03-trst-core-integration | 2 | ~11.5 min | ~5.8 min |
+| 04-receipts-integration | 1 | ~4 min | ~4 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (6 min), 02-03 (6 min), 03-01 (4.6 min), 03-02 (6.9 min)
-- Trend: Consistent execution velocity (~5-7 min per plan)
+- Last 5 plans: 02-03 (6 min), 03-01 (4.6 min), 03-02 (6.9 min), 04-01 (4 min)
+- Trend: Improving velocity, faster execution on focused plans
 
 *Updated after each plan completion*
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 03]: Created scoped error types per submodule (ManifestFormatError, ChunkFormatError, etc.)
 - [Phase 03]: Core imports manifest types from trst-protocols via dependency (454-line duplicate eliminated)
 - [Phase 03]: ManifestError type alias pattern for backward compatibility (ManifestFormatError as ManifestError)
+- [Phase 04]: Receipts crate (1,281 LOC, 23 tests) migrated into core applications layer
+- [Phase 04]: Demo binary converted to cargo example for better discoverability
+- [Phase 04]: Thin re-export facade maintains backward compatibility for receipts crate
 
 ### Pending Todos
 
@@ -81,5 +85,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 03-02-PLAN.md (wire core to trst-protocols) - Phase 3 complete
-Resume file: .planning/phases/03-trst-core-integration/03-02-SUMMARY.md
+Stopped at: Completed 04-01-PLAN.md (receipts integration) - Phase 4 complete
+Resume file: .planning/phases/04-receipts-integration/04-01-SUMMARY.md
