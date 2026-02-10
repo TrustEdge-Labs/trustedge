@@ -80,10 +80,10 @@ Plans:
   2. All 23 receipt tests preserved and passing
   3. Receipt operations available through core API (no separate crate needed)
   4. No circular dependencies introduced (verified by cargo-modules)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] TBD
+- [ ] 04-01-PLAN.md — Move receipts into core, convert demo to example, validate workspace
 
 ### Phase 5: Attestation Integration
 **Goal**: Software attestation merged into core
@@ -152,7 +152,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 1. Foundation | 4/4 | ✓ Complete | 2026-02-10 |
 | 2. Error Handling | 3/3 | ✓ Complete | 2026-02-09 |
 | 3. trst-core Integration | 2/2 | ✓ Complete | 2026-02-10 |
-| 4. Receipts Integration | 0/TBD | Not started | - |
+| 4. Receipts Integration | 0/1 | Not started | - |
 | 5. Attestation Integration | 0/TBD | Not started | - |
 | 6. Feature Flags | 0/TBD | Not started | - |
 | 7. Backward Compatibility | 0/TBD | Not started | - |
