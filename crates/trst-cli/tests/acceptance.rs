@@ -19,7 +19,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
-use trustedge_core::manifest::CamVideoManifest;
+use trustedge_core::CamVideoManifest;
 
 const PROFILE: &str = "cam.video";
 
