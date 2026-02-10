@@ -9,9 +9,9 @@ Requirements for consolidation milestone. Each maps to roadmap phases.
 
 ### Foundation
 
-- [ ] **FOUND-01**: Dependency graph analyzed and cross-crate duplication mapped
-- [ ] **FOUND-02**: Layered module hierarchy created in trustedge-core (primitives/backends/protocols/applications/transport/io)
-- [ ] **FOUND-03**: Test inventory baseline documented (exact count per crate)
+- [x] **FOUND-01**: Dependency graph analyzed and cross-crate duplication mapped ✓
+- [x] **FOUND-02**: Layered module hierarchy created in trustedge-core (primitives/backends/protocols/applications/transport/io) ✓
+- [x] **FOUND-03**: Test inventory baseline documented (exact count per crate) ✓
 
 ### Error Handling
 
@@ -79,9 +79,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1 | Pending |
-| FOUND-02 | Phase 1 | Pending |
-| FOUND-03 | Phase 1 | Pending |
+| FOUND-01 | Phase 1 | ✓ Complete |
+| FOUND-02 | Phase 1 | ✓ Complete |
+| FOUND-03 | Phase 1 | ✓ Complete |
 | ERR-01 | Phase 2 | Pending |
 | ERR-02 | Phase 2 | Pending |
 | ERR-03 | Phase 2 | Pending |
