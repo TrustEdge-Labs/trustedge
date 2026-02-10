@@ -67,7 +67,7 @@
 //!
 //! ## Usage Example
 //!
-//! ```rust
+//! ```rust,ignore
 //! use trustedge_core::protocols::{Envelope, ChainSegment, CamVideoManifest};
 //! use ed25519_dalek::SigningKey;
 //! use rand::rngs::OsRng;

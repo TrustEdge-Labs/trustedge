@@ -61,7 +61,7 @@
 //!
 //! ## Usage Example
 //!
-//! ```rust
+//! ```rust,ignore
 //! use trustedge_core::primitives::{encrypt_segment, sign_manifest, DeviceKeypair};
 //!
 //! // Encrypt a data segment

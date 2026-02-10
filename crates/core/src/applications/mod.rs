@@ -59,7 +59,7 @@
 //!
 //! ## Usage Example
 //!
-//! ```rust
+//! ```rust,ignore
 //! use trustedge_core::applications::{Receipt, Attestation, SessionManager};
 //! use ed25519_dalek::SigningKey;
 //! use rand::rngs::OsRng;

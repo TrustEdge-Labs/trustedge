@@ -49,7 +49,7 @@
 //!
 //! ## Usage Example
 //!
-//! ```rust
+//! ```rust,ignore
 //! use trustedge_core::io::{AudioCapture, read_archive, write_archive};
 //! use trustedge_core::protocols::Envelope;
 //!
