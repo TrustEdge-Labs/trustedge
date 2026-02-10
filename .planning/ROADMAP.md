@@ -65,10 +65,11 @@ Plans:
   2. Duplicate ManifestError between core and trst-core resolved into unified type
   3. WASM build succeeds (cargo check --target wasm32-unknown-unknown)
   4. trst-cli and trst-wasm updated to import from core (no functionality loss)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD
+- [ ] 03-01-PLAN.md — Rename trst-core to trst-protocols and restructure into domain submodules
+- [ ] 03-02-PLAN.md — Wire core to trst-protocols, delete duplicate manifest.rs, update consumers
 
 ### Phase 4: Receipts Integration
 **Goal**: Digital receipt system merged into core
