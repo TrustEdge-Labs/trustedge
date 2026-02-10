@@ -12,6 +12,8 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+pub use crate::error::AsymmetricError;
+
 /// A public key for asymmetric cryptography
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PublicKey {
@@ -41,22 +43,6 @@ pub struct KeyPair {
     pub public: PublicKey,
     /// The private key
     pub private: PrivateKey,
-}
-
-/// Errors that can occur during asymmetric operations
-#[derive(Debug, thiserror::Error)]
-pub enum AsymmetricError {
-    #[error("Unsupported algorithm: {0:?}")]
-    UnsupportedAlgorithm(AsymmetricAlgorithm),
-
-    #[error("Invalid key format: {0}")]
-    InvalidKeyFormat(String),
-
-    #[error("Key exchange failed: {0}")]
-    KeyExchangeFailed(String),
-
-    #[error("Backend error: {0}")]
-    BackendError(#[from] anyhow::Error),
 }
 
 impl PublicKey {

@@ -6,36 +6,15 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-use crate::manifest::{CamVideoManifest, ManifestError};
+use crate::manifest::CamVideoManifest;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::Path;
-use thiserror::Error;
+
+pub use crate::error::{ArchiveError, ChainError, ManifestError};
 
 /// Type alias for chunk data (index, bytes)
 type ChunkData = Vec<(usize, Vec<u8>)>;
-
-#[derive(Error, Debug)]
-pub enum ArchiveError {
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-    #[error("Manifest error: {0}")]
-    Manifest(#[from] ManifestError),
-    #[error("JSON error: {0}")]
-    Json(#[from] serde_json::Error),
-    #[error("Schema mismatch: {0}")]
-    SchemaMismatch(String),
-    #[error("Missing chunk file: {0}")]
-    MissingChunk(String),
-    #[error("Invalid chunk index: expected {expected}, found {found}")]
-    InvalidChunkIndex { expected: usize, found: usize },
-    #[error("Signature mismatch: manifest.signature does not match signatures/manifest.sig")]
-    SignatureMismatch,
-    #[error("Continuity chain error: {0}")]
-    Chain(#[from] crate::chain::ChainError),
-    #[error("Archive validation failed: {0}")]
-    ValidationFailed(String),
-}
 
 /// Write a complete .trst archive with manifest, signature, and chunk files
 pub fn write_archive<P: AsRef<Path>>(
