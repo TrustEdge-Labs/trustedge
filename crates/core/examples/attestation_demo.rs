@@ -5,7 +5,7 @@
 use std::fs::File;
 use std::io::Write;
 use tempfile::tempdir;
-use trustedge_attestation::{
+use trustedge_core::{
     create_signed_attestation, AttestationConfig, KeySource, OutputFormat,
 };
 
@@ -45,32 +45,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("● Timestamp: {}", json_result.attestation.timestamp);
 
     // Method 2: Create sealed envelope attestation (recommended for production)
-    #[cfg(feature = "envelope")]
-    {
-        println!("\n● Creating sealed envelope attestation...");
-        let envelope_config = AttestationConfig {
-            artifact_path: artifact_path.clone(),
-            builder_id: "demo-builder@example.com".to_string(),
-            output_format: OutputFormat::SealedEnvelope,
-            key_source: KeySource::Generate,
-        };
+    println!("\n● Creating sealed envelope attestation...");
+    let envelope_config = AttestationConfig {
+        artifact_path: artifact_path.clone(),
+        builder_id: "demo-builder@example.com".to_string(),
+        output_format: OutputFormat::SealedEnvelope,
+        key_source: KeySource::Generate,
+    };
 
-        let envelope_result = create_signed_attestation(envelope_config)?;
+    let envelope_result = create_signed_attestation(envelope_config)?;
 
-        println!("✔ Created sealed attestation:");
-        println!("● Size: {} bytes", envelope_result.serialized_output.len());
-        if let Some(verification_info) = &envelope_result.verification_info {
-            println!(
-                "● Public Key: {}...",
-                &verification_info.verification_key[..16]
-            );
-        }
-    }
-
-    #[cfg(not(feature = "envelope"))]
-    {
-        println!("\n● Envelope feature not enabled - only JSON attestations available");
-        println!("● Enable with: cargo run --example attestation_demo --features envelope");
+    println!("✔ Created sealed attestation:");
+    println!("● Size: {} bytes", envelope_result.serialized_output.len());
+    if let Some(verification_info) = &envelope_result.verification_info {
+        println!(
+            "● Public Key: {}...",
+            &verification_info.verification_key[..16]
+        );
     }
 
     println!("\n● This attestation provides cryptographic proof of:");
@@ -80,7 +71,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  • Builder identity and timestamp");
 
     println!("\n✔ TrustEdge attestation demo complete!");
-    println!("Use the CLI tools (trustedge-attest/trustedge-verify) for production use.");
+    println!("Use the cargo examples (attest/verify_attestation) for CLI use.");
 
     Ok(())
 }

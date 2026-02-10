@@ -11,7 +11,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
-use trustedge_attestation::{verify_attestation, VerificationConfig};
+use trustedge_core::{verify_attestation, VerificationConfig};
 
 /// Verify software attestation
 #[derive(Parser, Debug)]
@@ -56,11 +56,7 @@ fn main() -> Result<()> {
     if args.json_input {
         println!("● Reading JSON attestation...");
     } else {
-        #[cfg(feature = "envelope")]
         println!("● Reading attestation (trying envelope first, JSON fallback)...");
-
-        #[cfg(not(feature = "envelope"))]
-        println!("● Reading JSON attestation...");
     }
 
     println!("● Computing artifact hash...");

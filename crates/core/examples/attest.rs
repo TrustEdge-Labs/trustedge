@@ -11,7 +11,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use std::path::PathBuf;
-use trustedge_attestation::{
+use trustedge_core::{
     create_signed_attestation, AttestationConfig, KeySource, OutputFormat,
 };
 
@@ -99,42 +99,33 @@ fn main() -> Result<()> {
     if args.json_only {
         println!("✔ JSON attestation written to: {}", args.output.display());
     } else {
-        #[cfg(feature = "envelope")]
-        {
-            println!("✔ Sealed attestation created: {}", args.output.display());
-            println!("● Cryptographically signed software birth certificate");
+        println!("✔ Sealed attestation created: {}", args.output.display());
+        println!("● Cryptographically signed software birth certificate");
 
-            if args.verbose {
-                println!();
-                println!("● This attestation provides verifiable proof of:");
-                println!("   • Software artifact integrity (SHA-256 hash)");
-                println!("   • Source code provenance (Git commit)");
-                println!("   • Build environment details");
-                println!("   • Builder identity and timestamp");
-                println!();
-                println!("Use 'trustedge-verify' to verify this attestation.");
+        if args.verbose {
+            println!();
+            println!("● This attestation provides verifiable proof of:");
+            println!("   • Software artifact integrity (SHA-256 hash)");
+            println!("   • Source code provenance (Git commit)");
+            println!("   • Build environment details");
+            println!("   • Builder identity and timestamp");
+            println!();
+            println!("Use verify_attestation example to verify this attestation.");
 
-                if let Some(verification_info) = &result.verification_info {
-                    println!();
-                    println!("● Verification Information (demo mode):");
+            if let Some(verification_info) = &result.verification_info {
+                println!();
+                println!("● Verification Information (demo mode):");
+                println!(
+                    "   • Public Key: {}...",
+                    &verification_info.verification_key[..16]
+                );
+                if let Some(private_key) = &verification_info.private_key {
                     println!(
-                        "   • Public Key: {}...",
-                        &verification_info.verification_key[..16]
+                        "   • Private Key: {}... (included for demo)",
+                        &private_key[..16]
                     );
-                    if let Some(private_key) = &verification_info.private_key {
-                        println!(
-                            "   • Private Key: {}... (included for demo)",
-                            &private_key[..16]
-                        );
-                    }
                 }
             }
-        }
-
-        #[cfg(not(feature = "envelope"))]
-        {
-            println!("✔ Attestation written to: {}", args.output.display());
-            println!("● Note: Install with --features envelope for cryptographic sealing");
         }
     }
 

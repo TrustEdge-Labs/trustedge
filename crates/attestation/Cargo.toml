@@ -13,34 +13,8 @@ repository = "https://github.com/TrustEdge-Labs/trustedge"
 keywords = ["cryptography", "attestation", "hardware", "yubikey", "software-integrity"]
 categories = ["cryptography", "development-tools", "authentication"]
 
-[[bin]]
-name = "trustedge-attest"
-path = "src/bin/attest.rs"
-
-[[bin]]
-name = "trustedge-verify"
-path = "src/bin/verify.rs"
-
 [dependencies]
 anyhow = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-sha2 = { workspace = true }
-chrono = { workspace = true }
-git2 = { workspace = true }
-bincode = "1.3"
-clap = { version = "4.5", features = ["derive"] }
-trustedge-core = { path = "../core", optional = true }
-ed25519-dalek = { workspace = true }
-rand = { workspace = true }
-thiserror = { workspace = true }
-hex = { workspace = true }
-tempfile = "3.8"
-
-[features]
-default = ["envelope"]
-envelope = ["trustedge-core"]
-
-[dev-dependencies]
-tempfile = "3.8"
-rand = { workspace = true }
+trustedge-core = { path = "../core" }
