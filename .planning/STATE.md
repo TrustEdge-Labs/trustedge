@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations with production-quality YubiKey integration — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 4 (Receipts Integration)
+**Current focus:** Phase 5 (Attestation Integration) — Complete
 
 ## Current Position
 

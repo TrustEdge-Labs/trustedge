@@ -24,7 +24,7 @@ Requirements for consolidation milestone. Each maps to roadmap phases.
 - [ ] **INTG-01**: trst-core manifest types merged into core applications/archives/ (WASM-compatible)
 - [ ] **INTG-02**: Duplicate ManifestError between core and trst-core resolved
 - [ ] **INTG-03**: Receipts system (1,281 LOC, 23 tests) merged into core applications/receipts/
-- [ ] **INTG-04**: Attestation system merged into core applications/attestation/
+- [x] **INTG-04**: Attestation system merged into core applications/attestation/ ✓
 
 ### Feature Flags
 
@@ -88,7 +88,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTG-01 | Phase 3 | Pending |
 | INTG-02 | Phase 3 | Pending |
 | INTG-03 | Phase 4 | Pending |
-| INTG-04 | Phase 5 | Pending |
+| INTG-04 | Phase 5 | ✓ Complete |
 | FEAT-01 | Phase 6 | Pending |
 | FEAT-02 | Phase 6 | Pending |
 | COMPAT-01 | Phase 7 | Pending |

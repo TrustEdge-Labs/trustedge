@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Error Handling** - Unified error types ✓
 - [x] **Phase 3: trst-core Integration** - WASM-safe manifest types ✓
 - [x] **Phase 4: Receipts Integration** - Digital receipt system ✓
-- [ ] **Phase 5: Attestation Integration** - Software attestation
+- [x] **Phase 5: Attestation Integration** - Software attestation ✓
 - [ ] **Phase 6: Feature Flags** - Consolidate feature architecture
 - [ ] **Phase 7: Backward Compatibility** - Re-export facades
 - [ ] **Phase 8: Validation** - Comprehensive testing
@@ -97,7 +97,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 05-01-PLAN.md — Move attestation into core, convert binaries to examples, validate workspace
+- [x] 05-01-PLAN.md — Move attestation into core, convert binaries to examples, validate workspace
 
 ### Phase 6: Feature Flags
 **Goal**: Unified feature flag architecture preventing combinatorial explosion
@@ -153,7 +153,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 2. Error Handling | 3/3 | ✓ Complete | 2026-02-09 |
 | 3. trst-core Integration | 2/2 | ✓ Complete | 2026-02-10 |
 | 4. Receipts Integration | 1/1 | ✓ Complete | 2026-02-10 |
-| 5. Attestation Integration | 0/1 | Not started | - |
+| 5. Attestation Integration | 1/1 | ✓ Complete | 2026-02-10 |
 | 6. Feature Flags | 0/TBD | Not started | - |
 | 7. Backward Compatibility | 0/TBD | Not started | - |
 | 8. Validation | 0/TBD | Not started | - |
