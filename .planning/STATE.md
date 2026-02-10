@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 4 of 8 (Receipts Integration)
+Phase: 5 of 8 (Attestation Integration)
 Plan: 1 of 1 complete
 Status: Complete
-Last activity: 2026-02-10 — Completed 04-01: Move receipts into core (2/2 tasks)
+Last activity: 2026-02-10 — Completed 05-01: Move attestation into core (2/2 tasks)
 
-Progress: [████░░░░░░] 50% (4/8 phases)
+Progress: [█████░░░░░] 62.5% (5/8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: ~6.0 minutes
-- Total execution time: ~1.0 hours
+- Total execution time: ~1.1 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [████░░░░░░] 50% (4/8 phases)
 | 02-error-handling | 3 | ~16 min | ~5.3 min |
 | 03-trst-core-integration | 2 | ~11.5 min | ~5.8 min |
 | 04-receipts-integration | 1 | ~4 min | ~4 min |
+| 05-attestation-integration | 1 | ~6 min | ~6 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (6 min), 03-01 (4.6 min), 03-02 (6.9 min), 04-01 (4 min)
-- Trend: Improving velocity, faster execution on focused plans
+- Last 5 plans: 03-01 (4.6 min), 03-02 (6.9 min), 04-01 (4 min), 05-01 (6 min)
+- Trend: Consistent velocity on migration plans (4-7 min range)
 
 *Updated after each plan completion*
 
@@ -73,6 +74,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Receipts crate (1,281 LOC, 23 tests) migrated into core applications layer
 - [Phase 04]: Demo binary converted to cargo example for better discoverability
 - [Phase 04]: Thin re-export facade maintains backward compatibility for receipts crate
+- [Phase 05]: Attestation crate (826 LOC, 10 tests) migrated into core applications layer
+- [Phase 05]: All envelope feature gates removed (Envelope always available inside core)
+- [Phase 05]: CLI binaries converted to cargo examples (attest, verify_attestation, attestation_demo)
 
 ### Pending Todos
 
@@ -85,5 +89,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 04-01-PLAN.md (receipts integration) - Phase 4 complete
-Resume file: .planning/phases/04-receipts-integration/04-01-SUMMARY.md
+Stopped at: Completed 05-01-PLAN.md (attestation integration) - Phase 5 complete
+Resume file: .planning/phases/05-attestation-integration/05-01-SUMMARY.md
