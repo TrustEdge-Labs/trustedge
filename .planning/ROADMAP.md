@@ -49,10 +49,12 @@ Plans:
   2. All 10+ duplicate error types consolidated into hierarchy
   3. Library code uses thiserror, CLI binaries use anyhow propagation
   4. Error conversion paths preserve context (no information loss)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] TBD
+- [ ] 02-01-PLAN.md — Create unified error hierarchy and resolve name collision
+- [ ] 02-02-PLAN.md — Migrate core module error definitions to error.rs
+- [ ] 02-03-PLAN.md — Migrate backend traits to BackendError and finalize public API
 
 ### Phase 3: trst-core Integration
 **Goal**: Archive manifest types merged into core while preserving WASM compatibility
@@ -147,7 +149,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | ✓ Complete | 2026-02-10 |
-| 2. Error Handling | 0/TBD | Not started | - |
+| 2. Error Handling | 0/3 | Not started | - |
 | 3. trst-core Integration | 0/TBD | Not started | - |
 | 4. Receipts Integration | 0/TBD | Not started | - |
 | 5. Attestation Integration | 0/TBD | Not started | - |
