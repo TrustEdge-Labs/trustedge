@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum ManifestError {
+pub enum ManifestFormatError {
     #[error("Serialization error: {0}")]
     Serialization(#[from] serde_json::Error),
     #[error("Invalid field value: {0}")]
@@ -109,7 +109,7 @@ impl CamVideoManifest {
 
     /// Convert manifest to canonical bytes for signing/verification.
     /// Signature field is excluded from canonicalization.
-    pub fn to_canonical_bytes(&self) -> Result<Vec<u8>, ManifestError> {
+    pub fn to_canonical_bytes(&self) -> Result<Vec<u8>, ManifestFormatError> {
         // Create a copy without the signature field
         let mut canonical_manifest = self.clone();
         canonical_manifest.signature = None;
@@ -124,7 +124,7 @@ impl CamVideoManifest {
     fn serialize_with_ordered_keys(
         &self,
         manifest: &CamVideoManifest,
-    ) -> Result<String, ManifestError> {
+    ) -> Result<String, ManifestFormatError> {
         // Build the JSON object with explicit key ordering
         let mut result = String::from("{");
 
@@ -250,64 +250,64 @@ impl CamVideoManifest {
     }
 
     /// Validate manifest structure and required fields.
-    pub fn validate(&self) -> Result<(), ManifestError> {
+    pub fn validate(&self) -> Result<(), ManifestFormatError> {
         if self.trst_version.is_empty() {
-            return Err(ManifestError::InvalidField(
+            return Err(ManifestFormatError::InvalidField(
                 "trst_version cannot be empty".to_string(),
             ));
         }
 
         if self.profile != "cam.video" {
-            return Err(ManifestError::InvalidField(
+            return Err(ManifestFormatError::InvalidField(
                 "profile must be 'cam.video'".to_string(),
             ));
         }
 
         if self.device.id.is_empty() {
-            return Err(ManifestError::InvalidField(
+            return Err(ManifestFormatError::InvalidField(
                 "device.id cannot be empty".to_string(),
             ));
         }
 
         if self.device.public_key.is_empty() {
-            return Err(ManifestError::InvalidField(
+            return Err(ManifestFormatError::InvalidField(
                 "device.public_key cannot be empty".to_string(),
             ));
         }
 
         if self.capture.started_at.is_empty() {
-            return Err(ManifestError::InvalidField(
+            return Err(ManifestFormatError::InvalidField(
                 "capture.started_at cannot be empty".to_string(),
             ));
         }
 
         if self.capture.ended_at.is_empty() {
-            return Err(ManifestError::InvalidField(
+            return Err(ManifestFormatError::InvalidField(
                 "capture.ended_at cannot be empty".to_string(),
             ));
         }
 
         if self.segments.is_empty() {
-            return Err(ManifestError::InvalidField(
+            return Err(ManifestFormatError::InvalidField(
                 "segments cannot be empty".to_string(),
             ));
         }
 
         for (i, segment) in self.segments.iter().enumerate() {
             if segment.chunk_file.is_empty() {
-                return Err(ManifestError::InvalidField(format!(
+                return Err(ManifestFormatError::InvalidField(format!(
                     "segment[{}].chunk_file cannot be empty",
                     i
                 )));
             }
             if segment.blake3_hash.is_empty() {
-                return Err(ManifestError::InvalidField(format!(
+                return Err(ManifestFormatError::InvalidField(format!(
                     "segment[{}].blake3_hash cannot be empty",
                     i
                 )));
             }
             if segment.continuity_hash.is_empty() {
-                return Err(ManifestError::InvalidField(format!(
+                return Err(ManifestFormatError::InvalidField(format!(
                     "segment[{}].continuity_hash cannot be empty",
                     i
                 )));

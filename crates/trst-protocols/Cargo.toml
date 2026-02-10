@@ -4,10 +4,10 @@
 
 
 [package]
-name = "trustedge-trst-core"
+name = "trustedge-trst-protocols"
 version = "0.2.0"
 edition = "2021"
-description = "Canonical cam.video manifest types for .trst archives (WASM-compatible)"
+description = "Protocol and format definitions for TrustEdge archives and capture profiles (WASM-compatible)"
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
 license = "MPL-2.0"
 

@@ -25,7 +25,7 @@ ed25519-dalek = { workspace = true }
 rand_core = { workspace = true, features = ["getrandom"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-trustedge-trst-core = { path = "../trst-core" }
+trustedge-trst-protocols = { path = "../trst-protocols" }
 trustedge-core = { path = "../core" }
 hex = { workspace = true }
 chacha20poly1305 = "0.10"

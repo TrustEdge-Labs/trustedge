@@ -15,7 +15,7 @@ members = [
     "crates/wasm",
     "crates/pubky",
     "crates/pubky-advanced",
-    "crates/trst-core",
+    "crates/trst-protocols",
     "crates/trst-cli",
     "crates/trst-wasm",
     "examples/cam.video",
