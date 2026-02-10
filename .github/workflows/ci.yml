@@ -30,6 +30,11 @@ jobs:
           workspaces: |
             . -> target
 
+      - name: Install analysis tools
+        run: |
+          cargo install cargo-semver-checks --locked
+          cargo install cargo-hack --locked
+
       - name: fmt
         run: cargo fmt --all -- --check
 
@@ -66,6 +71,9 @@ jobs:
         if: steps.yubikey-deps.outputs.yubikey-available == 'true'
         run: cargo clippy --package trustedge-core --all-targets --features yubikey -- -D warnings
 
+      - name: Feature compatibility check (cargo-hack)
+        run: cargo hack check --feature-powerset --no-dev-deps --package trustedge-core
+
       - name: build binaries (required for integration tests)
         run: cargo build --workspace --bins --no-default-features
 
@@ -87,6 +95,10 @@ jobs:
       - name: tests (trustedge-core with yubikey)
         if: steps.yubikey-deps.outputs.yubikey-available == 'true'
         run: cargo test --package trustedge-core --features yubikey --locked --verbose
+
+      - name: API compatibility check (cargo-semver-checks)
+        continue-on-error: true
+        run: cargo semver-checks --package trustedge-core --baseline-rev HEAD~1
 
       - name: Run P0 acceptance tests
         run: |
