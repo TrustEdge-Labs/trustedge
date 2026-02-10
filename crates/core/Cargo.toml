@@ -52,6 +52,7 @@ chrono = { workspace = true }
 clap = { workspace = true }
 cpal = { version = "0.15", optional = true }
 ed25519-dalek = { workspace = true }
+git2 = { workspace = true }
 hex = { workspace = true }
 keyring = { workspace = true }
 num-traits = { workspace = true }

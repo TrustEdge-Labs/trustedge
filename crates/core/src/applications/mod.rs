@@ -84,6 +84,8 @@
 //! Actual code migration happens in Phase 2-8 of the consolidation roadmap.
 //!
 //! - ✔ `receipts/` - Digital receipt system with cryptographic ownership (1,281 LOC, 23 tests)
+//! - ✔ `attestation/` - Software attestation with cryptographic provenance (826 LOC, 10 tests)
 
 pub mod receipts;
+pub mod attestation;
 

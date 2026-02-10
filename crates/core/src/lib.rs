@@ -144,6 +144,14 @@ pub use transport::{Transport, TransportConfig, TransportFactory};
 // Receipt system re-exports (Layer 4 applications)
 pub use applications::receipts::{Receipt, create_receipt, assign_receipt, extract_receipt, verify_receipt_chain};
 
+// Attestation system re-exports (Layer 4 applications)
+pub use applications::attestation::{
+    Attestation, AttestationConfig, AttestationResult,
+    OutputFormat, KeySource, VerificationConfig, VerificationResult,
+    VerificationDetails, VerificationInfo,
+    create_signed_attestation, verify_attestation,
+};
+
 /// Represents a chunk of data sent over the network, including encrypted data,
 /// a signed manifest, the nonce used for encryption, and a timestamp.
 #[derive(Serialize, Deserialize, Debug, Clone)]

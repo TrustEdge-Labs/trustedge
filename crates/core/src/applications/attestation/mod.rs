@@ -2,9 +2,12 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: trustedge — Privacy and trust at the edge.
 
-//! TrustEdge Software Attestation Library
+//! TrustEdge Software Attestation
 //!
 //! Core attestation functionality for creating software "birth certificates".
+//!
+//! This module provides cryptographically-signed attestation for software artifacts,
+//! enabling verifiable software provenance and build integrity.
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
@@ -94,7 +97,7 @@ pub struct VerificationInfo {
 ///
 /// # Example
 /// ```rust
-/// use trustedge_attestation::{AttestationConfig, OutputFormat, KeySource, create_signed_attestation};
+/// use trustedge_core::{AttestationConfig, OutputFormat, KeySource, create_signed_attestation};
 /// use std::path::PathBuf;
 /// use std::io::Write;
 /// use tempfile::NamedTempFile;
@@ -173,12 +176,11 @@ pub fn create_signed_attestation(config: AttestationConfig) -> Result<Attestatio
 }
 
 /// Create a cryptographically sealed attestation envelope
-#[cfg(feature = "envelope")]
 fn create_sealed_attestation(
     attestation: Attestation,
     key_source: KeySource,
 ) -> Result<AttestationResult> {
-    use trustedge_core::Envelope;
+    use crate::Envelope;
 
     // Get or generate signing key
     let signing_key = match key_source {
@@ -231,22 +233,6 @@ fn create_sealed_attestation(
     })
 }
 
-/// Fallback when envelope feature is not enabled
-#[cfg(not(feature = "envelope"))]
-fn create_sealed_attestation(
-    attestation: Attestation,
-    _key_source: KeySource,
-) -> Result<AttestationResult> {
-    // Fallback to JSON when envelope feature is not available
-    let serialized_output = serde_json::to_vec_pretty(&attestation)
-        .context("Failed to serialize attestation to JSON")?;
-
-    Ok(AttestationResult {
-        attestation,
-        serialized_output,
-        verification_info: None,
-    })
-}
 
 /// Configuration for verifying attestations
 #[derive(Debug)]
@@ -299,17 +285,9 @@ pub fn verify_attestation(config: VerificationConfig) -> Result<VerificationResu
         read_json_attestation(&config.attestation_path)?
     } else {
         // Try envelope first, fallback to JSON
-        #[cfg(feature = "envelope")]
-        {
-            match read_envelope_attestation(&config.attestation_path) {
-                Ok(att) => att,
-                Err(_) => read_json_attestation(&config.attestation_path)?,
-            }
-        }
-
-        #[cfg(not(feature = "envelope"))]
-        {
-            read_json_attestation(&config.attestation_path)?
+        match read_envelope_attestation(&config.attestation_path) {
+            Ok(att) => att,
+            Err(_) => read_json_attestation(&config.attestation_path)?,
         }
     };
 
@@ -342,11 +320,10 @@ pub fn verify_attestation(config: VerificationConfig) -> Result<VerificationResu
 }
 
 /// Read attestation from envelope format
-#[cfg(feature = "envelope")]
 fn read_envelope_attestation(path: &PathBuf) -> Result<Attestation> {
     use std::fs::File;
     use std::io::BufReader;
-    use trustedge_core::Envelope;
+    use crate::Envelope;
 
     #[derive(serde::Deserialize)]
     struct AttestationFile {
@@ -430,7 +407,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "envelope")]
     fn test_centralized_envelope_attestation() -> Result<()> {
         // Create a test artifact
         let mut test_file = NamedTempFile::new()?;
@@ -524,7 +500,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "envelope")]
     fn test_provided_key_source() -> Result<()> {
         // Test production mode with provided keys
         let mut test_file = NamedTempFile::new()?;
@@ -553,40 +528,6 @@ mod tests {
         } else {
             panic!("Expected verification info for envelope output");
         }
-
-        Ok(())
-    }
-
-    #[test]
-    #[cfg(not(feature = "envelope"))]
-    fn test_provided_key_source_json_fallback() -> Result<()> {
-        // Test production mode with provided keys when envelope feature is disabled
-        let mut test_file = NamedTempFile::new()?;
-        test_file.write_all(b"test with provided key")?;
-        let test_path = test_file.path().to_path_buf();
-
-        // Generate a specific key for testing
-        let mut csprng = rand::rngs::OsRng;
-        let signing_key = ed25519_dalek::SigningKey::generate(&mut csprng);
-
-        let config = AttestationConfig {
-            artifact_path: test_path,
-            builder_id: "provided-key-builder".to_string(),
-            output_format: OutputFormat::SealedEnvelope, // Should fallback to JSON
-            key_source: KeySource::Provided {
-                signing_key: Box::new(signing_key),
-            },
-        };
-
-        let result = create_signed_attestation(config)?;
-
-        // When envelope feature is disabled, should fallback to JSON with no verification info
-        assert!(result.verification_info.is_none());
-        assert_eq!(result.attestation.builder_id, "provided-key-builder");
-
-        // Verify the serialized output is valid JSON
-        let parsed: Attestation = serde_json::from_slice(&result.serialized_output)?;
-        assert_eq!(parsed, result.attestation);
 
         Ok(())
     }
@@ -797,30 +738,4 @@ mod tests {
         Ok(())
     }
 
-    #[test]
-    #[cfg(not(feature = "envelope"))]
-    fn test_sealed_envelope_fallback_without_feature() -> Result<()> {
-        // Test that SealedEnvelope falls back to JSON when envelope feature is disabled
-        let mut test_file = NamedTempFile::new()?;
-        test_file.write_all(b"fallback test")?;
-        let test_path = test_file.path().to_path_buf();
-
-        let config = AttestationConfig {
-            artifact_path: test_path,
-            builder_id: "fallback-test".to_string(),
-            output_format: OutputFormat::SealedEnvelope, // Request envelope but feature disabled
-            key_source: KeySource::Generate,
-        };
-
-        let result = create_signed_attestation(config)?;
-
-        // Should fall back to JSON
-        assert!(result.verification_info.is_none());
-
-        // Should be valid JSON
-        let parsed: Attestation = serde_json::from_slice(&result.serialized_output)?;
-        assert_eq!(parsed.builder_id, "fallback-test");
-
-        Ok(())
-    }
 }
