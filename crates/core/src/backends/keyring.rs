@@ -12,7 +12,8 @@
 //! This backend uses the OS keyring for passphrase storage and PBKDF2 for key derivation.
 
 use crate::backends::traits::{BackendInfo, KeyBackend, KeyContext, KeyMetadata};
-use anyhow::{anyhow, Result};
+use crate::error::BackendError;
+use anyhow::Result;
 use keyring::Entry;
 use pbkdf2::pbkdf2_hmac;
 use sha2::Sha256;
@@ -57,16 +58,16 @@ impl KeyringBackend {
 }
 
 impl KeyBackend for KeyringBackend {
-    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32]> {
+    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32], BackendError> {
         // Validate salt length first (before keyring access)
         if context.salt.len() != 16 {
-            return Err(anyhow!("Salt must be exactly 16 bytes for keyring backend"));
+            return Err(BackendError::OperationFailed("Salt must be exactly 16 bytes for keyring backend".to_string()));
         }
 
         // Get passphrase from keyring
         let passphrase = self
             .get_passphrase()
-            .map_err(|e| anyhow!("Failed to get passphrase from keyring: {}", e))?;
+            .map_err(|e| BackendError::OperationFailed(format!("Failed to get passphrase from keyring: {}", e)))?;
 
         // Convert salt to array
         let mut salt_array = [0u8; 16];
@@ -86,20 +87,20 @@ impl KeyBackend for KeyringBackend {
         Ok(key)
     }
 
-    fn store_key(&self, _key_id: &[u8; 16], _key_data: &[u8; 32]) -> Result<()> {
+    fn store_key(&self, _key_id: &[u8; 16], _key_data: &[u8; 32]) -> Result<(), BackendError> {
         // Keyring backend doesn't store raw keys, only passphrases
-        Err(anyhow!("Keyring backend does not support storing raw keys"))
+        Err(BackendError::UnsupportedOperation("Keyring backend does not support storing raw keys".to_string()))
     }
 
-    fn rotate_key(&self, _old_id: &[u8; 16], _new_id: &[u8; 16]) -> Result<()> {
+    fn rotate_key(&self, _old_id: &[u8; 16], _new_id: &[u8; 16]) -> Result<(), BackendError> {
         // Key rotation for keyring backend would involve changing the passphrase
         // This is a manual process that requires user interaction
-        Err(anyhow!(
-            "Keyring backend does not support automatic key rotation"
+        Err(BackendError::UnsupportedOperation(
+            "Keyring backend does not support automatic key rotation".to_string()
         ))
     }
 
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>, BackendError> {
         // Keyring backend can only report if a passphrase is available
         match self.get_passphrase() {
             Ok(_) => {

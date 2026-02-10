@@ -11,22 +11,22 @@
 //!
 //! This module defines the core traits that all key management backends must implement.
 
-use anyhow::Result;
+use crate::error::BackendError;
 use serde::{Deserialize, Serialize};
 
 /// Core trait that all key management backends must implement
 pub trait KeyBackend: Send + Sync {
     /// Derive a key from the backend using the given key ID and context
-    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32]>;
+    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32], BackendError>;
 
     /// Store a key in the backend (if supported)
-    fn store_key(&self, key_id: &[u8; 16], key_data: &[u8; 32]) -> Result<()>;
+    fn store_key(&self, key_id: &[u8; 16], key_data: &[u8; 32]) -> Result<(), BackendError>;
 
     /// Rotate a key from old ID to new ID (if supported)
-    fn rotate_key(&self, old_id: &[u8; 16], new_id: &[u8; 16]) -> Result<()>;
+    fn rotate_key(&self, old_id: &[u8; 16], new_id: &[u8; 16]) -> Result<(), BackendError>;
 
     /// List available keys with metadata (if supported)
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>>;
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>, BackendError>;
 
     /// Get backend-specific information
     fn backend_info(&self) -> BackendInfo;

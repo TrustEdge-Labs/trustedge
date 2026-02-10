@@ -19,6 +19,7 @@ use trustedge_core::backends::{
     AsymmetricAlgorithm, BackendCapabilities, BackendInfo, CryptoOperation, CryptoResult,
     KeyMetadata, UniversalBackend,
 };
+use trustedge_core::error::BackendError;
 use trustedge_core::{PrivateKey, PublicKey};
 
 /// Errors that can occur during Pubky operations
@@ -201,18 +202,17 @@ impl PubkyBackend {
 }
 
 impl UniversalBackend for PubkyBackend {
-    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult> {
+    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult, BackendError> {
         match operation {
             CryptoOperation::GetPublicKey => {
                 // key_id is the Pubky ID
                 let public_key = self
                     .resolve_public_key_sync(key_id)
-                    .map_err(|e| anyhow::anyhow!("Failed to resolve Pubky ID {}: {}", key_id, e))?;
+                    .map_err(|e| BackendError::KeyNotFound(format!("Failed to resolve Pubky ID {}: {}", key_id, e)))?;
                 Ok(CryptoResult::PublicKey(public_key.key_bytes))
             }
-            _ => Err(anyhow::anyhow!(
-                "Operation not supported by PubkyBackend: {:?}",
-                operation
+            _ => Err(BackendError::UnsupportedOperation(
+                format!("Operation not supported by PubkyBackend: {:?}", operation)
             )),
         }
     }
@@ -250,7 +250,7 @@ impl UniversalBackend for PubkyBackend {
         }
     }
 
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>, BackendError> {
         // Pubky backend doesn't enumerate keys - they're resolved by ID
         Ok(vec![])
     }

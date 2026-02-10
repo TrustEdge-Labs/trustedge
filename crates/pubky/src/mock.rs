@@ -14,6 +14,7 @@ use std::sync::{Arc, Mutex};
 use trustedge_core::backends::{
     BackendCapabilities, BackendInfo, CryptoOperation, CryptoResult, KeyMetadata, UniversalBackend,
 };
+use trustedge_core::error::BackendError;
 use trustedge_core::{backends::AsymmetricAlgorithm, PublicKey};
 
 /// Mock storage for testing
@@ -116,18 +117,17 @@ impl MockPubkyBackend {
 }
 
 impl UniversalBackend for MockPubkyBackend {
-    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult> {
+    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult, BackendError> {
         match operation {
             CryptoOperation::GetPublicKey => {
                 // key_id is the Pubky ID
                 let public_key = self
                     .resolve_public_key(key_id)
-                    .map_err(|e| anyhow::anyhow!("Failed to resolve Pubky ID {}: {}", key_id, e))?;
+                    .map_err(|e| BackendError::KeyNotFound(format!("Failed to resolve Pubky ID {}: {}", key_id, e)))?;
                 Ok(CryptoResult::PublicKey(public_key.key_bytes))
             }
-            _ => Err(anyhow::anyhow!(
-                "Operation not supported by MockPubkyBackend: {:?}",
-                operation
+            _ => Err(BackendError::UnsupportedOperation(
+                format!("Operation not supported by MockPubkyBackend: {:?}", operation)
             )),
         }
     }
@@ -165,7 +165,7 @@ impl UniversalBackend for MockPubkyBackend {
         }
     }
 
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>, BackendError> {
         // Mock backend doesn't enumerate keys - they're resolved by ID
         Ok(vec![])
     }

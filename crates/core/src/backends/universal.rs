@@ -12,7 +12,7 @@
 //! Instead of a monolithic trait with many methods, backends implement a single
 //! `perform_operation` method and advertise their capabilities through `supports_operation`.
 
-use anyhow::Result;
+use crate::error::BackendError;
 use serde::{Deserialize, Serialize};
 
 /// Cryptographic algorithms supported by backends
@@ -228,7 +228,7 @@ impl BackendCapabilities {
 /// Universal backend trait for all cryptographic operations
 pub trait UniversalBackend: Send + Sync {
     /// Perform a cryptographic operation with the specified key
-    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult>;
+    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult, BackendError>;
 
     /// Check if this backend supports a specific operation
     fn supports_operation(&self, operation: &CryptoOperation) -> bool;
@@ -240,7 +240,7 @@ pub trait UniversalBackend: Send + Sync {
     fn backend_info(&self) -> crate::backends::traits::BackendInfo;
 
     /// List available keys in this backend
-    fn list_keys(&self) -> Result<Vec<crate::backends::traits::KeyMetadata>> {
+    fn list_keys(&self) -> Result<Vec<crate::backends::traits::KeyMetadata>, BackendError> {
         Ok(vec![]) // Default: no key enumeration
     }
 }

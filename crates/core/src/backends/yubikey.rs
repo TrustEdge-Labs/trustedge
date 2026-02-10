@@ -35,6 +35,7 @@ use crate::{
     BackendCapabilities, BackendInfo, CryptoOperation, CryptoResult, KeyMetadata, UniversalBackend,
 };
 
+use crate::error::BackendError;
 use anyhow::{anyhow, Result};
 
 #[cfg(feature = "yubikey")]
@@ -1077,23 +1078,37 @@ impl YubiKeyBackend {
 
 #[cfg(feature = "yubikey")]
 impl UniversalBackend for YubiKeyBackend {
-    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult> {
+    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult, BackendError> {
         match operation {
             CryptoOperation::Sign { data, algorithm } => {
-                let signature = self.hardware_sign(key_id, &data, algorithm)?;
+                let signature = self.hardware_sign(key_id, &data, algorithm)
+                    .map_err(|e| {
+                        if e.to_string().contains("Key not found") || e.to_string().contains("Object not found") {
+                            BackendError::KeyNotFound(key_id.to_string())
+                        } else {
+                            BackendError::HardwareError(format!("Hardware signing failed: {}", e))
+                        }
+                    })?;
                 Ok(CryptoResult::Signed(signature))
             }
             CryptoOperation::Attest { challenge } => {
-                let proof = self.hardware_attest(&challenge)?;
+                let proof = self.hardware_attest(&challenge)
+                    .map_err(|e| BackendError::HardwareError(format!("Attestation failed: {}", e)))?;
                 Ok(CryptoResult::AttestationProof(proof))
             }
             CryptoOperation::GetPublicKey => {
-                let pubkey = self.extract_public_key(key_id)?;
+                let pubkey = self.extract_public_key(key_id)
+                    .map_err(|e| {
+                        if e.to_string().contains("Key not found") {
+                            BackendError::KeyNotFound(key_id.to_string())
+                        } else {
+                            BackendError::HardwareError(format!("Failed to extract public key: {}", e))
+                        }
+                    })?;
                 Ok(CryptoResult::PublicKey(pubkey))
             }
-            _ => Err(anyhow!(
-                "Operation {:?} not supported by YubiKey backend",
-                operation
+            _ => Err(BackendError::UnsupportedOperation(
+                format!("Operation {:?} not supported by YubiKey backend", operation)
             )),
         }
     }
@@ -3157,8 +3172,8 @@ impl UniversalBackend for YubiKeyBackend {
         &self,
         _key_id: &str,
         _operation: CryptoOperation,
-    ) -> Result<CryptoResult> {
-        Err(anyhow!("YubiKey support not compiled in"))
+    ) -> Result<CryptoResult, BackendError> {
+        Err(BackendError::InitializationFailed("YubiKey support not compiled in".to_string()))
     }
 
     fn supports_operation(&self, _operation: &CryptoOperation) -> bool {
@@ -3179,8 +3194,8 @@ impl UniversalBackend for YubiKeyBackend {
         }
     }
 
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
-        Err(anyhow!("YubiKey support not compiled in"))
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>, BackendError> {
+        Err(BackendError::InitializationFailed("YubiKey support not compiled in".to_string()))
     }
 }
 

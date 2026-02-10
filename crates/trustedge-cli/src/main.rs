@@ -346,7 +346,7 @@ fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {
 
         let key_id = [0u8; 16]; // Default key ID for now
         let context = KeyContext::new(salt_bytes);
-        return backend.derive_key(&key_id, &context);
+        return Ok(backend.derive_key(&key_id, &context)?);
     }
 
     // Fall back to random key generation for encrypt mode

@@ -13,9 +13,10 @@
 use crate::backends::software_hsm::SoftwareHsmBackend;
 use crate::backends::universal::*;
 use crate::backends::universal_keyring::UniversalKeyringBackend;
+use crate::error::BackendError;
 #[cfg(feature = "yubikey")]
 use crate::backends::yubikey::YubiKeyBackend;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use std::collections::HashMap;
 
 /// Registry for managing universal crypto backends
@@ -163,7 +164,7 @@ impl UniversalBackendRegistry {
         key_id: &str,
         operation: CryptoOperation,
         preferences: Option<&BackendPreferences>,
-    ) -> Result<CryptoResult> {
+    ) -> Result<CryptoResult, BackendError> {
         let backend = if let Some(prefs) = preferences {
             self.find_preferred_backend(&operation, prefs)
         } else {
@@ -172,9 +173,8 @@ impl UniversalBackendRegistry {
 
         match backend {
             Some(backend) => backend.perform_operation(key_id, operation),
-            None => Err(anyhow!(
-                "No backend supports the requested operation: {:?}",
-                operation
+            None => Err(BackendError::UnsupportedOperation(
+                format!("No backend supports the requested operation: {:?}", operation)
             )),
         }
     }

@@ -24,6 +24,7 @@ use crate::backends::universal::{
     AsymmetricAlgorithm, BackendCapabilities, CryptoOperation, CryptoResult, HashAlgorithm,
     SignatureAlgorithm, UniversalBackend,
 };
+use crate::error::BackendError;
 use anyhow::{Context, Result};
 use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use p256::{
@@ -351,14 +352,16 @@ impl SoftwareHsmBackend {
 }
 
 impl UniversalBackend for SoftwareHsmBackend {
-    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult> {
+    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult, BackendError> {
         // Note: We need to make methods mutable where needed for key usage tracking
         // For now, we'll work around this limitation
         match operation {
             CryptoOperation::Sign { data, algorithm } => {
                 // Create a mutable reference by cloning self (not ideal, but works for demo)
-                let mut backend_clone = Self::with_config(self.config.clone())?;
-                let signature = backend_clone.sign_data(key_id, &data, algorithm)?;
+                let mut backend_clone = Self::with_config(self.config.clone())
+                    .map_err(|e| BackendError::OperationFailed(format!("Failed to clone backend: {}", e)))?;
+                let signature = backend_clone.sign_data(key_id, &data, algorithm)
+                    .map_err(|e| BackendError::OperationFailed(format!("Signing failed: {}", e)))?;
                 Ok(CryptoResult::Signed(signature))
             }
             CryptoOperation::Verify {
@@ -366,26 +369,34 @@ impl UniversalBackend for SoftwareHsmBackend {
                 signature,
                 algorithm,
             } => {
-                let is_valid = self.verify_signature(key_id, &data, &signature, algorithm)?;
+                let is_valid = self.verify_signature(key_id, &data, &signature, algorithm)
+                    .map_err(|e| BackendError::OperationFailed(format!("Verification failed: {}", e)))?;
                 Ok(CryptoResult::VerificationResult(is_valid))
             }
             CryptoOperation::GetPublicKey => {
-                let public_key = self.load_public_key(key_id)?;
+                let public_key = self.load_public_key(key_id)
+                    .map_err(|e| {
+                        if e.to_string().contains("Key not found") {
+                            BackendError::KeyNotFound(key_id.to_string())
+                        } else {
+                            BackendError::OperationFailed(format!("Failed to load public key: {}", e))
+                        }
+                    })?;
                 Ok(CryptoResult::PublicKey(public_key))
             }
             CryptoOperation::GenerateKeyPair { algorithm: _ } => {
                 // This would need a mutable reference - for demo we'll return an error
-                Err(anyhow::anyhow!(
-                    "Key generation requires mutable backend - use generate_key_pair() method directly"
+                Err(BackendError::UnsupportedOperation(
+                    "Key generation requires mutable backend - use generate_key_pair() method directly".to_string()
                 ))
             }
             CryptoOperation::Hash { data, algorithm } => {
-                let hash = self.hash_data(&data, algorithm)?;
+                let hash = self.hash_data(&data, algorithm)
+                    .map_err(|e| BackendError::OperationFailed(format!("Hash operation failed: {}", e)))?;
                 Ok(CryptoResult::Hash(hash))
             }
-            _ => Err(anyhow::anyhow!(
-                "Operation not supported by Software HSM: {:?}",
-                std::any::type_name_of_val(&operation)
+            _ => Err(BackendError::UnsupportedOperation(
+                format!("Operation not supported by Software HSM: {:?}", std::any::type_name_of_val(&operation))
             )),
         }
     }
@@ -452,7 +463,7 @@ impl UniversalBackend for SoftwareHsmBackend {
         }
     }
 
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>, BackendError> {
         let mut keys = Vec::new();
         for (key_id, metadata) in &self.key_metadata {
             let key_metadata = KeyMetadata {
@@ -460,7 +471,8 @@ impl UniversalBackend for SoftwareHsmBackend {
                 description: metadata.description.clone(),
                 created_at: metadata.created_at,
                 last_used: metadata.last_used,
-                backend_data: serde_json::to_vec(metadata)?,
+                backend_data: serde_json::to_vec(metadata)
+                    .map_err(|e| BackendError::OperationFailed(format!("Failed to serialize key metadata: {}", e)))?,
             };
             keys.push(key_metadata);
         }

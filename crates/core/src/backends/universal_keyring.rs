@@ -14,6 +14,7 @@
 use crate::backends::keyring::KeyringBackend;
 use crate::backends::traits::{BackendInfo, KeyMetadata};
 use crate::backends::universal::*;
+use crate::error::BackendError;
 use aes_gcm::{
     aead::{Aead, KeyInit},
     Aes256Gcm,
@@ -158,10 +159,11 @@ impl UniversalKeyringBackend {
 }
 
 impl UniversalBackend for UniversalKeyringBackend {
-    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult> {
+    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult, BackendError> {
         match operation {
             CryptoOperation::DeriveKey { context } => {
-                let key = self.derive_key_internal(key_id, &context)?;
+                let key = self.derive_key_internal(key_id, &context)
+                    .map_err(|e| BackendError::OperationFailed(format!("Key derivation failed: {}", e)))?;
                 Ok(CryptoResult::DerivedKey(key))
             }
 
@@ -173,13 +175,12 @@ impl UniversalBackend for UniversalKeyringBackend {
                     // We need to derive a key first, but we need context
                     // For now, use a simple approach - in practice, the key would be provided
                     // or derived using a stored context
-                    Err(anyhow!(
-                        "Encryption requires key derivation context. Use DeriveKey first, then use the raw key."
+                    Err(BackendError::UnsupportedOperation(
+                        "Encryption requires key derivation context. Use DeriveKey first, then use the raw key.".to_string()
                     ))
                 }
-                _ => Err(anyhow!(
-                    "Symmetric algorithm {:?} not supported by keyring backend",
-                    algorithm
+                _ => Err(BackendError::UnsupportedOperation(
+                    format!("Symmetric algorithm {:?} not supported by keyring backend", algorithm)
                 )),
             },
 
@@ -189,13 +190,12 @@ impl UniversalBackend for UniversalKeyringBackend {
             } => match algorithm {
                 SymmetricAlgorithm::Aes256Gcm => {
                     // Same issue as encrypt - need a way to get the key
-                    Err(anyhow!(
-                        "Decryption requires key derivation context. Use DeriveKey first, then use the raw key."
+                    Err(BackendError::UnsupportedOperation(
+                        "Decryption requires key derivation context. Use DeriveKey first, then use the raw key.".to_string()
                     ))
                 }
-                _ => Err(anyhow!(
-                    "Symmetric algorithm {:?} not supported by keyring backend",
-                    algorithm
+                _ => Err(BackendError::UnsupportedOperation(
+                    format!("Symmetric algorithm {:?} not supported by keyring backend", algorithm)
                 )),
             },
 
@@ -215,15 +215,13 @@ impl UniversalBackend for UniversalKeyringBackend {
                     let hash = Sha512::digest(&data);
                     Ok(CryptoResult::Hash(hash.to_vec()))
                 }
-                _ => Err(anyhow!(
-                    "Hash algorithm {:?} not supported by keyring backend",
-                    algorithm
+                _ => Err(BackendError::UnsupportedOperation(
+                    format!("Hash algorithm {:?} not supported by keyring backend", algorithm)
                 )),
             },
 
-            _ => Err(anyhow!(
-                "Operation {:?} not supported by keyring backend",
-                operation
+            _ => Err(BackendError::UnsupportedOperation(
+                format!("Operation {:?} not supported by keyring backend", operation)
             )),
         }
     }
@@ -263,7 +261,7 @@ impl UniversalBackend for UniversalKeyringBackend {
         BackendInfo::keyring()
     }
 
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>, BackendError> {
         // Delegate to the inner keyring backend
         use crate::backends::traits::KeyBackend;
         self.inner.list_keys()
