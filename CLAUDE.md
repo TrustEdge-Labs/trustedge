@@ -19,12 +19,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build workspace
 cargo build --workspace --release
 
-# Test entire workspace (150+ tests)
+# Test entire workspace (340+ tests)
 cargo test --workspace
 
 # Test specific crates
-cargo test -p trustedge-core --lib                # Core cryptography (101 tests)
-cargo test -p trustedge-receipts                  # Digital receipts (23 tests)
+cargo test -p trustedge-core --lib                # Core cryptography (160 tests)
 cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
 
 # Run a single test
@@ -41,10 +40,10 @@ cargo test --features yubikey --test yubikey_integration
 TrustEdge is a Cargo workspace with 10 crates under `crates/`:
 
 **Core Platform:**
-- `trustedge-core` - Core cryptographic library: envelope encryption (AES-256-GCM), Universal Backend system, network client/server, auth
+- `trustedge-core` - Core cryptographic library: envelope encryption (AES-256-GCM), Universal Backend system, network client/server, auth, receipts, attestation
 - `trustedge-cli` - Main CLI for envelope encryption (binary: `trustedge`)
-- `trustedge-receipts` - Digital receipt system with cryptographic ownership chains
-- `trustedge-attestation` - Software attestation and provenance tracking
+- `trustedge-receipts` - **Deprecated facade** re-exporting from core (removal planned August 2026)
+- `trustedge-attestation` - **Deprecated facade** re-exporting from core (removal planned August 2026)
 - `trustedge-wasm` - WebAssembly bindings for browser integration
 
 **Pubky Network Integration (Community/Experimental):**
@@ -54,9 +53,9 @@ TrustEdge is a Cargo workspace with 10 crates under `crates/`:
 > Note: Pubky crates are community contributions for [Pubky](https://pubky.org) ecosystem integration. They are not part of the core product roadmap. Core functionality uses `trustedge-core` directly.
 
 **Archive System (.trst format):**
-- `trustedge-trst-core` - Canonical cam.video manifest types (WASM-compatible, minimal dependencies)
+- `trustedge-trst-protocols` - Canonical cam.video manifest types (WASM-compatible, minimal dependencies)
 - `trustedge-trst-cli` - CLI tool (binary: `trst`) for wrap/verify operations
-- `trustedge-trst-wasm` - Browser verification (imports manifest types from trst-core)
+- `trustedge-trst-wasm` - Browser verification (imports manifest types from trst-protocols)
 
 ### Key Modules in `crates/core/src/`
 

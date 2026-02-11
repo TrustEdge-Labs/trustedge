@@ -41,16 +41,16 @@ TrustEdge Core provides both a **library** and **CLI applications**:
 ```
 trustedge-core/
 ├── src/lib.rs                   # Core library exports
-├── src/main.rs                  # Main CLI application
-├── src/bin/                     # Additional CLI tools
+├── src/bin/                     # CLI tools
 │   ├── trustedge-server.rs      # Network server
 │   ├── trustedge-client.rs      # Network client
 │   ├── software-hsm-demo.rs     # Software HSM demonstration
+│   ├── inspect-trst.rs          # .trst archive inspector
 │   └── yubikey-demo.rs          # YubiKey hardware operations
 ├── src/backends/                # Universal Backend system
 ├── src/transport/               # Network transport layer
 ├── examples/                    # Comprehensive examples
-└── tests/                       # Test suite (101 tests)
+└── tests/                       # Test suite (160 tests)
 ```
 
 ### Core Modules
@@ -481,7 +481,7 @@ brew install opensc
 
 ## Testing
 
-TrustEdge Core includes **101 comprehensive tests** covering all functionality:
+TrustEdge Core includes **160 comprehensive tests** covering all functionality:
 
 ```bash
 # Run all tests
@@ -635,19 +635,22 @@ for file in files {
 ### With Other TrustEdge Crates
 
 ```rust
-// With trustedge-receipts
-use trustedge_receipts::create_receipt;
+// Receipts (now consolidated in core)
+use trustedge_core::create_receipt;
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
 
 let key = SigningKey::generate(&mut OsRng);
 let receipt = create_receipt(&key, &key.verifying_key(), 1000, None)?;
 
+// Attestation (now consolidated in core)
+use trustedge_core::{create_signed_attestation, AttestationConfig};
+
 // With trustedge-wasm
 use trustedge_core::Envelope;
 // Export envelope functionality to WebAssembly
 
-// With trustedge-pubky
+// With trustedge-pubky (community/experimental)
 use trustedge_core::backends::UniversalBackend;
 // Use core backends with Pubky network integration
 ```

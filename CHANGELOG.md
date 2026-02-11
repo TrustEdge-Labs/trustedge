@@ -14,47 +14,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+*No unreleased changes.*
+
+---
+
+## [1.0.0] - 2026-02-11
+
+### 🎉 v1.0 Consolidation Milestone
+
+First major release. Workspace-wide architecture consolidation with zero API breaking changes.
+
 ### ⚠️ Deprecation Notices
 
 **Facade crates deprecated:** `trustedge-receipts` and `trustedge-attestation`
 are now deprecated facades. All functionality has been consolidated into
-`trustedge-core` during Phases 4-5 of the workspace consolidation.
+`trustedge-core`.
 
 **Affected crates:**
 - `trustedge-receipts` 0.3.0: Now a deprecated facade re-exporting from core
 - `trustedge-attestation` 0.3.0: Now a deprecated facade re-exporting from core
 
 **Timeline:**
-- 0.3.0 (February 2026): Deprecation warnings issued
-- 0.4.0 (August 2026): Facades will be removed from workspace
+- 1.0.0 (February 2026): Deprecation warnings issued
+- Next major (August 2026): Facades will be removed from workspace
 
 **Migration:** See [MIGRATION.md](MIGRATION.md) for upgrade instructions.
 All functionality remains available through `trustedge-core` with identical APIs.
 
 ### 🏗️ Architecture Improvements
 
-#### Workspace Reorganization
-- **CLI Extraction**: Extracted CLI from trustedge-core into dedicated trustedge-cli crate for cleaner separation of concerns
-- **Manifest Consolidation**: Unified CamVideoManifest types in trustedge-trst-core as canonical source; trustedge-trst-wasm now imports from trst-core
-- **Pubky Marked Experimental**: trustedge-pubky and trustedge-pubky-advanced marked as community/experimental crates
-- **Receipts Consolidation**: Moved 1,281 LOC receipts implementation from standalone crate into trustedge-core applications layer (Phase 4)
-- **Attestation Consolidation**: Moved 826 LOC attestation implementation from standalone crate into trustedge-core applications layer (Phase 5)
-- **Facade Deprecation**: Created deprecated re-export facades for backward compatibility with 6-month migration window (Phase 7)
+#### Workspace Consolidation
+- **Receipts Consolidation**: Moved 1,281 LOC receipts implementation from standalone crate into trustedge-core applications layer
+- **Attestation Consolidation**: Moved 826 LOC attestation implementation from standalone crate into trustedge-core applications layer
+- **Facade Deprecation**: Created deprecated re-export facades for backward compatibility with 6-month migration window
+- **Dependency Cleanup**: Removed 21 unused dependencies across workspace
+- **Duplication Elimination**: ~2,500 LOC duplication removed
 
 #### Code Quality
+- **340+ Tests**: Up from 150+, including 160 core tests (receipts + attestation tests now in core)
+- **Zero API Breaks**: 196 semver checks per crate, all passing
 - **Security Fix**: Removed unmaintained wee_alloc dependency
 - **Deprecation Fixes**: Updated all GenericArray::from_slice calls to use array conversion
+- **Build Performance**: 45s clean release build with optimized dependency graph
+- **WASM Compatibility**: Verified for trustedge-trst-protocols and browser verification crates
+- **Copyright Headers**: MPL-2.0 headers on all .rs files
+
+#### Previous Changes (included in v1.0)
+- **CLI Extraction**: Extracted CLI from trustedge-core into dedicated trustedge-cli crate
+- **Manifest Consolidation**: Unified CamVideoManifest types in trustedge-trst-protocols as canonical source
+- **Pubky Marked Experimental**: trustedge-pubky and trustedge-pubky-advanced marked as community/experimental crates
 - **Version Coordination**: Bumped core platform crates to 0.2.0, keeping Pubky at 0.1.0
-- **TODO Cleanup**: Converted pending TODOs to documented NOTEs for post-P0 work
 
 ### 🔧 YubiKey Improvements
 - **GetPublicKey Operation**: Added support for retrieving public keys from YubiKey
 - **Slot Validation**: Fixed yubikey_demo slot validation and custom PIN support
-- **Documentation**: Fixed incorrect YubiKey CLI examples in backends.md
 
 ### 📚 Documentation
-- **CLAUDE.md Updates**: Refreshed architecture overview and crate descriptions
-- **README Updates**: Added trustedge-cli, updated binary references
+- **CLAUDE.md**: Refreshed architecture overview and crate descriptions
+- **README**: Updated for v1.0 with current test counts and architecture
+- **MIGRATION.md**: Added facade deprecation migration guide
 - **Secure Node MVP**: Added hardware MVP specifications
 
 ---
@@ -190,7 +208,8 @@ All functionality remains available through `trustedge-core` with identical APIs
 
 ---
 
-[Unreleased]: https://github.com/TrustEdge-Labs/trustedge/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/TrustEdge-Labs/trustedge/compare/v1.0...HEAD
+[1.0.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v0.3.0...v1.0
 [0.3.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v0.1.7...v0.2.0
 [0.1.7]: https://github.com/TrustEdge-Labs/trustedge/compare/v0.1.0...v0.1.7

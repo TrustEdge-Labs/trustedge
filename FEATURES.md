@@ -162,15 +162,15 @@ This runs:
 
 ```toml
 [features]
-default = ["wee_alloc"]  # Memory allocator optimization
+default = []  # No default features
 ```
 
 **Purpose**: WebAssembly bindings for browser/Node.js cryptographic operations.
 
 **Key Points**:
-- `wee_alloc`: Tiny allocator for WASM (reduces binary size ~50KB)
 - No optional features - always builds the same
 - Target: `wasm32-unknown-unknown`
+- Note: `wee_alloc` was removed in v1.0 due to unmaintained status
 
 **Build Command**:
 ```bash

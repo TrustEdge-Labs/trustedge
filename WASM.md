@@ -340,13 +340,7 @@ wasm-pack build --target web --release
 wasm-strip pkg/*.wasm  # If wasm-strip is installed
 ```
 
-3. **Use `wee_alloc`** (already enabled):
-```toml
-[features]
-default = ["wee_alloc"]
-```
-
-4. **Check Size**:
+3. **Check Size**:
 ```bash
 ls -lh crates/trst-wasm/../../web/demo/pkg/*.wasm
 ```

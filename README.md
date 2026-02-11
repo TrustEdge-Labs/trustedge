@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-0.3.1-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v0.3.1)
+[![Version](https://img.shields.io/badge/version-1.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v1.0)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge: Hardware-Backed Security for IoT Devices
@@ -103,19 +103,25 @@ Open Core Model:
 
 ---
 
-## What's New in 0.3.1
+## What's New in v1.0
 
-- 🏗️ **CLI Extraction** - Main CLI moved to dedicated `trustedge-cli` crate for cleaner architecture
-- 📦 **Manifest Consolidation** - Canonical `CamVideoManifest` types unified in `trustedge-trst-core`
+**v1.0 Consolidation Milestone** — workspace-wide quality and architecture improvements:
+
+- 🏗️ **Crate Consolidation** - Receipts and attestation functionality merged into `trustedge-core`; standalone crates now deprecated facades with 6-month migration window
+- 📦 **Dependency Cleanup** - 21 unused dependencies removed, ~2,500 LOC duplication eliminated
 - 🔐 **Security Fix** - Removed unmaintained `wee_alloc` dependency
-- 🔑 **YubiKey Improvements** - Added `GetPublicKey` operation, fixed slot validation
-- 🧪 **Deprecation Fixes** - Updated all `GenericArray::from_slice` calls
+- 🧪 **Test Suite Growth** - 340+ tests across 10 crates (up from 150+), including 160 core tests
+- ⚡ **Build Performance** - 45s clean release build with optimized dependency graph
+- 🌐 **WASM Compatibility** - Verified for `trustedge-trst-protocols` and browser verification crates
+- 📋 **Zero API Breaking Changes** - 196 semver checks per crate, all passing
 
 ### Previous Releases
 
+**v0.3.1:** CLI extraction, manifest consolidation, YubiKey improvements
+
 **v0.3.0 (P0 Release):** .trst archive system with cam.video profile, Ed25519 signatures, BLAKE3 chains, browser verification
 
-**v0.2.0:** YubiKey PKCS#11 integration, Universal Backend architecture, production transport layer, 150+ tests
+**v0.2.0:** YubiKey PKCS#11 integration, Universal Backend architecture, production transport layer
 
 ---
 
@@ -129,7 +135,7 @@ trustedge/
 │   ├── core/                     # Core cryptographic library (trustedge-core)
 │   ├── trustedge-cli/            # Main envelope encryption CLI (binary: trustedge)
 │   ├── trst-cli/                 # .trst archive CLI tool (trustedge-trst-cli, binary: trst)
-│   ├── trst-core/                # Canonical cam.video manifest types (WASM-compatible)
+│   ├── trst-protocols/            # Canonical cam.video manifest types (WASM-compatible)
 │   ├── trst-wasm/                # .trst verification WebAssembly bindings
 │   ├── attestation/              # Software attestation and provenance system
 │   ├── receipts/                 # Digital receipt system with ownership chains
@@ -147,7 +153,7 @@ trustedge/
 | **trustedge-core** | Core cryptographic library with envelope encryption | [Core Documentation](crates/core/) |
 | **trustedge-cli** | Main CLI for envelope encryption (binary: `trustedge`) | [CLI Documentation](crates/trustedge-cli/) |
 | **trustedge-trst-cli** | CLI for .trst archive creation and verification (binary: `trst`) | [Archive CLI Documentation](crates/trst-cli/) |
-| **trustedge-trst-core** | Canonical cam.video manifest types (WASM-compatible) | [Archive Format Documentation](crates/trst-core/) |
+| **trustedge-trst-protocols** | Canonical cam.video manifest types (WASM-compatible) | [Archive Format Documentation](crates/trst-protocols/) |
 | **trustedge-attestation** | Software attestation and provenance tracking | [Attestation Documentation](crates/attestation/) |
 | **trustedge-receipts** | Digital receipt system with cryptographic ownership transfer | [Receipt Documentation](crates/receipts/) |
 | **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | [WASM Documentation](crates/wasm/) |
@@ -322,10 +328,9 @@ TrustEdge supports secure client-server communication with **mutual authenticati
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **150+ automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **340+ automated tests** covering all aspects of the system:
 
-- **101 Core Tests**: Envelope encryption, Universal Backend system, transport layer
-- **23 Receipt Tests**: Digital receipt security, attack resistance, chain validation
+- **160 Core Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer
 - **7 Archive Tests**: .trst format verification, cryptographic validation, attack resistance
 - **Security Tests**: Cryptographic isolation, tampering resistance, replay protection
 - **Hardware Tests**: YubiKey integration, PKCS#11 operations, certificate workflows
@@ -335,8 +340,7 @@ TrustEdge includes a comprehensive test suite with **150+ automated tests** cove
 ./scripts/ci-check.sh
 
 # Run tests by category
-cargo test -p trustedge-core --lib                # Core cryptography tests (101)
-cargo test -p trustedge-receipts                  # Receipt system tests (23)
+cargo test -p trustedge-core --lib                # Core cryptography tests (160)
 cargo test -p trustedge-trst-cli --test acceptance # Archive validation tests (7)
 cargo test --features yubikey                     # Hardware integration tests
 ```
@@ -422,8 +426,7 @@ cd trustedge
 ./scripts/ci-check.sh
 
 # Run specific component tests
-cargo test -p trustedge-core                      # Core cryptography (101 tests)
-cargo test -p trustedge-receipts                  # Digital receipts (23 tests)
+cargo test -p trustedge-core                      # Core cryptography (160 tests)
 cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
 ```
 

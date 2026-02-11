@@ -14,11 +14,12 @@ TrustEdge is currently in active development. Security updates are provided for:
 
 | Version | Status | Support Level |
 | ------- | ------ | ------------- |
+| v1.0.x | ✅ Current | Active security fixes |
 | main branch | 🔄 Development | Active security fixes |
-| v0.1.x | ⏳ Pre-release | Best effort |
-| < v0.1 | ❌ Unsupported | No security support |
+| v0.3.x | ⏳ Legacy | Best effort |
+| < v0.3 | ❌ Unsupported | No security support |
 
-**Note**: As TrustEdge is pre-1.0, breaking changes may be introduced to address security issues.
+**Note**: As of v1.0, TrustEdge follows semantic versioning. Security fixes will be backported to the latest release.
 
 ## Security Considerations
 
@@ -36,13 +37,11 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 
 ### Known Limitations
 
-1. **Pre-1.0 Software**: Not recommended for production use
-2. **Authentication**: Server and client authentication in development (Phase 3)
-3. **Network Security**: TLS authentication being implemented
-4. **Side Channel Attacks**: No specific mitigations implemented
-5. **Memory Safety**: Relies on Rust's memory safety guarantees
+1. **Side Channel Attacks**: No specific mitigations implemented
+2. **Memory Safety**: Relies on Rust's memory safety guarantees
+3. **External Audit**: No third-party security audit completed yet
 
-### Current Security Status (Phase 3)
+### Current Security Status (v1.0)
 
 **✅ Implemented Security Features:**
 - AES-256-GCM authenticated encryption
@@ -54,18 +53,17 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 - **DoS Protection**: Resource bounds and limits enforcement
 - **Bounds Checking**: Comprehensive validation of chunk sizes and stream limits
 - **Length Integrity**: Cryptographic binding of chunk lengths via AAD
-
-**🔄 In Development (Phase 3):**
-- Server certificate validation and mutual TLS
-- Client authentication and authorization
-- Enhanced security features (Perfect Forward Secrecy)
-- Production deployment security hardening
+- **Mutual Authentication**: Ed25519-based client-server authentication with session management
+- **YubiKey Hardware Integration**: PKCS#11 hardware-backed signing and attestation
+- **Digital Receipt System**: Cryptographic ownership chains with attack resistance (23 security tests)
+- **Software Attestation**: Tamper-evident build provenance with Ed25519 signatures
 
 **📋 Planned Security Features:**
 - TPM and HSM key storage backends
 - Key rotation and revocation mechanisms
 - Enhanced rate limiting and monitoring
 - Security audit logging
+- Post-quantum cryptography readiness
 
 ### Security Assumptions
 
@@ -193,7 +191,7 @@ We appreciate security researchers who help improve TrustEdge security:
 | Network Protocol | TBD | ⏳ Pending | Protocol design review |
 | File Format | TBD | ⏳ Pending | Format specification review |
 
-**Next Audit**: Planned before v1.0 release
+**Next Audit**: Planned for post-v1.0 release cycle
 
 ## Compliance and Standards
 
@@ -212,9 +210,9 @@ TrustEdge aims to align with:
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: August 25, 2025  
-**Next Review**: November 2025
+**Document Version**: 2.0
+**Last Updated**: February 11, 2026
+**Next Review**: May 2026
 
 ---
 

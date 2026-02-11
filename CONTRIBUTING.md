@@ -57,8 +57,8 @@ When requesting features:
 
 1. **Install Rust**: Use the latest stable version
 2. **Clone the repo**: `git clone https://github.com/TrustEdge-Labs/trustedge.git`
-3. **Install dependencies**: `cd trustedge/trustedge-core && cargo build`
-4. **Run tests**: `cargo test` and `cargo clippy`
+3. **Build workspace**: `cd trustedge && cargo build --workspace`
+4. **Run tests**: `cargo test --workspace` and `cargo clippy --workspace -- -D warnings`
 
 ### Project Board Management
 
@@ -339,19 +339,15 @@ Help improve test coverage:
 
 ## 🎯 Current Priorities
 
-**Current Focus**: Phase 3 - Network Operations & Authentication
+**Current Status**: v1.0 released (February 2026)
 
-**High Priority Issues**:
-1. **[Day 10: Server Authentication](https://github.com/TrustEdge-Labs/trustedge/issues/11)** - Implement server certificate validation and mutual TLS
-2. **[Day 11: Client Authentication](https://github.com/TrustEdge-Labs/trustedge/issues/12)** - Client certificate and token-based authentication  
-3. **[Cross-platform Audio Capture](https://github.com/TrustEdge-Labs/trustedge/issues/5)** - Integrate cpal for live audio streaming
-4. **[Day 12: Enhanced Security](https://github.com/TrustEdge-Labs/trustedge/issues/13)** - Perfect Forward Secrecy and additional algorithms
+TrustEdge v1.0 consolidation is complete. See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for current priorities and open work items.
 
-**Good First Issues**:
-- **[Community Engagement](https://github.com/TrustEdge-Labs/trustedge/issues/8)** - Beta testing program setup
-- **[Example Configurations](https://github.com/TrustEdge-Labs/trustedge/issues/9)** - Add deployment scenario examples
-
-**Track Progress**: [Phase 3 Progress Tracker](https://github.com/TrustEdge-Labs/trustedge/issues/16)
+**Good First Contributions**:
+- Documentation improvements and examples
+- Additional test coverage for edge cases
+- Platform testing (Linux, macOS, Windows)
+- WASM browser testing improvements
 
 ## 💬 Communication
 

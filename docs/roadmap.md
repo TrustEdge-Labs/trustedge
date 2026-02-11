@@ -11,19 +11,21 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
-## Current Status (v0.3.1)
+## Current Status (v1.0)
 
-TrustEdge 0.3.1 provides a **production-ready foundation** with:
+TrustEdge v1.0 is a **consolidated, production-ready platform** with:
 
 - ✅ **P0 cam.video Profile**: Locked .trst archive specification with Ed25519 signatures
 - ✅ **Real Cryptography**: AES-256-GCM encryption, BLAKE3 continuity chains, XChaCha20-Poly1305
-- ✅ **Digital Receipt System**: Cryptographically secure transferable receipts
+- ✅ **Digital Receipt System**: Cryptographically secure transferable receipts (consolidated into core)
+- ✅ **Software Attestation**: Tamper-evident build provenance (consolidated into core)
 - ✅ **YubiKey Hardware Integration**: PKCS#11 support with real hardware operations
 - ✅ **Universal Backend Architecture**: Pluggable crypto backends
 - ✅ **Live Audio Capture**: Cross-platform microphone input with encryption
 - ✅ **Network Transport**: TCP client-server with mutual authentication
 - ✅ **Browser Verification**: WASM-based .trst archive verification
-- ✅ **Comprehensive Testing**: 150+ tests including security attack scenarios
+- ✅ **Comprehensive Testing**: 340+ tests across 10 crates
+- ✅ **Workspace Consolidation**: 21 unused deps removed, ~2,500 LOC duplication eliminated, zero API breaking changes
 
 ---
 
