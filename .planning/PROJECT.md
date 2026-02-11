@@ -1,8 +1,8 @@
-# TrustEdge Consolidation
+# TrustEdge
 
 ## What This Is
 
-TrustEdge is a Rust workspace providing hardware-backed cryptographic operations for edge devices and IoT. The codebase has grown to 10 crates with overlapping functionality, duplicated patterns, and unclear boundaries. This milestone consolidates everything into a monolith core with thin CLI/WASM shells — preserving all prior work while eliminating duplication and establishing a clear architecture.
+TrustEdge is a Rust workspace providing hardware-backed cryptographic operations for edge devices and IoT. A consolidated monolithic core (`trustedge-core`) owns all cryptographic operations — envelope encryption, signing, digital receipts, software attestation, and .trst archives — with thin CLI and WASM shells as frontends. The workspace includes 10 crates, with `trustedge-core` as the single source of truth.
 
 ## Core Value
 
@@ -12,69 +12,79 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Validated
 
-<!-- Shipped and confirmed valuable. -->
-
-- ✓ AES-256-GCM envelope encryption with Ed25519 signing — existing in `crates/core/`
-- ✓ Universal Backend system (Software HSM, Keyring, YubiKey) — existing in `crates/core/src/backends/`
-- ✓ Network transport (TCP framed, QUIC with TLS) — existing in `crates/core/src/transport/`
-- ✓ Digital receipt system with ownership chains — existing in `crates/receipts/`
-- ✓ Software attestation with provenance tracking — existing in `crates/attestation/`
-- ✓ .trst archive format with cam.video profile — existing in `crates/trst-core/` + `crates/trst-cli/`
-- ✓ YubiKey PKCS#11 integration — existing in `crates/core/src/backends/yubikey.rs`
-- ✓ WASM browser bindings — existing in `crates/wasm/` + `crates/trst-wasm/`
-- ✓ Pubky network integration — existing in `crates/pubky/` + `crates/pubky-advanced/`
-- ✓ 150+ tests across workspace — existing
+- ✓ AES-256-GCM envelope encryption with Ed25519 signing — v1.0
+- ✓ Universal Backend system (Software HSM, Keyring, YubiKey) — v1.0
+- ✓ Network transport (TCP framed, QUIC with TLS) — v1.0
+- ✓ Digital receipt system with ownership chains — v1.0 (migrated to core)
+- ✓ Software attestation with provenance tracking — v1.0 (migrated to core)
+- ✓ .trst archive format with cam.video profile — v1.0 (trst-protocols)
+- ✓ YubiKey PKCS#11 integration — v1.0
+- ✓ WASM browser bindings — v1.0
+- ✓ Pubky network integration — v1.0 (community contribution)
+- ✓ Dependency graph analyzed and cross-crate duplication mapped — v1.0
+- ✓ Layered module hierarchy (primitives/backends/protocols/applications/transport/io) — v1.0
+- ✓ Test inventory baseline documented (348 tests) — v1.0
+- ✓ Unified TrustEdgeError enum with 7 subsystem variants — v1.0
+- ✓ 10+ duplicate error types consolidated into hierarchy — v1.0
+- ✓ thiserror for libraries, anyhow for CLIs — v1.0
+- ✓ trst-core manifest types merged via trst-protocols (WASM-compatible) — v1.0
+- ✓ Receipts (1,281 LOC, 23 tests) merged into core — v1.0
+- ✓ Attestation (826 LOC, 10 tests) merged into core — v1.0
+- ✓ Feature flags consolidated into categories (backend, platform) — v1.0
+- ✓ CI matrix tests critical feature combinations — v1.0
+- ✓ Deprecated re-export facades with 6-month migration window — v1.0
+- ✓ MIGRATION.md with import path changes — v1.0
+- ✓ 343 tests preserved (98.6% of baseline) — v1.0
+- ✓ WASM build verified — v1.0
+- ✓ Zero API breakage (196 semver checks) — v1.0
 
 ### Active
 
-<!-- Current scope. Building toward these. -->
-
-- [ ] Audit and map all cross-crate duplication (crypto, serialization, error types, manifest handling)
-- [ ] Consolidate duplicated functionality into `trustedge-core` using best-implementation-wins strategy
-- [ ] Merge receipt logic into core (preserving all capabilities)
-- [ ] Merge attestation logic into core (preserving all capabilities)
-- [ ] Merge trst-core manifest types into core (preserving WASM compatibility)
-- [ ] Unify WASM bindings into single crate wrapping core
-- [ ] Reduce CLIs to thin shells over core library APIs
-- [ ] Ensure no feature or parameter drift between crates after consolidation
-- [ ] All existing tests pass after reorganization
-- [ ] Production-quality YubiKey end-to-end workflow (encrypt, sign, verify with hardware key)
+- [ ] Pubky adapter merged into core protocols/pubky/ (feature-gated)
+- [ ] Pubky-advanced hybrid encryption merged into core
+- [ ] YubiKey hardware tests pass after consolidation (requires physical hardware)
+- [ ] Prelude module for common imports
+- [ ] Updated documentation with module-level security considerations
 
 ### Out of Scope
 
-<!-- Explicit boundaries. Includes reasoning to prevent re-adding. -->
-
 - TPM support — premature, no hardware to test against, adds complexity before core is stable
 - Post-quantum cryptography — research phase only, no production use case yet
-- New features — this milestone is consolidation only, no new capabilities
-- Deleting crates or code — everything is preserved, just reorganized
+- no_std support — requires separate milestone, half-measures are worse
+- Algorithm agility changes — hard-coded Ed25519/AES-256-GCM is sufficient
 
 ## Context
 
-- Solo developer / small team — scope must be realistic
-- Existing 10-crate workspace with significant working code
-- Codebase map available at `.planning/codebase/` (architecture, stack, conventions, concerns, testing)
-- Key duplication areas likely: crypto primitives across core/receipts/attestation, manifest types across core/trst-core, error types, serialization patterns
-- Merge strategy: best implementation wins — pick the better version, move to core, update callers
+Shipped v1.0 consolidation with 37,589 Rust LOC across 10 crates.
+Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM.
+343 tests passing (160 in core, 183 across thin shells).
+Build time: 45s clean release.
+Zero API breaking changes throughout consolidation.
+6 non-critical tech debt items carried forward (see MILESTONES.md).
+Facade crate deprecation active — removal planned v0.4.0 (Aug 2026).
 
 ## Constraints
 
 - **Preservation**: All prior work must be preserved — no functionality loss
-- **Consistency**: After consolidation, no feature or parameter drift between what were separate crates
-- **Tests**: All 150+ existing tests must continue to pass
+- **Consistency**: No feature or parameter drift between consolidated modules
+- **Tests**: All existing tests must continue to pass
 - **Backward compatibility**: Public API surface of `trustedge-core` must support all current consumers
 - **Architecture**: Monolith core + thin shells — CLIs and WASM are frontends only
 
 ## Key Decisions
 
-<!-- Decisions that constrain future work. Add throughout project lifecycle. -->
-
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Monolith core + thin shells | Eliminates duplication, single source of truth for crypto ops | — Pending |
-| Best implementation wins for merges | Pragmatic — don't union-merge everything, pick the better code | — Pending |
-| Envelope encryption is the core product | YubiKey hardware signing is the differentiator, focus stability here | — Pending |
-| No new features this milestone | Consolidation only — adding features while reorganizing is a recipe for bugs | — Pending |
+| Monolith core + thin shells | Eliminates duplication, single source of truth for crypto ops | ✓ Good — ~2,500 LOC duplication eliminated |
+| Best implementation wins for merges | Pragmatic — don't union-merge everything, pick the better code | ✓ Good — clean migrations |
+| Envelope encryption is the core product | YubiKey hardware signing is the differentiator | ✓ Good — stable foundation |
+| No new features during consolidation | Adding features while reorganizing risks bugs | ✓ Good — zero breakage |
+| trst-core renamed to trst-protocols | Better reflects purpose as protocol definitions | ✓ Good — clear naming |
+| Scoped error types per submodule | ManifestFormatError, ChunkFormatError etc. for granularity | ✓ Good — precise error handling |
+| Module-level #![deprecated] for facades | Rust limitation: per-item re-export deprecation doesn't propagate | ✓ Good — visible warnings |
+| 6-month deprecation timeline (v0.3.0 → v0.4.0) | Follows RFC 1105, gives consumers time to migrate | — Pending (Aug 2026) |
+| Feature categories: Backend + Platform | Semantic organization prevents combinatorial explosion | ✓ Good — clean CI matrix |
+| cargo-semver-checks with HEAD~1 baseline | Track API changes commit-to-commit | ✓ Good — 196 checks, 0 breaks |
 
 ---
-*Last updated: 2026-02-09 after initialization*
+*Last updated: 2026-02-11 after v1.0 milestone*
