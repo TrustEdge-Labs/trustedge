@@ -14,12 +14,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ⚠️ Deprecation Notices
+
+**Facade crates deprecated:** `trustedge-receipts` and `trustedge-attestation`
+are now deprecated facades. All functionality has been consolidated into
+`trustedge-core` during Phases 4-5 of the workspace consolidation.
+
+**Affected crates:**
+- `trustedge-receipts` 0.3.0: Now a deprecated facade re-exporting from core
+- `trustedge-attestation` 0.3.0: Now a deprecated facade re-exporting from core
+
+**Timeline:**
+- 0.3.0 (February 2026): Deprecation warnings issued
+- 0.4.0 (August 2026): Facades will be removed from workspace
+
+**Migration:** See [MIGRATION.md](MIGRATION.md) for upgrade instructions.
+All functionality remains available through `trustedge-core` with identical APIs.
+
 ### 🏗️ Architecture Improvements
 
 #### Workspace Reorganization
 - **CLI Extraction**: Extracted CLI from trustedge-core into dedicated trustedge-cli crate for cleaner separation of concerns
 - **Manifest Consolidation**: Unified CamVideoManifest types in trustedge-trst-core as canonical source; trustedge-trst-wasm now imports from trst-core
 - **Pubky Marked Experimental**: trustedge-pubky and trustedge-pubky-advanced marked as community/experimental crates
+- **Receipts Consolidation**: Moved 1,281 LOC receipts implementation from standalone crate into trustedge-core applications layer (Phase 4)
+- **Attestation Consolidation**: Moved 826 LOC attestation implementation from standalone crate into trustedge-core applications layer (Phase 5)
+- **Facade Deprecation**: Created deprecated re-export facades for backward compatibility with 6-month migration window (Phase 7)
 
 #### Code Quality
 - **Security Fix**: Removed unmaintained wee_alloc dependency
