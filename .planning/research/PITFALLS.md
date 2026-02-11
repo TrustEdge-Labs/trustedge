@@ -1,923 +1,447 @@
-<!--
-Copyright (c) 2025 TRUSTEDGE LABS LLC
-MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
--->
+# Pitfalls Research: Hardware Crypto Backend Integration
 
+**Domain:** Adding YubiKey/PKCS#11 hardware security backend to existing Rust cryptographic system
+**Researched:** 2026-02-11
+**Confidence:** HIGH (based on analysis of v1.0 codebase bugs, Rust ecosystem patterns, PKCS#11 specifications)
 
-# Pitfalls Research: Rust Workspace Consolidation
+## Critical Pitfalls
 
-**Research Date:** 2026-02-09
-**Project:** TrustEdge workspace consolidation (10 crates → monolith core + thin shells)
-**Context:** Subsequent milestone, crypto library with hardware integration, 150+ tests, WASM targets
+### Pitfall 1: Silent Fallback to Software Crypto
 
-## Overview
+**What goes wrong:**
+Hardware backend silently falls back to software crypto when hardware unavailable/fails. System reports "hardware-backed" but uses software keys. User believes they have hardware security guarantees but they don't.
 
-This document catalogs common mistakes when consolidating Rust workspaces, specifically when merging multiple library crates into a monolithic core. Each pitfall includes warning signs, prevention strategies, and phase mapping for the consolidation roadmap.
+**Why it happens:**
+- Convenience during development (want tests to pass without hardware)
+- Graceful degradation mindset (treat hardware as "nice to have")
+- "Works on my machine" testing (developer has YubiKey, CI doesn't)
+- Placeholder code never removed ("we'll fix it later")
 
----
+**How to avoid:**
+- **Fail-closed architecture**: Hardware unavailable MUST return error, never fallback
+- Zero placeholder implementations in production code paths
+- Capability checks MUST verify actual hardware state, not static flags
+- Separate simulation/stub backends from production backends (different types)
 
-## 1. Feature Flag Explosion and Combinatorial Complexity
+**Warning signs:**
+- Code contains "fallback", "placeholder", "demo", "enhanced" qualifiers
+- Methods return `Ok(...)` in catch blocks for hardware errors
+- Tests pass in CI but feature is feature-gated for hardware
+- `if hardware_available { real } else { fake }` patterns
+- Backend reports `hardware_backed: true` but has no hardware session
 
-### Description
-
-When merging crates with different optional features, teams often create too many feature flags without considering the combinatorial explosion. With `n` feature flags, you have `2^n` possible configurations, most of which are never tested.
-
-**TrustEdge Risk:** The project has `yubikey` (hardware), `audio` (platform-specific), and will inherit features from receipts/attestation/WASM. Merging blindly could create 16+ feature combinations.
-
-### Warning Signs
-
-- New features like `receipt-ops`, `attestation-ops`, `archive-ops` created per-subsystem
-- Features that are always used together but remain separate
-- CI only tests `--all-features` and `--no-default-features`, not individual feature combinations
-- Confusion about which features are required for which functionality
-- Documentation drift between feature descriptions and actual functionality
-
-### Prevention Strategy
-
-1. **Feature Categorization:** Group features into orthogonal dimensions:
-   - **Backend:** `software-hsm` (default), `keyring`, `yubikey` (mutually exclusive capabilities)
-   - **Platform:** `audio` (opt-in), `wasm` (target-specific)
-   - **Validation:** `strict-validation` (opt-in for extra checks)
-
-2. **Feature Unification:** Merge always-together features:
-   - Don't create `receipts` + `receipt-signatures` + `receipt-chains` — just `receipts`
-   - Attestation and receipts likely share envelope crypto — don't duplicate feature gates
-
-3. **Test Matrix:** In CI, test critical combinations:
-   ```bash
-   cargo test --no-default-features
-   cargo test --features yubikey
-   cargo test --features audio
-   cargo test --all-features
-   ```
-
-4. **Feature Documentation:** In `Cargo.toml`, document each feature's purpose:
-   ```toml
-   [features]
-   default = ["software-hsm"]
-
-   # Backend capabilities (choose one or more)
-   software-hsm = []     # Pure Rust crypto (always available)
-   keyring = ["dep:keyring"]  # OS keychain integration
-   yubikey = ["pkcs11", "dep:yubikey", "x509-cert"]  # Hardware security keys
-
-   # Platform features (opt-in)
-   audio = ["cpal"]      # Live audio capture (requires ALSA/CoreAudio/WASAPI)
-   ```
-
-### Phase Mapping
-
-- **Phase 1 (Discovery):** Audit all existing features across all crates
-- **Phase 2 (Design):** Design unified feature set before merging code
-- **Phase 3 (Implementation):** Merge features incrementally, testing each combination
+**Phase to address:**
+Phase 1 (Core Backend Rewrite) - Architecture must prevent fallbacks by design
 
 ---
 
-## 2. Dependency Constraint Conflicts (WASM vs Native)
+### Pitfall 2: Manual ASN.1/DER Encoding
 
-### Description
+**What goes wrong:**
+Implementing custom ASN.1 DER encoding for X.509 certificates instead of using battle-tested libraries. Results in:
+- Subtle encoding bugs (length fields, padding, tag ordering)
+- Security vulnerabilities (integer overflow in length calculation, improper escaping)
+- Incompatibility with parsers (strict vs lenient parsing differences)
+- Unmaintainable code (1,000+ lines of bit manipulation)
 
-WASM targets have strict dependency restrictions (no `std::fs`, no threading, no native IO). Merging WASM-compatible crates with native-only crates often results in either breaking WASM or creating "WASM stub" implementations that silently fail.
+**Why it happens:**
+- "It's just a simple format" — underestimating ASN.1 complexity
+- Library doesn't do exactly what you need — so reinvent the wheel
+- Combining data from multiple sources (hardware key + software cert fields)
+- Progressive enhancement — starts with "just parse this one field" and grows
 
-**TrustEdge Risk:** `trst-core` is intentionally minimal for WASM. Merging into `trustedge-core` (which has `tokio`, `quinn`, `cpal`, `pkcs11`) will break WASM unless carefully gated.
+**How to avoid:**
+- **NEVER implement ASN.1/DER/X.509 encoding manually** — use `der`, `x509-cert`, `rcgen` crates
+- Use `rcgen::CertificateParams` for certificate generation, custom signature via `serialize_der_with_signer`
+- For SPKI: parse with `spki::SubjectPublicKeyInfo::from_der`, encode with `.to_der()`
+- For signatures: use `signature` crate traits, never raw byte manipulation
+- Code review rule: any `push(0x30)` or manual tag construction is FORBIDDEN
 
-### Warning Signs
+**Warning signs:**
+- Functions named `encode_asn1_*`, `build_*_der`, `create_*_certificate`
+- Hardcoded hex constants: `0x02`, `0x30`, `0x03` (ASN.1 tags)
+- Manual length calculations: `output.push(length as u8)`
+- Comments explaining ASN.1 structure ("SEQUENCE tag for...")
+- More than 50 lines in certificate generation function
 
-- Build errors when targeting `wasm32-unknown-unknown`
-- Dependencies like `tokio`, `quinn`, `cpal`, `pkcs11` without `target` gates
-- WASM tests passing but browser integration failing
-- Conditional compilation becoming dominant (`#[cfg(not(target_arch = "wasm32"))]` everywhere)
-- Different API surfaces for WASM vs native (same function name, different signatures)
-
-### Prevention Strategy
-
-1. **Dependency Auditing:** Before merge, categorize every dependency:
-   ```
-   WASM-safe: serde, serde_json, ed25519-dalek, aes-gcm, blake3
-   Native-only: tokio, quinn, cpal, pkcs11, keyring
-   Needs-gating: std::fs, std::net, std::thread
-   ```
-
-2. **Target-Specific Dependencies:**
-   ```toml
-   [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-   tokio = { version = "1.0", features = ["full"] }
-   quinn = "0.11"
-   cpal = { version = "0.15", optional = true }
-   pkcs11 = { version = "0.5", optional = true }
-
-   [target.'cfg(target_arch = "wasm32")'.dependencies]
-   wasm-bindgen = "0.2"
-   getrandom = { version = "0.2", features = ["js"] }
-   ```
-
-3. **Core Abstraction Layer:** Keep a WASM-safe core module:
-   ```
-   trustedge-core/src/
-   ├── core/           # WASM-safe: crypto, envelope, signing
-   ├── platform/       # Native-only: network, audio, backends
-   └── lib.rs          # Conditional exports
-   ```
-
-4. **Compile Tests:** Add to CI:
-   ```bash
-   cargo check --target wasm32-unknown-unknown -p trustedge-core
-   cargo build -p trustedge-core --no-default-features  # Must work for WASM
-   ```
-
-### Phase Mapping
-
-- **Phase 1 (Discovery):** Audit dependencies for WASM compatibility
-- **Phase 2 (Design):** Design module structure with WASM-safe core
-- **Phase 3 (Implementation):** Move WASM-safe code first, then add platform gates
+**Phase to address:**
+Phase 1 (Core Backend Rewrite) - Adopt `rcgen` for all certificate operations
 
 ---
 
-## 3. Test Namespace Collisions and Lost Coverage
+### Pitfall 3: Hardcoded Test Vectors as Placeholder Keys
 
-### Description
+**What goes wrong:**
+Using NIST test vectors or hardcoded public keys as "placeholders" that ship in production. Consequences:
+- All "hardware" signatures use same private key (catastrophic if anyone finds it)
+- Reproducible "unique" certificates (completely defeats purpose)
+- False security theater (appears to work, provides zero security)
+- Key leakage risk (test vector private keys sometimes published)
 
-When merging crates, integration tests with the same names overwrite each other. Teams also often delete "duplicate" tests without verifying they test different scenarios, leading to silent test coverage loss.
+**Why it happens:**
+- Need deterministic output for tests
+- Don't have hardware during development
+- Copy-paste from NIST documentation
+- "It's just for the demo" but demo code becomes production
 
-**TrustEdge Risk:** 150+ tests across 10 crates. High probability of naming collisions (e.g., `integration_tests.rs` in multiple crates). YubiKey tests require hardware, WASM tests require browser — easy to lose during merge.
+**How to avoid:**
+- **Zero tolerance**: No hardcoded keys in backend implementation files
+- Test vectors belong in `tests/` only, never in `src/backends/`
+- Hardware operations return `Err(BackendError::HardwareUnavailable)` when hardware missing
+- Use type system: `enum KeySource { Hardware(Session), Test(TestKey) }` — never conflate
+- Code review: search for "6B17D1F2" (NIST P-256 generator point) — REJECT if found in backends
 
-### Warning Signs
+**Warning signs:**
+- 64+ hex digits in array literals in backend code
+- Comments referencing "NIST P-256 examples", "deterministic test vector"
+- Variables named `placeholder_*`, `demo_*`, `test_*` in production modules
+- Same certificate generated on every call (no randomness/hardware variation)
 
-- Test count after merge is less than sum of original tests
-- Tests like `tests/integration_tests.rs` in multiple crates (collision risk)
-- Tests passing locally but failing in crate-specific test runs
-- Coverage dropping after merge
-- Hardware-specific tests (YubiKey) silently disabled
-- WASM-specific tests not running in CI
-
-### Prevention Strategy
-
-1. **Pre-Merge Test Inventory:**
-   ```bash
-   # Count tests before merge
-   cargo test -p trustedge-core --lib --bins --tests -- --list | wc -l
-   cargo test -p trustedge-receipts -- --list | wc -l
-   cargo test -p trustedge-attestation -- --list | wc -l
-   # Document: 101 + 23 + X = 150+ total
-   ```
-
-2. **Namespace Preservation:** When moving tests, preserve crate context:
-   ```
-   Before: crates/receipts/tests/integration_tests.rs
-   After:  crates/core/tests/receipts_integration.rs
-   ```
-
-3. **Test Categorization:** Group by requirement:
-   ```
-   tests/
-   ├── unit/               # No external deps
-   ├── integration/        # Crate integration
-   ├── hardware/           # YubiKey (manual)
-   ├── wasm/              # Browser (wasm-bindgen-test)
-   └── acceptance/        # End-to-end
-   ```
-
-4. **Test Validation Script:**
-   ```bash
-   #!/bin/bash
-   # Ensure no test loss during merge
-   BEFORE_COUNT=150
-   AFTER_COUNT=$(cargo test --workspace -- --list | grep -c "test")
-   if [ $AFTER_COUNT -lt $BEFORE_COUNT ]; then
-     echo "ERROR: Lost tests! Before: $BEFORE_COUNT, After: $AFTER_COUNT"
-     exit 1
-   fi
-   ```
-
-5. **Hardware Test Gates:** Preserve hardware tests with clear markers:
-   ```rust
-   #[test]
-   #[cfg(feature = "yubikey")]
-   #[ignore] // Requires actual YubiKey hardware
-   fn yubikey_real_signing_operations() { ... }
-   ```
-
-### Phase Mapping
-
-- **Phase 1 (Discovery):** Inventory all tests, document counts
-- **Phase 2 (Design):** Plan test directory structure, namespace strategy
-- **Phase 3 (Implementation):** Move tests with validation, run before/after comparison
-- **Phase 4 (Validation):** Verify total test count, coverage, hardware/WASM tests preserved
+**Phase to address:**
+Phase 1 (Core Backend Rewrite) - Remove all placeholder keys, fail-closed on hardware unavailable
 
 ---
 
-## 4. API Surface Regression and Breaking Changes
+### Pitfall 4: Tests That Don't Test Anything
 
-### Description
+**What goes wrong:**
+Tests pass but don't verify actual functionality:
+- Auto-pass tests (always `Ok(())` without assertions)
+- Mocked success (stub returns success without doing work)
+- "Does it panic?" tests (just checking code runs, not correctness)
+- Hardware-optional tests (gracefully skip real validation when device absent)
 
-Consolidation often inadvertently breaks public APIs. Common causes: changing module paths, making public items private, renaming types, or removing convenience re-exports. Downstream consumers (including your own CLI crates) break silently.
+**Why it happens:**
+- Want CI to pass without special hardware
+- Test-driven development without hardware available
+- Misunderstanding test purpose (coverage vs validation)
+- Adding tests to hit coverage targets without verifying behavior
 
-**TrustEdge Risk:** `trustedge-cli`, `trst-cli`, `trustedge-wasm`, `trst-wasm` all consume library crates. Merging could break these thin shells if API surface changes.
+**How to avoid:**
+- **Every test must have assertions about actual output**
+- Hardware tests: `#[ignore]` + strict failure if hardware absent
+- Simulation tests: test API contracts, not hardware operations
+- Use property-based testing: "any valid input must produce valid output"
+- Code review: reject tests with no `assert!`, `expect`, or result validation
 
-### Warning Signs
+**Warning signs:**
+- Test functions that just call methods and return `Ok(())`
+- Tests that catch errors and print warnings instead of failing
+- `if hardware { test_real } else { println!("skipped") }` patterns
+- No negative testing (error cases, invalid input, hardware errors)
+- Test names like `test_*_compatibility`, `test_*_interface` with no real validation
 
-- Compilation errors in CLI crates after merging library code
-- Need to add `pub use` re-exports everywhere to fix imports
-- Module paths changing: `use trustedge_receipts::Receipt` → `use trustedge_core::receipts::Receipt`
-- Types moving from root to nested modules without re-export
-- Documentation examples breaking due to path changes
-- Semver major version bump required after "just a reorganization"
-
-### Prevention Strategy
-
-1. **API Compatibility Layer:** Preserve old paths with re-exports:
-   ```rust
-   // trustedge-core/src/lib.rs
-
-   // Core exports (new canonical location)
-   pub mod envelope;
-   pub mod receipts;
-   pub mod attestation;
-
-   // Backward compatibility re-exports (deprecated)
-   #[deprecated(since = "0.3.0", note = "use trustedge_core::receipts instead")]
-   pub use crate::receipts as receipt_system;
-   ```
-
-2. **Consumer Testing:** Test all downstream crates against the merged library:
-   ```bash
-   # After merging receipts into core
-   cargo test -p trustedge-cli        # Should still compile
-   cargo test -p trst-cli             # Should still compile
-   cargo test -p trustedge-wasm       # Should still compile
-   cargo test -p trst-wasm            # Should still compile
-   ```
-
-3. **API Inventory:** Before merge, document public API:
-   ```bash
-   cargo doc --no-deps -p trustedge-receipts
-   cargo doc --no-deps -p trustedge-attestation
-   # Review what's pub vs pub(crate)
-   ```
-
-4. **Staged Deprecation:**
-   - Phase 1: Merge code, preserve old paths with re-exports
-   - Phase 2: Add deprecation warnings
-   - Phase 3: Update downstream consumers
-   - Phase 4: Remove old paths in next major version
-
-5. **Semver Checking:**
-   ```bash
-   cargo install cargo-semver-checks
-   cargo semver-checks check-release
-   # Flags breaking changes
-   ```
-
-### Phase Mapping
-
-- **Phase 1 (Discovery):** Document current public API surface
-- **Phase 2 (Design):** Plan re-export strategy for backward compatibility
-- **Phase 3 (Implementation):** Merge with re-exports, test all consumers
-- **Phase 4 (Validation):** Verify no semver breakage, all consumers compile
+**Phase to address:**
+Phase 2 (Test Infrastructure) - Implement strict hardware tests + proper simulation tests
 
 ---
 
-## 5. Circular Dependency Creation
+### Pitfall 5: `yubikey` Crate API Misuse
 
-### Description
+**What goes wrong:**
+The `yubikey` Rust crate has critical gotchas:
+- **`untested` feature flag**: Required for APIs marked experimental, but using it means relying on unvetted code
+- Direct YubiKey API vs PKCS#11: mixing abstractions causes session conflicts
+- PIV slot locking: concurrent operations deadlock hardware
+- PIN retry exhaustion: unlimited retries brick the card
 
-Merging crates that previously depended on each other can create circular module dependencies. Example: `receipts` uses `core::envelope`, but `core::manifest` uses `receipts::ReceiptChain` for metadata — deadlock.
+**Why it happens:**
+- Documentation doesn't emphasize `untested` risks
+- PKCS#11 seems "lower level" so developers use yubikey crate directly
+- Not understanding PIV resource locking model
+- Development convenience (retry PIN automatically)
 
-**TrustEdge Risk:** `attestation` and `receipts` both use `core::envelope`. If attestation types are used in core, you create a cycle.
+**How to avoid:**
+- **DECISION: Use PKCS#11 exclusively** (via `pkcs11` crate), not `yubikey` crate direct API
+- If `yubikey` crate needed: document exact feature flags and API subset in use
+- Implement PIN retry limits (3 attempts max, then abort)
+- Use session mutex: only one operation per YubiKey at a time
+- Test with actual YubiKey: behavior differs from simulation
 
-### Warning Signs
+**Warning signs:**
+- `Cargo.toml`: `yubikey = { version = "0.7", features = ["untested"] }`
+- Mixing `yubikey::YubiKey` and `pkcs11::Ctx` in same backend
+- No retry limits on `login()` calls
+- Parallel tests without mutex causing "device busy" errors
+- Cached sessions across operations (PKCS#11 sessions expire)
 
-- Compilation errors: "cyclic dependency detected"
-- Need to move types to a separate `types` module to break cycles
-- Traits in one module, impls in another, neither can import the other
-- Cfg-gated features creating cycles (feature A needs B, B needs A when enabled)
-- Module hierarchy becomes deeply nested to avoid cycles
-
-### Prevention Strategy
-
-1. **Dependency Graphing:** Before merge, map all inter-crate dependencies:
-   ```
-   core ← receipts ← attestation
-   core ← trst-core
-   core ← wasm
-   ```
-   No arrows should form cycles after merge.
-
-2. **Extract Common Types:** Create a `types` or `primitives` module:
-   ```
-   core/src/
-   ├── primitives/    # Shared types, no dependencies on other modules
-   │   ├── envelope.rs
-   │   ├── receipt.rs
-   │   └── attestation.rs
-   ├── operations/    # Operations using primitives
-   │   ├── receipt_ops.rs
-   │   └── attestation_ops.rs
-   └── lib.rs
-   ```
-
-3. **Trait-Based Abstraction:** Use traits to break concrete dependencies:
-   ```rust
-   // Instead of: pub fn process(r: Receipt) -> Attestation
-   // Use:
-   pub trait Verifiable {
-       fn verify(&self) -> Result<bool>;
-   }
-
-   pub fn process(v: &impl Verifiable) -> Result<()>
-   ```
-
-4. **Dependency Layering:** Enforce strict module hierarchy:
-   ```
-   Layer 3: operations (uses types + crypto)
-   Layer 2: crypto (uses types)
-   Layer 1: types (no internal dependencies)
-   ```
-
-5. **Incremental Merging:** Merge bottom-up:
-   - Step 1: Merge `trst-core` (types only, no dependencies)
-   - Step 2: Merge `receipts` (depends on core envelope)
-   - Step 3: Merge `attestation` (depends on receipts)
-
-### Phase Mapping
-
-- **Phase 1 (Discovery):** Map current dependency graph
-- **Phase 2 (Design):** Design layered module structure
-- **Phase 3 (Implementation):** Merge in dependency order (bottom-up)
+**Phase to address:**
+Phase 1 (Core Backend Rewrite) - Remove `yubikey` crate dependency, use PKCS#11 only
 
 ---
 
-## 6. Build Time Explosion from Monolithic Compilation
+### Pitfall 6: PKCS#11 Session Management Leaks
 
-### Description
+**What goes wrong:**
+PKCS#11 sessions not properly opened/closed:
+- Resource exhaustion (max 16-32 sessions per slot on many devices)
+- Stale sessions after hardware removal/insertion
+- Login state confusion (session thinks it's logged in, but isn't)
+- Mutex deadlocks (waiting for session that's never released)
 
-Consolidating crates can dramatically increase build times. Small changes to core types force recompilation of the entire monolith, whereas separate crates only recompile affected parts.
+**Why it happens:**
+- C-style API in Rust (manual resource management)
+- Early returns/errors skip cleanup code
+- Assuming sessions are cheap (they're not)
+- Caching sessions too long (hardware state changes)
 
-**TrustEdge Risk:** `trustedge-core` already has 101 tests. Adding receipts (23 tests), attestation, trst-core will create a large compilation unit. CI time may double.
+**How to avoid:**
+- **RAII pattern**: wrap `CK_SESSION_HANDLE` in struct with `Drop` implementation
+- Open session → perform operation → close session (never cache long-term)
+- Use `scopeguard` or custom guard type to ensure cleanup
+- `logout()` before `close_session()` to release locks
+- Limit concurrent operations with mutex/semaphore
 
-### Warning Signs
+**Warning signs:**
+- `session: Option<CK_SESSION_HANDLE>` stored in struct (not scoped)
+- `open_session()` in `new()` but `close_session()` in `drop()` only
+- No `logout()` calls before closing sessions
+- Tests fail with "CKR_SESSION_HANDLE_INVALID" errors intermittently
+- "Device busy" errors when multiple tests run
 
-- `cargo build` time increasing 2x-5x after merge
-- Incremental compilation not helping (touching `envelope.rs` rebuilds everything)
-- CI timeouts on test runs
-- Developer frustration with long edit-compile-test cycles
-- Parallel compilation not effective (single large crate bottleneck)
-
-### Prevention Strategy
-
-1. **Module Isolation:** Keep modules loosely coupled:
-   ```rust
-   // BAD: Everything depends on everything
-   pub mod receipts {
-       use crate::attestation::*;
-       use crate::envelope::*;
-       use crate::transport::*;  // Why does receipts need network transport?
-   }
-
-   // GOOD: Minimal cross-module dependencies
-   pub mod receipts {
-       use crate::primitives::{Envelope, Signature};
-       // Only import what's needed
-   }
-   ```
-
-2. **Conditional Compilation:** Use features to reduce default compile scope:
-   ```toml
-   [features]
-   default = ["receipts", "attestation"]  # Common features
-   full = ["default", "yubikey", "audio", "network"]  # Everything
-   minimal = []  # Bare crypto primitives only
-   ```
-
-3. **Parallel Test Execution:**
-   ```bash
-   cargo test --workspace --jobs 8  # Parallel test execution
-   ```
-
-4. **Build Caching:** In CI, use `sccache` or `cargo-chef`:
-   ```dockerfile
-   # Cache dependencies separately from code
-   COPY Cargo.toml Cargo.lock ./
-   RUN cargo chef prepare
-   RUN cargo chef cook --release
-   COPY . .
-   RUN cargo build --release
-   ```
-
-5. **Benchmarking:** Measure before/after:
-   ```bash
-   # Before merge
-   time cargo build --workspace
-
-   # After merge
-   time cargo build -p trustedge-core
-
-   # If >2x slower, reconsider granularity
-   ```
-
-### Phase Mapping
-
-- **Phase 1 (Discovery):** Measure current build times
-- **Phase 3 (Implementation):** Monitor build time after each merge
-- **Phase 4 (Validation):** Ensure CI time < 2x baseline, or optimize
+**Phase to address:**
+Phase 1 (Core Backend Rewrite) - Implement session guard pattern
 
 ---
 
-## 7. Error Type Consolidation Gone Wrong
+### Pitfall 7: Certificate Generation with rcgen Pitfalls
 
-### Description
+**What goes wrong:**
+Using `rcgen` incorrectly for hardware-backed certificates:
+- Generating cert with rcgen's random keypair instead of hardware key
+- Self-signing with software key, then swapping public key (invalid signature)
+- Not using `serialize_der_with_signer()` custom signing callback
+- Improper extension encoding (critical flags, key usage mismatches)
 
-Each crate typically has its own error type. Consolidating these into a single error enum often creates either a massive enum with 100+ variants or overly generic errors that lose context.
+**Why it happens:**
+- rcgen designed for software keys (hardware signing is advanced use case)
+- Examples show self-signed software certs (not hardware signing)
+- Custom signer API is callback-based (requires understanding control flow)
+- Extensions have complex constraints (CA vs end-entity)
 
-**TrustEdge Risk:** `core` has `thiserror`, `receipts` likely has receipt-specific errors, `attestation` has attestation errors. Merging into one giant error enum loses clarity.
+**How to avoid:**
+- **Pattern**: `CertificateParams` → `serialize_der_with_signer(|tbs| hardware_sign(tbs))` → verify
+- Public key MUST come from hardware extraction (PKCS#11 `CKA_VALUE`)
+- Never generate KeyPair, only CertificateParams + remote signing
+- Test certificate parsing with `x509-cert::Certificate::from_der()` immediately after generation
+- Verify signature with extracted public key (round-trip validation)
 
-### Warning Signs
+**Warning signs:**
+- `rcgen::generate()` or `rcgen::generate_simple_self_signed()` (generates software key)
+- Certificate signed with `cert.serialize_der()` instead of `serialize_der_with_signer()`
+- Public key in cert doesn't match hardware-extracted key
+- Certificate validation fails with "signature verification failed"
+- No round-trip test (generate cert → parse → verify signature)
 
-- Error enum with 50+ variants: `TrustEdgeError::{EnvelopeError, ReceiptError, AttestationError, ...}`
-- Error messages losing specificity: "Operation failed" instead of "Receipt signature invalid"
-- Downstream users doing excessive pattern matching: `match err { Variant1 | Variant2 | ... => }`
-- Error conversions everywhere: `ReceiptError → CoreError → Result`
-- Documentation for errors becoming confusing (which variants apply to which operations?)
-
-### Prevention Strategy
-
-1. **Error Hierarchy:** Keep domain-specific error types, use trait objects for propagation:
-   ```rust
-   // Domain-specific errors
-   pub mod receipts {
-       #[derive(thiserror::Error, Debug)]
-       pub enum ReceiptError {
-           #[error("Invalid signature: {0}")]
-           InvalidSignature(String),
-           #[error("Chain continuity broken at index {0}")]
-           BrokenChain(usize),
-       }
-   }
-
-   pub mod attestation {
-       #[derive(thiserror::Error, Debug)]
-       pub enum AttestationError {
-           #[error("Provenance verification failed: {0}")]
-           ProvenanceFailed(String),
-       }
-   }
-
-   // Top-level uses anyhow for flexibility
-   pub type Result<T> = anyhow::Result<T>;
-   ```
-
-2. **Context Preservation:** Use `anyhow::Context`:
-   ```rust
-   use anyhow::Context;
-
-   pub fn verify_receipt(r: &Receipt) -> Result<()> {
-       r.verify()
-           .context("Receipt verification failed")
-           .with_context(|| format!("Receipt ID: {}", r.id()))?;
-       Ok(())
-   }
-   ```
-
-3. **Public vs Internal Errors:**
-   ```rust
-   // Public API: Simple error type
-   #[derive(thiserror::Error, Debug)]
-   pub enum TrustEdgeError {
-       #[error("Cryptographic operation failed")]
-       CryptoError,
-       #[error("Invalid input: {0}")]
-       InvalidInput(String),
-   }
-
-   // Internal: Rich error types (not exposed)
-   mod internal {
-       #[derive(thiserror::Error, Debug)]
-       enum DetailedError {
-           #[error("AES-GCM decryption failed: {0}")]
-           AesGcmError(#[from] aes_gcm::Error),
-           // ... 50 more variants
-       }
-   }
-   ```
-
-4. **Error Testing:** Verify error context is preserved:
-   ```rust
-   #[test]
-   fn error_messages_are_specific() {
-       let result = verify_invalid_receipt();
-       let err = result.unwrap_err();
-       assert!(err.to_string().contains("signature"));  // Not generic "failed"
-   }
-   ```
-
-### Phase Mapping
-
-- **Phase 2 (Design):** Design error hierarchy before merging code
-- **Phase 3 (Implementation):** Keep domain-specific errors, use `anyhow` for propagation
-- **Phase 4 (Validation):** Test error messages for specificity
+**Phase to address:**
+Phase 1 (Core Backend Rewrite) - Implement rcgen with custom hardware signer
 
 ---
 
-## 8. Benchmark and Performance Regression
+### Pitfall 8: Feature Flag Testing Gaps in CI
 
-### Description
+**What goes wrong:**
+CI configuration has conditional logic for feature-gated code:
+- Tests skipped when dependencies unavailable (PCSC, ALSA)
+- Feature combinations untested (audio + yubikey together)
+- Platform-specific failures hidden (Linux passes, macOS fails)
+- "Works in CI" but broken for users (dependencies available but feature broken)
 
-Merging crates can accidentally introduce performance regressions. Common causes: additional trait bounds adding overhead, increased dependency chains slowing compilation, or optimizations disabled due to feature interactions.
+**Why it happens:**
+- Avoiding CI failures from missing system dependencies
+- Different developer environments (not everyone has YubiKey)
+- Build time optimization (skip expensive feature builds)
+- Gradual feature adoption ("we'll test it later when stable")
 
-**TrustEdge Risk:** `core` has benchmarks for crypto operations. Merging receipts/attestation could slow down envelope operations if not careful about trait abstractions.
+**How to avoid:**
+- **Separate test tiers**: unit (no hardware), integration (simulation), strict (real hardware)
+- CI MUST fail if feature enabled but tests skipped
+- Use cargo-hack for feature powerset testing (already in CI, good)
+- Platform-specific CI jobs (Linux, macOS, Windows) for platform features
+- Document which features are CI-tested vs manual-only
 
-### Warning Signs
+**Warning signs:**
+- `if: steps.yubikey-deps.outputs.yubikey-available == 'true'` without else-fail
+- Tests that print "skipped" instead of failing when deps missing
+- No all-features build in CI
+- Feature-gated code not covered by any CI job
+- Conditional test execution based on hardware detection
 
-- Benchmark results degrading after merge (even by 5-10%)
-- New trait bounds with runtime dispatch where static dispatch existed before
-- Feature flags affecting optimization (e.g., `--features receipts` slows down core crypto)
-- Release builds slower than before merge
-- Unexpected heap allocations in hot paths
-
-### Prevention Strategy
-
-1. **Benchmark Baseline:** Run benchmarks before merge:
-   ```bash
-   cargo bench --bench crypto_benchmarks > baseline.txt
-   ```
-
-2. **Post-Merge Validation:**
-   ```bash
-   cargo bench --bench crypto_benchmarks > post-merge.txt
-   diff baseline.txt post-merge.txt
-   # Flag any regression >5%
-   ```
-
-3. **Zero-Cost Abstractions:** Verify traits compile to static dispatch:
-   ```rust
-   // BAD: Runtime dispatch
-   pub fn process(backend: &dyn Backend) -> Result<()> {
-       backend.operation()  // Virtual call
-   }
-
-   // GOOD: Static dispatch
-   pub fn process<B: Backend>(backend: &B) -> Result<()> {
-       backend.operation()  // Inlined
-   }
-   ```
-
-4. **Inline Annotations:** Preserve performance-critical inlining:
-   ```rust
-   #[inline]
-   pub fn hot_path_function() { ... }
-
-   #[inline(always)]  // Force inline even in debug builds
-   pub fn critical_crypto_primitive() { ... }
-   ```
-
-5. **Feature-Gated Benchmarks:**
-   ```toml
-   [[bench]]
-   name = "core_crypto"
-   harness = false
-   required-features = []  # Always run
-
-   [[bench]]
-   name = "yubikey_ops"
-   harness = false
-   required-features = ["yubikey"]  # Only with hardware
-   ```
-
-### Phase Mapping
-
-- **Phase 1 (Discovery):** Run baseline benchmarks
-- **Phase 3 (Implementation):** Re-run benchmarks after each major merge
-- **Phase 4 (Validation):** Verify no regression >5%
+**Phase to address:**
+Phase 2 (Test Infrastructure) - Implement strict test tiers with proper CI enforcement
 
 ---
 
-## 9. Documentation Fragmentation and Stale Examples
+## Technical Debt Patterns
 
-### Description
+Shortcuts that seem reasonable but create long-term problems.
 
-After consolidation, documentation becomes fragmented. README examples reference old crate names, API docs point to removed modules, and examples in `examples/` break due to path changes.
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|-------------------|----------------|-----------------|
+| Conditional hardware tests (`if has_hardware { test } else { skip }`) | CI passes without hardware | Tests become meaningless, bugs slip through | **Never** — use `#[ignore]` for hardware tests |
+| Using `untested` feature flag on dependencies | Access to bleeding-edge APIs | Relying on unvetted, potentially broken code | **Never** for production backends |
+| Caching PKCS#11 sessions across operations | Fewer session open/close calls | Resource leaks, stale sessions, deadlocks | **Never** — sessions are cheap to create |
+| Graceful degradation to software crypto | Demo works without hardware | False security, impossible to debug capability issues | **Never** — fail-closed is only option |
+| Manual DER encoding "just this one field" | Avoid library complexity for simple case | Grows into 1000+ line unmaintainable mess | **Never** — use libraries from day one |
+| Test vectors in backend code "for now" | Deterministic output during development | Ships to production, becomes security vulnerability | **Never** — tests/ only, production code errors |
 
-**TrustEdge Risk:** `examples/cam.video/` likely references multiple crates. CLAUDE.md documents testing commands for individual crates. All needs updating.
+## Integration Gotchas
 
-### Warning Signs
+Common mistakes when connecting to external services.
 
-- Examples not compiling: `cargo run --example receipt_demo` fails
-- README showing `use trustedge_receipts::Receipt` (old path)
-- API documentation showing "404 Not Found" for linked modules
-- Integration guides referring to deleted crates
-- `CLAUDE.md` build commands failing (e.g., `cargo test -p trustedge-receipts`)
+| Integration | Common Mistake | Correct Approach |
+|-------------|----------------|------------------|
+| PKCS#11 OpenSC | Assuming `/usr/lib/opensc-pkcs11.so` path | Query with `pkg-config --variable=libdir opensc-pkcs11` or configurable path |
+| YubiKey PIV slots | Using slot 9c (Key Management) for signing | Use 9a (Authentication) or 9e (Card Auth) for signing operations |
+| PKCS#11 login | Hardcoded PIN in config | Prompt user, support env var `YUBIKEY_PIN`, **never commit PINs** |
+| rcgen + hardware key | Generating cert with rcgen's keypair | Extract hardware public key first, use `serialize_der_with_signer()` |
+| PKCS#11 key search | Searching by label (user-changeable) | Search by CKA_ID (immutable hardware attribute) |
+| Certificate extensions | Missing `keyUsage` = rejected by TLS | Use rcgen's `KeyUsagePurpose` enum, test with actual TLS handshake |
 
-### Prevention Strategy
+## Performance Traps
 
-1. **Example Validation:** Add to CI:
-   ```bash
-   # Ensure all examples compile
-   for example in examples/*/; do
-     cargo check --manifest-path "$example/Cargo.toml" || exit 1
-   done
-   ```
+Patterns that work at small scale but fail as usage grows.
 
-2. **Documentation Update Checklist:**
-   - [ ] Update CLAUDE.md build/test commands
-   - [ ] Update README.md import examples
-   - [ ] Update API doc links
-   - [ ] Update examples/ crate references
-   - [ ] Update inline doc examples (`cargo test --doc`)
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|----------------|
+| Opening PKCS#11 session per key lookup | Slow key operations (300ms+ per lookup) | Open session once, enumerate keys in batch | >10 keys in system |
+| Generating new cert for every request | Certificate generation takes 200ms+ | Cache certificates keyed by (key_id, params), TTL 1 hour | >100 requests/sec |
+| No session pool limit | "No more sessions" errors from hardware | Limit to 4 concurrent sessions with semaphore | >4 concurrent operations |
+| Synchronous PKCS#11 calls in async code | Blocking tokio runtime threads | Use `tokio::task::spawn_blocking()` for all PKCS#11 ops | High async concurrency |
 
-3. **Doc Tests:** Ensure documentation examples compile:
-   ```rust
-   /// # Example
-   /// ```
-   /// use trustedge_core::receipts::Receipt;
-   /// let r = Receipt::new();
-   /// ```
-   pub struct Receipt { ... }
-   ```
-   Run with: `cargo test --doc`
+## Security Mistakes
 
-4. **Path Aliases:** In documentation, use modern paths but mention old ones:
-   ```rust
-   /// # Migrating from `trustedge-receipts`
-   ///
-   /// If you previously used:
-   /// ```ignore
-   /// use trustedge_receipts::Receipt;
-   /// ```
-   ///
-   /// Update to:
-   /// ```
-   /// use trustedge_core::receipts::Receipt;
-   /// ```
-   pub struct Receipt { ... }
-   ```
+Domain-specific security issues beyond general web security.
 
-### Phase Mapping
+| Mistake | Risk | Prevention |
+|---------|------|------------|
+| Logging PIN values | PIN compromise via logs | Never log `pin` field, use `[REDACTED]` in debug output |
+| No PIN retry limits | YubiKey bricked after 15 failed attempts | Max 3 retries, then abort with clear error |
+| Trusting hardware presence = security | Software fallback silently activated | Verify `CKF_HW` flag on PKCS#11 token, fail if not set |
+| Reusing signature nonces | ECDSA private key recovery from repeated k | Trust hardware RNG, verify signatures have unique r,s values |
+| Placeholder keys in production | All instances share same "hardware" key | Code review for hardcoded hex arrays, reject if found |
+| No attestation verification | Fake "hardware" backend claims attestation | Verify attestation chain to YubiKey root CA (future work) |
 
-- **Phase 3 (Implementation):** Update docs incrementally with each merge
-- **Phase 4 (Validation):** Run `cargo test --doc`, validate all examples
+## UX Pitfalls
 
----
+Common user experience mistakes in this domain.
 
-## 10. Version Number Confusion and Semver Violations
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|-----------------|
+| "Hardware not found" with no guidance | User has YubiKey plugged in but wrong driver | Detailed error: "PKCS#11 module not found. Install: apt install opensc-pkcs11" |
+| PIN prompt on every operation | User enters PIN 50 times during cert generation | Session-based PIN caching (within single operation, not across operations) |
+| Cryptic PKCS#11 error codes | "Error: CKR_USER_NOT_LOGGED_IN" — user has no idea | Map PKCS#11 errors to human messages: "YubiKey PIN required but not provided" |
+| Blocking operations in async context | UI freezes during 2-second YubiKey operation | All hardware ops via `spawn_blocking()`, show progress indicator |
+| No feedback during slow operations | User thinks it's frozen (ECDSA verify takes 1-2 seconds on YubiKey) | Verbose mode: "Waiting for YubiKey signature..." |
 
-### Description
+## "Looks Done But Isn't" Checklist
 
-After merging, teams struggle with version numbering. Should the merged crate use the highest version? Should it bump major version due to path changes? Mishandling leads to semver violations.
+Things that appear complete but are missing critical pieces.
 
-**TrustEdge Risk:** `core` is 0.2.0, `receipts` is 0.2.0, `attestation` is 0.2.0. After merge, is core still 0.2.0? 0.3.0? 1.0.0?
+- [ ] **Certificate Generation:** Often missing round-trip validation — verify parse cert back with `x509-cert` and check signature
+- [ ] **Hardware Detection:** Often missing actual capability check — verify can perform crypto op, not just detect device
+- [ ] **PKCS#11 Integration:** Often missing session cleanup — verify no leaked sessions with `close_all_sessions()` call
+- [ ] **Error Handling:** Often missing user-actionable messages — test error output is comprehensible to non-experts
+- [ ] **Feature Flag Testing:** Often missing negative tests — verify feature disabled = proper compile errors/runtime errors
+- [ ] **PIN Handling:** Often missing retry limits — verify 4th failed PIN returns error, not retry
+- [ ] **Concurrent Operations:** Often missing mutex protection — run tests with `--test-threads=10` to expose races
+- [ ] **Backend Capabilities:** Often reports static capabilities — verify `get_capabilities()` reflects actual hardware state
+- [ ] **Placeholder Removal:** Often "placeholder" code still present — grep for 'placeholder', 'fallback', 'demo' in src/backends/
+- [ ] **Manual Crypto:** Often ASN.1 encoding still manual — verify zero occurrences of `.push(0x30)` or similar in backend
 
-### Warning Signs
+## Recovery Strategies
 
-- Version number decreasing (merged crate 0.2.0 but dependency was 0.3.0)
-- Breaking changes but only minor version bump
-- Downstream consumers getting surprise breakage on "patch" update
-- Confusion about what version to publish
-- Changelog not reflecting actual changes
+When pitfalls occur despite prevention, how to recover.
 
-### Prevention Strategy
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|---------------|----------------|
+| Silent fallback shipped | **HIGH** — security incident | 1. Immediate disclosure, 2. Patch with fail-closed, 3. Force update, 4. Audit logs for affected operations |
+| Manual DER encoding bugs | **MEDIUM** — compatibility issues | 1. Switch to library (rcgen, x509-cert), 2. Migrate existing certs, 3. Semver major bump if format changed |
+| Test vector key leaked | **HIGH** — key compromise | 1. Revoke all certificates, 2. Force re-enrollment with real hardware keys, 3. Audit for key reuse |
+| PKCS#11 session leak | **LOW** — restart fixes | 1. Implement session guard with Drop, 2. Add cleanup in error paths, 3. Test with long-running process |
+| PIN bricked YubiKey | **MEDIUM** — user impact | 1. Document recovery (factory reset loses keys), 2. Add retry limits, 3. Consider PUK unlock flow |
+| `untested` feature used | **MEDIUM** — unstable API | 1. Pin exact crate version, 2. Vendor crate if needed, 3. Plan migration to stable API |
 
-1. **Semver Decision Matrix:**
-   ```
-   API backward compatible? → Patch bump (0.2.0 → 0.2.1)
-   New features, no breaks?  → Minor bump (0.2.0 → 0.3.0)
-   Breaking changes?         → Major bump (0.2.0 → 1.0.0) or (1.2.0 → 2.0.0)
-   ```
+## Pitfall-to-Phase Mapping
 
-2. **Pre-1.0 Rules:** While 0.x.y, breaking changes allowed in minor bumps:
-   ```
-   Current: 0.2.0
-   Consolidation with breaking path changes: 0.3.0
-   Reasoning: Pre-1.0, minor bump signals potential breakage
-   ```
+How roadmap phases should address these pitfalls.
 
-3. **Changelog Discipline:**
-   ```markdown
-   # Changelog
+| Pitfall | Prevention Phase | Verification |
+|---------|------------------|--------------|
+| Silent fallback to software | Phase 1: Core Backend Rewrite | No `fallback`, `placeholder` in `git grep`, hardware_backed requires active session |
+| Manual ASN.1/DER encoding | Phase 1: Core Backend Rewrite | Zero occurrences of `push(0x30)`, all cert gen uses rcgen |
+| Hardcoded test vectors | Phase 1: Core Backend Rewrite | No hex arrays >32 bytes in `src/backends/`, only in `tests/` |
+| Tests that don't test | Phase 2: Test Infrastructure | Every test has >=1 assertion, hardware tests marked `#[ignore]` |
+| yubikey crate misuse | Phase 1: Core Backend Rewrite | `yubikey` crate removed from Cargo.toml, only `pkcs11` remains |
+| PKCS#11 session leaks | Phase 1: Core Backend Rewrite | Session guard type with Drop, `cargo test` passes 100 iterations |
+| rcgen pitfalls | Phase 1: Core Backend Rewrite | Certificate round-trip test passes, signature verifies with hardware key |
+| Feature flag testing gaps | Phase 2: Test Infrastructure | CI fails if feature enabled but deps missing, strict test tier exists |
+| No hardware capability verification | Phase 2: Test Infrastructure | `get_capabilities()` tested with/without hardware, returns different results |
+| PIN retry limits missing | Phase 1: Core Backend Rewrite | Test verifies >3 failures = abort, not infinite retry |
 
-   ## [0.3.0] - 2026-02-XX
+## Additional Integration Pitfalls
 
-   ### Changed (BREAKING)
-   - Consolidated `trustedge-receipts` into `trustedge-core`
-   - Module paths changed: `trustedge_receipts::*` → `trustedge_core::receipts::*`
+### PKCS#11 Specific
 
-   ### Added
-   - Re-exports for backward compatibility (deprecated)
+| Issue | Problem | Solution |
+|-------|---------|----------|
+| Token removal during operation | Session becomes invalid mid-operation | Catch `CKR_DEVICE_REMOVED`, return `BackendError::HardwareUnavailable` |
+| Multiple YubiKeys plugged in | Wrong device selected | Allow slot selection by serial number, fail if ambiguous |
+| Slot number vs slot ID confusion | `ykman` uses slot names (9a), PKCS#11 uses slot IDs (0-15) | Maintain mapping, document clearly |
+| Public key format differences | Different slots return different encodings (raw vs DER) | Normalize to DER SPKI format at extraction point |
+| Certificate chain verification | Self-signed certs rejected by some validators | Support CA certificate export for trust chain |
 
-   ### Migration Guide
-   - Update imports: `use trustedge_core::receipts::Receipt;`
-   ```
+### rcgen Specific
 
-4. **Deprecation Period:** For pre-1.0, allow one release with deprecations:
-   ```
-   Version 0.3.0: Add re-exports with deprecation warnings
-   Version 0.4.0: Remove re-exports (breaking)
-   ```
+| Issue | Problem | Solution |
+|-------|---------|----------|
+| Serial number uniqueness | rcgen generates random serial, could collide | Use hardware serial number + timestamp for determinism |
+| Validity period timezone | `not_before` in UTC but hardware clock in local time | Use `chrono::Utc::now()` consistently |
+| Extension criticality | Incorrect critical flag = cert rejected | Follow RFC 5280: digitalSignature critical=false, basicConstraints critical=true for CA |
+| Subject DN ordering | Different libraries expect different DN component order | Use `rcgen::DistinguishedName` API, test parsing with multiple libraries |
+| Custom extensions | rcgen doesn't support all extensions | Use `custom_extensions` with DER-encoded values from `der` crate |
 
-5. **Consumer Notification:**
-   ```toml
-   # For downstream consumers, be explicit
-   [dependencies]
-   trustedge-core = "0.3"  # Includes receipts, attestation
-   # trustedge-receipts = "0.2"  # REMOVED - now part of trustedge-core
-   ```
+## Phase-Specific Research Flags
 
-### Phase Mapping
+These areas will likely need deeper research during implementation:
 
-- **Phase 2 (Design):** Decide on versioning strategy
-- **Phase 4 (Validation):** Write changelog, tag release, notify consumers
+| Phase | Research Need | Reason |
+|-------|---------------|--------|
+| Phase 1 | rcgen custom signer callback | Complex control flow, need to understand TBS certificate signing exactly |
+| Phase 1 | PKCS#11 key attribute extraction | Different YubiKey firmware versions return different formats |
+| Phase 2 | Hardware attestation verification | YubiKey attestation chain verification is underdocumented |
+| Phase 3 | QUIC/TLS integration | rustls + quinn + custom cert verifier requires deep integration knowledge |
+| Phase 3 | Multi-device handling | Detecting, selecting, failing over between multiple YubiKeys needs testing with real hardware |
 
----
+## Sources
 
-## 11. Hardware Integration Regression (YubiKey)
+**Codebase Analysis:**
+- `/home/john/vault/projects/github.com/trustedge/crates/core/src/backends/yubikey.rs` (1,000+ lines manual DER, 93 occurrences of "placeholder", 41 occurrences of "fallback")
+- `/home/john/vault/projects/github.com/trustedge/improvement-plan.md` (security vulnerability findings)
+- `/home/john/vault/projects/github.com/trustedge/crates/core/Cargo.toml` (line 62: `yubikey = { version = "0.7", optional = true, features = ["untested"] }`)
+- Test files: `yubikey_simulation_tests.rs`, `yubikey_strict_hardware.rs`, `yubikey_integration.rs` (auto-pass stubs)
 
-### Description
+**Specifications:**
+- PKCS#11 v2.40 Cryptographic Token Interface Standard (session management, error codes)
+- RFC 5280 (X.509 Certificate and CRL Profile) — extension requirements
+- YubiKey PIV documentation (slot layout, attestation)
 
-Hardware integration is fragile. Consolidation can break hardware backends due to: dependency version conflicts, feature flag misconfigurations, or accidental removal of hardware-specific initialization code.
+**Rust Ecosystem:**
+- `rcgen` crate documentation (version 0.13+) — custom signer pattern
+- `pkcs11` crate (version 0.5) — Rust bindings
+- `x509-cert` crate (version 0.2) — DER parsing/validation
+- `der`, `spki` crates — ASN.1 encoding libraries
 
-**TrustEdge Risk:** YubiKey backend (3236 lines) is already complex with PKCS#11, PIV, X.509. Merging other crypto code could introduce conflicts in crypto library versions or initialization order.
+**Known Issues:**
+- yubikey-rs issue #298: `untested` feature flag warning
+- OpenSC PKCS#11 session limit: 16 concurrent sessions (verified in OpenSC source)
+- rcgen custom signer examples (GitHub issues, Stack Overflow patterns)
 
-### Warning Signs
-
-- YubiKey tests failing after merge (if you have hardware to test)
-- PKCS#11 library loading failures
-- Version conflicts: `pkcs11 0.5` vs newer version pulled by merged crate
-- YubiKey feature flag not enabling all necessary dependencies
-- Hardware initialization order changed (PKCS#11 must init before use)
-- X.509 certificate generation broken due to `der` crate version mismatch
-
-### Prevention Strategy
-
-1. **Dependency Pinning:** Lock hardware-critical dependencies:
-   ```toml
-   [dependencies]
-   pkcs11 = "=0.5.0"  # Exact version, not "0.5"
-   yubikey = "=0.7.0"
-   x509-cert = "=0.2.0"
-   ```
-
-2. **Hardware Test Preservation:**
-   ```bash
-   # Before merge, document YubiKey test count
-   cargo test -p trustedge-core --features yubikey --test yubikey_integration -- --list
-
-   # After merge, verify same tests exist
-   cargo test -p trustedge-core --features yubikey --test yubikey_integration -- --list
-   ```
-
-3. **Feature Dependency Completeness:**
-   ```toml
-   [features]
-   yubikey = [
-     "pkcs11",
-     "dep:yubikey",
-     "x509-cert",
-     "der",
-     "spki",
-     "signature",
-     # Don't forget any dependency!
-   ]
-   ```
-
-4. **Initialization Order Documentation:**
-   ```rust
-   /// # YubiKey Backend Initialization
-   ///
-   /// CRITICAL: Must be called before any PKCS#11 operations.
-   ///
-   /// 1. Load PKCS#11 library (OpenSC or YubiKey Manager)
-   /// 2. Initialize PKCS#11 context
-   /// 3. Open session to slot 0
-   /// 4. Login with PIN
-   ///
-   /// Incorrect order will cause undefined behavior.
-   pub fn initialize_yubikey() -> Result<YubiKeyBackend> { ... }
-   ```
-
-5. **Manual Hardware Test Protocol:**
-   ```markdown
-   # YubiKey Test Protocol (Manual)
-
-   Before merge:
-   1. Insert YubiKey
-   2. Run: cargo test --features yubikey --test yubikey_real_operations
-   3. Document pass/fail
-
-   After merge:
-   1. Insert same YubiKey
-   2. Run: cargo test --features yubikey --test yubikey_real_operations
-   3. Verify same results
-   ```
-
-### Phase Mapping
-
-- **Phase 1 (Discovery):** Document current YubiKey test status
-- **Phase 2 (Design):** Pin hardware dependencies, plan preservation
-- **Phase 3 (Implementation):** Merge carefully, test after each change
-- **Phase 4 (Validation):** Manual hardware test verification
+**Confidence Notes:**
+- **HIGH confidence** on: Manual DER pitfall (observed 1000+ lines in codebase), placeholder pattern (93 occurrences), fallback anti-pattern (41 occurrences)
+- **MEDIUM confidence** on: PKCS#11 session limits (varies by device), rcgen integration patterns (well-documented but complex)
+- **LOW confidence** on: YubiKey firmware differences (version-specific behavior requires testing with multiple devices)
 
 ---
 
-## 12. Macro and Derive Propagation Failures
-
-### Description
-
-Procedural macros and derive macros often break during consolidation. Causes: macro crate dependencies not propagated, derive features not enabled, or macro-generated code referencing old module paths.
-
-**TrustEdge Risk:** `serde` derives are everywhere. If any crate uses custom derives or conditional serialization, merging could break serialization.
-
-### Warning Signs
-
-- Compilation errors: "cannot find derive macro `Serialize`"
-- Features like `serde/derive` not enabled in merged crate
-- Macro-generated code referencing wrong module paths
-- Custom derives (e.g., `#[derive(CustomTrait)]`) not working
-- Serialization format changing unexpectedly after merge
-
-### Prevention Strategy
-
-1. **Feature Propagation:**
-   ```toml
-   [dependencies]
-   serde = { workspace = true, features = ["derive"] }  # Don't forget "derive"!
-   ```
-
-2. **Serialization Testing:**
-   ```rust
-   #[test]
-   fn serialization_format_unchanged() {
-       let receipt = Receipt::new();
-       let json = serde_json::to_string(&receipt).unwrap();
-
-       // Ensure format didn't change after merge
-       assert!(json.contains("\"version\":"));
-       assert!(json.contains("\"signature\":"));
-   }
-   ```
-
-3. **Custom Derive Auditing:**
-   ```bash
-   # Find all custom derives
-   rg '#\[derive\(' | grep -v 'Serialize\|Deserialize\|Debug\|Clone'
-   # Ensure each custom derive still works after merge
-   ```
-
-4. **Serde Compatibility:**
-   ```toml
-   [dependencies]
-   serde = { workspace = true, features = ["derive"] }
-   serde_json = { workspace = true }
-   serde_bytes = { workspace = true }  # If using binary serialization
-   bincode = { workspace = true }      # If using bincode
-   ```
-
-### Phase Mapping
-
-- **Phase 3 (Implementation):** Verify derives compile after each module move
-- **Phase 4 (Validation):** Run serialization tests
-
----
-
-## Summary: Critical Phases for Pitfall Prevention
-
-| Phase | Key Pitfalls to Address |
-|-------|------------------------|
-| **Phase 1: Discovery** | Feature inventory (#1), dependency audit (#2), test counting (#3), API documentation (#4), benchmark baseline (#8), hardware test status (#11) |
-| **Phase 2: Design** | Feature unification (#1), WASM-safe module design (#2), test namespace strategy (#3), re-export plan (#4), error hierarchy (#7), versioning strategy (#10) |
-| **Phase 3: Implementation** | Feature testing (#1), target-specific deps (#2), test preservation (#3), consumer testing (#4), incremental merging (#5), doc updates (#9), derive verification (#12) |
-| **Phase 4: Validation** | CI matrix (#1), WASM compilation (#2), test count verification (#3), semver check (#4), build time measurement (#6), benchmark regression (#8), changelog (#10), hardware tests (#11) |
-
----
-
-## TrustEdge-Specific Recommendations
-
-Based on the project context, prioritize these pitfalls:
-
-1. **High Priority:**
-   - #2 (WASM vs Native) — `trst-core` must remain WASM-compatible
-   - #3 (Test Loss) — 150+ tests must be preserved
-   - #11 (YubiKey) — Hardware integration is the differentiator
-
-2. **Medium Priority:**
-   - #1 (Feature Explosion) — Already have `yubikey`, `audio` features
-   - #4 (API Breaking) — Thin shells depend on core API
-   - #5 (Circular Deps) — Receipts/attestation both use core
-
-3. **Monitor:**
-   - #6 (Build Time) — 10 crates is not huge, but monitor
-   - #7 (Errors) — Each subsystem likely has its own error types
-   - #8 (Performance) — Crypto benchmarks exist, preserve them
-
----
-
-**Next Steps:**
-1. Use this document during Phase 1 (Discovery) to audit for warning signs
-2. Reference prevention strategies during Phase 2 (Design)
-3. Create validation checklists from Phase Mapping sections
-4. Add pitfall checks to CI/test scripts
-
----
-
-*Research completed: 2026-02-09*
-*Sources: Rust workspace consolidation patterns, semver.org, cargo book, WASM targets guide, hardware integration best practices*
+*Research conducted through analysis of trustedge v1.0 codebase bugs, PKCS#11 specification review, Rust crypto ecosystem crate documentation, and security best practices for hardware crypto integration.*
