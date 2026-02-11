@@ -4,13 +4,14 @@
 
 [package]
 name = "trustedge-attestation"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
-description = "Hardware-backed software attestation and birth certificates for TrustEdge"
+description = "DEPRECATED: Use trustedge-core instead. Hardware-backed software attestation and birth certificates for TrustEdge"
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
 license = "MPL-2.0"
 repository = "https://github.com/TrustEdge-Labs/trustedge"
-keywords = ["cryptography", "attestation", "hardware", "yubikey", "software-integrity"]
+readme = "README.md"
+keywords = ["deprecated", "cryptography", "attestation", "hardware", "yubikey"]
 categories = ["cryptography", "development-tools", "authentication"]
 
 [dependencies]
