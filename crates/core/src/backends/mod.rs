@@ -14,9 +14,9 @@
 //! - Keyring backend (PBKDF2 with OS keyring)
 //! - Software HSM backend (file-based key storage)
 //! - Universal backend registry system
-//! - YubiKey backend (PKCS#11 hardware tokens)
 //!
 //! Planned backends:
+//! - YubiKey backend (v1.1 rewrite in progress)
 //! - TPM 2.0 backend
 //! - Hardware HSM backend (additional PKCS#11 devices)
 
@@ -26,7 +26,6 @@ pub mod traits;
 pub mod universal;
 pub mod universal_keyring;
 pub mod universal_registry;
-pub mod yubikey;
 
 pub use keyring::KeyringBackend;
 pub use software_hsm::SoftwareHsmBackend;
@@ -34,7 +33,6 @@ pub use traits::*;
 pub use universal::*;
 pub use universal_keyring::UniversalKeyringBackend;
 pub use universal_registry::{BackendPreferences, UniversalBackendRegistry};
-pub use yubikey::{CertificateParams, HardwareCertificate, YubiKeyBackend, YubiKeyConfig};
 
 use anyhow::Result;
 

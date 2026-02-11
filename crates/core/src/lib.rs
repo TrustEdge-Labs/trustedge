@@ -21,7 +21,7 @@
 //! - **Universal Backend System**: Pluggable crypto operations (Software HSM, Keyring, YubiKey)
 //! - **Live Audio Capture**: Real-time microphone input with configurable quality
 //! - **Network Operations**: Secure client-server communication with mutual authentication
-//! - **Hardware Integration**: Full YubiKey PKCS#11 support with real hardware signing
+//! - **Hardware Integration**: YubiKey PIV support (experimental, v1.1 rewrite in progress)
 //! - **Algorithm Agility**: Configurable cryptographic algorithms with forward compatibility
 //! - **Memory Safety**: Proper key material cleanup with zeroization
 //!
@@ -69,8 +69,8 @@
 //!
 //! Hardware and storage integrations:
 //!
-//! - **`yubikey`** — YubiKey PIV hardware signing and key management via PKCS#11.
-//!   Requires PCSC libraries (`libpcsclite-dev` on Linux, built-in on macOS).
+//! - **`yubikey`** — YubiKey PIV support (experimental, v1.1 rewrite in progress).
+//!   Requires PCSC libraries (`libpcsclite-dev` on Linux, built-in on macOS). Implementation removed pending rewrite.
 //!
 //! ### Platform Features
 //!
