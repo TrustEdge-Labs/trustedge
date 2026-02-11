@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations with production-quality YubiKey integration — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 5 (Attestation Integration) — Complete
+**Current focus:** Phase 6 (Feature Flags) — In Progress
 
 ## Current Position
 
-Phase: 5 of 8 (Attestation Integration)
-Plan: 1 of 1 complete
+Phase: 6 of 8 (Feature Flags)
+Plan: 2 of 2 complete
 Status: Complete
-Last activity: 2026-02-10 — Completed 05-01: Move attestation into core (2/2 tasks)
+Last activity: 2026-02-10 — Completed 06-02: All-features CI testing and downstream validation (2/2 tasks)
 
-Progress: [█████░░░░░] 62.5% (5/8 phases)
+Progress: [███████░░░] 75.0% (6/8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: ~6.0 minutes
-- Total execution time: ~1.1 hours
+- Total plans completed: 12
+- Average duration: ~4.8 minutes
+- Total execution time: ~1.2 hours
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: [█████░░░░░] 62.5% (5/8 phases)
 | 03-trst-core-integration | 2 | ~11.5 min | ~5.8 min |
 | 04-receipts-integration | 1 | ~4 min | ~4 min |
 | 05-attestation-integration | 1 | ~6 min | ~6 min |
+| 06-feature-flags | 2 | ~2.5 min | ~1.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (4.6 min), 03-02 (6.9 min), 04-01 (4 min), 05-01 (6 min)
-- Trend: Consistent velocity on migration plans (4-7 min range)
+- Last 5 plans: 03-02 (6.9 min), 04-01 (4 min), 05-01 (6 min), 06-01 (0.8 min), 06-02 (1.4 min)
+- Trend: Phase 6 CI automation plans executed very quickly (sub-2 min range)
 
 *Updated after each plan completion*
 
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 05]: Attestation crate (826 LOC, 10 tests) migrated into core applications layer
 - [Phase 05]: All envelope feature gates removed (Envelope always available inside core)
 - [Phase 05]: CLI binaries converted to cargo examples (attest, verify_attestation, attestation_demo)
+- [Phase 06]: Conditional guards for all-features CI test: Only runs when both audio (ALSA) and yubikey (PCSC) platform dependencies available
+- [Phase 06]: WASM target verification: CI installs wasm32-unknown-unknown explicitly; local script checks if already installed
+- [Phase 06]: Downstream feature-powerset check unconditional: trustedge-cli runs in all environments (cargo-hack already required)
 
 ### Pending Todos
 
@@ -89,5 +93,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-10
-Stopped at: Completed 05-01-PLAN.md (attestation integration) - Phase 5 complete
-Resume file: .planning/phases/05-attestation-integration/05-01-SUMMARY.md
+Stopped at: Completed 06-02-PLAN.md (all-features CI testing) - Phase 6 complete
+Resume file: .planning/phases/06-feature-flags/06-02-SUMMARY.md
