@@ -45,7 +45,7 @@ Consolidated TrustEdge from 10 scattered crates into monolithic core with thin C
 **Plans:** 1 plan
 
 Plans:
-- [ ] 09-01-PLAN.md — Scorched-earth deletion of YubiKey backend, tests, examples, and placeholder code
+- [x] 09-01-PLAN.md — Scorched-earth deletion of YubiKey backend, tests, examples, and placeholder code
 
 #### Phase 10: Backend Rewrite
 
@@ -113,10 +113,10 @@ Phases execute in numeric order: 9 → 10 → 11 → 12
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-8. [v1.0 phases] | v1.0 | 17/17 | Complete | 2026-02-11 |
-| 9. Cleanup | v1.1 | 0/1 | Planning complete | - |
+| 9. Cleanup | v1.1 | 1/1 | Complete | 2026-02-11 |
 | 10. Backend Rewrite | v1.1 | 0/? | Not started | - |
 | 11. Test Infrastructure | v1.1 | 0/? | Not started | - |
 | 12. CI Integration | v1.1 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-11 after Phase 9 planning*
+*Last updated: 2026-02-11 after Phase 9 execution complete*

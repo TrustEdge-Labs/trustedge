@@ -6,7 +6,7 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations (envelope encryption, signing, receipts, attestation, archives) with production-quality YubiKey hardware integration — thin CLIs and WASM bindings are just frontends.
 
-**Current focus:** Phase 9 - Cleanup (YubiKey backend deletion)
+**Current focus:** Phase 9 complete — ready for Phase 10 (Backend Rewrite)
 
 ## Current Position
 
