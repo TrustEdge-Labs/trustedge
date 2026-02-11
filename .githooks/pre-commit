@@ -1,0 +1,39 @@
+#!/bin/bash
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# MPL-2.0: https://mozilla.org/MPL/2.0/
+# Project: trustedge — Privacy and trust at the edge.
+#
+# Pre-commit hook: fast checks only (copyright + fmt).
+# Full CI: ./scripts/ci-check.sh
+#
+# Setup: git config core.hooksPath .githooks
+
+set -e
+
+# Check copyright headers on staged files only
+missing=0
+while IFS= read -r file; do
+    if [[ -f "$file" ]]; then
+        case "$file" in
+            *.rs|*.yml|*.yaml|*.toml)
+                if ! head -10 "$file" | grep -q "Copyright (c) 2025 TRUSTEDGE LABS LLC"; then
+                    echo "✖ Missing copyright header: $file"
+                    missing=$((missing + 1))
+                fi
+                ;;
+        esac
+    fi
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+if [ $missing -gt 0 ]; then
+    echo "Commit blocked: $missing files missing copyright headers."
+    echo "Run: ./scripts/fix-copyright.sh"
+    exit 1
+fi
+
+# Check formatting
+if ! cargo fmt --all -- --check 2>/dev/null; then
+    echo "Commit blocked: formatting issues."
+    echo "Run: cargo fmt --all"
+    exit 1
+fi

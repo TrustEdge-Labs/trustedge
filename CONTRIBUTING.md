@@ -57,8 +57,20 @@ When requesting features:
 
 1. **Install Rust**: Use the latest stable version
 2. **Clone the repo**: `git clone https://github.com/TrustEdge-Labs/trustedge.git`
-3. **Build workspace**: `cd trustedge && cargo build --workspace`
-4. **Run tests**: `cargo test --workspace` and `cargo clippy --workspace -- -D warnings`
+3. **Enable git hooks**: `git config core.hooksPath .githooks`
+4. **Build workspace**: `cd trustedge && cargo build --workspace`
+5. **Run tests**: `cargo test --workspace` and `cargo clippy --workspace -- -D warnings`
+
+### Local CI Verification
+
+Run the full CI check locally before pushing (saves GitHub Actions minutes):
+
+```bash
+./scripts/ci-check.sh          # Fast incremental build
+./scripts/ci-check.sh --clean  # Full clean build (matches CI exactly)
+```
+
+The pre-commit hook (step 3 above) automatically checks copyright headers and formatting on each commit.
 
 ### Project Board Management
 

@@ -1,137 +1,225 @@
 #!/bin/bash
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
-# Pre-commit script to run the EXACT SAME checks as GitHub CI
-# This prevents the double work problem by catching issues locally
+# MPL-2.0: https://mozilla.org/MPL/2.0/
+# Project: trustedge — Privacy and trust at the edge.
 #
-# IMPORTANT: This script mirrors .github/workflows/ci.yml exactly
-# If you change one, update the other!
+# Local CI check — mirrors .github/workflows/ci.yml
+# Run before pushing to catch issues without burning GH Actions minutes.
+#
+# Usage:
+#   ./scripts/ci-check.sh          # Fast incremental (default)
+#   ./scripts/ci-check.sh --clean  # Full clean build (matches CI exactly)
 
 set -e
 
-echo "● Running pre-commit CI checks (matching GitHub CI exactly)..."
-echo
-
-# Change to the project root directory
 cd "$(dirname "$0")/.."
 
-echo "■ Step 0: Cleaning build cache (ensures fresh build like CI)..."
-cargo clean
-echo "✔ Cache cleared"
+CLEAN=false
+if [ "$1" = "--clean" ]; then
+    CLEAN=true
+fi
+
+PASS=0
+FAIL=0
+SKIP=0
+
+step() {
+    echo
+    echo "■ $1"
+}
+
+pass() {
+    echo "  ✔ $1"
+    PASS=$((PASS + 1))
+}
+
+fail() {
+    echo "  ✖ $1"
+    FAIL=$((FAIL + 1))
+}
+
+skip() {
+    echo "  ⚠ $1 (skipped)"
+    SKIP=$((SKIP + 1))
+}
+
+echo "● TrustEdge local CI check"
+if $CLEAN; then
+    echo "  Mode: clean build"
+else
+    echo "  Mode: incremental (use --clean for fresh build)"
+fi
 echo
 
-echo "■ Step 1: Checking code formatting..."
-cargo fmt --all -- --check
-echo "✔ Formatting check passed"
-echo
+# ── Step 0: Optional clean ──────────────────────────────────────────
+if $CLEAN; then
+    step "Step 0: Clean build cache"
+    cargo clean
+    pass "Cache cleared"
+fi
 
-echo "■ Step 2: Clippy (workspace - no features)..."
-cargo clippy --workspace --all-targets --no-default-features -- -D warnings
-echo "✔ Clippy check passed (no features)"
-echo
+# ── Step 1: Copyright headers ───────────────────────────────────────
+step "Step 1: Copyright headers"
+missing=0
+while IFS= read -r file; do
+    if ! head -10 "$file" | grep -q "Copyright (c) 2025 TRUSTEDGE LABS LLC"; then
+        echo "  Missing: $file"
+        missing=$((missing + 1))
+    fi
+done < <(find . -type f \( -name "*.rs" -o -name "*.yml" -o -name "*.yaml" -o -name "*.toml" \) \
+    -not -path "./target/*" -not -path "./.git/*" -not -path "./.planning/*")
+if [ $missing -gt 0 ]; then
+    fail "$missing files missing copyright headers — run: ./scripts/fix-copyright.sh"
+else
+    pass "All source files have copyright headers"
+fi
 
-echo "■ Step 3: Clippy (trustedge-core with audio)..."
+# ── Step 2: Format ──────────────────────────────────────────────────
+step "Step 2: Format check"
+if cargo fmt --all -- --check; then
+    pass "cargo fmt"
+else
+    fail "cargo fmt — run: cargo fmt --all"
+fi
+
+# ── Step 3: Clippy (workspace) ──────────────────────────────────────
+step "Step 3: Clippy (workspace - no features)"
+if cargo clippy --workspace --all-targets --no-default-features -- -D warnings; then
+    pass "clippy workspace"
+else
+    fail "clippy workspace"
+fi
+
+# ── Step 4: Clippy (audio) ──────────────────────────────────────────
+step "Step 4: Clippy (trustedge-core with audio)"
 if pkg-config --exists alsa 2>/dev/null; then
-    cargo clippy --package trustedge-core --all-targets --features audio -- -D warnings
-    echo "✔ Clippy check passed (audio feature)"
+    if cargo clippy --package trustedge-core --all-targets --features audio -- -D warnings; then
+        pass "clippy audio"
+    else
+        fail "clippy audio"
+    fi
 else
-    echo "⚠ ALSA not available - skipping audio feature clippy"
+    skip "ALSA not available"
 fi
-echo
 
-echo "■ Step 4: Clippy (trustedge-core with yubikey)..."
+# ── Step 5: Clippy (yubikey) ────────────────────────────────────────
+step "Step 5: Clippy (trustedge-core with yubikey)"
 if pkg-config --exists libpcsclite 2>/dev/null; then
-    cargo clippy --package trustedge-core --all-targets --features yubikey -- -D warnings
-    echo "✔ Clippy check passed (yubikey feature)"
+    if cargo clippy --package trustedge-core --all-targets --features yubikey -- -D warnings; then
+        pass "clippy yubikey"
+    else
+        fail "clippy yubikey"
+    fi
 else
-    echo "⚠ PCSC not available - skipping yubikey feature clippy"
+    skip "PCSC not available"
 fi
-echo
 
-echo "■ Step 5: Feature compatibility check (cargo-hack)..."
-cargo hack check --feature-powerset --no-dev-deps --package trustedge-core
-echo "✔ Feature check passed"
-echo
+# ── Step 6: Feature powerset (cargo-hack) ───────────────────────────
+step "Step 6: Feature compatibility (cargo-hack)"
+if command -v cargo-hack &> /dev/null; then
+    if cargo hack check --feature-powerset --no-dev-deps --package trustedge-core; then
+        pass "cargo-hack feature powerset"
+    else
+        fail "cargo-hack feature powerset"
+    fi
+else
+    skip "cargo-hack not installed"
+fi
 
-echo "■ Step 6: Build binaries (workspace - no features)..."
+# ── Step 7: Build + test workspace ──────────────────────────────────
+step "Step 7: Build and test workspace (no features)"
 cargo build --workspace --bins --no-default-features
-echo "✔ Build check passed (no features)"
-echo
+if cargo test --workspace --no-default-features --locked; then
+    pass "workspace tests"
+else
+    fail "workspace tests"
+fi
 
-echo "■ Step 7: Tests (workspace - no features)..."
-cargo test --workspace --no-default-features --locked --verbose
-echo "✔ Test check passed (no features)"
-echo
-
-echo "■ Step 8: Build binaries (trustedge-core with audio)..."
+# ── Step 8: Audio tests ─────────────────────────────────────────────
+step "Step 8: Tests (trustedge-core with audio)"
 if pkg-config --exists alsa 2>/dev/null; then
     cargo build --package trustedge-core --bins --features audio
-    echo "✔ Build check passed (audio feature)"
+    if cargo test --package trustedge-core --features audio --locked; then
+        pass "audio tests"
+    else
+        fail "audio tests"
+    fi
 else
-    echo "⚠ ALSA not available - skipping audio feature build"
+    skip "ALSA not available"
 fi
-echo
 
-echo "■ Step 9: Tests (trustedge-core with audio)..."
-if pkg-config --exists alsa 2>/dev/null; then
-    cargo test --package trustedge-core --features audio --locked --verbose
-    echo "✔ Test check passed (audio feature)"
-else
-    echo "⚠ ALSA not available - skipping audio feature tests"
-fi
-echo
-
-echo "■ Step 10: Build binaries (trustedge-core with yubikey)..."
+# ── Step 9: YubiKey tests ───────────────────────────────────────────
+step "Step 9: Tests (trustedge-core with yubikey)"
 if pkg-config --exists libpcsclite 2>/dev/null; then
     cargo build --package trustedge-core --bins --features yubikey
-    echo "✔ Build check passed (yubikey feature)"
+    if cargo test --package trustedge-core --features yubikey --locked; then
+        pass "yubikey tests"
+    else
+        fail "yubikey tests"
+    fi
 else
-    echo "⚠ PCSC not available - skipping yubikey feature build"
+    skip "PCSC not available"
 fi
-echo
 
-echo "■ Step 11: Tests (trustedge-core with yubikey)..."
-if pkg-config --exists libpcsclite 2>/dev/null; then
-    cargo test --package trustedge-core --features yubikey --locked --verbose
-    echo "✔ Test check passed (yubikey feature)"
-else
-    echo "⚠ PCSC not available - skipping yubikey feature tests"
-fi
-echo
-
-echo "■ Step 12: Build and test all features together..."
-# Only run if both platform dependencies are available
+# ── Step 10: All features (clean first to avoid disk exhaustion) ────
+step "Step 10: All features combined"
 if pkg-config --exists alsa 2>/dev/null && pkg-config --exists libpcsclite 2>/dev/null; then
-    cargo build -p trustedge-core --all-features
-    cargo test -p trustedge-core --all-features --locked --verbose
-    echo "✔ All-features test passed"
+    cargo clean
+    if cargo test -p trustedge-core --all-features --locked; then
+        pass "all-features tests"
+    else
+        fail "all-features tests"
+    fi
 else
-    echo "⚠ Not all platform libraries available - skipping all-features test"
+    skip "Not all platform libraries available"
 fi
-echo
 
-echo "■ Step 13: Downstream crate feature check (trustedge-cli)..."
-cargo hack check --feature-powerset --no-dev-deps --package trustedge-cli
-echo "✔ Downstream feature check passed"
-echo
+# ── Step 11: Downstream feature check ──────────────────────────────
+step "Step 11: Downstream crate feature check (trustedge-cli)"
+if command -v cargo-hack &> /dev/null; then
+    if cargo hack check --feature-powerset --no-dev-deps --package trustedge-cli; then
+        pass "downstream feature check"
+    else
+        fail "downstream feature check"
+    fi
+else
+    skip "cargo-hack not installed"
+fi
 
-echo "■ Step 14: WASM build verification..."
+# ── Step 12: WASM ───────────────────────────────────────────────────
+step "Step 12: WASM build verification"
 if rustup target list --installed | grep -q wasm32-unknown-unknown; then
-    cargo check -p trustedge-wasm --target wasm32-unknown-unknown
-    cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown
-    echo "✔ WASM build check passed"
+    if cargo check -p trustedge-wasm --target wasm32-unknown-unknown && \
+       cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown; then
+        pass "WASM build"
+    else
+        fail "WASM build"
+    fi
 else
-    echo "⚠ wasm32-unknown-unknown target not installed - skipping WASM check"
-    echo "  Install with: rustup target add wasm32-unknown-unknown"
+    skip "wasm32-unknown-unknown target not installed"
 fi
-echo
 
-echo "■ Step 15: API compatibility check (cargo-semver-checks)..."
+# ── Step 13: Semver ─────────────────────────────────────────────────
+step "Step 13: API compatibility (cargo-semver-checks)"
 if command -v cargo-semver-checks &> /dev/null; then
-    cargo semver-checks --package trustedge-core --baseline-rev HEAD~1 || echo "Semver check: no baseline yet (expected for first run)"
+    if cargo semver-checks --package trustedge-core --baseline-rev HEAD~1 2>/dev/null; then
+        pass "semver check"
+    else
+        echo "  ⚠ semver check failed (non-blocking)"
+    fi
 else
-    echo "⚠ cargo-semver-checks not installed, skipping"
+    skip "cargo-semver-checks not installed"
 fi
-echo
 
-echo "♪ All CI checks passed! Safe to commit and push."
-echo "   This script matches GitHub CI workflow exactly (16 steps: Step 0 through Step 15)."
+# ── Summary ─────────────────────────────────────────────────────────
+echo
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Results: $PASS passed, $FAIL failed, $SKIP skipped"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if [ $FAIL -gt 0 ]; then
+    echo "  ✖ Fix failures before pushing."
+    exit 1
+else
+    echo "  ✔ All checks passed. Safe to push."
+fi
