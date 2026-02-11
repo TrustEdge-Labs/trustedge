@@ -19,9 +19,9 @@ Progress: [███████░░░] 75.0% (6/8 phases)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: ~4.8 minutes
-- Total execution time: ~1.2 hours
+- Total plans completed: 13
+- Average duration: ~4.7 minutes
+- Total execution time: ~1.3 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [███████░░░] 75.0% (6/8 phases)
 | 03-trst-core-integration | 2 | ~11.5 min | ~5.8 min |
 | 04-receipts-integration | 1 | ~4 min | ~4 min |
 | 05-attestation-integration | 1 | ~6 min | ~6 min |
-| 06-feature-flags | 2 | ~2.5 min | ~1.3 min |
+| 06-feature-flags | 2 | ~5.6 min | ~2.8 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (6.9 min), 04-01 (4 min), 05-01 (6 min), 06-01 (0.8 min), 06-02 (1.4 min)
-- Trend: Phase 6 CI automation plans executed very quickly (sub-2 min range)
+- Last 5 plans: 04-01 (4 min), 05-01 (6 min), 06-01 (3.1 min), 06-02 (1.4 min)
+- Trend: Phase 6 documentation and CI automation plans efficient (sub-4 min range)
 
 *Updated after each plan completion*
 
@@ -78,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 05]: Attestation crate (826 LOC, 10 tests) migrated into core applications layer
 - [Phase 05]: All envelope feature gates removed (Envelope always available inside core)
 - [Phase 05]: CLI binaries converted to cargo examples (attest, verify_attestation, attestation_demo)
+- [Phase 06]: Feature categories: Backend (hardware/storage) and Platform (I/O/system capabilities) for semantic organization
+- [Phase 06]: docs.rs builds with all features enabled to show complete API surface
+- [Phase 06]: Only feature-gated public API items get doc(cfg) annotations, not internal wiring code
 - [Phase 06]: Conditional guards for all-features CI test: Only runs when both audio (ALSA) and yubikey (PCSC) platform dependencies available
 - [Phase 06]: WASM target verification: CI installs wasm32-unknown-unknown explicitly; local script checks if already installed
 - [Phase 06]: Downstream feature-powerset check unconditional: trustedge-cli runs in all environments (cargo-hack already required)
@@ -92,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-10
-Stopped at: Completed 06-02-PLAN.md (all-features CI testing) - Phase 6 complete
-Resume file: .planning/phases/06-feature-flags/06-02-SUMMARY.md
+Last session: 2026-02-11
+Stopped at: Completed 06-01-PLAN.md (feature flag documentation) - Phase 6 complete
+Resume file: .planning/phases/06-feature-flags/06-01-SUMMARY.md
