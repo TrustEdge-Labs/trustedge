@@ -1165,12 +1165,13 @@ impl UniversalBackend for YubiKeyBackend {
         }
     }
 
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>> {
-        let pkcs11 = self
-            .pkcs11
-            .as_ref()
-            .ok_or_else(|| anyhow!("PKCS#11 not initialized"))?;
-        let session = self.session.ok_or_else(|| anyhow!("No active session"))?;
+    fn list_keys(&self) -> Result<Vec<KeyMetadata>, BackendError> {
+        let pkcs11 = self.pkcs11.as_ref().ok_or_else(|| {
+            BackendError::InitializationFailed("PKCS#11 not initialized".to_string())
+        })?;
+        let session = self.session.ok_or_else(|| {
+            BackendError::InitializationFailed("No active session".to_string())
+        })?;
 
         if self.config.verbose {
             println!("● Enumerating YubiKey PIV key pairs...");
@@ -1182,15 +1183,15 @@ impl UniversalBackend for YubiKeyBackend {
 
         pkcs11
             .find_objects_init(session, &template)
-            .context("Failed to initialize certificate listing")?;
+            .map_err(|e| BackendError::HardwareError(format!("Failed to initialize certificate listing: {}", e)))?;
 
         let objects = pkcs11
             .find_objects(session, 100)
-            .context("Failed to list certificates")?;
+            .map_err(|e| BackendError::HardwareError(format!("Failed to list certificates: {}", e)))?;
 
         pkcs11
             .find_objects_final(session)
-            .context("Failed to finalize certificate listing")?;
+            .map_err(|e| BackendError::HardwareError(format!("Failed to finalize certificate listing: {}", e)))?;
 
         if self.config.verbose {
             println!("● Found {} certificate objects", objects.len());
