@@ -28,6 +28,7 @@ console_error_panic_hook = "0.1"
 
 # WASM-compatible crypto dependencies
 ed25519-dalek = { version = "2", default-features = false, features = ["rand_core"] }
+getrandom = { version = "0.2", features = ["js"] }  # Required: activates "js" feature for wasm32-unknown-unknown
 base64 = "0.22"
 
 [dependencies.web-sys]

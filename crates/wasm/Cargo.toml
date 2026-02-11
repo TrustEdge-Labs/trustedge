@@ -29,6 +29,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 aes-gcm = { workspace = true }
 rand = { workspace = true }
+getrandom = { workspace = true }  # Required: activates "js" feature for wasm32-unknown-unknown
 base64 = "0.22"
 
 # Console logging for debugging
