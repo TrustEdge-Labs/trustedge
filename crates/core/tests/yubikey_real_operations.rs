@@ -199,7 +199,7 @@ async fn test_real_signing_operation() -> Result<()> {
                 {
                     println!("⚠ This may be expected if no key is present in PIV slot 9c");
                 } else {
-                    return Err(e);
+                    return Err(e.into());
                 }
             }
         }

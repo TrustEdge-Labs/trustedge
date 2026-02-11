@@ -152,7 +152,7 @@ fn main() -> anyhow::Result<()> {
                 Err(e) => {
                     println!("   ✖ Hardware signing failed: {}", e);
                     println!("   💡 Ensure YubiKey has keys in PIV slots and correct PIN");
-                    return Err(e);
+                    return Err(e.into());
                 }
             }
         }
@@ -162,7 +162,7 @@ fn main() -> anyhow::Result<()> {
         Err(e) => {
             println!("   ✖ Public key extraction failed: {}", e);
             println!("   💡 Ensure YubiKey is connected with keys in PIV slots");
-            return Err(e);
+            return Err(e.into());
         }
     }
 
