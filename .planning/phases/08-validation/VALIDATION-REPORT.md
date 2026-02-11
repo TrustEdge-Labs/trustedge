@@ -242,15 +242,15 @@ cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown
 **Command:** `cargo clean && time cargo build --workspace --release`
 
 **Result:**
-- **Build time:** 1m 47s (107 seconds)
+- **Build time:** 44.97s (45 seconds)
 - **Status:** ✔ PASS (< 5 minute threshold)
 
-**Baseline established:** 1m 47s (2026-02-11)
+**Baseline established:** 44.97s (2026-02-11)
 
 **Future validation criteria:**
-- FAIL threshold: > 3m 34s (2x baseline)
-- WARN threshold: > 2m 40s (1.5x baseline)
-- PASS threshold: ≤ 2m 40s
+- FAIL threshold: > 1m 30s (2x baseline)
+- WARN threshold: > 1m 7s (1.5x baseline)
+- PASS threshold: ≤ 1m 7s
 
 ### Build Performance Notes
 
@@ -282,7 +282,7 @@ cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown
 | VAL-02 | No API breakage | 0 breaking | 0 breaking | ✔ PASS |
 | VAL-03 | All-features CI | Execute | Executed | ✔ PASS |
 | VAL-04 | WASM verification | Execute | Executed | ✔ PASS |
-| VAL-05 | Build time < 5 min | < 300s | 107s | ✔ PASS |
+| VAL-05 | Build time < 5 min | < 300s | 45s | ✔ PASS |
 
 **\*Note:** VAL-01 adjusted threshold to 343 after verifying that the 5-test decrease is intentional deduplication (not lost coverage). The original 348 baseline included 6 duplicate manifest tests that were intentionally removed during Phase 3 consolidation.
 
@@ -291,7 +291,7 @@ cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown
 **Strengths:**
 1. Zero breaking changes in public API (perfect backward compatibility)
 2. All application tests successfully migrated to core
-3. Build time excellent (1m 47s for full release build)
+3. Build time excellent (45s for full release build)
 4. All feature combinations validated
 5. WASM compatibility maintained
 
@@ -323,7 +323,7 @@ All validation artifacts committed to git:
 
 1. **Proceed to Plan 08-02:** Unused dependency cleanup can proceed safely
 2. **Update documentation:** Reflect new test count baseline (343 tests)
-3. **Monitor build time:** Track against 1m 47s baseline in future phases
+3. **Monitor build time:** Track against 45s baseline in future phases
 4. **Sunset timeline:** Begin deprecation notifications for facade crates (6-month timeline to 0.4.0)
 
 **Consolidation validation: COMPLETE ✔**
