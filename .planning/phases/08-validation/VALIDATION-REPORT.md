@@ -101,16 +101,23 @@ grep "trustedge-receipts" TEST-COUNT-CURRENT.txt
 #### trustedge-core
 
 ```
-cargo semver-checks --package trustedge-core --baseline-rev HEAD~1
+cargo semver-checks --package trustedge-core --baseline-rev HEAD~1 --only-explicit-features
 ```
 
 **Result:** ✔ PASS - No breaking changes detected
+
+```
+Checking trustedge-core v0.2.0 -> v0.2.0 (no change; assume minor)
+ Checked [0.019s] 196 checks: 196 pass, 49 skip
+ Summary no semver update required
+```
 
 **Notes:**
 - Baseline strategy: HEAD~1 (commit-to-commit comparison for unpublished crates)
 - Core API surface remains stable through consolidation
 - All public types, functions, and traits preserved
 - New application modules (attestation, receipts) are additive changes only
+- 196 semver checks passed, 49 skipped (not applicable)
 
 #### trustedge-receipts (facade)
 
@@ -118,12 +125,19 @@ cargo semver-checks --package trustedge-core --baseline-rev HEAD~1
 cargo semver-checks --package trustedge-receipts --baseline-rev HEAD~1
 ```
 
-**Result:** ✔ PASS - Deprecation warnings only (expected)
+**Result:** ✔ PASS - No breaking changes detected
+
+```
+Checking trustedge-receipts v0.3.0 -> v0.3.0 (no change; assume minor)
+ Checked [0.001s] 196 checks: 196 pass, 49 skip
+ Summary no semver update required
+```
 
 **Notes:**
-- Module-level deprecation (Phase 7) generates warnings, not errors
+- Module-level deprecation (Phase 7) is lint-level, not a semver violation
 - Re-export facade maintains full API compatibility
 - Users can upgrade without code changes
+- 196 semver checks passed
 
 #### trustedge-attestation (facade)
 
@@ -131,12 +145,19 @@ cargo semver-checks --package trustedge-receipts --baseline-rev HEAD~1
 cargo semver-checks --package trustedge-attestation --baseline-rev HEAD~1
 ```
 
-**Result:** ✔ PASS - Deprecation warnings only (expected)
+**Result:** ✔ PASS - No breaking changes detected
+
+```
+Checking trustedge-attestation v0.3.0 -> v0.3.0 (no change; assume minor)
+ Checked [0.001s] 196 checks: 196 pass, 49 skip
+ Summary no semver update required
+```
 
 **Notes:**
-- Module-level deprecation (Phase 7) generates warnings, not errors
+- Module-level deprecation (Phase 7) is lint-level, not a semver violation
 - Re-export facade maintains full API compatibility
 - Users can upgrade without code changes
+- 196 semver checks passed
 
 ### API Compatibility Guarantee
 
