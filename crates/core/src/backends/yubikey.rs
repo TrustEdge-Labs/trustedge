@@ -1169,9 +1169,9 @@ impl UniversalBackend for YubiKeyBackend {
         let pkcs11 = self.pkcs11.as_ref().ok_or_else(|| {
             BackendError::InitializationFailed("PKCS#11 not initialized".to_string())
         })?;
-        let session = self.session.ok_or_else(|| {
-            BackendError::InitializationFailed("No active session".to_string())
-        })?;
+        let session = self
+            .session
+            .ok_or_else(|| BackendError::InitializationFailed("No active session".to_string()))?;
 
         if self.config.verbose {
             println!("● Enumerating YubiKey PIV key pairs...");
@@ -1181,17 +1181,17 @@ impl UniversalBackend for YubiKeyBackend {
         // Instead, we search for certificates which represent usable key pairs.
         let template = vec![CK_ATTRIBUTE::new(CKA_CLASS).with_ck_ulong(&CKO_CERTIFICATE)];
 
-        pkcs11
-            .find_objects_init(session, &template)
-            .map_err(|e| BackendError::HardwareError(format!("Failed to initialize certificate listing: {}", e)))?;
+        pkcs11.find_objects_init(session, &template).map_err(|e| {
+            BackendError::HardwareError(format!("Failed to initialize certificate listing: {}", e))
+        })?;
 
-        let objects = pkcs11
-            .find_objects(session, 100)
-            .map_err(|e| BackendError::HardwareError(format!("Failed to list certificates: {}", e)))?;
+        let objects = pkcs11.find_objects(session, 100).map_err(|e| {
+            BackendError::HardwareError(format!("Failed to list certificates: {}", e))
+        })?;
 
-        pkcs11
-            .find_objects_final(session)
-            .map_err(|e| BackendError::HardwareError(format!("Failed to finalize certificate listing: {}", e)))?;
+        pkcs11.find_objects_final(session).map_err(|e| {
+            BackendError::HardwareError(format!("Failed to finalize certificate listing: {}", e))
+        })?;
 
         if self.config.verbose {
             println!("● Found {} certificate objects", objects.len());
