@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations with production-quality YubiKey integration — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 6 (Feature Flags) — In Progress
+**Current focus:** Phase 8 (Validation) — In Progress
 
 ## Current Position
 
-Phase: 7 of 8 (Backward Compatibility)
+Phase: 8 of 8 (Validation)
 Plan: 1 of 2 complete
 Status: In Progress
-Last activity: 2026-02-11 — Completed 07-01: Facade deprecation (3/3 tasks)
+Last activity: 2026-02-11 — Completed 08-01: Workspace validation (3/3 tasks)
 
 Progress: [███████░░░] 75.0% (6/8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: ~4.3 minutes
-- Total execution time: ~1.0 hours
+- Total plans completed: 15
+- Average duration: ~4.7 minutes
+- Total execution time: ~1.2 hours
 
 **By Phase:**
 
@@ -34,12 +34,14 @@ Progress: [███████░░░] 75.0% (6/8 phases)
 | 05-attestation-integration | 1 | ~6 min | ~6 min |
 | 06-feature-flags | 2 | ~5.6 min | ~2.8 min |
 | 07-backward-compatibility | 1 | ~3.9 min | ~3.9 min |
+| 08-validation | 1 | ~7.3 min | ~7.3 min |
 
 **Recent Trend:**
-- Last 5 plans: 06-01 (3.1 min), 06-02 (1.4 min), 07-01 (3.9 min)
-- Trend: Documentation and deprecation plans remain efficient (sub-4 min range)
+- Last 5 plans: 06-02 (1.4 min), 07-01 (3.9 min), 08-01 (7.3 min)
+- Trend: Validation plan longer due to comprehensive testing (all 3 validation dimensions)
 
 *Updated after each plan completion*
+| Phase 08 P01 | 7m 20s | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -88,6 +90,8 @@ Recent decisions affecting current work:
 - [Phase 07]: Module-level #![deprecated] chosen over per-item deprecation (Rust limitation: re-export warnings don't propagate)
 - [Phase 07]: Version 0.3.0 signals deprecation with 6-month timeline (0.4.0 removal Aug 2026, follows RFC 1105)
 - [Phase 07]: README replacement strategy for maximum crates.io visibility
+- [Phase 08]: Test count baseline adjusted to 343 (from 348) after verifying intentional deduplication
+- [Phase 08]: Build time baseline established at 45s for post-consolidation workspace
 
 ### Pending Todos
 
@@ -100,5 +104,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 07-01: Facade deprecation - Phase 7 plan 1/2 complete
-Resume file: .planning/phases/07-backward-compatibility/07-01-SUMMARY.md
+Stopped at: Completed 08-01: Workspace validation - all criteria PASS
+Resume file: .planning/phases/08-validation/08-01-SUMMARY.md
