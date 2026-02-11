@@ -119,14 +119,15 @@ Plans:
 **Depends on**: Phase 6
 **Requirements**: COMPAT-01, COMPAT-02
 **Success Criteria** (what must be TRUE):
-  1. Deprecated re-export facades created for merged crates (receipts, attestation, trst-core)
+  1. Deprecated re-export facades created for merged crates (receipts, attestation)
   2. Migration guide documents import path changes (old -> new)
   3. All thin shells (trustedge-cli, trst-cli, wasm, trst-wasm) build successfully
   4. Deprecation warnings visible but not breaking (6-month migration window)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD
+- [ ] 07-01-PLAN.md — Formalize facade deprecation with #[deprecated] attributes and version bumps
+- [ ] 07-02-PLAN.md — Create MIGRATION.md guide and update CHANGELOG.md
 
 ### Phase 8: Validation
 **Goal**: Comprehensive validation of consolidation preserving all functionality
@@ -156,5 +157,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 4. Receipts Integration | 1/1 | ✓ Complete | 2026-02-10 |
 | 5. Attestation Integration | 1/1 | ✓ Complete | 2026-02-10 |
 | 6. Feature Flags | 2/2 | ✓ Complete | 2026-02-10 |
-| 7. Backward Compatibility | 0/TBD | Not started | - |
+| 7. Backward Compatibility | 0/2 | Not started | - |
 | 8. Validation | 0/TBD | Not started | - |
