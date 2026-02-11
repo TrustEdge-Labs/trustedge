@@ -89,10 +89,17 @@ spki = { version = "0.7", optional = true }
 
 
 [features]
-default = []         # No features by default (CI-friendly)
-audio = ["cpal"]     # Audio capture feature (opt-in)
-yubikey = ["pkcs11", "dep:yubikey", "x509-cert", "der", "spki", "signature"] # YubiKey hardware support with real hardware integration
+default = []         # No features by default — fast CI, maximum portability
 
+# Backend: Hardware/storage integrations
+yubikey = ["pkcs11", "dep:yubikey", "x509-cert", "der", "spki", "signature"]
+
+# Platform: I/O and system capabilities
+audio = ["cpal"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [dev-dependencies]
 assert_cmd = "2"
