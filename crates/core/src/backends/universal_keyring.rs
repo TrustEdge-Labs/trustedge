@@ -159,11 +159,16 @@ impl UniversalKeyringBackend {
 }
 
 impl UniversalBackend for UniversalKeyringBackend {
-    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult, BackendError> {
+    fn perform_operation(
+        &self,
+        key_id: &str,
+        operation: CryptoOperation,
+    ) -> Result<CryptoResult, BackendError> {
         match operation {
             CryptoOperation::DeriveKey { context } => {
-                let key = self.derive_key_internal(key_id, &context)
-                    .map_err(|e| BackendError::OperationFailed(format!("Key derivation failed: {}", e)))?;
+                let key = self.derive_key_internal(key_id, &context).map_err(|e| {
+                    BackendError::OperationFailed(format!("Key derivation failed: {}", e))
+                })?;
                 Ok(CryptoResult::DerivedKey(key))
             }
 
@@ -179,9 +184,10 @@ impl UniversalBackend for UniversalKeyringBackend {
                         "Encryption requires key derivation context. Use DeriveKey first, then use the raw key.".to_string()
                     ))
                 }
-                _ => Err(BackendError::UnsupportedOperation(
-                    format!("Symmetric algorithm {:?} not supported by keyring backend", algorithm)
-                )),
+                _ => Err(BackendError::UnsupportedOperation(format!(
+                    "Symmetric algorithm {:?} not supported by keyring backend",
+                    algorithm
+                ))),
             },
 
             CryptoOperation::Decrypt {
@@ -194,9 +200,10 @@ impl UniversalBackend for UniversalKeyringBackend {
                         "Decryption requires key derivation context. Use DeriveKey first, then use the raw key.".to_string()
                     ))
                 }
-                _ => Err(BackendError::UnsupportedOperation(
-                    format!("Symmetric algorithm {:?} not supported by keyring backend", algorithm)
-                )),
+                _ => Err(BackendError::UnsupportedOperation(format!(
+                    "Symmetric algorithm {:?} not supported by keyring backend",
+                    algorithm
+                ))),
             },
 
             CryptoOperation::Hash { data, algorithm } => match algorithm {
@@ -215,14 +222,16 @@ impl UniversalBackend for UniversalKeyringBackend {
                     let hash = Sha512::digest(&data);
                     Ok(CryptoResult::Hash(hash.to_vec()))
                 }
-                _ => Err(BackendError::UnsupportedOperation(
-                    format!("Hash algorithm {:?} not supported by keyring backend", algorithm)
-                )),
+                _ => Err(BackendError::UnsupportedOperation(format!(
+                    "Hash algorithm {:?} not supported by keyring backend",
+                    algorithm
+                ))),
             },
 
-            _ => Err(BackendError::UnsupportedOperation(
-                format!("Operation {:?} not supported by keyring backend", operation)
-            )),
+            _ => Err(BackendError::UnsupportedOperation(format!(
+                "Operation {:?} not supported by keyring backend",
+                operation
+            ))),
         }
     }
 

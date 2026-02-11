@@ -202,18 +202,26 @@ impl PubkyBackend {
 }
 
 impl UniversalBackend for PubkyBackend {
-    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult, BackendError> {
+    fn perform_operation(
+        &self,
+        key_id: &str,
+        operation: CryptoOperation,
+    ) -> Result<CryptoResult, BackendError> {
         match operation {
             CryptoOperation::GetPublicKey => {
                 // key_id is the Pubky ID
-                let public_key = self
-                    .resolve_public_key_sync(key_id)
-                    .map_err(|e| BackendError::KeyNotFound(format!("Failed to resolve Pubky ID {}: {}", key_id, e)))?;
+                let public_key = self.resolve_public_key_sync(key_id).map_err(|e| {
+                    BackendError::KeyNotFound(format!(
+                        "Failed to resolve Pubky ID {}: {}",
+                        key_id, e
+                    ))
+                })?;
                 Ok(CryptoResult::PublicKey(public_key.key_bytes))
             }
-            _ => Err(BackendError::UnsupportedOperation(
-                format!("Operation not supported by PubkyBackend: {:?}", operation)
-            )),
+            _ => Err(BackendError::UnsupportedOperation(format!(
+                "Operation not supported by PubkyBackend: {:?}",
+                operation
+            ))),
         }
     }
 

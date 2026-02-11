@@ -8,11 +8,13 @@
 
 //! Archive format types for .trst archives.
 
-pub mod manifest;
 pub mod chunks;
+pub mod manifest;
 pub mod signatures;
 
 // Re-export commonly used items at domain level
-pub use manifest::{CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, ManifestFormatError, SegmentInfo};
 pub use chunks::ChunkFormatError;
+pub use manifest::{
+    CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, ManifestFormatError, SegmentInfo,
+};
 pub use signatures::SignatureFormatError;

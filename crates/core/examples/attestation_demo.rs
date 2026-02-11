@@ -5,9 +5,7 @@
 use std::fs::File;
 use std::io::Write;
 use tempfile::tempdir;
-use trustedge_core::{
-    create_signed_attestation, AttestationConfig, KeySource, OutputFormat,
-};
+use trustedge_core::{create_signed_attestation, AttestationConfig, KeySource, OutputFormat};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("● TrustEdge Software Attestation Demo");

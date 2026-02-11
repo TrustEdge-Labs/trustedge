@@ -58,16 +58,22 @@ impl KeyringBackend {
 }
 
 impl KeyBackend for KeyringBackend {
-    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32], BackendError> {
+    fn derive_key(
+        &self,
+        key_id: &[u8; 16],
+        context: &KeyContext,
+    ) -> Result<[u8; 32], BackendError> {
         // Validate salt length first (before keyring access)
         if context.salt.len() != 16 {
-            return Err(BackendError::OperationFailed("Salt must be exactly 16 bytes for keyring backend".to_string()));
+            return Err(BackendError::OperationFailed(
+                "Salt must be exactly 16 bytes for keyring backend".to_string(),
+            ));
         }
 
         // Get passphrase from keyring
-        let passphrase = self
-            .get_passphrase()
-            .map_err(|e| BackendError::OperationFailed(format!("Failed to get passphrase from keyring: {}", e)))?;
+        let passphrase = self.get_passphrase().map_err(|e| {
+            BackendError::OperationFailed(format!("Failed to get passphrase from keyring: {}", e))
+        })?;
 
         // Convert salt to array
         let mut salt_array = [0u8; 16];
@@ -89,14 +95,16 @@ impl KeyBackend for KeyringBackend {
 
     fn store_key(&self, _key_id: &[u8; 16], _key_data: &[u8; 32]) -> Result<(), BackendError> {
         // Keyring backend doesn't store raw keys, only passphrases
-        Err(BackendError::UnsupportedOperation("Keyring backend does not support storing raw keys".to_string()))
+        Err(BackendError::UnsupportedOperation(
+            "Keyring backend does not support storing raw keys".to_string(),
+        ))
     }
 
     fn rotate_key(&self, _old_id: &[u8; 16], _new_id: &[u8; 16]) -> Result<(), BackendError> {
         // Key rotation for keyring backend would involve changing the passphrase
         // This is a manual process that requires user interaction
         Err(BackendError::UnsupportedOperation(
-            "Keyring backend does not support automatic key rotation".to_string()
+            "Keyring backend does not support automatic key rotation".to_string(),
         ))
     }
 

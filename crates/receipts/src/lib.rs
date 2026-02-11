@@ -43,4 +43,6 @@
 //!
 //! See [MIGRATION.md](https://github.com/TrustEdge-Labs/trustedge/blob/main/MIGRATION.md) for detailed upgrade instructions.
 
-pub use trustedge_core::{Receipt, create_receipt, assign_receipt, extract_receipt, verify_receipt_chain};
+pub use trustedge_core::{
+    assign_receipt, create_receipt, extract_receipt, verify_receipt_chain, Receipt,
+};

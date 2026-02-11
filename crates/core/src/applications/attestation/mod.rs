@@ -233,7 +233,6 @@ fn create_sealed_attestation(
     })
 }
 
-
 /// Configuration for verifying attestations
 #[derive(Debug)]
 pub struct VerificationConfig {
@@ -321,9 +320,9 @@ pub fn verify_attestation(config: VerificationConfig) -> Result<VerificationResu
 
 /// Read attestation from envelope format
 fn read_envelope_attestation(path: &PathBuf) -> Result<Attestation> {
+    use crate::Envelope;
     use std::fs::File;
     use std::io::BufReader;
-    use crate::Envelope;
 
     #[derive(serde::Deserialize)]
     struct AttestationFile {
@@ -737,5 +736,4 @@ mod tests {
 
         Ok(())
     }
-
 }

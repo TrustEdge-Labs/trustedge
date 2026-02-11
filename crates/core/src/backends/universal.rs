@@ -228,7 +228,11 @@ impl BackendCapabilities {
 /// Universal backend trait for all cryptographic operations
 pub trait UniversalBackend: Send + Sync {
     /// Perform a cryptographic operation with the specified key
-    fn perform_operation(&self, key_id: &str, operation: CryptoOperation) -> Result<CryptoResult, BackendError>;
+    fn perform_operation(
+        &self,
+        key_id: &str,
+        operation: CryptoOperation,
+    ) -> Result<CryptoResult, BackendError>;
 
     /// Check if this backend supports a specific operation
     fn supports_operation(&self, operation: &CryptoOperation) -> bool;

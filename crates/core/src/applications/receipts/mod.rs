@@ -40,10 +40,10 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
+use crate::Envelope;
 use anyhow::{Context, Result};
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
-use crate::Envelope;
 
 /// Represents a transferable claim, forming the payload of a TrustEdge Envelope.
 ///

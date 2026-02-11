@@ -107,10 +107,10 @@ pub mod transport;
 pub mod vectors;
 
 // Layer hierarchy (Phase 1 scaffolding -- populated in later phases)
-pub mod primitives;
-pub mod protocols;
 pub mod applications;
 pub mod io;
+pub mod primitives;
+pub mod protocols;
 
 pub use archive::{archive_dir_name, read_archive, validate_archive, write_archive, ArchiveError};
 pub use asymmetric::{
@@ -155,31 +155,28 @@ pub use crypto::{
     sign_manifest, verify_manifest, CryptoError, DeviceKeypair,
 };
 pub use envelope::{Envelope, EnvelopeMetadata};
-pub use error::{
-    TrustEdgeError,
-    BackendError,
-    TransportError,
-};
 pub use envelope_v2_bridge::{
     detect_envelope_format, EnvelopeFormat, EnvelopeInfo, UnifiedEnvelope,
 };
+pub use error::ManifestError; // ManifestError is re-exported from error.rs (which aliases ManifestFormatError)
+pub use error::{BackendError, TransportError, TrustEdgeError};
 pub use format::*;
 pub use hybrid::{open_envelope, seal_for_recipient, HybridEncryptionError, SymmetricKey};
+pub use transport::{Transport, TransportConfig, TransportFactory};
 pub use trustedge_trst_protocols::archive::manifest::{
     CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, SegmentInfo,
 };
-pub use error::ManifestError;  // ManifestError is re-exported from error.rs (which aliases ManifestFormatError)
-pub use transport::{Transport, TransportConfig, TransportFactory};
 
 // Receipt system re-exports (Layer 4 applications)
-pub use applications::receipts::{Receipt, create_receipt, assign_receipt, extract_receipt, verify_receipt_chain};
+pub use applications::receipts::{
+    assign_receipt, create_receipt, extract_receipt, verify_receipt_chain, Receipt,
+};
 
 // Attestation system re-exports (Layer 4 applications)
 pub use applications::attestation::{
-    Attestation, AttestationConfig, AttestationResult,
-    OutputFormat, KeySource, VerificationConfig, VerificationResult,
-    VerificationDetails, VerificationInfo,
-    create_signed_attestation, verify_attestation,
+    create_signed_attestation, verify_attestation, Attestation, AttestationConfig,
+    AttestationResult, KeySource, OutputFormat, VerificationConfig, VerificationDetails,
+    VerificationInfo, VerificationResult,
 };
 
 /// Represents a chunk of data sent over the network, including encrypted data,

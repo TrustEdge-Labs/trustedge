@@ -17,7 +17,8 @@ use serde::{Deserialize, Serialize};
 /// Core trait that all key management backends must implement
 pub trait KeyBackend: Send + Sync {
     /// Derive a key from the backend using the given key ID and context
-    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32], BackendError>;
+    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext)
+        -> Result<[u8; 32], BackendError>;
 
     /// Store a key in the backend (if supported)
     fn store_key(&self, key_id: &[u8; 16], key_data: &[u8; 32]) -> Result<(), BackendError>;

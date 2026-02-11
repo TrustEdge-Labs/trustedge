@@ -44,8 +44,7 @@
 //! See [MIGRATION.md](https://github.com/TrustEdge-Labs/trustedge/blob/main/MIGRATION.md) for detailed upgrade instructions.
 
 pub use trustedge_core::{
-    Attestation, AttestationConfig, AttestationResult,
-    OutputFormat, KeySource, VerificationConfig, VerificationResult,
-    VerificationDetails, VerificationInfo,
-    create_signed_attestation, verify_attestation,
+    create_signed_attestation, verify_attestation, Attestation, AttestationConfig,
+    AttestationResult, KeySource, OutputFormat, VerificationConfig, VerificationDetails,
+    VerificationInfo, VerificationResult,
 };

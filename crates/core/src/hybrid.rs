@@ -157,12 +157,16 @@ struct EncryptedData {
 }
 
 /// Encrypt data using symmetric encryption (AES-256-GCM)
-fn encrypt_symmetric(data: &[u8], key: &SymmetricKey) -> Result<EncryptedData, HybridEncryptionError> {
+fn encrypt_symmetric(
+    data: &[u8],
+    key: &SymmetricKey,
+) -> Result<EncryptedData, HybridEncryptionError> {
     use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
     use rand::{rngs::OsRng, RngCore};
 
-    let cipher = Aes256Gcm::new_from_slice(key.as_bytes())
-        .map_err(|e| HybridEncryptionError::EncryptionFailed(format!("Failed to create cipher: {}", e)))?;
+    let cipher = Aes256Gcm::new_from_slice(key.as_bytes()).map_err(|e| {
+        HybridEncryptionError::EncryptionFailed(format!("Failed to create cipher: {}", e))
+    })?;
 
     // Generate random nonce
     let mut nonce_bytes = [0u8; 12];
@@ -189,14 +193,13 @@ fn decrypt_symmetric(
 ) -> Result<Vec<u8>, HybridEncryptionError> {
     use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
 
-    let cipher = Aes256Gcm::new_from_slice(key.as_bytes())
-        .map_err(|e| HybridEncryptionError::DecryptionFailed(format!("Failed to create cipher: {}", e)))?;
+    let cipher = Aes256Gcm::new_from_slice(key.as_bytes()).map_err(|e| {
+        HybridEncryptionError::DecryptionFailed(format!("Failed to create cipher: {}", e))
+    })?;
 
-    let nonce_array: &[u8; 12] = encrypted
-        .nonce
-        .as_slice()
-        .try_into()
-        .map_err(|_| HybridEncryptionError::DecryptionFailed("Nonce conversion failed".to_string()))?;
+    let nonce_array: &[u8; 12] = encrypted.nonce.as_slice().try_into().map_err(|_| {
+        HybridEncryptionError::DecryptionFailed("Nonce conversion failed".to_string())
+    })?;
 
     // Decrypt data
     let mut plaintext = encrypted.ciphertext.clone();
@@ -231,8 +234,9 @@ fn assemble_envelope(
 
 /// Parse an envelope from bytes
 fn parse_envelope(envelope_bytes: &[u8]) -> Result<HybridEnvelope, HybridEncryptionError> {
-    let envelope: HybridEnvelope = bincode::deserialize(envelope_bytes)
-        .map_err(|e| HybridEncryptionError::InvalidEnvelope(format!("Deserialization failed: {}", e)))?;
+    let envelope: HybridEnvelope = bincode::deserialize(envelope_bytes).map_err(|e| {
+        HybridEncryptionError::InvalidEnvelope(format!("Deserialization failed: {}", e))
+    })?;
 
     // Validate envelope
     if envelope.magic != HYBRID_MAGIC {
