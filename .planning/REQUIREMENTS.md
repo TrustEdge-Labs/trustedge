@@ -80,39 +80,39 @@ These apply to ALL requirements in this milestone:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLEAN-01 | — | Pending |
-| CLEAN-02 | — | Pending |
-| CLEAN-03 | — | Pending |
-| CLEAN-04 | — | Pending |
-| BACK-01 | — | Pending |
-| BACK-02 | — | Pending |
-| BACK-03 | — | Pending |
-| BACK-04 | — | Pending |
-| BACK-05 | — | Pending |
-| BACK-06 | — | Pending |
-| BACK-07 | — | Pending |
-| BACK-08 | — | Pending |
-| BACK-09 | — | Pending |
-| BACK-10 | — | Pending |
-| BACK-11 | — | Pending |
-| BACK-12 | — | Pending |
-| BACK-13 | — | Pending |
-| BACK-14 | — | Pending |
-| TEST-01 | — | Pending |
-| TEST-02 | — | Pending |
-| TEST-03 | — | Pending |
-| TEST-04 | — | Pending |
-| TEST-05 | — | Pending |
-| TEST-06 | — | Pending |
-| CI-01 | — | Pending |
-| CI-02 | — | Pending |
-| CI-03 | — | Pending |
+| CLEAN-01 | Phase 9 | Pending |
+| CLEAN-02 | Phase 9 | Pending |
+| CLEAN-03 | Phase 9 | Pending |
+| CLEAN-04 | Phase 9 | Pending |
+| BACK-01 | Phase 10 | Pending |
+| BACK-02 | Phase 10 | Pending |
+| BACK-03 | Phase 10 | Pending |
+| BACK-04 | Phase 10 | Pending |
+| BACK-05 | Phase 10 | Pending |
+| BACK-06 | Phase 10 | Pending |
+| BACK-07 | Phase 10 | Pending |
+| BACK-08 | Phase 10 | Pending |
+| BACK-09 | Phase 10 | Pending |
+| BACK-10 | Phase 10 | Pending |
+| BACK-11 | Phase 10 | Pending |
+| BACK-12 | Phase 10 | Pending |
+| BACK-13 | Phase 10 | Pending |
+| BACK-14 | Phase 10 | Pending |
+| TEST-01 | Phase 11 | Pending |
+| TEST-02 | Phase 11 | Pending |
+| TEST-03 | Phase 11 | Pending |
+| TEST-04 | Phase 11 | Pending |
+| TEST-05 | Phase 11 | Pending |
+| TEST-06 | Phase 11 | Pending |
+| CI-01 | Phase 12 | Pending |
+| CI-02 | Phase 12 | Pending |
+| CI-03 | Phase 12 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 27 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 27 ⚠️
+- Mapped to phases: 27/27 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-11*
-*Last updated: 2026-02-11 after research synthesis*
+*Last updated: 2026-02-11 after roadmap creation*
