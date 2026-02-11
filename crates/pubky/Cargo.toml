@@ -36,7 +36,6 @@ rand = { workspace = true }
 clap = { workspace = true }
 
 [dev-dependencies]
-tokio-test = "0.4"
 assert_cmd = "2"
 predicates = "3"
 tempfile = "3"

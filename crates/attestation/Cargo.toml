@@ -15,7 +15,4 @@ keywords = ["deprecated", "cryptography", "attestation", "hardware", "yubikey"]
 categories = ["cryptography", "development-tools", "authentication"]
 
 [dependencies]
-anyhow = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
 trustedge-core = { path = "../core" }

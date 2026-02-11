@@ -28,10 +28,7 @@ console_error_panic_hook = "0.1"
 
 # WASM-compatible crypto dependencies
 ed25519-dalek = { version = "2", default-features = false, features = ["rand_core"] }
-blake3 = { version = "1.5", default-features = false }
 base64 = "0.22"
-hex = "0.4"
-getrandom = { version = "0.2", features = ["js"] }
 
 [dependencies.web-sys]
 version = "0.3"

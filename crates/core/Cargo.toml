@@ -101,11 +101,11 @@ audio = ["cpal"]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
+[package.metadata.cargo-machete]
+ignored = ["serde_bytes"]
+
 [dev-dependencies]
-assert_cmd = "2"
-assert_fs = "1"
 criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
-predicates = "3"
 tempfile = "3"
 
 [[bench]]
