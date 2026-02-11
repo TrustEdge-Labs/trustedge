@@ -165,6 +165,7 @@ fi
 step "Step 10: All features combined"
 if pkg-config --exists alsa 2>/dev/null && pkg-config --exists libpcsclite 2>/dev/null; then
     cargo clean
+    cargo build --workspace --bins --all-features
     if cargo test -p trustedge-core --all-features --locked; then
         pass "all-features tests"
     else
