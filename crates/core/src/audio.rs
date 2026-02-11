@@ -116,6 +116,7 @@ impl AudioChunk {
 }
 
 #[cfg(feature = "audio")]
+#[cfg_attr(docsrs, doc(cfg(feature = "audio")))]
 /// Audio capture manager (only available with "audio" feature)
 pub struct AudioCapture {
     config: AudioConfig,
@@ -128,6 +129,7 @@ pub struct AudioCapture {
 }
 
 #[cfg(feature = "audio")]
+#[cfg_attr(docsrs, doc(cfg(feature = "audio")))]
 impl AudioCapture {
     /// Create a new audio capture instance
     pub fn new(config: AudioConfig) -> Result<Self> {
@@ -369,6 +371,7 @@ impl AudioCapture {
 }
 
 #[cfg(feature = "audio")]
+#[cfg_attr(docsrs, doc(cfg(feature = "audio")))]
 impl Drop for AudioCapture {
     fn drop(&mut self) {
         let _ = self.stop();

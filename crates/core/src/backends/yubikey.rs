@@ -180,6 +180,7 @@ impl Default for CertificateParams {
 
 /// YubiKey Universal Backend with Real Hardware Integration
 #[cfg(feature = "yubikey")]
+#[cfg_attr(docsrs, doc(cfg(feature = "yubikey")))]
 pub struct YubiKeyBackend {
     config: YubiKeyConfig,
     pkcs11: Option<Ctx>,

@@ -6,6 +6,8 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 //! # TrustEdge Core
 //!
 //! Core cryptographic library and CLI tools for privacy-preserving edge computing.
@@ -57,6 +59,33 @@
 //! - [`transport`] - Network transport layer for secure communication
 //! - [`asymmetric`] - Public key cryptography operations
 //! - [`format`] - Data format handling and MIME type detection
+//!
+//! ## Feature Flags
+//!
+//! TrustEdge Core uses `default = []` (no features enabled) for fast CI and maximum portability.
+//! Enable features as needed for your deployment:
+//!
+//! ### Backend Features
+//!
+//! Hardware and storage integrations:
+//!
+//! - **`yubikey`** — YubiKey PIV hardware signing and key management via PKCS#11.
+//!   Requires PCSC libraries (`libpcsclite-dev` on Linux, built-in on macOS).
+//!
+//! ### Platform Features
+//!
+//! I/O and system capabilities:
+//!
+//! - **`audio`** — Live audio capture from microphones via cpal.
+//!   Requires audio libraries (`libasound2-dev` on Linux, CoreAudio on macOS, WASAPI on Windows).
+//!
+//! ### Usage
+//!
+//! ```toml
+//! [dependencies]
+//! trustedge-core = { version = "0.2", features = ["audio"] }
+//! ```
+
 use serde::{Deserialize, Serialize};
 
 /// The length of the nonce used for AES-GCM encryption (12 bytes).
@@ -89,6 +118,7 @@ pub use asymmetric::{
     PrivateKey, PublicKey,
 };
 #[cfg(feature = "audio")]
+#[cfg_attr(docsrs, doc(cfg(feature = "audio")))]
 pub use audio::AudioCapture;
 pub use audio::{AudioChunk, AudioConfig};
 pub use auth::{
