@@ -99,7 +99,7 @@ jobs:
       - name: Build and test all features (trustedge-core)
         if: steps.audio-deps.outputs.audio-available == 'true' && steps.yubikey-deps.outputs.yubikey-available == 'true'
         run: |
-          cargo build -p trustedge-core --all-features
+          cargo clean
           cargo test -p trustedge-core --all-features --locked --verbose
 
       - name: Downstream crate feature check (trustedge-cli)
