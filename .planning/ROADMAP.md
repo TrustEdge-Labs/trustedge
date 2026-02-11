@@ -134,15 +134,16 @@ Plans:
 **Depends on**: Phase 7
 **Requirements**: VAL-01, VAL-02, VAL-03
 **Success Criteria** (what must be TRUE):
-  1. Test count validation passes (150+ tests preserved, exact match to baseline)
+  1. Test count validation passes (348+ tests preserved, exact match or exceeds baseline)
   2. WASM build succeeds (cargo check --target wasm32-unknown-unknown)
   3. No API breakage detected (cargo semver-checks passes)
   4. YubiKey hardware integration documented (manual test protocol if hardware unavailable)
   5. Build time measured and within acceptable bounds (<2x baseline)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD
+- [ ] 08-01-PLAN.md — Test count validation, API compatibility, and build time baseline
+- [ ] 08-02-PLAN.md — Unused dependency cleanup and final validation report
 
 ## Progress
 
@@ -158,4 +159,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 5. Attestation Integration | 1/1 | ✓ Complete | 2026-02-10 |
 | 6. Feature Flags | 2/2 | ✓ Complete | 2026-02-10 |
 | 7. Backward Compatibility | 0/2 | Not started | - |
-| 8. Validation | 0/TBD | Not started | - |
+| 8. Validation | 0/2 | Not started | - |
