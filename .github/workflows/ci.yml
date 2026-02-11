@@ -96,6 +96,21 @@ jobs:
         if: steps.yubikey-deps.outputs.yubikey-available == 'true'
         run: cargo test --package trustedge-core --features yubikey --locked --verbose
 
+      - name: Build and test all features (trustedge-core)
+        if: steps.audio-deps.outputs.audio-available == 'true' && steps.yubikey-deps.outputs.yubikey-available == 'true'
+        run: |
+          cargo build -p trustedge-core --all-features
+          cargo test -p trustedge-core --all-features --locked --verbose
+
+      - name: Downstream crate feature check (trustedge-cli)
+        run: cargo hack check --feature-powerset --no-dev-deps --package trustedge-cli
+
+      - name: WASM build verification
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo check -p trustedge-wasm --target wasm32-unknown-unknown
+          cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown
+
       - name: API compatibility check (cargo-semver-checks)
         continue-on-error: true
         run: cargo semver-checks --package trustedge-core --baseline-rev HEAD~1
