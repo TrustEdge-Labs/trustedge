@@ -98,7 +98,34 @@ else
 fi
 echo
 
-echo "■ Step 12: API compatibility check (cargo-semver-checks)..."
+echo "■ Step 12: Build and test all features together..."
+# Only run if both platform dependencies are available
+if pkg-config --exists alsa 2>/dev/null && pkg-config --exists libpcsclite 2>/dev/null; then
+    cargo build -p trustedge-core --all-features
+    cargo test -p trustedge-core --all-features --locked --verbose
+    echo "✔ All-features test passed"
+else
+    echo "⚠ Not all platform libraries available - skipping all-features test"
+fi
+echo
+
+echo "■ Step 13: Downstream crate feature check (trustedge-cli)..."
+cargo hack check --feature-powerset --no-dev-deps --package trustedge-cli
+echo "✔ Downstream feature check passed"
+echo
+
+echo "■ Step 14: WASM build verification..."
+if rustup target list --installed | grep -q wasm32-unknown-unknown; then
+    cargo check -p trustedge-wasm --target wasm32-unknown-unknown
+    cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown
+    echo "✔ WASM build check passed"
+else
+    echo "⚠ wasm32-unknown-unknown target not installed - skipping WASM check"
+    echo "  Install with: rustup target add wasm32-unknown-unknown"
+fi
+echo
+
+echo "■ Step 15: API compatibility check (cargo-semver-checks)..."
 if command -v cargo-semver-checks &> /dev/null; then
     cargo semver-checks --package trustedge-core --baseline-rev HEAD~1 || echo "Semver check: no baseline yet (expected for first run)"
 else
@@ -107,4 +134,4 @@ fi
 echo
 
 echo "♪ All CI checks passed! Safe to commit and push."
-echo "   This script matches GitHub CI workflow exactly."
+echo "   This script matches GitHub CI workflow exactly (16 steps: Step 0 through Step 15)."
