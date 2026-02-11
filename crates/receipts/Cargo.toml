@@ -5,13 +5,14 @@
 
 [package]
 name = "trustedge-receipts"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
-description = "Digital receipt system with cryptographically secure ownership chains"
+description = "DEPRECATED: Use trustedge-core instead. Digital receipt system with cryptographically secure ownership chains"
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
 license = "MPL-2.0"
 repository = "https://github.com/TrustEdge-Labs/trustedge"
-keywords = ["cryptography", "receipts", "ownership", "blockchain", "digital-assets"]
+readme = "README.md"
+keywords = ["deprecated", "cryptography", "receipts", "ownership", "blockchain"]
 categories = ["cryptography", "data-structures"]
 
 [dependencies]
