@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 7 of 8 (Backward Compatibility)
-Plan: 2 of 2 complete
-Status: Complete
-Last activity: 2026-02-11 — Completed 07-02: Migration documentation (2/2 tasks)
+Plan: 1 of 2 complete
+Status: In Progress
+Last activity: 2026-02-11 — Completed 07-01: Facade deprecation (3/3 tasks)
 
-Progress: [████████░░] 87.5% (7/8 phases)
+Progress: [███████░░░] 75.0% (6/8 phases)
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 14
-- Average duration: ~4.4 minutes
-- Total execution time: ~1.4 hours
+- Average duration: ~4.3 minutes
+- Total execution time: ~1.0 hours
 
 **By Phase:**
 
@@ -33,14 +33,13 @@ Progress: [████████░░] 87.5% (7/8 phases)
 | 04-receipts-integration | 1 | ~4 min | ~4 min |
 | 05-attestation-integration | 1 | ~6 min | ~6 min |
 | 06-feature-flags | 2 | ~5.6 min | ~2.8 min |
-| 07-backward-compatibility | 1 | ~2.6 min | ~2.6 min |
+| 07-backward-compatibility | 1 | ~3.9 min | ~3.9 min |
 
 **Recent Trend:**
-- Last 5 plans: 05-01 (6 min), 06-01 (3.1 min), 06-02 (1.4 min), 07-02 (2.6 min)
-- Trend: Documentation-focused plans very efficient (sub-3 min range)
+- Last 5 plans: 06-01 (3.1 min), 06-02 (1.4 min), 07-01 (3.9 min)
+- Trend: Documentation and deprecation plans remain efficient (sub-4 min range)
 
 *Updated after each plan completion*
-| Phase 07 P02 | 2m 33s | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -86,8 +85,9 @@ Recent decisions affecting current work:
 - [Phase 06]: Conditional guards for all-features CI test: Only runs when both audio (ALSA) and yubikey (PCSC) platform dependencies available
 - [Phase 06]: WASM target verification: CI installs wasm32-unknown-unknown explicitly; local script checks if already installed
 - [Phase 06]: Downstream feature-powerset check unconditional: trustedge-cli runs in all environments (cargo-hack already required)
-- [Phase 07]: 6-month migration window (Feb 2026 → Aug 2026) for facade deprecation follows RFC 1105
-- [Phase 07]: Centralized MIGRATION.md at workspace root as single source of truth
+- [Phase 07]: Module-level #![deprecated] chosen over per-item deprecation (Rust limitation: re-export warnings don't propagate)
+- [Phase 07]: Version 0.3.0 signals deprecation with 6-month timeline (0.4.0 removal Aug 2026, follows RFC 1105)
+- [Phase 07]: README replacement strategy for maximum crates.io visibility
 
 ### Pending Todos
 
@@ -100,5 +100,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed 07-02: Migration documentation plan - Phase 7 plan 2/2 complete
-Resume file: .planning/phases/07-backward-compatibility/07-02-SUMMARY.md
+Stopped at: Completed 07-01: Facade deprecation - Phase 7 plan 1/2 complete
+Resume file: .planning/phases/07-backward-compatibility/07-01-SUMMARY.md
