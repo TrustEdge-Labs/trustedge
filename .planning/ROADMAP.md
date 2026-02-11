@@ -108,10 +108,11 @@ Plans:
   2. CI matrix tests critical combinations (default, yubikey, audio, all-features)
   3. Feature documentation exists explaining when to use each flag
   4. No per-subsystem feature flags like receipt-ops (avoid explosion)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] TBD
+- [ ] 06-01-PLAN.md — Add feature documentation, doc(cfg) annotations, and docs.rs metadata
+- [ ] 06-02-PLAN.md — Add all-features CI testing, downstream feature checks, and WASM verification
 
 ### Phase 7: Backward Compatibility
 **Goal**: Preserve public API surface during transition
@@ -154,6 +155,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 3. trst-core Integration | 2/2 | ✓ Complete | 2026-02-10 |
 | 4. Receipts Integration | 1/1 | ✓ Complete | 2026-02-10 |
 | 5. Attestation Integration | 1/1 | ✓ Complete | 2026-02-10 |
-| 6. Feature Flags | 0/TBD | Not started | - |
+| 6. Feature Flags | 0/2 | Not started | - |
 | 7. Backward Compatibility | 0/TBD | Not started | - |
 | 8. Validation | 0/TBD | Not started | - |
