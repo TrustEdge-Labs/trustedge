@@ -26,7 +26,7 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ Digital receipt system with ownership chains — v1.0 (migrated to core)
 - ✓ Software attestation with provenance tracking — v1.0 (migrated to core)
 - ✓ .trst archive format with cam.video profile — v1.0 (trst-protocols)
-- ✓ YubiKey PKCS#11 integration — v1.0
+- ⚠️ YubiKey PKCS#11 integration — v1.0 (broken: manual DER, software fallbacks, untested flag — rewriting in v1.1)
 - ✓ WASM browser bindings — v1.0
 - ✓ Pubky network integration — v1.0 (community contribution)
 - ✓ Dependency graph analyzed and cross-crate duplication mapped — v1.0
@@ -48,11 +48,18 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Active
 
-- [ ] Pubky adapter merged into core protocols/pubky/ (feature-gated)
-- [ ] Pubky-advanced hybrid encryption merged into core
-- [ ] YubiKey hardware tests pass after consolidation (requires physical hardware)
-- [ ] Prelude module for common imports
-- [ ] Updated documentation with module-level security considerations
+- [ ] YubiKey backend rewritten from scratch (fail-closed, no software fallbacks)
+- [ ] X.509 certificate generation via rcgen (no manual DER encoding)
+- [ ] `yubikey` crate used without `untested` feature flag
+- [ ] All YubiKey tests exercise real functionality (no placeholders or auto-passes)
+- [ ] CI always compile-checks yubikey feature
+
+### Deferred
+
+- Pubky adapter merged into core protocols/pubky/ (feature-gated)
+- Pubky-advanced hybrid encryption merged into core
+- Prelude module for common imports
+- Updated documentation with module-level security considerations
 
 ### Out of Scope
 
@@ -60,6 +67,18 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - Post-quantum cryptography — research phase only, no production use case yet
 - no_std support — requires separate milestone, half-measures are worse
 - Algorithm agility changes — hard-coded Ed25519/AES-256-GCM is sufficient
+
+## Current Milestone: v1.1 YubiKey Integration Overhaul
+
+**Goal:** Delete the broken YubiKey backend and rewrite from scratch — `yubikey` crate (stable features only), `rcgen` for X.509, fail-closed design, zero software fallbacks.
+
+**Target features:**
+- Scorched-earth rewrite of yubikey.rs (3,263 lines) and all 8 test files
+- Fail-closed design: hardware unavailable = error, never silent fallback
+- X.509 certificate generation via rcgen (replace 1,000+ lines manual DER)
+- `yubikey` crate stable API only (drop `untested` feature flag)
+- Real test suite: every test exercises actual functionality, no auto-passes
+- CI always compile-checks yubikey feature
 
 ## Context
 
@@ -70,6 +89,7 @@ Build time: 45s clean release.
 Zero API breaking changes throughout consolidation.
 6 non-critical tech debt items carried forward (see MILESTONES.md).
 Facade crate deprecation active — removal planned v0.4.0 (Aug 2026).
+**v1.1 trigger:** External code review identified critical issues in YubiKey backend — manual ASN.1 DER encoding, silent software fallbacks, hardcoded placeholder keys, `untested` feature flag.
 
 ## Constraints
 
@@ -93,6 +113,11 @@ Facade crate deprecation active — removal planned v0.4.0 (Aug 2026).
 | 6-month deprecation timeline (v0.3.0 → v0.4.0) | Follows RFC 1105, gives consumers time to migrate | — Pending (Aug 2026) |
 | Feature categories: Backend + Platform | Semantic organization prevents combinatorial explosion | ✓ Good — clean CI matrix |
 | cargo-semver-checks with HEAD~1 baseline | Track API changes commit-to-commit | ✓ Good — 196 checks, 0 breaks |
+| Scorched-earth YubiKey rewrite | External review found critical issues: manual DER, silent fallbacks, placeholder keys | — Pending (v1.1) |
+| yubikey crate stable API only | Drop `untested` feature — use only tested/stable functionality | — Pending (v1.1) |
+| rcgen for X.509 certs | Replace 1,000+ lines manual DER with battle-tested library | — Pending (v1.1) |
+| Fail-closed hardware design | Hardware unavailable = error, never silent software fallback | — Pending (v1.1) |
+| No placeholder keys or signatures | Every key and signature must come from real cryptographic operations | — Pending (v1.1) |
 
 ---
-*Last updated: 2026-02-11 after v1.0 milestone*
+*Last updated: 2026-02-11 after v1.1 milestone start*

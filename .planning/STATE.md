@@ -13,13 +13,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations with production-quality YubiKey integration — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Planning next milestone
+**Current focus:** v1.1 YubiKey Integration Overhaul
 
 ## Current Position
 
-Milestone: v1.0 Consolidation — SHIPPED 2026-02-11
-Status: Between milestones
-Last activity: 2026-02-11 — Completed v1.0 milestone archival
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-11 — Milestone v1.1 started
 
 ## Performance Metrics (v1.0)
 
@@ -37,14 +38,14 @@ See PROJECT.md Key Decisions table for full log.
 
 ### Pending Todos
 
-None — v1.0 complete. Next: `/gsd:new-milestone` for next version.
+None.
 
 ### Blockers/Concerns
 
-None.
+- YubiKey hardware required for integration testing (documented, #[ignore] gated)
 
 ## Session Continuity
 
 Last session: 2026-02-11
-Stopped at: Completed v1.0 milestone archival
-Next action: `/gsd:new-milestone` (fresh context window recommended)
+Stopped at: Defining v1.1 requirements
+Next action: Complete requirements → roadmap
