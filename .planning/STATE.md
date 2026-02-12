@@ -6,23 +6,23 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations (envelope encryption, signing, receipts, attestation, archives) with production-quality YubiKey hardware integration — thin CLIs and WASM bindings are just frontends.
 
-**Current focus:** Phase 11 complete — ready for Phase 12 (CI Integration)
+**Current focus:** Phase 12 in progress — CI Integration
 
 ## Current Position
 
-Phase: 11 of 12 (Test Infrastructure)
-Plan: 2 of 2 in current phase
+Phase: 12 of 12 (CI Integration)
+Plan: 1 of 1 in current phase
 Status: Complete
-Last activity: 2026-02-12 — Plan 11-02 complete (YubiKey hardware integration tests)
+Last activity: 2026-02-12 — Plan 12-01 complete (Unconditional YubiKey CI validation)
 
-Progress: [██████████████████░░] 76% (22/29 total plans across all phases)
+Progress: [███████████████████░] 79% (23/29 total plans across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22 (17 v1.0 + 5 v1.1)
-- Average duration: 5.6 min
-- Total execution time: 2.0 hours
+- Total plans completed: 23 (17 v1.0 + 6 v1.1)
+- Average duration: 5.5 min
+- Total execution time: 2.1 hours
 
 **By Phase (v1.0 complete):**
 
@@ -44,10 +44,12 @@ Progress: [██████████████████░░] 76% (22
 | 9. Cleanup | 1 | 5 min | 5.0 min |
 | 10. Backend Rewrite | 2 | 15 min | 7.5 min |
 | 11. Test Infrastructure | 2 | 10 min | 5.0 min |
+| 12. CI Integration | 1 | 3 min | 3.0 min |
 
 **Recent Trend:**
-- Last 5 plans: 5-8 min range
-- Trend: Stable (test infrastructure and hardware integration validation)
+- Last 5 plans: 3-8 min range
+- Trend: Stable (CI integration and test infrastructure complete)
+| Phase 12 P01 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -64,6 +66,8 @@ Recent decisions affecting current work:
 - **Phase 10-02 Certificates**: X.509 certificate generation via rcgen's RemoteKeyPair with hardware-backed signing; YubiKey backend registered in UniversalBackendRegistry (auto-discovery when feature enabled)
 - [Phase 11]: Remove unused create_test_config() helper - tests use inline config creation
 - [Phase 11]: All hardware tests marked with #[ignore] to prevent CI failures
+- [Phase 12]: CI enforces YubiKey validation unconditionally (fail-loud if dependencies missing) to prevent silent breakage
+- [Phase 12]: Use --lib flag to run only simulation tests (18 tests), skip hardware integration tests (4 tests marked #[ignore])
 
 ### Pending Todos
 
@@ -81,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (phase 11 execution)
-Stopped at: Phase 11 verified and complete
-Resume file: Phase 11 complete - ready for Phase 12 (CI Integration)
+Last session: 2026-02-12 (phase 12 execution)
+Stopped at: Phase 12 Plan 01 complete (Unconditional YubiKey CI validation)
+Resume file: Phase 12 complete - CI enforces YubiKey compilation and simulation tests on every PR
