@@ -63,11 +63,11 @@ Plans:
   2. Dependency tree size baseline established and tracked in CI
   3. Root README clearly documents stable vs experimental crate split
   4. Each experimental crate README has prominent experimental/beta banner
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 14-01: TBD (CI updates)
-- [ ] 14-02: TBD (documentation)
+- [ ] 14-01-PLAN.md -- CI tiered pipeline (core blocking, experimental non-blocking) + dependency tree tracking
+- [ ] 14-02-PLAN.md -- Root README crate classification + verify experimental banners
 
 ## Progress
 
@@ -79,7 +79,7 @@ Plans:
 | 11. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 12. CI Integration | v1.1 | 1/1 | Complete | 2026-02-11 |
 | 13. Crate Classification & Dependency Audit | v1.2 | 2/2 | Complete | 2026-02-12 |
-| 14. CI & Documentation | v1.2 | 0/TBD | Not started | - |
+| 14. CI & Documentation | v1.2 | 0/2 | In progress | - |
 
 ---
-*Last updated: 2026-02-12 after Phase 13 complete*
+*Last updated: 2026-02-12 after Phase 14 planning*
