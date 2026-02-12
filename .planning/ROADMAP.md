@@ -62,10 +62,11 @@ Plans:
 4. X.509 certificate generation uses rcgen library with hardware-backed signing (zero manual ASN.1/DER encoding)
 5. All cryptographic operations use battle-tested libraries only — yubikey crate (stable API), rcgen, der/spki crates from RustCrypto
 
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD
+- [ ] 10-01-PLAN.md — Backend foundation + PIV operations + UniversalBackend trait implementation
+- [ ] 10-02-PLAN.md — X.509 certificate generation with rcgen + registry integration
 
 #### Phase 11: Test Infrastructure
 
