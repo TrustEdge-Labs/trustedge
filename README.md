@@ -117,6 +117,8 @@ Open Core Model:
 
 ### Previous Releases
 
+**v1.2 Scope Reduction** -- crate classification (stable/experimental tiers), dependency audit and optimization, tiered CI pipeline.
+
 **v0.3.1:** CLI extraction, manifest consolidation, YubiKey improvements
 
 **v0.3.0 (P0 Release):** .trst archive system with cam.video profile, Ed25519 signatures, BLAKE3 chains, browser verification
@@ -146,20 +148,33 @@ trustedge/
 └── docs/                         # Documentation and guides
 ```
 
+### Crate Classification
+
+TrustEdge uses a 2-tier classification system:
+
+| Tier | Crates | CI Policy | Maintenance |
+|------|--------|-----------|-------------|
+| **Tier 1 (Stable)** | core, cli, trst-protocols, trst-cli, trst-wasm | Full CI (blocking) | Actively maintained |
+| **Tier 2 (Experimental)** | wasm, pubky, pubky-advanced, receipts, attestation | Build-only (non-blocking) | No maintenance commitment |
+
+**Tier 1** crates are production-committed and receive comprehensive testing in CI. Failures block merge.
+
+**Tier 2** crates are community contributions or experimental. They build in CI but failures do not block core development. See individual crate READMEs for details.
+
 ### Crate Overview
 
-| Crate | Purpose | Documentation |
-|-------|---------|---------------|
-| **trustedge-core** | Core cryptographic library with envelope encryption | [Core Documentation](crates/core/) |
-| **trustedge-cli** | Main CLI for envelope encryption (binary: `trustedge`) | [CLI Documentation](crates/trustedge-cli/) |
-| **trustedge-trst-cli** | CLI for .trst archive creation and verification (binary: `trst`) | [Archive CLI Documentation](crates/trst-cli/) |
-| **trustedge-trst-protocols** | Canonical cam.video manifest types (WASM-compatible) | [Archive Format Documentation](crates/trst-protocols/) |
-| **trustedge-attestation** | Software attestation and provenance tracking | [Attestation Documentation](crates/attestation/) |
-| **trustedge-receipts** | Digital receipt system with cryptographic ownership transfer | [Receipt Documentation](crates/receipts/) |
-| **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | [WASM Documentation](crates/wasm/) |
-| **trustedge-trst-wasm** | .trst archive verification in the browser | [Archive WASM Documentation](crates/trst-wasm/) |
-| **trustedge-pubky** | Pubky network adapter (community/experimental) | [Pubky Documentation](crates/pubky/) |
-| **trustedge-pubky-advanced** | Hybrid encryption for Pubky (community/experimental) | [Advanced Pubky Documentation](crates/pubky-advanced/) |
+| Crate | Purpose | Tier | Documentation |
+|-------|---------|------|---------------|
+| **trustedge-core** | Core cryptographic library with envelope encryption | Stable | [Core Documentation](crates/core/) |
+| **trustedge-cli** | Main CLI for envelope encryption (binary: `trustedge`) | Stable | [CLI Documentation](crates/trustedge-cli/) |
+| **trustedge-trst-cli** | CLI for .trst archive creation and verification (binary: `trst`) | Stable | [Archive CLI Documentation](crates/trst-cli/) |
+| **trustedge-trst-protocols** | Canonical cam.video manifest types (WASM-compatible) | Stable | [Archive Format Documentation](crates/trst-protocols/) |
+| **trustedge-trst-wasm** | .trst archive verification in the browser | Stable | [Archive WASM Documentation](crates/trst-wasm/) |
+| **trustedge-attestation** | Software attestation and provenance tracking | Experimental | [Attestation Documentation](crates/attestation/) |
+| **trustedge-receipts** | Digital receipt system with cryptographic ownership transfer | Experimental | [Receipt Documentation](crates/receipts/) |
+| **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | Experimental | [WASM Documentation](crates/wasm/) |
+| **trustedge-pubky** | Pubky network adapter (community/experimental) | Experimental | [Pubky Documentation](crates/pubky/) |
+| **trustedge-pubky-advanced** | Hybrid encryption for Pubky (community/experimental) | Experimental | [Advanced Pubky Documentation](crates/pubky-advanced/) |
 
 ---
 
