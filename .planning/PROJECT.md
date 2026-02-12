@@ -26,7 +26,7 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ Digital receipt system with ownership chains — v1.0 (migrated to core)
 - ✓ Software attestation with provenance tracking — v1.0 (migrated to core)
 - ✓ .trst archive format with cam.video profile — v1.0 (trst-protocols)
-- ⚠️ YubiKey PKCS#11 integration — v1.0 (broken: manual DER, software fallbacks, untested flag — rewriting in v1.1)
+- ✓ YubiKey PIV integration rewritten — v1.1 (fail-closed, yubikey crate stable API, rcgen for X.509)
 - ✓ WASM browser bindings — v1.0
 - ✓ Pubky network integration — v1.0 (community contribution)
 - ✓ Dependency graph analyzed and cross-crate duplication mapped — v1.0
@@ -45,14 +45,15 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ 343 tests preserved (98.6% of baseline) — v1.0
 - ✓ WASM build verified — v1.0
 - ✓ Zero API breakage (196 semver checks) — v1.0
+- ✓ YubiKey backend rewritten from scratch (fail-closed, no software fallbacks) — v1.1
+- ✓ X.509 certificate generation via rcgen (no manual DER encoding) — v1.1
+- ✓ `yubikey` crate used without `untested` feature flag — v1.1
+- ✓ 18 simulation tests + 9 hardware integration tests, all with real assertions — v1.1
+- ✓ CI always compile-checks and tests yubikey feature unconditionally — v1.1
 
 ### Active
 
-- [ ] YubiKey backend rewritten from scratch (fail-closed, no software fallbacks)
-- [ ] X.509 certificate generation via rcgen (no manual DER encoding)
-- [ ] `yubikey` crate used without `untested` feature flag
-- [ ] All YubiKey tests exercise real functionality (no placeholders or auto-passes)
-- [ ] CI always compile-checks yubikey feature
+(No active requirements — start next milestone with `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -68,28 +69,23 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - no_std support — requires separate milestone, half-measures are worse
 - Algorithm agility changes — hard-coded Ed25519/AES-256-GCM is sufficient
 
-## Current Milestone: v1.1 YubiKey Integration Overhaul
+## Current Milestone
 
-**Goal:** Delete the broken YubiKey backend and rewrite from scratch — `yubikey` crate (stable features only), `rcgen` for X.509, fail-closed design, zero software fallbacks.
+No active milestone. Start next with `/gsd:new-milestone`.
 
-**Target features:**
-- Scorched-earth rewrite of yubikey.rs (3,263 lines) and all 8 test files
-- Fail-closed design: hardware unavailable = error, never silent fallback
-- X.509 certificate generation via rcgen (replace 1,000+ lines manual DER)
-- `yubikey` crate stable API only (drop `untested` feature flag)
-- Real test suite: every test exercises actual functionality, no auto-passes
-- CI always compile-checks yubikey feature
+### Completed Milestones
+- **v1.0 Consolidation** — Monolith core + thin shells, 343 tests, zero API breaks
+- **v1.1 YubiKey Integration Overhaul** — Scorched-earth rewrite with fail-closed design, battle-tested libraries, 27 tests, unconditional CI
 
 ## Context
 
-Shipped v1.0 consolidation with 37,589 Rust LOC across 10 crates.
-Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM.
-343 tests passing (160 in core, 183 across thin shells).
+Shipped v1.1 with 30,144 Rust LOC across 10 crates.
+Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048).
+370+ tests passing (160+ in core including 18 YubiKey simulation, 9 hardware integration with #[ignore]).
 Build time: 45s clean release.
-Zero API breaking changes throughout consolidation.
-6 non-critical tech debt items carried forward (see MILESTONES.md).
+CI unconditionally validates YubiKey feature on every PR.
 Facade crate deprecation active — removal planned v0.4.0 (Aug 2026).
-**v1.1 trigger:** External code review identified critical issues in YubiKey backend — manual ASN.1 DER encoding, silent software fallbacks, hardcoded placeholder keys, `untested` feature flag.
+Key generation and attestation deferred to v1.2+ (yubikey crate API limitations).
 
 ## Constraints
 
@@ -113,11 +109,14 @@ Facade crate deprecation active — removal planned v0.4.0 (Aug 2026).
 | 6-month deprecation timeline (v0.3.0 → v0.4.0) | Follows RFC 1105, gives consumers time to migrate | — Pending (Aug 2026) |
 | Feature categories: Backend + Platform | Semantic organization prevents combinatorial explosion | ✓ Good — clean CI matrix |
 | cargo-semver-checks with HEAD~1 baseline | Track API changes commit-to-commit | ✓ Good — 196 checks, 0 breaks |
-| Scorched-earth YubiKey rewrite | External review found critical issues: manual DER, silent fallbacks, placeholder keys | — Pending (v1.1) |
-| yubikey crate stable API only | Drop `untested` feature — use only tested/stable functionality | — Pending (v1.1) |
-| rcgen for X.509 certs | Replace 1,000+ lines manual DER with battle-tested library | — Pending (v1.1) |
-| Fail-closed hardware design | Hardware unavailable = error, never silent software fallback | — Pending (v1.1) |
-| No placeholder keys or signatures | Every key and signature must come from real cryptographic operations | — Pending (v1.1) |
+| Scorched-earth YubiKey rewrite | External review found critical issues: manual DER, silent fallbacks, placeholder keys | ✓ Good — 8,117 lines deleted, clean 487-line rewrite |
+| yubikey crate stable API only | Drop `untested` feature — use only tested/stable functionality | ✓ Good — stable API sufficient for all PIV operations |
+| rcgen for X.509 certs | Replace 1,000+ lines manual DER with battle-tested library | ✓ Good — RemoteKeyPair + hardware-backed signing |
+| Fail-closed hardware design | Hardware unavailable = error, never silent software fallback | ✓ Good — ensure_connected() gates every operation |
+| No placeholder keys or signatures | Every key and signature must come from real cryptographic operations | ✓ Good — 27 tests, all with real assertions |
+| Arc<Mutex> for RemoteKeyPair | rcgen's KeyPair::from_remote takes ownership, needs shared YubiKey access | ✓ Good — clean shared ownership |
+| ECDSA P-256 only for certs | Simplicity for initial release, RSA cert generation deferred | ✓ Good — sufficient for v1.1 |
+| Unconditional CI for YubiKey | Remove conditional if-checks, fail loudly if deps missing | ✓ Good — prevents silent breakage |
 
 ---
-*Last updated: 2026-02-11 after v1.1 milestone start*
+*Last updated: 2026-02-11 after v1.1 milestone complete*

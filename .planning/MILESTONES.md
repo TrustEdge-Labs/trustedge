@@ -27,7 +27,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 **Tech debt carried forward:**
 - TODO comments in envelope_v2_bridge.rs for Pubky integration (future work)
-- Placeholder ECDSA key in yubikey.rs (known limitation, documented)
+- ~~Placeholder ECDSA key in yubikey.rs~~ (resolved in v1.1 — full rewrite)
 - YubiKey manual testing requires physical hardware (protocol documented, 580 lines)
 - 2 cargo-machete false positives (serde_bytes, getrandom)
 
@@ -37,6 +37,35 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - `.planning/milestones/v1.0-ROADMAP.md`
 - `.planning/milestones/v1.0-REQUIREMENTS.md`
 - `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
+
+---
+
+
+## v1.1 YubiKey Integration Overhaul (Shipped: 2026-02-11)
+
+**Phases completed:** 4 phases (9-12), 6 plans, 8 tasks
+**Timeline:** 1 day (2026-02-11)
+**Stats:** 158 files changed, 10,664 insertions, 11,347 deletions, 30,144 Rust LOC, 45 commits
+
+**Delivered:** Deleted the broken YubiKey backend (8,117 lines) and rewrote from scratch with fail-closed design, battle-tested libraries only (yubikey crate stable API, rcgen for X.509), comprehensive test suite, and unconditional CI validation.
+
+**Key accomplishments:**
+- Scorched-earth deletion of broken YubiKey backend (3,263 lines), 8 test files, 8 examples, all placeholder keys and manual DER encoding
+- Production-quality YubiKey PIV backend (487 lines) with ECDSA P-256/RSA-2048 signing, public key extraction, slot enumeration, PIN verification, fail-closed design
+- X.509 certificate generation via rcgen RemoteKeyPair with hardware-backed signing — zero manual ASN.1/DER encoding
+- 18 simulation tests (no hardware, run in CI) + 9 hardware integration tests (#[ignore], require physical YubiKey)
+- CI unconditionally compiles and tests YubiKey feature on every PR — broken code can never merge silently
+
+**Tech debt carried forward:**
+- Key generation and attestation deferred (yubikey 0.7 has PinPolicy/TouchPolicy in private module)
+- Certificate generation uses ECDSA P-256 only (RSA cert generation deferred)
+- TODO comments in envelope_v2_bridge.rs for Pubky integration (carried from v1.0)
+
+**Git range:** v1.0..ef596cf (docs(phase-12): complete phase execution)
+
+**Archives:**
+- `.planning/milestones/v1.1-ROADMAP.md`
+- `.planning/milestones/v1.1-REQUIREMENTS.md`
 
 ---
 
