@@ -53,7 +53,11 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Active
 
-(No active requirements — start next milestone with `/gsd:new-milestone`)
+<!-- v1.2 scope — see REQUIREMENTS.md for full details -->
+- [ ] Clear stable/experimental crate classification with Cargo.toml metadata
+- [ ] Dependency audit and rationalization for core crates
+- [ ] Experimental crates marked as beta (not deleted)
+- [ ] Build times and supply chain surface reduced
 
 ### Deferred
 
@@ -69,9 +73,15 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - no_std support — requires separate milestone, half-measures are worse
 - Algorithm agility changes — hard-coded Ed25519/AES-256-GCM is sufficient
 
-## Current Milestone
+## Current Milestone: v1.2 Scope Reduction & Dependency Rationalization
 
-No active milestone. Start next with `/gsd:new-milestone`.
+**Goal:** Make TrustEdge maintainable by a solo developer — clear stable/experimental split, trimmed dependencies, reduced build and maintenance burden.
+
+**Target features:**
+- Stable/experimental crate classification (5 core, 5 experimental) with Cargo.toml metadata and README markers
+- Moderate dependency audit: remove unused, consolidate redundant, document what stays
+- Facade crates reclassified from "deprecated with timeline" to "experimental/unsupported"
+- CI focused on core crates only; experimental crates build but don't block
 
 ### Completed Milestones
 - **v1.0 Consolidation** — Monolith core + thin shells, 343 tests, zero API breaks
@@ -84,8 +94,9 @@ Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKe
 370+ tests passing (160+ in core including 18 YubiKey simulation, 9 hardware integration with #[ignore]).
 Build time: 45s clean release.
 CI unconditionally validates YubiKey feature on every PR.
-Facade crate deprecation active — removal planned v0.4.0 (Aug 2026).
-Key generation and attestation deferred to v1.2+ (yubikey crate API limitations).
+Facade crates reclassified to experimental (v1.2) — no longer on deprecation timeline.
+Key generation and attestation deferred to future (yubikey crate API limitations).
+v1.2 focus: scope reduction and dependency rationalization for solo-dev sustainability.
 
 ## Constraints
 
@@ -119,4 +130,4 @@ Key generation and attestation deferred to v1.2+ (yubikey crate API limitations)
 | Unconditional CI for YubiKey | Remove conditional if-checks, fail loudly if deps missing | ✓ Good — prevents silent breakage |
 
 ---
-*Last updated: 2026-02-11 after v1.1 milestone complete*
+*Last updated: 2026-02-11 after v1.2 milestone started*
