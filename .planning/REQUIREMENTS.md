@@ -1,0 +1,96 @@
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+
+
+# Requirements: TrustEdge
+
+**Defined:** 2026-02-11
+**Core Value:** A single, reliable trustedge-core library that owns all cryptographic operations — maintainable by a solo developer.
+
+## v1.2 Requirements
+
+Requirements for scope reduction and dependency rationalization.
+
+### Classification
+
+- [ ] **CLSF-01**: Core crates (core, cli, trst-protocols, trst-cli, trst-wasm) marked stable in Cargo.toml metadata and README
+- [ ] **CLSF-02**: Experimental crates (wasm, pubky, pubky-advanced, receipts, attestation) marked as experimental/beta in Cargo.toml metadata and README
+- [ ] **CLSF-03**: Workspace Cargo.toml documents crate tiers (stable vs experimental)
+- [ ] **CLSF-04**: Facade crates (receipts, attestation) reclassified from "deprecated with timeline" to "experimental, no maintenance commitment"
+
+### Dependencies
+
+- [ ] **DEPS-01**: Full dependency audit for 5 core crates — document each dep with justification
+- [ ] **DEPS-02**: Remove unused or redundant dependencies from core crates
+- [ ] **DEPS-03**: Consolidate duplicate crypto dependencies where crates pull the same libs directly instead of through core
+- [ ] **DEPS-04**: Trim tokio feature flags from "full" to only what's actually used
+- [ ] **DEPS-05**: Review and potentially remove reqwest from trst-cli (archive tool shouldn't need HTTP client)
+
+### CI
+
+- [ ] **CI-01**: CI pipeline prioritizes core crates — experimental crates build but don't block merge
+- [ ] **CI-02**: Dependency tree size tracked (baseline established, regressions caught)
+
+### Documentation
+
+- [ ] **DOCS-01**: Root README reflects stable/experimental split
+- [ ] **DOCS-02**: Each experimental crate README has clear "experimental/beta" banner
+
+## Future Requirements
+
+Deferred to subsequent milestones.
+
+### Deferred
+
+- Pubky adapter merged into core protocols/pubky/ (feature-gated)
+- Pubky-advanced hybrid encryption merged into core
+- Prelude module for common imports
+- Updated documentation with module-level security considerations
+- Key generation and attestation (yubikey crate API limitations)
+- RSA certificate generation
+
+## Out of Scope
+
+Explicitly excluded. Documented to prevent scope creep.
+
+| Feature | Reason |
+|---------|--------|
+| Deleting experimental crates | Goal is to mark, not destroy — rebuild later would be wasted effort |
+| Rewriting code to drop dependencies | Moderate audit — don't rewrite working code for marginal dep savings |
+| New cryptographic capabilities | This is a reduction milestone, not a feature milestone |
+| TPM support | Premature, no hardware to test against |
+| Post-quantum cryptography | Research phase only |
+| no_std support | Requires separate milestone |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| CLSF-01 | — | Pending |
+| CLSF-02 | — | Pending |
+| CLSF-03 | — | Pending |
+| CLSF-04 | — | Pending |
+| DEPS-01 | — | Pending |
+| DEPS-02 | — | Pending |
+| DEPS-03 | — | Pending |
+| DEPS-04 | — | Pending |
+| DEPS-05 | — | Pending |
+| CI-01 | — | Pending |
+| CI-02 | — | Pending |
+| DOCS-01 | — | Pending |
+| DOCS-02 | — | Pending |
+
+**Coverage:**
+- v1.2 requirements: 13 total
+- Mapped to phases: 0
+- Unmapped: 13 (pending roadmap creation)
+
+---
+*Requirements defined: 2026-02-11*
+*Last updated: 2026-02-11 after initial definition*
