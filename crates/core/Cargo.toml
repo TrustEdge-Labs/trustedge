@@ -80,6 +80,7 @@ x509-cert = { version = "0.2", features = ["builder"], optional = true }
 signature = { version = "2.2", optional = true }
 der = { version = "0.7", optional = true }
 spki = { version = "0.7", optional = true }
+rcgen = { version = "0.13", optional = true }
 
 
 
@@ -87,7 +88,7 @@ spki = { version = "0.7", optional = true }
 default = []         # No features by default — fast CI, maximum portability
 
 # Backend: Hardware/storage integrations
-yubikey = ["pkcs11", "dep:yubikey", "x509-cert", "der", "spki", "signature"]
+yubikey = ["pkcs11", "dep:yubikey", "x509-cert", "der", "spki", "signature", "rcgen"]
 
 # Platform: I/O and system capabilities
 audio = ["cpal"]
