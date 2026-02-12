@@ -48,11 +48,11 @@ Deleted broken YubiKey backend (8,117 lines) and rewrote from scratch with fail-
   3. Workspace Cargo.toml documents the 2-tier crate classification
   4. Every dependency in core crates has documented justification
   5. Redundant and unused dependencies removed from core crates
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 13-01: TBD (crate classification)
-- [ ] 13-02: TBD (dependency audit and rationalization)
+- [ ] 13-01-PLAN.md -- Crate classification: tier metadata in Cargo.toml + experimental README banners
+- [ ] 13-02-PLAN.md -- Dependency audit: document justifications, remove unused, trim tokio, review reqwest
 
 #### Phase 14: CI & Documentation
 **Goal**: CI prioritizes core crates and documentation reflects the stable/experimental split
