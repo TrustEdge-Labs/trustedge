@@ -26,6 +26,8 @@ pub mod traits;
 pub mod universal;
 pub mod universal_keyring;
 pub mod universal_registry;
+#[cfg(feature = "yubikey")]
+pub mod yubikey;
 
 pub use keyring::KeyringBackend;
 pub use software_hsm::SoftwareHsmBackend;
@@ -33,6 +35,8 @@ pub use traits::*;
 pub use universal::*;
 pub use universal_keyring::UniversalKeyringBackend;
 pub use universal_registry::{BackendPreferences, UniversalBackendRegistry};
+#[cfg(feature = "yubikey")]
+pub use yubikey::YubiKeyBackend;
 
 use anyhow::Result;
 
