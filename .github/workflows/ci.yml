@@ -60,14 +60,8 @@ jobs:
             echo "audio-available=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Install YubiKey dependencies (if possible)
-        id: yubikey-deps
-        run: |
-          if sudo apt-get install -y libpcsclite-dev pkgconf; then
-            echo "yubikey-available=true" >> $GITHUB_OUTPUT
-          else
-            echo "yubikey-available=false" >> $GITHUB_OUTPUT
-          fi
+      - name: Install YubiKey dependencies
+        run: sudo apt-get install -y libpcsclite-dev pkgconf
 
       - name: clippy (workspace - no features)
         run: cargo clippy --workspace --all-targets --no-default-features -- -D warnings
@@ -77,7 +71,6 @@ jobs:
         run: cargo clippy --package trustedge-core --all-targets --features audio -- -D warnings
 
       - name: clippy (trustedge-core with yubikey)
-        if: steps.yubikey-deps.outputs.yubikey-available == 'true'
         run: cargo clippy --package trustedge-core --all-targets --features yubikey -- -D warnings
 
       - name: Feature compatibility check (cargo-hack)
@@ -98,19 +91,17 @@ jobs:
         run: cargo test --package trustedge-core --features audio --locked --verbose
 
       - name: build binaries with yubikey (required for integration tests)
-        if: steps.yubikey-deps.outputs.yubikey-available == 'true'
         run: cargo build --package trustedge-core --bins --features yubikey
 
-      - name: tests (trustedge-core with yubikey)
-        if: steps.yubikey-deps.outputs.yubikey-available == 'true'
-        run: cargo test --package trustedge-core --features yubikey --locked --verbose
+      - name: tests (trustedge-core with yubikey simulation only)
+        run: cargo test --package trustedge-core --features yubikey --lib --locked --verbose
 
       - name: Build and test all features (trustedge-core)
-        if: steps.audio-deps.outputs.audio-available == 'true' && steps.yubikey-deps.outputs.yubikey-available == 'true'
+        if: steps.audio-deps.outputs.audio-available == 'true'
         run: |
           cargo clean
           cargo build --workspace --bins --all-features
-          cargo test -p trustedge-core --all-features --locked --verbose
+          cargo test -p trustedge-core --all-features --lib --locked --verbose
 
       - name: Downstream crate feature check (trustedge-cli)
         run: cargo hack check --feature-powerset --no-dev-deps --package trustedge-cli
