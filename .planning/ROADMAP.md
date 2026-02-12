@@ -86,8 +86,8 @@ Plans:
 **Plans:** 2 plans (1 wave)
 
 Plans:
-- [ ] 11-01-PLAN.md — Simulation tests in yubikey.rs #[cfg(test)] module (Wave 1)
-- [ ] 11-02-PLAN.md — Hardware integration tests in yubikey_integration.rs with #[ignore] (Wave 1)
+- [x] 11-01-PLAN.md — Simulation tests in yubikey.rs #[cfg(test)] module (Wave 1)
+- [x] 11-02-PLAN.md — Hardware integration tests in yubikey_integration.rs with #[ignore] (Wave 1)
 
 #### Phase 12: CI Integration
 
@@ -117,8 +117,8 @@ Phases execute in numeric order: 9 → 10 → 11 → 12
 | 1-8. [v1.0 phases] | v1.0 | 17/17 | Complete | 2026-02-11 |
 | 9. Cleanup | v1.1 | 1/1 | Complete | 2026-02-11 |
 | 10. Backend Rewrite | v1.1 | 2/2 | Complete | 2026-02-11 |
-| 11. Test Infrastructure | v1.1 | 0/2 | Planned | - |
+| 11. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 12. CI Integration | v1.1 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-11 after Phase 11 planning complete*
+*Last updated: 2026-02-11 after Phase 11 execution complete*
