@@ -7,6 +7,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge Core
 
+> **STABLE** -- This crate is Tier 1 (Stable). Production-committed, tested in CI, and actively maintained.
+
 **Core cryptographic library and CLI tools for privacy-preserving edge computing.**
 
 [![Crates.io](https://img.shields.io/crates/v/trustedge-core.svg)](https://crates.io/crates/trustedge-core)

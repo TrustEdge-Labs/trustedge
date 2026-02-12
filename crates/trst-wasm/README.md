@@ -8,6 +8,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge .trst Archive Verification WASM
 
+> **STABLE** -- This crate is Tier 1 (Stable). Production-committed, tested in CI, and actively maintained.
+
 WebAssembly bindings for TrustEdge .trst archive verification in web browsers, providing client-side cryptographic validation.
 
 > **📚 Complete WASM Guide**: See **[WASM.md](../../WASM.md)** for comprehensive build, test, and deployment documentation.
