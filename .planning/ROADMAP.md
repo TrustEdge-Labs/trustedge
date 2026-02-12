@@ -105,7 +105,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 12-01-PLAN.md — Make YubiKey CI steps unconditional and use --lib for simulation-only tests
+- [x] 12-01-PLAN.md — Make YubiKey CI steps unconditional and use --lib for simulation-only tests
 
 ## Progress
 
@@ -118,7 +118,7 @@ Phases execute in numeric order: 9 → 10 → 11 → 12
 | 9. Cleanup | v1.1 | 1/1 | Complete | 2026-02-11 |
 | 10. Backend Rewrite | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 11. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-11 |
-| 12. CI Integration | v1.1 | 0/1 | Not started | - |
+| 12. CI Integration | v1.1 | 1/1 | Complete | 2026-02-11 |
 
 ---
-*Last updated: 2026-02-11 after Phase 12 planning complete*
+*Last updated: 2026-02-11 after Phase 12 execution complete*

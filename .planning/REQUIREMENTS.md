@@ -48,9 +48,9 @@ These apply to ALL requirements in this milestone:
 
 ### CI (CI)
 
-- [ ] **CI-01**: CI always compiles with `--features yubikey` — not conditional on dependency availability
-- [ ] **CI-02**: CI runs simulation tests (non-#[ignore]) on every PR
-- [ ] **CI-03**: Clippy passes with `--features yubikey` with zero warnings
+- [x] **CI-01**: CI always compiles with `--features yubikey` — not conditional on dependency availability
+- [x] **CI-02**: CI runs simulation tests (non-#[ignore]) on every PR
+- [x] **CI-03**: Clippy passes with `--features yubikey` with zero warnings
 
 ## Future Requirements (v1.2+)
 
@@ -104,9 +104,9 @@ These apply to ALL requirements in this milestone:
 | TEST-04 | Phase 11 | Pending |
 | TEST-05 | Phase 11 | Pending |
 | TEST-06 | Phase 11 | Pending |
-| CI-01 | Phase 12 | Pending |
-| CI-02 | Phase 12 | Pending |
-| CI-03 | Phase 12 | Pending |
+| CI-01 | Phase 12 | Complete |
+| CI-02 | Phase 12 | Complete |
+| CI-03 | Phase 12 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 27 total
