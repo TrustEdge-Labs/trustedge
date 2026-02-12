@@ -8,6 +8,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge WASM
 
+> **EXPERIMENTAL** -- This crate is Tier 2 (experimental). General WASM bindings for TrustEdge. No maintenance commitment. For browser archive verification, use `trustedge-trst-wasm` (Tier 1) instead.
+
 WebAssembly bindings for TrustEdge cryptographic operations, providing high-performance encryption and decryption in web browsers and Node.js environments.
 
 > **📚 Complete WASM Guide**: See **[WASM.md](../../WASM.md)** for comprehensive build, test, and deployment documentation.

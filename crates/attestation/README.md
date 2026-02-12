@@ -7,34 +7,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge Attestation
 
-## ⚠️ DEPRECATION NOTICE
-
-**This crate has been deprecated as of version 0.3.0.**
-
-All attestation functionality has been consolidated into [`trustedge-core`](https://docs.rs/trustedge-core).
-
-### Timeline
-
-- **0.3.0** (February 2026): Deprecated - warnings issued
-- **0.4.0** (August 2026): Removal - crate will be deleted from workspace
-
-### Migration
-
-**Before (deprecated):**
-```rust
-use trustedge_attestation::{Attestation, create_signed_attestation, verify_attestation};
-```
-
-**After (recommended):**
-```rust
-use trustedge_core::{Attestation, create_signed_attestation, verify_attestation};
-```
-
-All APIs remain identical - only import paths change.
-
-See [MIGRATION.md](../../MIGRATION.md) for detailed upgrade instructions.
-
----
+> **EXPERIMENTAL** -- This crate is Tier 2 (experimental). Re-export facade for `trustedge-core` attestation. No maintenance commitment. Depend on `trustedge-core` directly for production use.
 
 ## What is Software Attestation?
 

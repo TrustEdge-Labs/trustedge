@@ -7,34 +7,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge Receipts
 
-## ⚠️ DEPRECATION NOTICE
-
-**This crate has been deprecated as of version 0.3.0.**
-
-All receipt functionality has been consolidated into [`trustedge-core`](https://docs.rs/trustedge-core).
-
-### Timeline
-
-- **0.3.0** (February 2026): Deprecated - warnings issued
-- **0.4.0** (August 2026): Removal - crate will be deleted from workspace
-
-### Migration
-
-**Before (deprecated):**
-```rust
-use trustedge_receipts::{Receipt, create_receipt, assign_receipt};
-```
-
-**After (recommended):**
-```rust
-use trustedge_core::{Receipt, create_receipt, assign_receipt};
-```
-
-All APIs remain identical - only import paths change.
-
-See [MIGRATION.md](../../MIGRATION.md) for detailed upgrade instructions.
-
----
+> **EXPERIMENTAL** -- This crate is Tier 2 (experimental). Re-export facade for `trustedge-core` receipts. No maintenance commitment. Depend on `trustedge-core` directly for production use.
 
 ## What are Digital Receipts?
 

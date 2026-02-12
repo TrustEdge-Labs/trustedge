@@ -7,6 +7,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge Pubky Adapter
 
+> **EXPERIMENTAL** -- This crate is Tier 2 (experimental). Community-contributed Pubky network adapter. No maintenance commitment.
+
 **Clean bridge between TrustEdge core cryptographic functions and the Pubky decentralized network.**
 
 [![Crates.io](https://img.shields.io/crates/v/trustedge-pubky.svg)](https://crates.io/crates/trustedge-pubky)

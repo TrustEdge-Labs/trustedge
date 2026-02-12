@@ -7,6 +7,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge Pubky Advanced
 
+> **EXPERIMENTAL** -- This crate is Tier 2 (experimental). Community-contributed Pubky hybrid encryption. No maintenance commitment.
+
 **Advanced Pubky integration with hybrid encryption and decentralized key discovery for TrustEdge.**
 
 [![Crates.io](https://img.shields.io/crates/v/trustedge-pubky-advanced.svg)](https://crates.io/crates/trustedge-pubky-advanced)
