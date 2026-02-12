@@ -12,6 +12,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 - ✅ **v1.0 Consolidation** - Phases 1-8 (shipped 2026-02-11)
 - ✅ **v1.1 YubiKey Integration Overhaul** - Phases 9-12 (shipped 2026-02-11)
+- 🚧 **v1.2 Scope Reduction & Dependency Rationalization** - Phases 13-14 (in progress)
 
 ## Phases
 
@@ -33,6 +34,41 @@ Deleted broken YubiKey backend (8,117 lines) and rewrote from scratch with fail-
 
 </details>
 
+### 🚧 v1.2 Scope Reduction & Dependency Rationalization (In Progress)
+
+**Milestone Goal:** Make TrustEdge maintainable by a solo developer — clear stable/experimental split, trimmed dependencies, reduced build and maintenance burden.
+
+#### Phase 13: Crate Classification & Dependency Audit
+**Goal**: Core crates clearly marked as stable, experimental crates marked as beta, and all dependencies documented with justification
+**Depends on**: Phase 12 (v1.1 complete)
+**Requirements**: CLSF-01, CLSF-02, CLSF-03, CLSF-04, DEPS-01, DEPS-02, DEPS-03, DEPS-04, DEPS-05
+**Success Criteria** (what must be TRUE):
+  1. All 5 core crates (core, cli, trst-protocols, trst-cli, trst-wasm) have stable metadata in Cargo.toml and README markers
+  2. All 5 experimental crates (wasm, pubky, pubky-advanced, receipts, attestation) have experimental/beta metadata and clear warnings
+  3. Workspace Cargo.toml documents the 2-tier crate classification
+  4. Every dependency in core crates has documented justification
+  5. Redundant and unused dependencies removed from core crates
+**Plans**: TBD
+
+Plans:
+- [ ] 13-01: TBD (crate classification)
+- [ ] 13-02: TBD (dependency audit and rationalization)
+
+#### Phase 14: CI & Documentation
+**Goal**: CI prioritizes core crates and documentation reflects the stable/experimental split
+**Depends on**: Phase 13
+**Requirements**: CI-01, CI-02, DOCS-01, DOCS-02
+**Success Criteria** (what must be TRUE):
+  1. CI pipeline runs comprehensive checks on core crates (experimental crates build but don't block)
+  2. Dependency tree size baseline established and tracked in CI
+  3. Root README clearly documents stable vs experimental crate split
+  4. Each experimental crate README has prominent experimental/beta banner
+**Plans**: TBD
+
+Plans:
+- [ ] 14-01: TBD (CI updates)
+- [ ] 14-02: TBD (documentation)
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -42,6 +78,8 @@ Deleted broken YubiKey backend (8,117 lines) and rewrote from scratch with fail-
 | 10. Backend Rewrite | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 11. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 12. CI Integration | v1.1 | 1/1 | Complete | 2026-02-11 |
+| 13. Crate Classification & Dependency Audit | v1.2 | 0/TBD | Not started | - |
+| 14. CI & Documentation | v1.2 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-11 after v1.1 milestone complete*
+*Last updated: 2026-02-11 after v1.2 roadmap created*

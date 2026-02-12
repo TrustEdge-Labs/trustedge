@@ -72,25 +72,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLSF-01 | — | Pending |
-| CLSF-02 | — | Pending |
-| CLSF-03 | — | Pending |
-| CLSF-04 | — | Pending |
-| DEPS-01 | — | Pending |
-| DEPS-02 | — | Pending |
-| DEPS-03 | — | Pending |
-| DEPS-04 | — | Pending |
-| DEPS-05 | — | Pending |
-| CI-01 | — | Pending |
-| CI-02 | — | Pending |
-| DOCS-01 | — | Pending |
-| DOCS-02 | — | Pending |
+| CLSF-01 | Phase 13 | Pending |
+| CLSF-02 | Phase 13 | Pending |
+| CLSF-03 | Phase 13 | Pending |
+| CLSF-04 | Phase 13 | Pending |
+| DEPS-01 | Phase 13 | Pending |
+| DEPS-02 | Phase 13 | Pending |
+| DEPS-03 | Phase 13 | Pending |
+| DEPS-04 | Phase 13 | Pending |
+| DEPS-05 | Phase 13 | Pending |
+| CI-01 | Phase 14 | Pending |
+| CI-02 | Phase 14 | Pending |
+| DOCS-01 | Phase 14 | Pending |
+| DOCS-02 | Phase 14 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13 (pending roadmap creation)
+- Mapped to phases: 13/13 ✓
+- Unmapped: 0
+
+**Phase mapping:**
+- Phase 13 (Crate Classification & Dependency Audit): 9 requirements
+- Phase 14 (CI & Documentation): 4 requirements
 
 ---
 *Requirements defined: 2026-02-11*
-*Last updated: 2026-02-11 after initial definition*
+*Last updated: 2026-02-11 after roadmap creation*

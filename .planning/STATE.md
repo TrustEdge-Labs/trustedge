@@ -4,16 +4,17 @@
 
 See: .planning/PROJECT.md (updated 2026-02-11)
 
-**Core value:** A single, reliable trustedge-core library that owns all cryptographic operations (envelope encryption, signing, receipts, attestation, archives) with production-quality YubiKey hardware integration — thin CLIs and WASM bindings are just frontends.
-
-**Current focus:** v1.2 Scope Reduction & Dependency Rationalization
+**Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — maintainable by a solo developer.
+**Current focus:** Phase 13 - Crate Classification & Dependency Audit
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-11 — Milestone v1.2 started
+Phase: 13 of 14 (Crate Classification & Dependency Audit)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-02-11 — v1.2 roadmap created
+
+Progress: [████████████████████░░] 92% (23/25 estimated plans across all milestones)
 
 ## Performance Metrics
 
@@ -22,33 +23,30 @@ Last activity: 2026-02-11 — Milestone v1.2 started
 - Average duration: 5.5 min
 - Total execution time: 2.1 hours
 
-**By Phase (v1.0 complete):**
+**By Milestone:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1. Foundation | 4 | 32 min | 8.0 min |
-| 2. Error Handling | 3 | 15 min | 5.0 min |
-| 3. trst-core Integration | 2 | 9 min | 4.5 min |
-| 4. Receipts Integration | 1 | 6 min | 6.0 min |
-| 5. Attestation Integration | 1 | 5 min | 5.0 min |
-| 6. Feature Flags | 2 | 10 min | 5.0 min |
-| 7. Backward Compatibility | 2 | 11 min | 5.5 min |
-| 8. Validation | 2 | 8 min | 4.0 min |
+| Milestone | Phases | Plans | Total | Avg/Plan |
+|-----------|--------|-------|-------|----------|
+| v1.0 | 8 | 17 | ~1.7 hours | ~6 min |
+| v1.1 | 4 | 6 | ~24 min | ~4 min |
+| v1.2 | 2 | 0 | - | - |
 
-**By Phase (v1.1 complete):**
+**Recent Trend:**
+- v1.1 plans: 3-8 min range
+- Trend: Stable (sonnet model performs consistently)
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 9. Cleanup | 1 | 5 min | 5.0 min |
-| 10. Backend Rewrite | 2 | 15 min | 7.5 min |
-| 11. Test Infrastructure | 2 | 10 min | 5.0 min |
-| 12. CI Integration | 1 | 3 min | 3.0 min |
+*Updated after each plan completion*
 
 ## Accumulated Context
 
 ### Decisions
 
 All decisions logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
+
+- v1.2: Scope reduction, not deletion — mark experimental crates, don't destroy
+- v1.1: Unconditional CI for YubiKey — prevents silent breakage
+- v1.0: Monolith core + thin shells — eliminates duplication
 
 ### Pending Todos
 
@@ -63,6 +61,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-11 (v1.1 milestone complete)
-Stopped at: v1.1 milestone archived
-Resume file: Start next milestone with /gsd:new-milestone
+Last session: 2026-02-11
+Stopped at: v1.2 roadmap created, ready to begin planning Phase 13
+Resume file: None
