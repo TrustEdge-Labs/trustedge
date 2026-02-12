@@ -66,8 +66,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 14-01-PLAN.md -- CI tiered pipeline (core blocking, experimental non-blocking) + dependency tree tracking
-- [ ] 14-02-PLAN.md -- Root README crate classification + verify experimental banners
+- [x] 14-01-PLAN.md -- CI tiered pipeline (core blocking, experimental non-blocking) + dependency tree tracking
+- [x] 14-02-PLAN.md -- Root README crate classification + verify experimental banners
 
 ## Progress
 
@@ -79,7 +79,7 @@ Plans:
 | 11. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 12. CI Integration | v1.1 | 1/1 | Complete | 2026-02-11 |
 | 13. Crate Classification & Dependency Audit | v1.2 | 2/2 | Complete | 2026-02-12 |
-| 14. CI & Documentation | v1.2 | 0/2 | In progress | - |
+| 14. CI & Documentation | v1.2 | 2/2 | Complete | 2026-02-12 |
 
 ---
-*Last updated: 2026-02-12 after Phase 14 planning*
+*Last updated: 2026-02-12 after Phase 14 complete*

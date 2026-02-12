@@ -39,6 +39,7 @@ Progress: [███████████████████████
 | Phase 13 P01 | 360 | 3 tasks | 21 files |
 | Phase 13 P02 | 356 | 2 tasks | 4 files |
 | Phase 14 P02 | 74 | 2 tasks | 1 files |
+| Phase 14 P01 | 115 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -53,6 +54,8 @@ Recent decisions affecting current work:
 - [Phase 13]: Use [package.metadata.trustedge] for tier classification
 - [Phase 13]: Trim tokio from "full" to minimal feature sets (8 for core, 2 for trst-cli)
 - [Phase 13]: Keep trustedge-cli crypto deps (direct instantiation, not redundancy)
+- [Phase 14-01]: Split CI into core (blocking) and experimental (non-blocking) tiers to prevent experimental issues from blocking core development
+- [Phase 14-01]: Established dependency tree baseline at 60 unique crates with +10 warning threshold for early bloat detection
 
 ### Pending Todos
 

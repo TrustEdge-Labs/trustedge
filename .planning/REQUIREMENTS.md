@@ -32,13 +32,13 @@ Requirements for scope reduction and dependency rationalization.
 
 ### CI
 
-- [ ] **CI-01**: CI pipeline prioritizes core crates — experimental crates build but don't block merge
-- [ ] **CI-02**: Dependency tree size tracked (baseline established, regressions caught)
+- [x] **CI-01**: CI pipeline prioritizes core crates — experimental crates build but don't block merge
+- [x] **CI-02**: Dependency tree size tracked (baseline established, regressions caught)
 
 ### Documentation
 
-- [ ] **DOCS-01**: Root README reflects stable/experimental split
-- [ ] **DOCS-02**: Each experimental crate README has clear "experimental/beta" banner
+- [x] **DOCS-01**: Root README reflects stable/experimental split
+- [x] **DOCS-02**: Each experimental crate README has clear "experimental/beta" banner
 
 ## Future Requirements
 
@@ -72,19 +72,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLSF-01 | Phase 13 | Pending |
-| CLSF-02 | Phase 13 | Pending |
-| CLSF-03 | Phase 13 | Pending |
-| CLSF-04 | Phase 13 | Pending |
-| DEPS-01 | Phase 13 | Pending |
-| DEPS-02 | Phase 13 | Pending |
-| DEPS-03 | Phase 13 | Pending |
-| DEPS-04 | Phase 13 | Pending |
-| DEPS-05 | Phase 13 | Pending |
-| CI-01 | Phase 14 | Pending |
-| CI-02 | Phase 14 | Pending |
-| DOCS-01 | Phase 14 | Pending |
-| DOCS-02 | Phase 14 | Pending |
+| CLSF-01 | Phase 13 | Complete |
+| CLSF-02 | Phase 13 | Complete |
+| CLSF-03 | Phase 13 | Complete |
+| CLSF-04 | Phase 13 | Complete |
+| DEPS-01 | Phase 13 | Complete |
+| DEPS-02 | Phase 13 | Complete |
+| DEPS-03 | Phase 13 | Complete |
+| DEPS-04 | Phase 13 | Complete |
+| DEPS-05 | Phase 13 | Complete |
+| CI-01 | Phase 14 | Complete |
+| CI-02 | Phase 14 | Complete |
+| DOCS-01 | Phase 14 | Complete |
+| DOCS-02 | Phase 14 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 13 total
@@ -97,4 +97,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-11*
-*Last updated: 2026-02-11 after roadmap creation*
+*Last updated: 2026-02-12 after Phase 14 complete — all v1.2 requirements satisfied*
