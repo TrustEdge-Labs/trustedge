@@ -264,6 +264,19 @@ else
     skip "cargo-semver-checks not installed"
 fi
 
+# ── Step 14: Dependency tree size ────────────────────────────────────
+step "Step 14: Dependency tree size check"
+dep_count=$(cargo tree --workspace --depth 1 --prefix none --no-dedupe 2>/dev/null | sort -u | wc -l)
+baseline=60
+threshold=$((baseline + 10))
+echo "  Dependency tree: $dep_count unique crates (baseline: $baseline)"
+if [ "$dep_count" -gt "$threshold" ]; then
+    echo "  ⚠ Dependency tree grew beyond threshold ($dep_count > $threshold)"
+    WARN=$((WARN + 1))
+else
+    pass "dependency tree within baseline"
+fi
+
 # ── Summary ─────────────────────────────────────────────────────────
 echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

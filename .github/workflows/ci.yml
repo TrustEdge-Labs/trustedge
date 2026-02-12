@@ -144,6 +144,19 @@ jobs:
       - name: Downstream crate feature check (trustedge-cli)
         run: cargo hack check --feature-powerset --no-dev-deps --package trustedge-cli
 
+      - name: Dependency tree size check
+        run: |
+          # Count unique crates in dependency tree
+          dep_count=$(cargo tree --workspace --depth 1 --prefix none --no-dedupe 2>/dev/null | sort -u | wc -l)
+          echo "Dependency tree size: $dep_count unique crates"
+          # Baseline: established 2026-02-12 during v1.2 Phase 14
+          # If count exceeds baseline + 10, warn (not block)
+          baseline=60
+          threshold=$((baseline + 10))
+          if [ "$dep_count" -gt "$threshold" ]; then
+            echo "::warning::Dependency tree grew beyond threshold ($dep_count > $threshold). Review new dependencies."
+          fi
+
       - name: WASM build verification
         run: |
           rustup target add wasm32-unknown-unknown
