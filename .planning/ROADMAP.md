@@ -58,15 +58,15 @@ Plans:
 **Success Criteria** (what must be TRUE):
 1. YubiKey backend implements full UniversalBackend trait (perform_operation, supports_operation, get_capabilities, backend_info, list_keys)
 2. Backend returns BackendError::HardwareError when hardware unavailable — never falls back to software crypto
-3. Ed25519, ECDSA P-256, and RSA-2048 signing all work via PIV slots with real hardware keys
+3. ECDSA P-256 and RSA-2048 signing work via PIV slots with real hardware keys (Ed25519 not supported by PIV hardware — returns UnsupportedOperation)
 4. X.509 certificate generation uses rcgen library with hardware-backed signing (zero manual ASN.1/DER encoding)
 5. All cryptographic operations use battle-tested libraries only — yubikey crate (stable API), rcgen, der/spki crates from RustCrypto
 
-**Plans:** 2 plans
+**Plans:** 2 plans (2 waves)
 
 Plans:
-- [ ] 10-01-PLAN.md — Backend foundation + PIV operations + UniversalBackend trait implementation
-- [ ] 10-02-PLAN.md — X.509 certificate generation with rcgen + registry integration
+- [ ] 10-01-PLAN.md — Backend foundation + PIV operations + UniversalBackend trait implementation (Wave 1)
+- [ ] 10-02-PLAN.md — X.509 certificate generation with rcgen + registry integration (Wave 2)
 
 #### Phase 11: Test Infrastructure
 
@@ -115,7 +115,7 @@ Phases execute in numeric order: 9 → 10 → 11 → 12
 |-------|-----------|----------------|--------|-----------|
 | 1-8. [v1.0 phases] | v1.0 | 17/17 | Complete | 2026-02-11 |
 | 9. Cleanup | v1.1 | 1/1 | Complete | 2026-02-11 |
-| 10. Backend Rewrite | v1.1 | 0/? | Not started | - |
+| 10. Backend Rewrite | v1.1 | 0/2 | Planning complete | - |
 | 11. Test Infrastructure | v1.1 | 0/? | Not started | - |
 | 12. CI Integration | v1.1 | 0/? | Not started | - |
 

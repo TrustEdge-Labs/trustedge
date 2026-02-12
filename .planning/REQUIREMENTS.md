@@ -25,7 +25,7 @@ These apply to ALL requirements in this milestone:
 - [ ] **BACK-01**: New YubiKey backend implements UniversalBackend trait (perform_operation, supports_operation, get_capabilities, backend_info, list_keys)
 - [ ] **BACK-02**: Backend uses `yubikey` crate stable API only — no `untested` feature, no PKCS#11 for core operations
 - [ ] **BACK-03**: Backend returns `BackendError::HardwareError` when YubiKey hardware is unavailable — never falls back to software
-- [ ] **BACK-04**: Ed25519 signing works via PIV slot with real hardware key
+- [ ] **BACK-04**: Ed25519 signing requested via YubiKey returns `UnsupportedOperation` with clear error message (PIV hardware does not support Ed25519 — use ECDSA P-256 or software backend)
 - [ ] **BACK-05**: ECDSA P-256 signing works via PIV slot with real hardware key
 - [ ] **BACK-06**: RSA-2048 signing works via PIV slot with real hardware key
 - [ ] **BACK-07**: Public key extraction retrieves actual DER-encoded SPKI from hardware slot
