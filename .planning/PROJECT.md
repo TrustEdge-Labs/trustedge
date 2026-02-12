@@ -59,7 +59,16 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Active
 
-(No active requirements — start next milestone with `/gsd:new-milestone`)
+## Current Milestone: v1.3 Dependency Audit & Rationalization
+
+**Goal:** Minimize and harden the dependency tree across all 10 crates — feature-gate heavy optional deps, remove unused deps, run security audit, document every remaining dependency.
+
+**Target features:**
+- Feature-gate git2 and keyring (opt-in, not compiled by default)
+- Full dependency audit across all 10 crates (stable + experimental)
+- Remove actually unnecessary dependencies
+- Install and integrate cargo-audit for security vulnerability scanning
+- Updated DEPENDENCIES.md with full workspace coverage
 
 ### Deferred
 
@@ -79,6 +88,7 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - **v1.0 Consolidation** — Monolith core + thin shells, 343 tests, zero API breaks
 - **v1.1 YubiKey Integration Overhaul** — Scorched-earth rewrite with fail-closed design, battle-tested libraries, 27 tests, unconditional CI
 - **v1.2 Scope Reduction** — 2-tier crate classification, dependency audit, tiered CI pipeline, dep tree tracking
+- **v1.3 Dependency Audit & Rationalization** — (in progress)
 
 ## Context
 
@@ -128,4 +138,4 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | Dep tree baseline at 60 + warn at 70 | Informational tracking, non-blocking | ✓ Good — catches regression early |
 
 ---
-*Last updated: 2026-02-12 after v1.2 milestone complete*
+*Last updated: 2026-02-12 after v1.3 milestone started*

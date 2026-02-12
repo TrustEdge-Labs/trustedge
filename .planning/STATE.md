@@ -5,15 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — maintainable by a solo developer.
-**Current focus:** Planning next milestone
+**Current focus:** v1.3 Dependency Audit & Rationalization
 
 ## Current Position
 
-Milestone: v1.2 complete (shipped 2026-02-12)
-Status: Between milestones
-Last activity: 2026-02-12 — Completed v1.2 milestone
-
-Progress: All milestones shipped (v1.0, v1.1, v1.2)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-12 — Milestone v1.3 started
 
 ## Performance Metrics
 
@@ -50,5 +49,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed v1.2 milestone
+Stopped at: Starting v1.3 milestone
 Resume file: None
