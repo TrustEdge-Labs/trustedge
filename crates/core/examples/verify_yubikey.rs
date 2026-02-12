@@ -21,50 +21,18 @@ fn main() -> anyhow::Result<()> {
     println!("🔑 TrustEdge YubiKey Verification Test");
     println!("=====================================\n");
 
-    // Try common PKCS#11 module paths
-    let possible_paths = vec![
-        "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so", // Ubuntu/Debian x64
-        "/usr/lib/aarch64-linux-gnu/opensc-pkcs11.so", // Ubuntu/Debian ARM64
-        "/usr/local/lib/opensc-pkcs11.so",            // macOS/manual install
-        "/usr/lib/opensc-pkcs11.so",                  // Some Linux distros
-    ];
-
-    let mut pkcs11_path = None;
-    for path in &possible_paths {
-        if std::path::Path::new(path).exists() {
-            println!("✔ Found PKCS#11 module: {}", path);
-            pkcs11_path = Some(path.to_string());
-            break;
-        }
-    }
-
-    let pkcs11_path = match pkcs11_path {
-        Some(p) => p,
-        None => {
-            println!("✖ ERROR: Could not find OpenSC PKCS#11 module!");
-            println!("\nSearched paths:");
-            for path in &possible_paths {
-                println!("  - {}", path);
-            }
-            println!("\nInstall OpenSC:");
-            println!("  Ubuntu/Debian: sudo apt install opensc-pkcs11");
-            println!("  macOS: brew install opensc");
-            return Ok(());
-        }
-    };
-
-    // Configure YubiKey backend
+    // Configure YubiKey backend with default slot
     let config = YubiKeyConfig {
-        pkcs11_module_path: pkcs11_path.clone(),
         pin: Some("123456".to_string()), // Default YubiKey PIN
-        slot: None,                      // Auto-detect
+        default_slot: "9c".to_string(),  // Digital Signature slot
         verbose: true,
+        max_pin_retries: 3,
     };
 
-    println!("\n📋 Configuration:");
-    println!("   PKCS#11 Module: {}", config.pkcs11_module_path);
+    println!("📋 Configuration:");
     println!("   PIN: Provided (using default: 123456)");
-    println!("   Slot: Auto-detect all PIV slots\n");
+    println!("   Default Slot: {}", config.default_slot);
+    println!("   Scanning all PIV slots\n");
 
     // Initialize YubiKey backend
     println!("● Connecting to YubiKey...");

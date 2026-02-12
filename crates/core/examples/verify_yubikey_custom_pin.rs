@@ -42,14 +42,13 @@ fn main() -> anyhow::Result<()> {
 
     // Configure YubiKey backend
     let config = YubiKeyConfig {
-        pkcs11_module_path: "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so".to_string(),
         pin,
-        slot: None, // Auto-detect
+        default_slot: "9c".to_string(),
         verbose: true,
+        max_pin_retries: 3,
     };
 
     println!("\n📋 Configuration:");
-    println!("   PKCS#11 Module: {}", config.pkcs11_module_path);
     println!(
         "   PIN: {}",
         if config.pin.is_some() {
@@ -58,7 +57,8 @@ fn main() -> anyhow::Result<()> {
             "None (public ops only)"
         }
     );
-    println!("   Slot: Auto-detect\n");
+    println!("   Default Slot: {}", config.default_slot);
+    println!("   Scanning all PIV slots\n");
 
     // Initialize YubiKey backend
     println!("● Connecting to YubiKey...");
