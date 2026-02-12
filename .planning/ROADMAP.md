@@ -51,8 +51,8 @@ Deleted broken YubiKey backend (8,117 lines) and rewrote from scratch with fail-
 **Plans**: 2 plans
 
 Plans:
-- [ ] 13-01-PLAN.md -- Crate classification: tier metadata in Cargo.toml + experimental README banners
-- [ ] 13-02-PLAN.md -- Dependency audit: document justifications, remove unused, trim tokio, review reqwest
+- [x] 13-01-PLAN.md -- Crate classification: tier metadata in Cargo.toml + experimental README banners
+- [x] 13-02-PLAN.md -- Dependency audit: document justifications, remove unused, trim tokio, review reqwest
 
 #### Phase 14: CI & Documentation
 **Goal**: CI prioritizes core crates and documentation reflects the stable/experimental split
@@ -78,8 +78,8 @@ Plans:
 | 10. Backend Rewrite | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 11. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 12. CI Integration | v1.1 | 1/1 | Complete | 2026-02-11 |
-| 13. Crate Classification & Dependency Audit | v1.2 | 0/TBD | Not started | - |
+| 13. Crate Classification & Dependency Audit | v1.2 | 2/2 | Complete | 2026-02-12 |
 | 14. CI & Documentation | v1.2 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-11 after v1.2 roadmap created*
+*Last updated: 2026-02-12 after Phase 13 complete*
