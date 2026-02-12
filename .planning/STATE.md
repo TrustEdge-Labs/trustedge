@@ -2,26 +2,25 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-11)
+See: .planning/PROJECT.md (updated 2026-02-12)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — maintainable by a solo developer.
-**Current focus:** Phase 14 - CI Pipeline & Documentation (COMPLETE)
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 14 of 14 (CI Pipeline & Documentation)
-Plan: 2 of 2 in current phase (COMPLETE)
-Status: Phase complete
-Last activity: 2026-02-12 — Completed 14-02-PLAN.md
+Milestone: v1.2 complete (shipped 2026-02-12)
+Status: Between milestones
+Last activity: 2026-02-12 — Completed v1.2 milestone
 
-Progress: [████████████████████████] 100% (26/26 estimated plans across all milestones)
+Progress: All milestones shipped (v1.0, v1.1, v1.2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 26 (17 v1.0 + 6 v1.1 + 3 v1.2)
-- Average duration: 5.3 min
-- Total execution time: 2.3 hours
+- Total plans completed: 27 (17 v1.0 + 6 v1.1 + 4 v1.2)
+- Average duration: 5.1 min
+- Total execution time: ~2.3 hours
 
 **By Milestone:**
 
@@ -29,33 +28,13 @@ Progress: [███████████████████████
 |-----------|--------|-------|-------|----------|
 | v1.0 | 8 | 17 | ~1.7 hours | ~6 min |
 | v1.1 | 4 | 6 | ~24 min | ~4 min |
-| v1.2 | 2 | 3 | ~13 min | ~4.3 min |
-
-**Recent Trend:**
-- v1.2 plans: 1-6 min range
-- Trend: Stable (sonnet model performs consistently)
-
-*Updated after each plan completion*
-| Phase 13 P01 | 360 | 3 tasks | 21 files |
-| Phase 13 P02 | 356 | 2 tasks | 4 files |
-| Phase 14 P02 | 74 | 2 tasks | 1 files |
-| Phase 14 P01 | 115 | 2 tasks | 2 files |
+| v1.2 | 2 | 4 | ~15 min | ~4 min |
 
 ## Accumulated Context
 
 ### Decisions
 
 All decisions logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- v1.2: Scope reduction, not deletion — mark experimental crates, don't destroy
-- v1.1: Unconditional CI for YubiKey — prevents silent breakage
-- v1.0: Monolith core + thin shells — eliminates duplication
-- [Phase 13]: Use [package.metadata.trustedge] for tier classification
-- [Phase 13]: Trim tokio from "full" to minimal feature sets (8 for core, 2 for trst-cli)
-- [Phase 13]: Keep trustedge-cli crypto deps (direct instantiation, not redundancy)
-- [Phase 14-01]: Split CI into core (blocking) and experimental (non-blocking) tiers to prevent experimental issues from blocking core development
-- [Phase 14-01]: Established dependency tree baseline at 60 unique crates with +10 warning threshold for early bloat detection
 
 ### Pending Todos
 
@@ -71,5 +50,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 14-02-PLAN.md (Phase 14 complete)
+Stopped at: Completed v1.2 milestone
 Resume file: None

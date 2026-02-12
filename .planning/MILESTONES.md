@@ -69,3 +69,33 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
+
+## v1.2 Scope Reduction & Dependency Rationalization (Shipped: 2026-02-12)
+
+**Phases completed:** 2 phases (13-14), 4 plans, 9 tasks
+**Timeline:** 1 day (2026-02-12)
+**Stats:** 34 files changed, 1,645 insertions, 110 deletions
+
+**Delivered:** Made TrustEdge maintainable by a solo developer — clear stable/experimental crate split, dependency audit and optimization, tiered CI pipeline that prioritizes core crates.
+
+**Key accomplishments:**
+- 2-tier crate classification (Stable/Experimental) with metadata in all 10 Cargo.toml files and README banners
+- Full dependency audit with justification documentation (DEPENDENCIES.md) for all core crate deps
+- Tokio features trimmed from "full" to minimal sets (8 features for core, 2 for trst-cli)
+- Tiered CI pipeline — core crates blocking merge, experimental crates non-blocking (continue-on-error)
+- Dependency tree size baseline (60 crates) with regression tracking in CI and local script
+- Root README crate classification section with tier table for user visibility
+
+**Tech debt carried forward:**
+- Key generation and attestation deferred (yubikey 0.7 API limitations, carried from v1.1)
+- TODO comments in envelope_v2_bridge.rs for Pubky integration (carried from v1.0)
+- 2 cargo-machete false positives (serde_bytes, getrandom) suppressed via config
+
+**Git range:** v1.1..5852b52 (docs(phase-14): complete phase execution)
+
+**Archives:**
+- `.planning/milestones/v1.2-ROADMAP.md`
+- `.planning/milestones/v1.2-REQUIREMENTS.md`
+
+---
+

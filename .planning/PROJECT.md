@@ -50,14 +50,16 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ `yubikey` crate used without `untested` feature flag — v1.1
 - ✓ 18 simulation tests + 9 hardware integration tests, all with real assertions — v1.1
 - ✓ CI always compile-checks and tests yubikey feature unconditionally — v1.1
+- ✓ 2-tier crate classification (stable/experimental) with Cargo.toml metadata — v1.2
+- ✓ Full dependency audit with documented justifications (DEPENDENCIES.md) — v1.2
+- ✓ Tokio features trimmed from "full" to minimal sets — v1.2
+- ✓ Tiered CI pipeline (core blocking, experimental non-blocking) — v1.2
+- ✓ Dependency tree size baseline and regression tracking — v1.2
+- ✓ Root README documents stable/experimental crate split — v1.2
 
 ### Active
 
-<!-- v1.2 scope — see REQUIREMENTS.md for full details -->
-- [ ] Clear stable/experimental crate classification with Cargo.toml metadata
-- [ ] Dependency audit and rationalization for core crates
-- [ ] Experimental crates marked as beta (not deleted)
-- [ ] Build times and supply chain surface reduced
+(No active requirements — start next milestone with `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -73,30 +75,20 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - no_std support — requires separate milestone, half-measures are worse
 - Algorithm agility changes — hard-coded Ed25519/AES-256-GCM is sufficient
 
-## Current Milestone: v1.2 Scope Reduction & Dependency Rationalization
-
-**Goal:** Make TrustEdge maintainable by a solo developer — clear stable/experimental split, trimmed dependencies, reduced build and maintenance burden.
-
-**Target features:**
-- Stable/experimental crate classification (5 core, 5 experimental) with Cargo.toml metadata and README markers
-- Moderate dependency audit: remove unused, consolidate redundant, document what stays
-- Facade crates reclassified from "deprecated with timeline" to "experimental/unsupported"
-- CI focused on core crates only; experimental crates build but don't block
-
-### Completed Milestones
+## Completed Milestones
 - **v1.0 Consolidation** — Monolith core + thin shells, 343 tests, zero API breaks
 - **v1.1 YubiKey Integration Overhaul** — Scorched-earth rewrite with fail-closed design, battle-tested libraries, 27 tests, unconditional CI
+- **v1.2 Scope Reduction** — 2-tier crate classification, dependency audit, tiered CI pipeline, dep tree tracking
 
 ## Context
 
-Shipped v1.1 with 30,144 Rust LOC across 10 crates.
+Shipped v1.2 with 30,144 Rust LOC across 10 crates (5 stable, 5 experimental).
 Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048).
 370+ tests passing (160+ in core including 18 YubiKey simulation, 9 hardware integration with #[ignore]).
-Build time: 45s clean release.
-CI unconditionally validates YubiKey feature on every PR.
-Facade crates reclassified to experimental (v1.2) — no longer on deprecation timeline.
+Build time: 45s clean release. Dependency tree: 60 unique crates (baselined).
+CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally.
+Crate classification: Tier 1 (stable) = core, cli, trst-protocols, trst-cli, trst-wasm. Tier 2 (experimental) = wasm, pubky, pubky-advanced, receipts, attestation.
 Key generation and attestation deferred to future (yubikey crate API limitations).
-v1.2 focus: scope reduction and dependency rationalization for solo-dev sustainability.
 
 ## Constraints
 
@@ -128,6 +120,12 @@ v1.2 focus: scope reduction and dependency rationalization for solo-dev sustaina
 | Arc<Mutex> for RemoteKeyPair | rcgen's KeyPair::from_remote takes ownership, needs shared YubiKey access | ✓ Good — clean shared ownership |
 | ECDSA P-256 only for certs | Simplicity for initial release, RSA cert generation deferred | ✓ Good — sufficient for v1.1 |
 | Unconditional CI for YubiKey | Remove conditional if-checks, fail loudly if deps missing | ✓ Good — prevents silent breakage |
+| Scope reduction, not deletion | Mark experimental crates, don't destroy — rebuild later would be wasted effort | ✓ Good — all code preserved |
+| [package.metadata.trustedge] for tier classification | Machine-readable tier in Cargo.toml metadata | ✓ Good — tooling-friendly |
+| Trim tokio to minimal features | "full" pulled unnecessary features; minimal sets sufficient | ✓ Good — 8 features core, 2 trst-cli |
+| Keep trustedge-cli crypto deps | Direct instantiation, not redundancy with core | ✓ Good — correct architecture |
+| Tiered CI (core blocking, experimental non-blocking) | Experimental issues shouldn't block core development | ✓ Good — continue-on-error for tier 2 |
+| Dep tree baseline at 60 + warn at 70 | Informational tracking, non-blocking | ✓ Good — catches regression early |
 
 ---
-*Last updated: 2026-02-11 after v1.2 milestone started*
+*Last updated: 2026-02-12 after v1.2 milestone complete*
