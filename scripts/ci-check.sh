@@ -148,11 +148,11 @@ else
     skip "ALSA not available"
 fi
 
-# ── Step 9: YubiKey tests ───────────────────────────────────────────
-step "Step 9: Tests (trustedge-core with yubikey)"
+# ── Step 9: YubiKey tests (simulation) ─────────────────────────────
+step "Step 9: Tests (trustedge-core with yubikey simulation)"
 if pkg-config --exists libpcsclite 2>/dev/null; then
     cargo build --package trustedge-core --bins --features yubikey
-    if cargo test --package trustedge-core --features yubikey --locked; then
+    if cargo test --package trustedge-core --features yubikey --lib --locked; then
         pass "yubikey tests"
     else
         fail "yubikey tests"
@@ -166,7 +166,7 @@ step "Step 10: All features combined"
 if pkg-config --exists alsa 2>/dev/null && pkg-config --exists libpcsclite 2>/dev/null; then
     cargo clean
     cargo build --workspace --bins --all-features
-    if cargo test -p trustedge-core --all-features --locked; then
+    if cargo test -p trustedge-core --all-features --lib --locked; then
         pass "all-features tests"
     else
         fail "all-features tests"
