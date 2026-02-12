@@ -65,7 +65,7 @@ trustedge-trst-protocols = { path = "../trst-protocols" }
 
 # Crate-specific dependencies not in workspace
 sha2 = "0.10"
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.0", features = ["io-util", "net", "fs", "sync", "time", "rt-multi-thread", "macros", "signal"] }
 tokio-util = { version = "0.7", features = ["codec"] }
 futures-util = { version = "0.3", features = ["sink"] }
 zeroize = "1.7"

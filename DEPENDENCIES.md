@@ -61,7 +61,7 @@ Core cryptographic library with network transport, backends, and protocol implem
 - `macros` - #[tokio::main], #[tokio::test]
 - `signal` - Signal handling
 
-**Current config:** `features = ["full"]` — OPTIMIZATION OPPORTUNITY: trim to minimal feature set
+**Configuration:** Trimmed from `["full"]` to minimal feature set: `["io-util", "net", "fs", "sync", "time", "rt-multi-thread", "macros", "signal"]`
 
 ## trustedge-cli
 
@@ -122,9 +122,9 @@ CLI tool for .trst archive wrap/verify operations.
 - `macros` - #[tokio::main]
 - `rt-multi-thread` - Runtime for async reqwest calls
 
-**Current config:** `features = ["full"]` — OPTIMIZATION OPPORTUNITY: trim to ["macros", "rt-multi-thread"]
+**Configuration:** Trimmed from `["full"]` to minimal feature set: `["macros", "rt-multi-thread"]`
 
-**reqwest justification:** The `trst sign` command has a `--post` option that POSTs the generated verify request to a remote URL. This is a legitimate feature for integration with verification services. The dependency SHOULD be kept but could be made optional with a feature flag in the future.
+**reqwest justification:** The `trst sign` command has a `--post` option that POSTs the generated verify request to a remote URL. This is a legitimate feature for integration with verification services. The dependency is kept and justified.
 
 ## trustedge-trst-wasm
 
@@ -145,7 +145,7 @@ WASM bindings for browser-based archive verification.
 | base64 | 0.22 | Base64 decoding for signatures | Used |
 | web-sys | 0.3 | Browser APIs (File, FileReader, FileSystem) | Used |
 
-**Note on getrandom:** cargo-machete flags this as unused, but it MUST be present to activate the "js" feature for wasm32-unknown-unknown target. This is a known false positive documented in project memory. DO NOT REMOVE.
+**Note on getrandom:** cargo-machete flags this as unused (false positive), but it MUST be present to activate the "js" feature for wasm32-unknown-unknown target. Added to `[package.metadata.cargo-machete]` ignored list to suppress false positive warnings.
 
 ---
 
@@ -165,17 +165,17 @@ WASM bindings for browser-based archive verification.
 
 ### Optimization Opportunities
 
-#### 1. Tokio feature flag trimming (DEPS-04)
+#### 1. Tokio feature flag trimming (DEPS-04) — ✅ COMPLETED
 
 **trustedge-core:**
-- Current: `features = ["full"]` (includes 30+ features)
-- Needed: `["io-util", "net", "fs", "sync", "time", "rt-multi-thread", "macros", "signal"]`
-- Estimated savings: Faster compilation, smaller binary
+- ~~Current: `features = ["full"]` (includes 30+ features)~~
+- Trimmed to: `["io-util", "net", "fs", "sync", "time", "rt-multi-thread", "macros", "signal"]`
+- Result: Faster compilation, smaller binary
 
 **trustedge-trst-cli:**
-- Current: `features = ["full"]`
-- Needed: `["macros", "rt-multi-thread"]` (only for async runtime)
-- Estimated savings: Significant compilation time reduction
+- ~~Current: `features = ["full"]`~~
+- Trimmed to: `["macros", "rt-multi-thread"]` (only for async runtime)
+- Result: Significant compilation time reduction
 
 #### 2. Future feature flags
 
@@ -193,14 +193,22 @@ WASM bindings for browser-based archive verification.
 
 ---
 
-## Recommendations
+## Changes Made (2026-02-12)
 
-1. **Immediate (this phase):**
-   - Trim tokio features in trustedge-core from "full" to minimal set
-   - Trim tokio features in trustedge-trst-cli from "full" to ["macros", "rt-multi-thread"]
-   - Add getrandom to cargo-machete ignored list in trustedge-trst-wasm
+1. **✅ Tokio feature trimming:**
+   - trustedge-core: Trimmed from `["full"]` to `["io-util", "net", "fs", "sync", "time", "rt-multi-thread", "macros", "signal"]`
+   - trustedge-trst-cli: Trimmed from `["full"]` to `["macros", "rt-multi-thread"]`
 
-2. **Future (post-v1.2):**
+2. **✅ cargo-machete false positive suppression:**
+   - Added getrandom to ignored list in trustedge-trst-wasm's `[package.metadata.cargo-machete]`
+
+3. **✅ reqwest review:**
+   - Verified reqwest is used for `trst sign --post` option (legitimate feature)
+   - Kept dependency with documented justification
+
+## Recommendations for Future Work
+
+1. **Post-v1.2:**
    - Consider making reqwest in trst-cli optional with a feature flag
    - Audit whether async-trait is actually required in trustedge-core
    - Consider consolidating chacha20poly1305 dependency between core and trst-cli
