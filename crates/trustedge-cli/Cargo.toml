@@ -20,6 +20,10 @@ categories = ["command-line-utilities", "cryptography"]
 name = "trustedge"
 path = "src/main.rs"
 
+[package.metadata.trustedge]
+tier = "stable"
+maintained = true
+
 [dependencies]
 trustedge-core = { path = "../core" }
 

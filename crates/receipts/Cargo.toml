@@ -7,13 +7,17 @@
 name = "trustedge-receipts"
 version = "0.3.0"
 edition = "2021"
-description = "DEPRECATED: Use trustedge-core instead. Digital receipt system with cryptographically secure ownership chains"
+description = "Experimental re-export facade for trustedge-core receipts. No maintenance commitment."
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
 license = "MPL-2.0"
 repository = "https://github.com/TrustEdge-Labs/trustedge"
 readme = "README.md"
-keywords = ["deprecated", "cryptography", "receipts", "ownership", "blockchain"]
+keywords = ["experimental", "cryptography", "receipts", "facade", "trustedge"]
 categories = ["cryptography", "data-structures"]
+
+[package.metadata.trustedge]
+tier = "experimental"
+maintained = false
 
 [dependencies]
 trustedge-core = { path = "../core" }

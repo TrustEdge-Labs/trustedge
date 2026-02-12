@@ -14,6 +14,10 @@ repository = "https://github.com/TrustEdge-Labs/trustedge"
 keywords = ["cryptography", "pubky", "decentralized", "encryption", "hybrid"]
 categories = ["cryptography", "network-programming"]
 
+[package.metadata.trustedge]
+tier = "experimental"
+maintained = false
+
 [dependencies]
 # Core TrustEdge functionality
 trustedge-core = { path = "../core" }

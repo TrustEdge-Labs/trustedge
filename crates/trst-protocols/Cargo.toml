@@ -11,6 +11,10 @@ description = "Protocol and format definitions for TrustEdge archives and captur
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
 license = "MPL-2.0"
 
+[package.metadata.trustedge]
+tier = "stable"
+maintained = true
+
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

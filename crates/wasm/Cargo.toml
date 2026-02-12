@@ -21,6 +21,10 @@ default = []
 name = "trustedge_wasm"
 crate-type = ["cdylib", "rlib"]
 
+[package.metadata.trustedge]
+tier = "experimental"
+maintained = false
+
 [dependencies]
 # Use workspace dependencies where possible
 wasm-bindgen = { workspace = true }

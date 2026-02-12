@@ -6,13 +6,17 @@
 name = "trustedge-attestation"
 version = "0.3.0"
 edition = "2021"
-description = "DEPRECATED: Use trustedge-core instead. Hardware-backed software attestation and birth certificates for TrustEdge"
+description = "Experimental re-export facade for trustedge-core attestation. No maintenance commitment."
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
 license = "MPL-2.0"
 repository = "https://github.com/TrustEdge-Labs/trustedge"
 readme = "README.md"
-keywords = ["deprecated", "cryptography", "attestation", "hardware", "yubikey"]
+keywords = ["experimental", "cryptography", "attestation", "facade", "trustedge"]
 categories = ["cryptography", "development-tools", "authentication"]
+
+[package.metadata.trustedge]
+tier = "experimental"
+maintained = false
 
 [dependencies]
 trustedge-core = { path = "../core" }

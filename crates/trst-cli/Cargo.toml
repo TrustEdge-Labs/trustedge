@@ -16,6 +16,10 @@ name = "trst"
 path = "src/main.rs"
 test = false
 
+[package.metadata.trustedge]
+tier = "stable"
+maintained = true
+
 [dependencies]
 anyhow = { workspace = true }
 base64 = "0.22"

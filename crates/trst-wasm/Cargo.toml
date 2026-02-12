@@ -14,6 +14,10 @@ license = "MPL-2.0"
 [lib]
 crate-type = ["cdylib"]
 
+[package.metadata.trustedge]
+tier = "stable"
+maintained = true
+
 [dependencies]
 # Protocol definitions from trst-protocols
 trustedge-trst-protocols = { path = "../trst-protocols" }

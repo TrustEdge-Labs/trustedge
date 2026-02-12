@@ -20,6 +20,23 @@ members = [
     "crates/trst-wasm",
     "examples/cam.video",
 ]
+
+# Crate Classification
+#
+# Tier 1 (Stable) — production-committed, tested in CI, maintained:
+#   - trustedge-core          (core cryptographic library)
+#   - trustedge-cli           (main CLI binary)
+#   - trustedge-trst-protocols (archive format definitions)
+#   - trustedge-trst-cli      (archive CLI binary)
+#   - trustedge-trst-wasm     (browser archive verification)
+#
+# Tier 2 (Experimental) — community/experimental, build-only CI, no maintenance commitment:
+#   - trustedge-wasm          (general WASM bindings)
+#   - trustedge-pubky         (Pubky network adapter)
+#   - trustedge-pubky-advanced (Pubky hybrid encryption)
+#   - trustedge-receipts      (re-export facade, use trustedge-core directly)
+#   - trustedge-attestation   (re-export facade, use trustedge-core directly)
+
 resolver = "2"
 
 # Shared workspace dependencies

@@ -18,6 +18,10 @@ categories = ["cryptography", "network-programming"]
 name = "trustedge-pubky"
 path = "src/bin/trustedge-pubky.rs"
 
+[package.metadata.trustedge]
+tier = "experimental"
+maintained = false
+
 [dependencies]
 # Core TrustEdge functionality
 trustedge-core = { path = "../core" }
