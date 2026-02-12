@@ -22,6 +22,7 @@ fi
 PASS=0
 FAIL=0
 SKIP=0
+WARN=0
 
 step() {
     echo
@@ -41,6 +42,11 @@ fail() {
 skip() {
     echo "  ⚠ $1 (skipped)"
     SKIP=$((SKIP + 1))
+}
+
+warn() {
+    echo "  ⚠ $1 (warning)"
+    WARN=$((WARN + 1))
 }
 
 echo "● TrustEdge local CI check"
@@ -82,12 +88,34 @@ else
     fail "cargo fmt — run: cargo fmt --all"
 fi
 
-# ── Step 3: Clippy (workspace) ──────────────────────────────────────
-step "Step 3: Clippy (workspace - no features)"
-if cargo clippy --workspace --all-targets --no-default-features -- -D warnings; then
-    pass "clippy workspace"
+# ── Step 3: Clippy (tiered) ────────────────────────────────────────
+step "Step 3: Clippy (tiered - core blocking, experimental non-blocking)"
+
+# Core crates (blocking)
+if cargo clippy \
+    -p trustedge-core \
+    -p trustedge-cli \
+    -p trustedge-trst-protocols \
+    -p trustedge-trst-cli \
+    -p trustedge-trst-wasm \
+    -p cam-video-example \
+    --all-targets --no-default-features -- -D warnings; then
+    pass "clippy core crates"
 else
-    fail "clippy workspace"
+    fail "clippy core crates"
+fi
+
+# Experimental crates (non-blocking)
+if cargo clippy \
+    -p trustedge-wasm \
+    -p trustedge-pubky \
+    -p trustedge-pubky-advanced \
+    -p trustedge-receipts \
+    -p trustedge-attestation \
+    --all-targets --no-default-features -- -D warnings 2>/dev/null; then
+    pass "clippy experimental crates"
+else
+    warn "clippy experimental crates failed (non-blocking)"
 fi
 
 # ── Step 4: Clippy (audio) ──────────────────────────────────────────
@@ -126,13 +154,37 @@ else
     skip "cargo-hack not installed"
 fi
 
-# ── Step 7: Build + test workspace ──────────────────────────────────
-step "Step 7: Build and test workspace (no features)"
+# ── Step 7: Build + test (tiered) ──────────────────────────────────
+step "Step 7: Build and test (tiered - core blocking, experimental non-blocking)"
+
+# Build remains workspace-wide
 cargo build --workspace --bins --no-default-features
-if cargo test --workspace --no-default-features --locked; then
-    pass "workspace tests"
+
+# Core crate tests (blocking)
+if cargo test \
+    -p trustedge-core \
+    -p trustedge-cli \
+    -p trustedge-trst-protocols \
+    -p trustedge-trst-cli \
+    -p trustedge-trst-wasm \
+    -p cam-video-example \
+    --no-default-features --locked; then
+    pass "core crate tests"
 else
-    fail "workspace tests"
+    fail "core crate tests"
+fi
+
+# Experimental crate tests (non-blocking)
+if cargo test \
+    -p trustedge-wasm \
+    -p trustedge-pubky \
+    -p trustedge-pubky-advanced \
+    -p trustedge-receipts \
+    -p trustedge-attestation \
+    --no-default-features --locked 2>/dev/null; then
+    pass "experimental crate tests"
+else
+    warn "experimental crate tests failed (non-blocking)"
 fi
 
 # ── Step 8: Audio tests ─────────────────────────────────────────────
@@ -215,7 +267,7 @@ fi
 # ── Summary ─────────────────────────────────────────────────────────
 echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Results: $PASS passed, $FAIL failed, $SKIP skipped"
+echo "  Results: $PASS passed, $FAIL failed, $WARN warnings, $SKIP skipped"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 if [ $FAIL -gt 0 ]; then

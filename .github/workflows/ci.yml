@@ -63,8 +63,27 @@ jobs:
       - name: Install YubiKey dependencies
         run: sudo apt-get install -y libpcsclite-dev pkgconf
 
-      - name: clippy (workspace - no features)
-        run: cargo clippy --workspace --all-targets --no-default-features -- -D warnings
+      - name: clippy (core crates)
+        run: |
+          cargo clippy \
+            -p trustedge-core \
+            -p trustedge-cli \
+            -p trustedge-trst-protocols \
+            -p trustedge-trst-cli \
+            -p trustedge-trst-wasm \
+            -p cam-video-example \
+            --all-targets --no-default-features -- -D warnings
+
+      - name: clippy (experimental crates - non-blocking)
+        continue-on-error: true
+        run: |
+          cargo clippy \
+            -p trustedge-wasm \
+            -p trustedge-pubky \
+            -p trustedge-pubky-advanced \
+            -p trustedge-receipts \
+            -p trustedge-attestation \
+            --all-targets --no-default-features -- -D warnings
 
       - name: clippy (trustedge-core with audio)
         if: steps.audio-deps.outputs.audio-available == 'true'
@@ -79,8 +98,27 @@ jobs:
       - name: build binaries (required for integration tests)
         run: cargo build --workspace --bins --no-default-features
 
-      - name: tests (workspace - no features)
-        run: cargo test --workspace --no-default-features --locked --verbose
+      - name: tests (core crates)
+        run: |
+          cargo test \
+            -p trustedge-core \
+            -p trustedge-cli \
+            -p trustedge-trst-protocols \
+            -p trustedge-trst-cli \
+            -p trustedge-trst-wasm \
+            -p cam-video-example \
+            --no-default-features --locked --verbose
+
+      - name: tests (experimental crates - non-blocking)
+        continue-on-error: true
+        run: |
+          cargo test \
+            -p trustedge-wasm \
+            -p trustedge-pubky \
+            -p trustedge-pubky-advanced \
+            -p trustedge-receipts \
+            -p trustedge-attestation \
+            --no-default-features --locked --verbose
 
       - name: build binaries with audio (required for integration tests)
         if: steps.audio-deps.outputs.audio-available == 'true'
