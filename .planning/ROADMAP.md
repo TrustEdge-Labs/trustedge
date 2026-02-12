@@ -65,8 +65,8 @@ Plans:
 **Plans:** 2 plans (2 waves)
 
 Plans:
-- [ ] 10-01-PLAN.md — Backend foundation + PIV operations + UniversalBackend trait implementation (Wave 1)
-- [ ] 10-02-PLAN.md — X.509 certificate generation with rcgen + registry integration (Wave 2)
+- [x] 10-01-PLAN.md — Backend foundation + PIV operations + UniversalBackend trait implementation (Wave 1)
+- [x] 10-02-PLAN.md — X.509 certificate generation with rcgen + registry integration (Wave 2)
 
 #### Phase 11: Test Infrastructure
 
@@ -115,9 +115,9 @@ Phases execute in numeric order: 9 → 10 → 11 → 12
 |-------|-----------|----------------|--------|-----------|
 | 1-8. [v1.0 phases] | v1.0 | 17/17 | Complete | 2026-02-11 |
 | 9. Cleanup | v1.1 | 1/1 | Complete | 2026-02-11 |
-| 10. Backend Rewrite | v1.1 | 0/2 | Planning complete | - |
+| 10. Backend Rewrite | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 11. Test Infrastructure | v1.1 | 0/? | Not started | - |
 | 12. CI Integration | v1.1 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-11 after Phase 9 execution complete*
+*Last updated: 2026-02-11 after Phase 10 execution complete*
