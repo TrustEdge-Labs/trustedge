@@ -37,10 +37,13 @@ use crate::backends::universal::{
 };
 use crate::error::BackendError;
 use der::Encode;
+use rcgen::{
+    CertificateParams, DistinguishedName, DnType, KeyPair, RemoteKeyPair, PKCS_ECDSA_P256_SHA256,
+};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use spki::SubjectPublicKeyInfoRef;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use yubikey::piv::{AlgorithmId, SlotId};
 use yubikey::{Certificate, YubiKey};
 
@@ -70,11 +73,11 @@ impl Default for YubiKeyConfig {
 
 /// YubiKey PIV backend implementation
 ///
-/// Thread-safe hardware backend using Mutex for concurrent access.
+/// Thread-safe hardware backend using Arc<Mutex> for concurrent access.
 /// All cryptographic operations require real YubiKey hardware to be present.
 pub struct YubiKeyBackend {
     config: YubiKeyConfig,
-    yubikey: Mutex<Option<YubiKey>>,
+    yubikey: Arc<Mutex<Option<YubiKey>>>,
     pin_retry_count: Mutex<u8>,
 }
 
@@ -88,7 +91,7 @@ impl YubiKeyBackend {
     pub fn with_config(config: YubiKeyConfig) -> Result<Self, BackendError> {
         let mut backend = Self {
             config,
-            yubikey: Mutex::new(None),
+            yubikey: Arc::new(Mutex::new(None)),
             pin_retry_count: Mutex::new(0),
         };
 
@@ -328,11 +331,122 @@ impl YubiKeyBackend {
                 .to_string(),
         ))
     }
+
+    /// Generate X.509 self-signed certificate for a PIV slot
+    ///
+    /// This uses rcgen with hardware-backed signing. The public key comes from
+    /// the hardware slot, and all signing operations are delegated to the YubiKey.
+    ///
+    /// # Arguments
+    /// * `slot_id` - PIV slot identifier (9a, 9c, 9d, 9e)
+    /// * `subject` - Certificate subject (Common Name)
+    ///
+    /// # Returns
+    /// DER-encoded X.509 certificate
+    pub fn generate_certificate(
+        &self,
+        slot_id: &str,
+        subject: &str,
+    ) -> Result<Vec<u8>, BackendError> {
+        self.ensure_connected()?;
+
+        let slot = Self::parse_slot(slot_id)?;
+
+        // Get public key from hardware slot
+        let public_key_der = self.piv_get_public_key(slot)?;
+
+        // Parse the DER-encoded SPKI to extract raw public key bytes
+        let spki = SubjectPublicKeyInfoRef::try_from(public_key_der.as_slice()).map_err(|e| {
+            BackendError::OperationFailed(format!("Failed to parse public key SPKI: {}", e))
+        })?;
+
+        // Extract raw public key bytes (the BIT STRING contents)
+        let public_key_bytes = spki.subject_public_key.raw_bytes();
+
+        // Create certificate parameters
+        let mut params = CertificateParams::default();
+
+        // Set distinguished name with CommonName
+        let mut dn = DistinguishedName::new();
+        dn.push(DnType::CommonName, subject);
+        params.distinguished_name = dn;
+
+        // Set validity period (1 year)
+        params.not_before = rcgen::date_time_ymd(2025, 1, 1);
+        params.not_after = rcgen::date_time_ymd(2026, 1, 1);
+
+        // Create the hardware-backed key pair
+        let signing_key_pair = YubiKeySigningKeyPair {
+            yubikey: Arc::clone(&self.yubikey),
+            slot,
+            public_key: public_key_bytes.to_vec(),
+            pin: self.config.pin.clone(),
+        };
+
+        let key_pair = KeyPair::from_remote(Box::new(signing_key_pair)).map_err(|e| {
+            BackendError::OperationFailed(format!("Failed to create remote key pair: {}", e))
+        })?;
+
+        // Generate self-signed certificate
+        let cert = params.self_signed(&key_pair).map_err(|e| {
+            BackendError::OperationFailed(format!("Certificate generation failed: {}", e))
+        })?;
+
+        // Return DER-encoded certificate
+        Ok(cert.der().to_vec())
+    }
 }
 
 impl Default for YubiKeyBackend {
     fn default() -> Self {
         Self::new().expect("Failed to create default YubiKey backend")
+    }
+}
+
+/// Hardware-backed signing key pair for rcgen certificate generation
+///
+/// This struct implements rcgen's RemoteKeyPair trait to delegate all signing
+/// operations to the YubiKey hardware while providing the public key for certificate
+/// generation.
+struct YubiKeySigningKeyPair {
+    yubikey: Arc<Mutex<Option<YubiKey>>>,
+    slot: SlotId,
+    public_key: Vec<u8>,
+    pin: Option<String>,
+}
+
+impl RemoteKeyPair for YubiKeySigningKeyPair {
+    fn public_key(&self) -> &[u8] {
+        &self.public_key
+    }
+
+    fn sign(&self, msg: &[u8]) -> Result<Vec<u8>, rcgen::Error> {
+        // Lock the YubiKey mutex
+        let mut yubikey_guard = self.yubikey.lock().unwrap();
+        let yk = yubikey_guard
+            .as_mut()
+            .ok_or(rcgen::Error::RingUnspecified)?;
+
+        // Verify PIN if configured
+        if let Some(pin) = &self.pin {
+            yk.verify_pin(pin.as_bytes())
+                .map_err(|_| rcgen::Error::RingUnspecified)?;
+        }
+
+        // Pre-hash the message with SHA-256 (YubiKey PIV requirement)
+        let mut hasher = Sha256::new();
+        hasher.update(msg);
+        let digest = hasher.finalize();
+
+        // Sign using YubiKey hardware
+        let signature = yubikey::piv::sign_data(yk, &digest, AlgorithmId::EccP256, self.slot)
+            .map_err(|_| rcgen::Error::RingUnspecified)?;
+
+        Ok(signature.to_vec())
+    }
+
+    fn algorithm(&self) -> &'static rcgen::SignatureAlgorithm {
+        &PKCS_ECDSA_P256_SHA256
     }
 }
 
