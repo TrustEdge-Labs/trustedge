@@ -11,17 +11,17 @@ See: .planning/PROJECT.md (updated 2026-02-11)
 ## Current Position
 
 Phase: 10 of 12 (Backend Rewrite)
-Plan: 2 of 9 in current phase
+Plan: 3 of 9 in current phase
 Status: In Progress
-Last activity: 2026-02-12 — Completed 10-01-PLAN.md (YubiKey PIV backend)
+Last activity: 2026-02-12 — Completed 10-02-PLAN.md (Certificate generation and registry integration)
 
-Progress: [████████████████░░░░] 66% (19/29 total plans across all phases)
+Progress: [████████████████░░░░] 69% (20/29 total plans across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19 (17 v1.0 + 2 v1.1)
-- Average duration: 5.7 min
+- Total plans completed: 20 (17 v1.0 + 3 v1.1)
+- Average duration: 5.8 min
 - Total execution time: 1.9 hours
 
 **By Phase (v1.0 complete):**
@@ -42,11 +42,11 @@ Progress: [████████████████░░░░] 66% (19
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 9. Cleanup | 1 | 5 min | 5.0 min |
-| 10. Backend Rewrite | 1 | 10 min | 10.0 min |
+| 10. Backend Rewrite | 2 | 15 min | 7.5 min |
 
 **Recent Trend:**
 - Last 5 plans: 5-10 min range
-- Trend: Stable (10-01 was complex backend implementation)
+- Trend: Stable (backend implementation with hardware integration)
 
 ## Accumulated Context
 
@@ -60,6 +60,7 @@ Recent decisions affecting current work:
 - **v1.1 Testing**: No placeholder keys or signatures — every key and signature must come from real cryptographic operations
 - **Phase 9 Cleanup**: Deleted entire YubiKey implementation (8,117 lines: backend, tests, examples) for clean v1.1 rewrite; preserved yubikey dependency and feature flag for reuse
 - **Phase 10-01 Backend**: Clean YubiKey PIV backend (487 lines) with ECDSA P-256/RSA-2048 signing, public key extraction, slot enumeration, PIN verification, fail-closed design; key generation and attestation deferred (private policy types in yubikey 0.7)
+- **Phase 10-02 Certificates**: X.509 certificate generation via rcgen's RemoteKeyPair with hardware-backed signing; YubiKey backend registered in UniversalBackendRegistry (auto-discovery when feature enabled)
 
 ### Pending Todos
 
@@ -78,5 +79,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-12 (phase 10 execution)
-Stopped at: Completed 10-01-PLAN.md - YubiKey PIV backend (10 min)
-Resume file: Phase 10 plan 01 complete - ready for plan 02
+Stopped at: Completed 10-02-PLAN.md - Certificate generation and registry integration (5 min)
+Resume file: Phase 10 plan 02 complete - ready for plan 03
