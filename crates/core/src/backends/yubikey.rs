@@ -602,3 +602,275 @@ impl UniversalBackend for YubiKeyBackend {
         Ok(keys)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ========================================================================
+    // Slot Parsing Tests (TEST-01, TEST-06)
+    // ========================================================================
+
+    #[test]
+    fn test_parse_slot_valid_authentication() {
+        let result = YubiKeyBackend::parse_slot("9a");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), SlotId::Authentication);
+    }
+
+    #[test]
+    fn test_parse_slot_valid_signature() {
+        let result = YubiKeyBackend::parse_slot("9c");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), SlotId::Signature);
+    }
+
+    #[test]
+    fn test_parse_slot_valid_key_management() {
+        let result = YubiKeyBackend::parse_slot("9d");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), SlotId::KeyManagement);
+    }
+
+    #[test]
+    fn test_parse_slot_valid_card_authentication() {
+        let result = YubiKeyBackend::parse_slot("9e");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), SlotId::CardAuthentication);
+    }
+
+    #[test]
+    fn test_parse_slot_case_insensitive() {
+        let result = YubiKeyBackend::parse_slot("9A");
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), SlotId::Authentication);
+    }
+
+    #[test]
+    fn test_parse_slot_invalid_returns_key_not_found() {
+        let result = YubiKeyBackend::parse_slot("invalid");
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(err, BackendError::KeyNotFound(_)));
+        if let BackendError::KeyNotFound(msg) = err {
+            assert!(msg.contains("Invalid PIV slot"));
+        }
+    }
+
+    #[test]
+    fn test_parse_slot_empty_string_returns_error() {
+        let result = YubiKeyBackend::parse_slot("");
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), BackendError::KeyNotFound(_)));
+    }
+
+    // ========================================================================
+    // Capability Reporting Tests (TEST-01)
+    // ========================================================================
+
+    #[test]
+    fn test_capabilities_reports_hardware_backed() {
+        let backend = YubiKeyBackend::with_config(YubiKeyConfig::default())
+            .expect("Failed to create backend");
+        let caps = backend.get_capabilities();
+
+        assert!(caps.hardware_backed);
+        assert!(caps
+            .signature_algorithms
+            .contains(&SignatureAlgorithm::EcdsaP256));
+        assert!(caps
+            .signature_algorithms
+            .contains(&SignatureAlgorithm::RsaPkcs1v15));
+        assert!(!caps
+            .signature_algorithms
+            .contains(&SignatureAlgorithm::Ed25519));
+        assert!(!caps.supports_key_generation);
+        assert!(!caps.supports_attestation);
+        assert_eq!(caps.max_key_size, Some(2048));
+    }
+
+    #[test]
+    fn test_capabilities_asymmetric_algorithms() {
+        let backend = YubiKeyBackend::with_config(YubiKeyConfig::default())
+            .expect("Failed to create backend");
+        let caps = backend.get_capabilities();
+
+        assert!(caps
+            .asymmetric_algorithms
+            .contains(&AsymmetricAlgorithm::EcdsaP256));
+        assert!(caps
+            .asymmetric_algorithms
+            .contains(&AsymmetricAlgorithm::Rsa2048));
+        assert!(caps.symmetric_algorithms.is_empty());
+    }
+
+    // ========================================================================
+    // Backend Info Tests (TEST-01)
+    // ========================================================================
+
+    #[test]
+    fn test_backend_info_without_hardware() {
+        let backend = YubiKeyBackend::with_config(YubiKeyConfig::default())
+            .expect("Failed to create backend");
+        let info = backend.backend_info();
+
+        assert_eq!(info.name, "yubikey");
+        assert_eq!(info.description, "YubiKey PIV hardware security backend");
+        assert_eq!(info.version, "1.0.0");
+        assert!(!info.available); // No hardware in CI
+        assert!(!info.config_requirements.is_empty());
+    }
+
+    // ========================================================================
+    // Config Validation Tests (TEST-01)
+    // ========================================================================
+
+    #[test]
+    fn test_default_config_values() {
+        let config = YubiKeyConfig::default();
+
+        assert_eq!(config.pin, None);
+        assert_eq!(config.default_slot, "9c");
+        assert!(!config.verbose);
+        assert_eq!(config.max_pin_retries, 3);
+    }
+
+    #[test]
+    fn test_custom_config_preserved() {
+        let custom_config = YubiKeyConfig {
+            pin: Some("654321".to_string()),
+            default_slot: "9a".to_string(),
+            verbose: true,
+            max_pin_retries: 5,
+        };
+
+        let backend = YubiKeyBackend::with_config(custom_config);
+        assert!(backend.is_ok());
+    }
+
+    // ========================================================================
+    // Anti-Pattern Tests (TEST-03)
+    // ========================================================================
+
+    #[test]
+    fn test_signing_without_hardware_returns_hardware_error() {
+        let backend = YubiKeyBackend::with_config(YubiKeyConfig::default())
+            .expect("Failed to create backend");
+
+        let operation = CryptoOperation::Sign {
+            data: b"test".to_vec(),
+            algorithm: SignatureAlgorithm::EcdsaP256,
+        };
+
+        let result = backend.perform_operation("9c", operation);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(err, BackendError::HardwareError(_)));
+    }
+
+    #[test]
+    fn test_get_public_key_without_hardware_returns_error() {
+        let backend = YubiKeyBackend::with_config(YubiKeyConfig::default())
+            .expect("Failed to create backend");
+
+        let operation = CryptoOperation::GetPublicKey;
+        let result = backend.perform_operation("9c", operation);
+
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            BackendError::HardwareError(_)
+        ));
+    }
+
+    // ========================================================================
+    // Unsupported Algorithm Tests (TEST-06)
+    // ========================================================================
+
+    #[test]
+    fn test_supports_operation_signature_algorithms() {
+        let backend = YubiKeyBackend::with_config(YubiKeyConfig::default())
+            .expect("Failed to create backend");
+
+        // Supported algorithms
+        let ecdsa_op = CryptoOperation::Sign {
+            data: vec![],
+            algorithm: SignatureAlgorithm::EcdsaP256,
+        };
+        assert!(backend.supports_operation(&ecdsa_op));
+
+        let rsa_pkcs_op = CryptoOperation::Sign {
+            data: vec![],
+            algorithm: SignatureAlgorithm::RsaPkcs1v15,
+        };
+        assert!(backend.supports_operation(&rsa_pkcs_op));
+
+        // Unsupported algorithm
+        let ed25519_op = CryptoOperation::Sign {
+            data: vec![],
+            algorithm: SignatureAlgorithm::Ed25519,
+        };
+        assert!(!backend.supports_operation(&ed25519_op));
+    }
+
+    #[test]
+    fn test_supports_operation_all_operation_types() {
+        let backend = YubiKeyBackend::with_config(YubiKeyConfig::default())
+            .expect("Failed to create backend");
+
+        // GetPublicKey supported
+        assert!(backend.supports_operation(&CryptoOperation::GetPublicKey));
+
+        // GenerateKeyPair not supported (deferred)
+        let gen_op = CryptoOperation::GenerateKeyPair {
+            algorithm: AsymmetricAlgorithm::EcdsaP256,
+        };
+        assert!(!backend.supports_operation(&gen_op));
+
+        // Attest not supported (deferred)
+        let attest_op = CryptoOperation::Attest { challenge: vec![] };
+        assert!(!backend.supports_operation(&attest_op));
+    }
+
+    // ========================================================================
+    // Hash Operation Tests (TEST-01)
+    // ========================================================================
+
+    #[test]
+    fn test_hash_sha256_works_without_hardware() {
+        let backend = YubiKeyBackend::with_config(YubiKeyConfig::default())
+            .expect("Failed to create backend");
+
+        let operation = CryptoOperation::Hash {
+            data: b"test data".to_vec(),
+            algorithm: HashAlgorithm::Sha256,
+        };
+
+        let result = backend.perform_operation("", operation);
+        assert!(result.is_ok());
+
+        if let Ok(CryptoResult::Hash(hash)) = result {
+            assert_eq!(hash.len(), 32); // SHA-256 produces 32 bytes
+        } else {
+            panic!("Expected Hash result");
+        }
+    }
+
+    #[test]
+    fn test_unsupported_hash_algorithm_returns_error() {
+        let backend = YubiKeyBackend::with_config(YubiKeyConfig::default())
+            .expect("Failed to create backend");
+
+        let operation = CryptoOperation::Hash {
+            data: b"test".to_vec(),
+            algorithm: HashAlgorithm::Sha512,
+        };
+
+        let result = backend.perform_operation("", operation);
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            BackendError::UnsupportedOperation(_)
+        ));
+    }
+}
