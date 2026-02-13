@@ -23,9 +23,9 @@ Requirements for dependency audit and rationalization. Each maps to roadmap phas
 
 ### Security Audit
 
-- [ ] **SEC-01**: cargo-audit runs clean (no known vulnerabilities in dependency tree)
-- [ ] **SEC-02**: Any advisories are either fixed (version bump) or documented with risk acceptance
-- [ ] **SEC-03**: cargo-audit added to CI pipeline as a blocking check
+- [x] **SEC-01**: cargo-audit runs clean (no known vulnerabilities in dependency tree)
+- [x] **SEC-02**: Any advisories are either fixed (version bump) or documented with risk acceptance
+- [x] **SEC-03**: cargo-audit added to CI pipeline as a blocking check
 
 ### Documentation
 
@@ -63,9 +63,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REM-01 | Phase 16 | Complete |
 | REM-02 | Phase 16 | Complete |
 | REM-03 | Phase 16 | Complete |
-| SEC-01 | Phase 17 | Pending |
-| SEC-02 | Phase 17 | Pending |
-| SEC-03 | Phase 17 | Pending |
+| SEC-01 | Phase 17 | Complete |
+| SEC-02 | Phase 17 | Complete |
+| SEC-03 | Phase 17 | Complete |
 | DOC-01 | Phase 18 | Pending |
 | DOC-02 | Phase 18 | Pending |
 | DOC-03 | Phase 18 | Pending |
@@ -79,4 +79,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-13 after Phase 16 completion*
+*Last updated: 2026-02-13 after Phase 17 completion*

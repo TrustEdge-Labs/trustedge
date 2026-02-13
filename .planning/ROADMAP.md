@@ -54,7 +54,7 @@ Made TrustEdge maintainable by a solo developer — 2-tier crate classification 
 
 - [x] **Phase 15: Feature Gating** - Move git2 and keyring behind opt-in feature flags
 - [x] **Phase 16: Dependency Audit** - Remove genuinely unused dependencies from workspace
-- [ ] **Phase 17: Security Hardening** - Ensure dependency tree has no known vulnerabilities
+- [x] **Phase 17: Security Hardening** - Ensure dependency tree has no known vulnerabilities
 - [ ] **Phase 18: Documentation** - Document every dependency across all 10 crates
 
 ## Phase Details
@@ -100,7 +100,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 17-01-PLAN.md -- Run cargo-audit, resolve advisories, add to CI and local script
+- [x] 17-01-PLAN.md -- Run cargo-audit, resolve advisories, add to CI and local script
 
 ### Phase 18: Documentation
 **Goal**: Every dependency across all 10 crates is documented with justification
@@ -131,8 +131,8 @@ Phases execute in numeric order: 15 → 16 → 17 → 18
 | 14. CI & Documentation | v1.2 | 2/2 | Complete | 2026-02-12 |
 | 15. Feature Gating | v1.3 | 2/2 | Complete | 2026-02-12 |
 | 16. Dependency Audit | v1.3 | 1/1 | Complete | 2026-02-13 |
-| 17. Security Hardening | v1.3 | 0/? | Not started | - |
+| 17. Security Hardening | v1.3 | 1/1 | Complete | 2026-02-13 |
 | 18. Documentation | v1.3 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-13 after Phase 16 completion*
+*Last updated: 2026-02-13 after Phase 17 completion*
