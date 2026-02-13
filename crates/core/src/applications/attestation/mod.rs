@@ -133,15 +133,21 @@ pub fn create_signed_attestation(config: AttestationConfig) -> Result<Attestatio
 
     // Step 2: Get Git commit hash (use placeholder if not in git repo)
     let source_commit_hash = {
-        use git2::Repository;
-
-        match Repository::discover(".") {
-            Ok(repo) => repo
-                .head()
-                .and_then(|head| head.peel_to_commit())
-                .map(|commit| commit.id().to_string())
-                .unwrap_or_else(|_| "unknown".to_string()),
-            Err(_) => "unknown".to_string(),
+        #[cfg(feature = "git-attestation")]
+        {
+            use git2::Repository;
+            match Repository::discover(".") {
+                Ok(repo) => repo
+                    .head()
+                    .and_then(|head| head.peel_to_commit())
+                    .map(|commit| commit.id().to_string())
+                    .unwrap_or_else(|_| "unknown".to_string()),
+                Err(_) => "unknown".to_string(),
+            }
+        }
+        #[cfg(not(feature = "git-attestation"))]
+        {
+            "unknown".to_string()
         }
     };
 
