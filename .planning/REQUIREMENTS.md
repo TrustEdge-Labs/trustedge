@@ -29,9 +29,9 @@ Requirements for dependency audit and rationalization. Each maps to roadmap phas
 
 ### Documentation
 
-- [ ] **DOC-01**: DEPENDENCIES.md updated to cover all 10 crates (not just 5 stable)
-- [ ] **DOC-02**: Every dependency has a one-line justification
-- [ ] **DOC-03**: Security-critical dependencies (crypto, TLS, key storage) have detailed rationale
+- [x] **DOC-01**: DEPENDENCIES.md updated to cover all 10 crates (not just 5 stable)
+- [x] **DOC-02**: Every dependency has a one-line justification
+- [x] **DOC-03**: Security-critical dependencies (crypto, TLS, key storage) have detailed rationale
 
 ## Future Requirements
 
@@ -66,9 +66,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEC-01 | Phase 17 | Complete |
 | SEC-02 | Phase 17 | Complete |
 | SEC-03 | Phase 17 | Complete |
-| DOC-01 | Phase 18 | Pending |
-| DOC-02 | Phase 18 | Pending |
-| DOC-03 | Phase 18 | Pending |
+| DOC-01 | Phase 18 | Complete |
+| DOC-02 | Phase 18 | Complete |
+| DOC-03 | Phase 18 | Complete |
 
 **Coverage:**
 - v1.3 requirements: 14 total
@@ -79,4 +79,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-13 after Phase 17 completion*
+*Last updated: 2026-02-13 after Phase 18 completion*
