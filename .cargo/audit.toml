@@ -1,0 +1,56 @@
+#
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# Project: trustedge — Privacy and trust at the edge.
+#
+
+# cargo-audit configuration for TrustEdge
+#
+# This file documents security advisories that cannot be immediately fixed
+# due to upstream dependency constraints or lack of patched versions.
+#
+# Each ignored advisory must have:
+# 1. Advisory ID and affected crate
+# 2. Severity level
+# 3. Why it cannot be fixed
+# 4. Risk acceptance rationale
+# 5. Mitigation strategy (if applicable)
+
+[advisories]
+# Ignore advisories that have no fix available or are transitive dependencies
+# from third-party crates we cannot control.
+
+ignore = [
+    # RUSTSEC-2023-0071: RSA Marvin Attack (timing sidechannel)
+    #
+    # Affected: rsa 0.7.2 (via yubikey crate), rsa 0.9.10 (direct dependency)
+    # Severity: 5.9 (MEDIUM)
+    # Date: 2023-11-22
+    # URL: https://rustsec.org/advisories/RUSTSEC-2023-0071
+    #
+    # Why unfixable:
+    # - Advisory states "No fixed upgrade is available!" across all RSA versions
+    # - rsa 0.7.2 is a transitive dependency from yubikey 0.7.0 (latest available)
+    # - rsa 0.9.10 is used for Pubky integration (experimental tier-2 crate)
+    #
+    # Risk acceptance rationale:
+    # - TrustEdge does NOT use RSA for encryption in production code paths
+    # - RSA is only used in:
+    #   1. YubiKey PIV operations (feature-gated, hardware-backed)
+    #   2. Pubky hybrid encryption (experimental tier-2 crate, not production)
+    # - Core security model uses Ed25519 signatures + AES-256-GCM encryption
+    # - Marvin Attack requires attacker to observe RSA decryption timing patterns,
+    #   which is not applicable to our use cases (YubiKey hardware ops, experimental features)
+    #
+    # Mitigation:
+    # - Monitor for upstream fixes in yubikey and rsa crates
+    # - Document that tier-2 Pubky crates are experimental and not security-audited
+    # - Consider removing RSA dependency from trustedge-core if Pubky integration
+    #   can be isolated to experimental crates only
+    #
+    # Review date: 2026-02-13
+    # Next review: When yubikey or rsa crates release updates
+    "RUSTSEC-2023-0071",
+]
