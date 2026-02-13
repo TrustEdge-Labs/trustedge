@@ -53,7 +53,7 @@ Made TrustEdge maintainable by a solo developer — 2-tier crate classification 
 **Milestone Goal:** Minimize and harden the dependency tree — feature-gate heavy optional deps, remove unused deps, run security audit, document every remaining dependency.
 
 - [x] **Phase 15: Feature Gating** - Move git2 and keyring behind opt-in feature flags
-- [ ] **Phase 16: Dependency Audit** - Remove genuinely unused dependencies from workspace
+- [x] **Phase 16: Dependency Audit** - Remove genuinely unused dependencies from workspace
 - [ ] **Phase 17: Security Hardening** - Ensure dependency tree has no known vulnerabilities
 - [ ] **Phase 18: Documentation** - Document every dependency across all 10 crates
 
@@ -87,7 +87,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 16-01-PLAN.md -- Run cargo-machete across all crates, remove unused dependencies, clean workspace
+- [x] 16-01-PLAN.md -- Run cargo-machete across all crates, remove unused dependencies, clean workspace
 
 ### Phase 17: Security Hardening
 **Goal**: Dependency tree has no known vulnerabilities
@@ -130,9 +130,9 @@ Phases execute in numeric order: 15 → 16 → 17 → 18
 | 13. Crate Classification & Dependency Audit | v1.2 | 2/2 | Complete | 2026-02-12 |
 | 14. CI & Documentation | v1.2 | 2/2 | Complete | 2026-02-12 |
 | 15. Feature Gating | v1.3 | 2/2 | Complete | 2026-02-12 |
-| 16. Dependency Audit | v1.3 | 0/? | Not started | - |
+| 16. Dependency Audit | v1.3 | 1/1 | Complete | 2026-02-13 |
 | 17. Security Hardening | v1.3 | 0/? | Not started | - |
 | 18. Documentation | v1.3 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-12 after Phase 15 completion*
+*Last updated: 2026-02-13 after Phase 16 completion*

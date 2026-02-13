@@ -17,9 +17,9 @@ Requirements for dependency audit and rationalization. Each maps to roadmap phas
 
 ### Dependency Removal
 
-- [ ] **REM-01**: cargo-machete run across all 10 crates with results documented
-- [ ] **REM-02**: All genuinely unused dependencies removed from Cargo.toml files
-- [ ] **REM-03**: Workspace-level dependencies not referenced by any crate are removed
+- [x] **REM-01**: cargo-machete run across all 10 crates with results documented
+- [x] **REM-02**: All genuinely unused dependencies removed from Cargo.toml files
+- [x] **REM-03**: Workspace-level dependencies not referenced by any crate are removed
 
 ### Security Audit
 
@@ -60,9 +60,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GATE-03 | Phase 15 | Complete |
 | GATE-04 | Phase 15 | Complete |
 | GATE-05 | Phase 15 | Complete |
-| REM-01 | Phase 16 | Pending |
-| REM-02 | Phase 16 | Pending |
-| REM-03 | Phase 16 | Pending |
+| REM-01 | Phase 16 | Complete |
+| REM-02 | Phase 16 | Complete |
+| REM-03 | Phase 16 | Complete |
 | SEC-01 | Phase 17 | Pending |
 | SEC-02 | Phase 17 | Pending |
 | SEC-03 | Phase 17 | Pending |
@@ -79,4 +79,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-12 after roadmap creation*
+*Last updated: 2026-02-13 after Phase 16 completion*
