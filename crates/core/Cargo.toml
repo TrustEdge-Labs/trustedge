@@ -53,7 +53,6 @@ keyring = { workspace = true, optional = true }
 num-traits = { workspace = true }
 p256 = { workspace = true, features = ["ecdh"] }
 pbkdf2 = { workspace = true }
-pkcs11 = { version = "0.5", optional = true }
 yubikey = { version = "0.7", optional = true }
 rand = { workspace = true }
 rand_core = { workspace = true }
@@ -88,7 +87,7 @@ rcgen = { version = "0.13", optional = true }
 default = []         # No features by default — fast CI, maximum portability
 
 # Backend: Hardware/storage integrations
-yubikey = ["pkcs11", "dep:yubikey", "x509-cert", "der", "spki", "signature", "rcgen"]
+yubikey = ["dep:yubikey", "x509-cert", "der", "spki", "signature", "rcgen"]
 
 # Platform: I/O and system capabilities
 audio = ["cpal"]
