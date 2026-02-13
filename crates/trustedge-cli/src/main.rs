@@ -26,7 +26,9 @@ use trustedge_core::format;
 use trustedge_core::AudioCapture;
 #[cfg(feature = "audio")]
 use trustedge_core::AudioConfig;
-use trustedge_core::{BackendRegistry, KeyBackend, KeyContext, KeyringBackend};
+#[cfg(feature = "keyring")]
+use trustedge_core::KeyringBackend;
+use trustedge_core::{BackendRegistry, KeyBackend, KeyContext};
 use zeroize::Zeroize;
 
 use trustedge_core::{
@@ -332,6 +334,14 @@ fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {
 
     // Use backend system for key derivation (if salt provided or use_keyring flag set)
     if args.use_keyring || args.salt_hex.is_some() {
+        // Check if keyring is requested without feature enabled
+        if args.use_keyring && args.backend == "keyring" {
+            #[cfg(not(feature = "keyring"))]
+            {
+                anyhow::bail!("Keyring backend requires the 'keyring' feature. Build with: cargo build --features keyring");
+            }
+        }
+
         let backend = create_backend_from_args(args)?;
 
         let salt_hex = args
@@ -901,11 +911,18 @@ fn main() -> Result<()> {
     }
 
     // one-time keyring setup
-    if let Some(passphrase) = &args.set_passphrase {
-        let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
-        backend.store_passphrase(passphrase)?;
-        println!("Passphrase stored in system keyring");
-        return Ok(());
+    if let Some(_passphrase) = &args.set_passphrase {
+        #[cfg(feature = "keyring")]
+        {
+            let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
+            backend.store_passphrase(_passphrase)?;
+            println!("Passphrase stored in system keyring");
+            return Ok(());
+        }
+        #[cfg(not(feature = "keyring"))]
+        {
+            anyhow::bail!("Keyring support requires the 'keyring' feature. Build with: cargo build --features keyring");
+        }
     }
 
     // Handle --inspect option

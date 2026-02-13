@@ -139,14 +139,15 @@ pub use backends::{
     KeyContext,
     KeyDerivationContext,
     KeyMetadata,
-    KeyringBackend,
     SignatureAlgorithm,
     SymmetricAlgorithm,
     // Universal backend system (new)
     UniversalBackend,
     UniversalBackendRegistry,
-    UniversalKeyringBackend,
 };
+#[cfg(feature = "keyring")]
+#[cfg_attr(docsrs, doc(cfg(feature = "keyring")))]
+pub use backends::{KeyringBackend, UniversalKeyringBackend};
 pub use chain::{
     blake3_hex_or_b64, chain_next, genesis, segment_hash, validate_chain, ChainError, ChainSegment,
 };

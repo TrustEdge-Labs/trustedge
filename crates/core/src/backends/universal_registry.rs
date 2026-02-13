@@ -12,6 +12,7 @@
 
 use crate::backends::software_hsm::SoftwareHsmBackend;
 use crate::backends::universal::*;
+#[cfg(feature = "keyring")]
 use crate::backends::universal_keyring::UniversalKeyringBackend;
 #[cfg(feature = "yubikey")]
 use crate::backends::yubikey::YubiKeyBackend;
@@ -40,9 +41,12 @@ impl UniversalBackendRegistry {
     pub fn with_defaults() -> Result<Self> {
         let mut registry = Self::new();
 
-        // Add keyring backend if available
-        if let Ok(keyring_backend) = UniversalKeyringBackend::new() {
-            registry.register_backend("keyring".to_string(), Box::new(keyring_backend));
+        // Add keyring backend if available (feature-gated)
+        #[cfg(feature = "keyring")]
+        {
+            if let Ok(keyring_backend) = UniversalKeyringBackend::new() {
+                registry.register_backend("keyring".to_string(), Box::new(keyring_backend));
+            }
         }
 
         // Add Software HSM backend if available
@@ -270,20 +274,27 @@ mod tests {
         let registry = registry.unwrap();
         let backends = registry.list_backend_names();
 
-        // Should have keyring backend
+        // Should have keyring backend if feature is enabled
+        #[cfg(feature = "keyring")]
         assert!(backends.contains(&"keyring"));
+
+        // Should have software_hsm backend
+        assert!(backends.contains(&"software_hsm"));
     }
 
     #[test]
     fn test_find_backend_for_operation() {
         let registry = UniversalBackendRegistry::with_defaults().unwrap();
 
-        // Test key derivation (should find keyring)
-        let derive_op = CryptoOperation::DeriveKey {
-            context: KeyDerivationContext::new(vec![1; 16]),
-        };
-        let backend = registry.find_backend_for_operation(&derive_op);
-        assert!(backend.is_some());
+        // Test key derivation (should find keyring if feature enabled, otherwise none)
+        #[cfg(feature = "keyring")]
+        {
+            let derive_op = CryptoOperation::DeriveKey {
+                context: KeyDerivationContext::new(vec![1; 16]),
+            };
+            let backend = registry.find_backend_for_operation(&derive_op);
+            assert!(backend.is_some());
+        }
 
         // Test signing (should find Software HSM)
         let sign_op = CryptoOperation::Sign {

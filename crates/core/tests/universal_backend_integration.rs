@@ -1,3 +1,4 @@
+#![cfg(feature = "keyring")]
 //
 // Copyright (c) 2025 TRUSTEDGE LABS LLC
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.

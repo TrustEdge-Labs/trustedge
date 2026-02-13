@@ -44,3 +44,4 @@ zeroize = { workspace = true }
 [features]
 default = []
 audio = ["trustedge-core/audio"]
+keyring = ["trustedge-core/keyring"]

@@ -20,19 +20,23 @@
 //! - TPM 2.0 backend
 //! - Hardware HSM backend (additional PKCS#11 devices)
 
+#[cfg(feature = "keyring")]
 pub mod keyring;
 pub mod software_hsm;
 pub mod traits;
 pub mod universal;
+#[cfg(feature = "keyring")]
 pub mod universal_keyring;
 pub mod universal_registry;
 #[cfg(feature = "yubikey")]
 pub mod yubikey;
 
+#[cfg(feature = "keyring")]
 pub use keyring::KeyringBackend;
 pub use software_hsm::SoftwareHsmBackend;
 pub use traits::*;
 pub use universal::*;
+#[cfg(feature = "keyring")]
 pub use universal_keyring::UniversalKeyringBackend;
 pub use universal_registry::{BackendPreferences, UniversalBackendRegistry};
 #[cfg(feature = "yubikey")]
@@ -59,7 +63,10 @@ impl BackendRegistry {
     /// Create a backend based on CLI arguments or configuration
     pub fn create_backend(&self, backend_type: &str) -> Result<Box<dyn KeyBackend>> {
         match backend_type {
+            #[cfg(feature = "keyring")]
             "keyring" => Ok(Box::new(KeyringBackend::new()?)),
+            #[cfg(not(feature = "keyring"))]
+            "keyring" => Err(anyhow::anyhow!("Keyring backend requires the 'keyring' feature. Build with: --features keyring")),
             "pubky" => Err(anyhow::anyhow!(
                 "❌ Pubky backend not available in trustedge-core.\n\
                 \n\
@@ -90,13 +97,18 @@ impl BackendRegistry {
 
     /// List available backends on this system
     pub fn list_available_backends(&self) -> Vec<&'static str> {
-        let backends = vec!["keyring"]; // Always available
+        #[cfg(feature = "keyring")]
+        {
+            vec!["keyring"]
+        }
+        #[cfg(not(feature = "keyring"))]
+        {
+            vec![]
+        }
 
         // Note: pubky backend is available via separate trustedge-pubky binary
         // Future: detect TPM, HSM availability
         // if tpm_available() { backends.push("tpm"); }
         // if hsm_available() { backends.push("hsm"); }
-
-        backends
     }
 }

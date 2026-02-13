@@ -5,6 +5,8 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
+#![allow(unused_imports)] // KeyBackend and KeyContext used only with keyring feature
+
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
 use futures_util::{SinkExt, StreamExt};
@@ -19,9 +21,11 @@ use tokio::time::timeout;
 use tokio_util::codec::{Framed, LengthDelimitedCodec};
 
 // network payload type from lib.rs
+#[cfg(feature = "keyring")]
+use trustedge_core::KeyringBackend;
 use trustedge_core::{
-    build_aad, server_authenticate, KeyBackend, KeyContext, KeyringBackend, Manifest, NetworkChunk,
-    SessionManager, SignedManifest, NONCE_LEN,
+    build_aad, server_authenticate, KeyBackend, KeyContext, Manifest, NetworkChunk, SessionManager,
+    SignedManifest, NONCE_LEN,
 };
 
 // ---- Crypto bits ------------------------------------------------------------
@@ -139,35 +143,49 @@ struct ProcessingSession {
 async fn main() -> Result<()> {
     let args = Args::parse();
 
-    if let Some(passphrase) = args.set_passphrase {
-        let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
-        backend.store_passphrase(&passphrase)?;
-        println!("Passphrase stored in system keyring");
-        return Ok(());
+    if let Some(_passphrase) = args.set_passphrase {
+        #[cfg(feature = "keyring")]
+        {
+            let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
+            backend.store_passphrase(&_passphrase)?;
+            println!("Passphrase stored in system keyring");
+            return Ok(());
+        }
+        #[cfg(not(feature = "keyring"))]
+        {
+            return Err(anyhow::anyhow!("Keyring support requires the 'keyring' feature. Build with: cargo build --features keyring"));
+        }
     }
 
     // Build cipher if decrypting
     let cipher = if args.decrypt {
         let key_bytes = if args.use_keyring {
-            let salt_hex = args
-                .salt_hex
-                .as_ref()
-                .ok_or_else(|| anyhow!("--salt-hex required when using keyring"))?;
-            let salt_bytes = hex::decode(salt_hex)?;
-            anyhow::ensure!(
-                salt_bytes.len() == 16,
-                "Salt must be 16 bytes (32 hex chars)"
-            );
-            let mut salt = [0u8; 16];
-            salt.copy_from_slice(&salt_bytes);
-            println!("Using keyring passphrase with provided salt");
+            #[cfg(feature = "keyring")]
+            {
+                let salt_hex = args
+                    .salt_hex
+                    .as_ref()
+                    .ok_or_else(|| anyhow!("--salt-hex required when using keyring"))?;
+                let salt_bytes = hex::decode(salt_hex)?;
+                anyhow::ensure!(
+                    salt_bytes.len() == 16,
+                    "Salt must be 16 bytes (32 hex chars)"
+                );
+                let mut salt = [0u8; 16];
+                salt.copy_from_slice(&salt_bytes);
+                println!("Using keyring passphrase with provided salt");
 
-            let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
-            let context = KeyContext::new(salt.to_vec());
-            let derived_key = backend.derive_key(&salt, &context)?;
-            let mut key_bytes = [0u8; 32];
-            key_bytes.copy_from_slice(&derived_key);
-            key_bytes
+                let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
+                let context = KeyContext::new(salt.to_vec());
+                let derived_key = backend.derive_key(&salt, &context)?;
+                let mut key_bytes = [0u8; 32];
+                key_bytes.copy_from_slice(&derived_key);
+                key_bytes
+            }
+            #[cfg(not(feature = "keyring"))]
+            {
+                return Err(anyhow::anyhow!("Keyring backend requires the 'keyring' feature. Build with: cargo build --features keyring"));
+            }
         } else if let Some(ref key_hex) = args.key_hex {
             parse_key_hex(key_hex)?
         } else {

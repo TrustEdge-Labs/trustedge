@@ -10,7 +10,20 @@
       "Bash(cargo clippy:*)",
       "Bash(./scripts/ci-check.sh:*)",
       "Bash(gh run list:*)",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: create v1.1 roadmap \\(4 phases, 27 requirements mapped\\)\n\nPhases 9-12: Cleanup → Backend Rewrite → Test Infrastructure → CI Integration\nSequential execution, all requirements traceable to phases.\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "WebSearch",
+      "Bash(grep:*)",
+      "Bash(echo:*)",
+      "Bash(test:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(cargo tree:*)",
+      "Bash(cargo metadata:*)",
+      "Bash(python3:*)",
+      "Bash(done)",
+      "Bash(gh run view:*)"
     ],
     "deny": [],
     "ask": []
