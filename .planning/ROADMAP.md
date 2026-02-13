@@ -110,10 +110,10 @@ Plans:
   1. DEPENDENCIES.md covers all 10 crates (not just 5 stable crates from v1.2)
   2. Every dependency has a one-line justification in DEPENDENCIES.md
   3. Security-critical dependencies (crypto, TLS, key storage) have detailed rationale beyond one-line
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- TBD (created during plan-phase)
+- [ ] 18-01-PLAN.md -- Rewrite DEPENDENCIES.md with all 10 crates, per-dependency justifications, and security-critical rationale
 
 ## Progress
 
