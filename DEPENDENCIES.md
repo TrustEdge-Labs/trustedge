@@ -1,9 +1,32 @@
-# Dependency Audit — Core Crates
+# TrustEdge Dependency Audit
 
-*Last audited: 2026-02-12*
-*Milestone: v1.2 (DEPS-01)*
+**Last audited:** 2026-02-13
+**Milestone:** v1.3 (Documentation & Security Hardening)
+**Scope:** All 10 workspace crates (5 stable tier, 5 experimental tier)
 
-This document provides a comprehensive audit of all dependencies in the 5 stable tier crates of the TrustEdge workspace.
+This document provides comprehensive documentation of all dependencies across the TrustEdge workspace, with per-dependency justifications and security rationale for critical dependencies.
+
+## Table of Contents
+
+**Stable Tier (Production-Committed):**
+- [trustedge-core](#trustedge-core) - Core cryptographic library
+- [trustedge-cli](#trustedge-cli) - Main CLI for envelope encryption
+- [trustedge-trst-protocols](#trustedge-trst-protocols) - Archive format definitions
+- [trustedge-trst-cli](#trustedge-trst-cli) - Archive CLI tool
+- [trustedge-trst-wasm](#trustedge-trst-wasm) - Browser archive verification
+
+**Experimental Tier (Community/Experimental):**
+- [trustedge-wasm](#trustedge-wasm) - General WASM bindings
+- [trustedge-pubky](#trustedge-pubky) - Pubky network adapter
+- [trustedge-pubky-advanced](#trustedge-pubky-advanced) - Pubky hybrid encryption
+- [trustedge-receipts](#trustedge-receipts) - Re-export facade (deprecated)
+- [trustedge-attestation](#trustedge-attestation) - Re-export facade (deprecated)
+
+**Additional Sections:**
+- [Security-Critical Dependency Rationale](#security-critical-dependency-rationale)
+- [Workspace Dependency Summary](#workspace-dependency-summary)
+
+---
 
 ## trustedge-core
 
@@ -22,13 +45,12 @@ Core cryptographic library with network transport, backends, and protocol implem
 | clap | 4.5 | CLI argument parsing for server, client, and demo binaries | Used |
 | cpal | 0.15 | Live audio capture (feature-gated: audio) | Used (optional) |
 | ed25519-dalek | 2 | Ed25519 signing and verification for auth and envelopes | Used |
-| git2 | 0.18 | Git integration for attestation module | Used |
+| git2 | 0.18 | Git integration for attestation module (feature-gated: git-attestation) | Used (optional) |
 | hex | 0.4 | Hex encoding/decoding for key material in tests | Used |
-| keyring | 2.0 | OS keyring integration for keyring backend | Used |
+| keyring | 2.0 | OS keyring integration for keyring backend (feature-gated: keyring) | Used (optional) |
 | num-traits | 0.2 | Numeric trait conversions for audio sample processing | Used |
 | p256 | 0.13 | NIST P-256 ECDH for Software HSM backend | Used |
 | pbkdf2 | 0.12 | Key derivation for keyring backends | Used |
-| pkcs11 | 0.5 | PKCS#11 interface (feature-gated: yubikey) | Used (optional) |
 | yubikey | 0.7 | YubiKey hardware backend (feature-gated: yubikey) | Used (optional) |
 | rand | 0.8 | Random number generation (primarily for testing) | Used |
 | rand_core | 0.6 | RNG traits and OsRng for key generation | Used |
@@ -63,6 +85,8 @@ Core cryptographic library with network transport, backends, and protocol implem
 
 **Configuration:** Trimmed from `["full"]` to minimal feature set: `["io-util", "net", "fs", "sync", "time", "rt-multi-thread", "macros", "signal"]`
 
+---
+
 ## trustedge-cli
 
 Main CLI binary for envelope encryption operations.
@@ -83,6 +107,8 @@ Main CLI binary for envelope encryption operations.
 
 **Note:** The crypto dependencies (aead, aes-gcm, blake3, ed25519-dalek, rand_core) are INTENTIONALLY duplicated from trustedge-core. The CLI directly instantiates ciphers and signing keys for its encrypt/decrypt/sign commands rather than going through core's abstractions. This is legitimate use, not redundancy.
 
+---
+
 ## trustedge-trst-protocols
 
 Protocol and format definitions for .trst archives (WASM-compatible, minimal dependencies).
@@ -94,6 +120,8 @@ Protocol and format definitions for .trst archives (WASM-compatible, minimal dep
 | thiserror | 1.0 | Error types for format validation | Used |
 
 **Design goal:** Minimal dependency footprint for WASM compatibility. All dependencies are essential.
+
+---
 
 ## trustedge-trst-cli
 
@@ -126,6 +154,8 @@ CLI tool for .trst archive wrap/verify operations.
 
 **reqwest justification:** The `trst sign` command has a `--post` option that POSTs the generated verify request to a remote URL. This is a legitimate feature for integration with verification services. The dependency is kept and justified.
 
+---
+
 ## trustedge-trst-wasm
 
 WASM bindings for browser-based archive verification.
@@ -149,70 +179,199 @@ WASM bindings for browser-based archive verification.
 
 ---
 
-## Findings
+## trustedge-wasm
 
-### Redundant Dependencies
+General WebAssembly bindings for TrustEdge cryptographic operations.
 
-**NONE.** Initial analysis suggested trustedge-cli's crypto deps (aead, aes-gcm, blake3, ed25519-dalek, rand_core) might be redundant since trustedge-core exports them. However, code inspection reveals the CLI directly instantiates ciphers and signing keys for its commands rather than using core's abstractions. This is intentional and appropriate for a CLI tool.
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| wasm-bindgen | 0.2 | Rust/JS interop for WASM bindings | Used |
+| js-sys | 0.3 | JavaScript standard library bindings | Used |
+| serde | 1.0 | JSON serialization for WASM API | Used |
+| serde_json | 1.0 | JSON serialization for WASM API | Used |
+| aes-gcm | 0.10.3 | AES-256-GCM encryption in browser | Used |
+| rand | 0.8 | Random number generation for crypto ops | Used |
+| getrandom | 0.2 | WASM RNG support (js feature activation) | Used |
+| base64 | 0.22 | Base64 encoding/decoding for key material | Used |
+| console_error_panic_hook | 0.1 | Better panic messages in browser console | Used |
 
-### Unused Dependencies
-
-**NONE.** All dependencies in the 5 core crates have verified usage in source code.
-
-**False positives from cargo-machete:**
-- `pkcs11` in trustedge-core — Only used when yubikey feature is enabled
-- `getrandom` in trustedge-trst-wasm — Required for WASM feature activation (no direct imports)
-
-### Optimization Opportunities
-
-#### 1. Tokio feature flag trimming (DEPS-04) — ✅ COMPLETED
-
-**trustedge-core:**
-- ~~Current: `features = ["full"]` (includes 30+ features)~~
-- Trimmed to: `["io-util", "net", "fs", "sync", "time", "rt-multi-thread", "macros", "signal"]`
-- Result: Faster compilation, smaller binary
-
-**trustedge-trst-cli:**
-- ~~Current: `features = ["full"]`~~
-- Trimmed to: `["macros", "rt-multi-thread"]` (only for async runtime)
-- Result: Significant compilation time reduction
-
-#### 2. Future feature flags
-
-**reqwest in trst-cli** could be made optional with a `network` or `remote-verify` feature flag. The --post option is useful but not core functionality. However, this would be a breaking change for users who rely on it.
-
-### Additional Notes
-
-1. **async-trait in trustedge-core:** Marked as "Transitive" because it's not directly used with `#[async_trait]` macros in the current codebase, but may be needed for trait object support. Consider auditing if this is actually required.
-
-2. **cargo-machete configuration:** trustedge-core already has `[package.metadata.cargo-machete]` ignoring serde_bytes. Should also add getrandom to ignored list in trustedge-trst-wasm.
-
-3. **Workspace dependency management:** All core crates properly use workspace dependencies where available, minimizing version skew and maintenance burden.
-
-4. **YubiKey feature dependencies:** All YubiKey-related deps (pkcs11, yubikey, x509-cert, signature, der, spki, rcgen) are properly feature-gated and have verified usage in backends/yubikey.rs.
+**Note on getrandom:** Required for WASM target. Activates "js" feature for wasm32-unknown-unknown. Added to cargo-machete ignored list.
 
 ---
 
-## Changes Made (2026-02-12)
+## trustedge-pubky
 
-1. **✅ Tokio feature trimming:**
-   - trustedge-core: Trimmed from `["full"]` to `["io-util", "net", "fs", "sync", "time", "rt-multi-thread", "macros", "signal"]`
-   - trustedge-trst-cli: Trimmed from `["full"]` to `["macros", "rt-multi-thread"]`
+Simple adapter for Pubky network key publishing/resolution.
 
-2. **✅ cargo-machete false positive suppression:**
-   - Added getrandom to ignored list in trustedge-trst-wasm's `[package.metadata.cargo-machete]`
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| trustedge-core | path | Core library dependency | Used |
+| pubky | 0.5.4 | Pubky network client for key publishing/resolution | Used |
+| anyhow | 1.0 | Error handling for CLI binary | Used |
+| tokio | 1.0 | Async runtime for Pubky network operations | Used |
+| serde | 1.0 | JSON serialization for Pubky messages | Used |
+| serde_json | 1.0 | JSON serialization for Pubky messages | Used |
+| hex | 0.4 | Hex encoding for key display | Used |
+| thiserror | 1.0 | Structured error types | Used |
+| rand | 0.8 | Random number generation | Used |
+| clap | 4.5 | CLI argument parsing for trustedge-pubky binary | Used |
 
-3. **✅ reqwest review:**
-   - Verified reqwest is used for `trst sign --post` option (legitimate feature)
-   - Kept dependency with documented justification
+---
 
-## Recommendations for Future Work
+## trustedge-pubky-advanced
 
-1. **Post-v1.2:**
-   - Consider making reqwest in trst-cli optional with a feature flag
-   - Audit whether async-trait is actually required in trustedge-core
-   - Consider consolidating chacha20poly1305 dependency between core and trst-cli
+Hybrid encryption with X25519 ECDH for Pubky ecosystem integration.
 
-3. **Documentation:**
-   - Add inline comments in Cargo.toml files explaining why CLI duplicates crypto deps
-   - Document the WASM getrandom requirement in trst-wasm's Cargo.toml
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| trustedge-core | path | Core library dependency | Used |
+| pubky | 0.5.4 | Pubky network client | Used |
+| ed25519-dalek | 2 | Ed25519 signing for hybrid encryption | Used |
+| x25519-dalek | 2.0 | X25519 ECDH key agreement | Used |
+| aes-gcm | 0.10.3 | AES-256-GCM for hybrid encryption | Used |
+| hkdf | 0.12 | HKDF key derivation for hybrid encryption | Used |
+| blake3 | 1.5 | Hashing for key derivation | Used |
+| sha2 | 0.10 | SHA-256 for HKDF (used directly, not workspace) | Used |
+| serde | 1.0 | Serialization for hybrid messages | Used |
+| serde_json | 1.0 | JSON serialization for hybrid messages | Used |
+| bincode | 1.3 | Binary serialization for hybrid messages | Used |
+| anyhow | 1.0 | Error handling | Used |
+| hex | 0.4 | Hex encoding for keys | Used |
+| zeroize | 1.7 | Secure memory zeroing for key material | Used |
+| rand | 0.8 | Random number generation | Used |
+| thiserror | 1.0 | Structured error types | Used |
+| tokio | 1.0 | Async runtime | Used |
+| reqwest | 0.11 | HTTP client for Pubky network operations | Used |
+
+---
+
+## trustedge-receipts
+
+Re-export facade for trustedge-core receipts module (deprecated, removal planned August 2026).
+
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| trustedge-core | path | Re-export facade (deprecated, removal planned August 2026) | Used (facade) |
+
+**Note:** Users should migrate to using `trustedge-core` directly. This crate provides no additional functionality.
+
+---
+
+## trustedge-attestation
+
+Re-export facade for trustedge-core attestation module (deprecated, removal planned August 2026).
+
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| trustedge-core | path | Re-export facade (deprecated, removal planned August 2026) | Used (facade) |
+
+**Note:** Users should migrate to using `trustedge-core` directly. This crate provides no additional functionality.
+
+---
+
+## Security-Critical Dependency Rationale
+
+This section provides detailed justification for dependencies that handle cryptographic operations, TLS/transport security, or key storage. Each entry explains what the dependency does, why it was chosen over alternatives, how TrustEdge uses it, and any known security considerations.
+
+### Cryptographic Primitives
+
+**1. aes-gcm** (AES-256-GCM): Core encryption primitive for envelope encryption. Used in trustedge-core for per-chunk encryption of input data, in trustedge-cli for direct cipher operations, and in WASM crates for browser-side encryption. Chosen as the industry-standard authenticated encryption algorithm. Part of the RustCrypto ecosystem which undergoes regular security review.
+
+**2. chacha20poly1305** (XChaCha20-Poly1305): Alternative AEAD cipher used in crypto.rs module. Provides stream cipher encryption as complement to AES-GCM. Used in trst-cli for archive chunk encryption. Chosen for its constant-time implementation and resistance to timing attacks on platforms without AES-NI hardware acceleration.
+
+**3. ed25519-dalek** (Ed25519): Core signing primitive. Used for envelope signing, mutual authentication, archive signature verification, and hybrid encryption in Pubky. Chosen for its small key size (32 bytes), fast verification, and resistance to many classes of implementation attacks. The dalek library is the most widely audited Rust Ed25519 implementation.
+
+**4. blake3**: Cryptographic hash function. Used for continuity chain hashing, manifest verification, and key derivation. Chosen over SHA-256 for performance (parallelizable, SIMD-optimized) while maintaining 256-bit security. Used across core, cli, trst-cli, and pubky-advanced.
+
+**5. rsa**: RSA asymmetric encryption. Used ONLY in Pubky hybrid encryption (experimental) and YubiKey PIV operations (feature-gated). NOT used in core production encryption path (which is Ed25519 + AES-256-GCM). Known advisory RUSTSEC-2023-0071 (Marvin Attack) accepted with risk documentation in .cargo/audit.toml since TrustEdge does not use RSA for decryption timing-sensitive operations.
+
+**6. p256** (NIST P-256 ECDH): Used in Software HSM backend for ECDH key agreement. Provides P-256 elliptic curve operations for backends that require NIST-approved algorithms.
+
+**7. x25519-dalek** (X25519): Used in trustedge-pubky-advanced for Diffie-Hellman key agreement in hybrid encryption. Provides modern elliptic curve key exchange complementing Ed25519 signing.
+
+**8. hkdf**: HMAC-based Key Derivation Function. Used in pubky-advanced for deriving symmetric keys from ECDH shared secrets. Industry-standard KDF specified in RFC 5869.
+
+**9. pbkdf2**: Password-based key derivation. Used in keyring backend for deriving encryption keys from stored secrets. Provides intentionally slow key derivation to resist brute-force attacks.
+
+### TLS and Transport Security
+
+**10. rustls**: TLS implementation for QUIC transport. Pure-Rust TLS 1.3 library, chosen over OpenSSL bindings for portability and memory safety. Used by quinn for QUIC connection encryption.
+
+**11. quinn**: QUIC transport protocol implementation. Provides encrypted, multiplexed connections for TrustEdge's network transport layer. Built on rustls for TLS 1.3 support.
+
+### Key Storage and Hardware Security
+
+**12. keyring** (feature-gated): OS keyring integration for secure key storage. Provides cross-platform access to macOS Keychain, Windows Credential Manager, and Linux Secret Service. Feature-gated behind `keyring` flag to avoid platform-specific dependencies in default builds.
+
+**13. yubikey** (feature-gated): YubiKey hardware security module interface. Provides PIV (Personal Identity Verification) operations for hardware-backed key storage and signing. Feature-gated behind `yubikey` flag. Depends on system PCSC daemon for hardware communication.
+
+**14. zeroize**: Secure memory zeroing for cryptographic key material. Ensures keys are wiped from memory after use, preventing cold-boot and memory-dump attacks. Used across core, cli, and pubky-advanced for all key types.
+
+**15. rcgen** (feature-gated): X.509 certificate generation for YubiKey operations. Generates self-signed certificates for PIV slot operations. Only compiled with yubikey feature.
+
+---
+
+## Workspace Dependency Summary
+
+The workspace defines shared dependencies in `[workspace.dependencies]` to minimize version skew and maintenance burden. The following dependencies are available workspace-wide:
+
+**Cryptography:**
+- aead 0.5
+- aes-gcm 0.10.3
+- blake3 1.5
+- ed25519-dalek 2 (with rand_core feature)
+- p256 0.13 (with ecdsa, pem, ecdh features)
+- pbkdf2 0.12
+- rand 0.8
+- rand_core 0.6
+- rsa 0.9.10 (with pem feature)
+- x25519-dalek 2.0 (with static_secrets feature)
+- hkdf 0.12
+
+**Pubky Integration:**
+- pubky 0.5.4
+
+**Serialization:**
+- bincode 1.3
+- serde 1.0 (with derive feature)
+- serde_bytes 0.11
+- serde_json 1.0
+
+**Git Operations:**
+- git2 0.18
+
+**Async and Utilities:**
+- anyhow 1.0
+- async-trait 0.1
+- chrono 0.4 (with serde feature)
+- hex 0.4
+- num-traits 0.2
+- thiserror 1.0
+- zeroize 1.7
+
+**CLI and System:**
+- clap 4.5 (with derive feature)
+- keyring 2.0
+
+**WASM-Specific:**
+- wasm-bindgen 0.2
+- js-sys 0.3
+- serde-wasm-bindgen 0.6
+- getrandom 0.2 (with js feature)
+
+**Development:**
+- tokio 1.0 (with full feature set for development only)
+
+**Note on Crate Classification:**
+
+The TrustEdge workspace uses a 2-tier classification system:
+
+- **Stable tier (5 crates):** Production-committed, tested in CI, actively maintained. These crates have `tier = "stable"` and `maintained = true` in their `[package.metadata.trustedge]` section.
+
+- **Experimental tier (5 crates):** Community/experimental, build-only CI validation, no maintenance commitment. These crates have `tier = "experimental"` and `maintained = false` in their `[package.metadata.trustedge]` section.
+
+CI is tiered: stable crate test failures block builds, experimental crate failures are informational only.
+
+---
+
+**End of dependency audit.**
