@@ -67,7 +67,15 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Active
 
-(No active requirements — planning next milestone)
+## Current Milestone: v1.4 Placeholder Elimination
+
+**Goal:** Remove all placeholder code, incomplete features, and insecure defaults — if it doesn't work, it doesn't exist in the codebase.
+
+**Target features:**
+- QUIC TLS security: proper cert verification by default, insecure skip feature-gated
+- Dead code removal: legacy server functions, reserved keyring functions, dead fields
+- Stub elimination: delete envelope_v2_bridge.rs, remove Blake2b stub, clean Pubky placeholders
+- TODO hygiene: zero remaining TODOs indicating unimplemented functionality
 
 ### Deferred
 
@@ -146,4 +154,4 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | DEPENDENCIES.md covers all 10 crates | v1.2 only documented 5 stable crates | ✓ Good — complete audit trail |
 
 ---
-*Last updated: 2026-02-13 after v1.3 milestone complete*
+*Last updated: 2026-02-13 after v1.4 milestone started*

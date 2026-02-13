@@ -9,11 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 ## Current Position
 
-Milestone: v1.3 complete (all 4 milestones shipped)
-Status: Between milestones
-Last activity: 2026-02-13 — v1.3 Dependency Audit & Rationalization complete
-
-Progress: [██████████] 100% (32/32 plans completed in v1.3)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-13 — Milestone v1.4 started
 
 ## Performance Metrics
 
