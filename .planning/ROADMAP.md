@@ -84,10 +84,10 @@ Plans:
   2. All genuinely unused dependencies are removed from crate Cargo.toml files
   3. All workspace-level dependencies not referenced by any crate are removed
   4. cargo build --workspace and cargo test --workspace still pass
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- TBD (created during plan-phase)
+- [ ] 16-01-PLAN.md -- Run cargo-machete across all crates, remove unused dependencies, clean workspace
 
 ### Phase 17: Security Hardening
 **Goal**: Dependency tree has no known vulnerabilities
