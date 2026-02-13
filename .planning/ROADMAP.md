@@ -52,7 +52,7 @@ Made TrustEdge maintainable by a solo developer — 2-tier crate classification 
 
 **Milestone Goal:** Minimize and harden the dependency tree — feature-gate heavy optional deps, remove unused deps, run security audit, document every remaining dependency.
 
-- [ ] **Phase 15: Feature Gating** - Move git2 and keyring behind opt-in feature flags
+- [x] **Phase 15: Feature Gating** - Move git2 and keyring behind opt-in feature flags
 - [ ] **Phase 16: Dependency Audit** - Remove genuinely unused dependencies from workspace
 - [ ] **Phase 17: Security Hardening** - Ensure dependency tree has no known vulnerabilities
 - [ ] **Phase 18: Documentation** - Document every dependency across all 10 crates
@@ -72,8 +72,8 @@ Made TrustEdge maintainable by a solo developer — 2-tier crate classification 
 **Plans**: 2 plans
 
 Plans:
-- [ ] 15-01-PLAN.md -- Feature-gate git2 and keyring dependencies behind opt-in feature flags
-- [ ] 15-02-PLAN.md -- Update CI pipeline to test feature-gated builds
+- [x] 15-01-PLAN.md -- Feature-gate git2 and keyring dependencies behind opt-in feature flags
+- [x] 15-02-PLAN.md -- Update CI pipeline to test feature-gated builds
 
 ### Phase 16: Dependency Audit
 **Goal**: Remove genuinely unused dependencies from workspace
@@ -129,10 +129,10 @@ Phases execute in numeric order: 15 → 16 → 17 → 18
 | 12. CI Integration | v1.1 | 1/1 | Complete | 2026-02-11 |
 | 13. Crate Classification & Dependency Audit | v1.2 | 2/2 | Complete | 2026-02-12 |
 | 14. CI & Documentation | v1.2 | 2/2 | Complete | 2026-02-12 |
-| 15. Feature Gating | v1.3 | 0/2 | Planned | - |
+| 15. Feature Gating | v1.3 | 2/2 | Complete | 2026-02-12 |
 | 16. Dependency Audit | v1.3 | 0/? | Not started | - |
 | 17. Security Hardening | v1.3 | 0/? | Not started | - |
 | 18. Documentation | v1.3 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-12 after v1.3 roadmap creation*
+*Last updated: 2026-02-12 after Phase 15 completion*

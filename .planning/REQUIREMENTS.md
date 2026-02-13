@@ -9,11 +9,11 @@ Requirements for dependency audit and rationalization. Each maps to roadmap phas
 
 ### Feature Gating
 
-- [ ] **GATE-01**: git2 dependency is behind an opt-in `git-attestation` feature flag (not compiled by default)
-- [ ] **GATE-02**: keyring dependency is behind an opt-in `keyring` feature flag (not compiled by default)
-- [ ] **GATE-03**: All code using git2 compiles only when `git-attestation` feature is enabled
-- [ ] **GATE-04**: All code using keyring compiles only when `keyring` feature is enabled
-- [ ] **GATE-05**: CI tests both with and without git-attestation and keyring features
+- [x] **GATE-01**: git2 dependency is behind an opt-in `git-attestation` feature flag (not compiled by default)
+- [x] **GATE-02**: keyring dependency is behind an opt-in `keyring` feature flag (not compiled by default)
+- [x] **GATE-03**: All code using git2 compiles only when `git-attestation` feature is enabled
+- [x] **GATE-04**: All code using keyring compiles only when `keyring` feature is enabled
+- [x] **GATE-05**: CI tests both with and without git-attestation and keyring features
 
 ### Dependency Removal
 
@@ -55,11 +55,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GATE-01 | Phase 15 | Pending |
-| GATE-02 | Phase 15 | Pending |
-| GATE-03 | Phase 15 | Pending |
-| GATE-04 | Phase 15 | Pending |
-| GATE-05 | Phase 15 | Pending |
+| GATE-01 | Phase 15 | Complete |
+| GATE-02 | Phase 15 | Complete |
+| GATE-03 | Phase 15 | Complete |
+| GATE-04 | Phase 15 | Complete |
+| GATE-05 | Phase 15 | Complete |
 | REM-01 | Phase 16 | Pending |
 | REM-02 | Phase 16 | Pending |
 | REM-03 | Phase 16 | Pending |
