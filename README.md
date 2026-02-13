@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-1.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v1.0)
+[![Version](https://img.shields.io/badge/version-1.3-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v1.3)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge: Hardware-Backed Security for IoT Devices
@@ -20,21 +20,21 @@ Open-source cryptographic engine with YubiKey/TPM integration for edge devices a
 
 ## Why TrustEdge?
 
-Most IoT devices use software-only encryption with keys in memory. TrustEdge provides hardware-backed security via industry-standard PKCS#11.
+Most IoT devices use software-only encryption with keys in memory. TrustEdge provides hardware-backed security via YubiKey PIV and pluggable backends.
 
-✅ **Hardware-backed signing** (YubiKey, TPM, HSM)  
-✅ **PKCS#11 standard** interface  
-✅ **X.509 certificates** with hardware signing  
-✅ **Cross-platform** (Linux, macOS, Windows, ESP32, WASM)  
+✅ **Hardware-backed signing** (YubiKey PIV, Software HSM, Keyring)
+✅ **YubiKey PIV** with ECDSA P-256 and RSA-2048
+✅ **X.509 certificates** with hardware signing
+✅ **Cross-platform** (Linux, macOS, Windows, WASM)
 ✅ **Open source** and fully auditable  
 
 ## Golden Path: YubiKey Hardware Signing Demo
 
-TrustEdge's flagship demo: real cryptographic operations backed by YubiKey hardware.
+TrustEdge's flagship capability: real cryptographic operations backed by YubiKey hardware.
 This showcases hardware-backed signing, key extraction from PIV slots, X.509 certificate
 generation, and certificate validation — all using your physical security key.
 
-**Prerequisites:** YubiKey with PIV applet, [OpenSC](https://github.com/OpenSC/OpenSC) PKCS#11 module, [ykman](https://developers.yubico.com/yubikey-manager/) CLI
+**Prerequisites:** YubiKey 5 series with PIV applet enabled, [ykman](https://developers.yubico.com/yubikey-manager/) CLI, PCSC daemon (pcscd)
 
 ### Step 1: Generate a key on YubiKey
 
@@ -43,17 +43,17 @@ ykman piv keys generate 9a /tmp/pubkey.pem --algorithm ECCP256
 ykman piv certificates generate 9a /tmp/pubkey.pem --subject "CN=Test"
 ```
 
-### Step 2: Run the hardware signing demo
+### Step 2: Run the hardware integration tests
 
 ```bash
 git clone https://github.com/trustedge-labs/trustedge.git
 cd trustedge
-cargo run --example yubikey_demo --features yubikey -- 123456
+cargo test --features yubikey --test yubikey_integration
 ```
 
-**What happens:** TrustEdge connects to your YubiKey via PKCS#11, extracts the public key
-from PIV slot 9a, performs a hardware-backed ECDSA-P256 signature, generates a complete
-X.509 certificate signed by the YubiKey, and exports it in standard DER format.
+**What happens:** TrustEdge connects to your YubiKey via PCSC, extracts the public key
+from PIV slot 9a, performs a hardware-backed ECDSA P-256 signature, generates a complete
+X.509 certificate signed by the YubiKey via rcgen, and validates the certificate chain.
 
 **No YubiKey?** See the [Software-Only Archive Demo](#software-only-archive-demo) below.
 
@@ -89,7 +89,7 @@ Open Core Model:
 - **🏗️ Universal Backend System**: Pluggable crypto operations (Software HSM, Keyring, YubiKey)
 - **🎵 Live Audio Capture**: Real-time microphone input with configurable quality
 - **🌐 Network Operations**: Secure client-server communication with mutual authentication
-- **🔑 Hardware Integration**: Full YubiKey PKCS#11 support with real hardware signing
+- **🔑 Hardware Integration**: YubiKey PIV support with ECDSA P-256 and RSA-2048 signing
 - **⚡ Algorithm Agility**: Configurable cryptographic algorithms with forward compatibility
 - **🛡️ Memory Safety**: Proper key material cleanup with zeroization
 
@@ -98,32 +98,29 @@ Open Core Model:
 - **Language**: Rust (stable) for memory safety and performance
 - **Cryptography**: AES-256-GCM, Ed25519, PBKDF2, BLAKE3 with algorithm agility
 - **Audio**: Cross-platform support (Linux/ALSA, Windows/WASAPI, macOS/CoreAudio)
-- **Hardware**: YubiKey PIV operations, TPM support (planned)
+- **Hardware**: YubiKey PIV operations via `yubikey` crate and PCSC
 - **Network**: Ed25519-based mutual authentication with session management
 
 ---
 
-## What's New in v1.0
+## What's New in v1.3
 
-**v1.0 Consolidation Milestone** — workspace-wide quality and architecture improvements:
+**v1.3 Dependency Audit & Rationalization** — hardened the dependency tree across all 10 crates:
 
-- 🏗️ **Crate Consolidation** - Receipts and attestation functionality merged into `trustedge-core`; standalone crates now deprecated facades with 6-month migration window
-- 📦 **Dependency Cleanup** - 21 unused dependencies removed, ~2,500 LOC duplication eliminated
-- 🔐 **Security Fix** - Removed unmaintained `wee_alloc` dependency
-- 🧪 **Test Suite Growth** - 340+ tests across 10 crates (up from 150+), including 160 core tests
-- ⚡ **Build Performance** - 45s clean release build with optimized dependency graph
-- 🌐 **WASM Compatibility** - Verified for `trustedge-trst-protocols` and browser verification crates
-- 📋 **Zero API Breaking Changes** - 196 semver checks per crate, all passing
+- 🔒 **Feature Gating** - git2 and keyring behind opt-in feature flags (not compiled by default)
+- 🧹 **Dependency Cleanup** - Removed unused dependencies (pkcs11, sha2, tokio-test) via cargo-machete
+- 🛡️ **Security Audit** - cargo-audit integrated into CI as blocking check on every PR
+- 📋 **Documentation** - DEPENDENCIES.md covers all 10 crates with per-dependency justifications and 15-entry security rationale
 
 ### Previous Releases
 
-**v1.2 Scope Reduction** -- crate classification (stable/experimental tiers), dependency audit and optimization, tiered CI pipeline.
+**v1.2 Scope Reduction** — 2-tier crate classification (stable/experimental), tokio feature trimming, tiered CI pipeline (core blocking, experimental non-blocking), dependency tree tracking
 
-**v0.3.1:** CLI extraction, manifest consolidation, YubiKey improvements
+**v1.1 YubiKey Overhaul** — Rewrote YubiKey backend from scratch: fail-closed design, `yubikey` crate stable API, rcgen for X.509, 18 simulation + 9 hardware tests, unconditional CI
+
+**v1.0 Consolidation** — Monolithic core + thin shells, 21 unused deps removed, ~2,500 LOC duplication eliminated, zero API breaks (196 semver checks), 343 tests, WASM verified
 
 **v0.3.0 (P0 Release):** .trst archive system with cam.video profile, Ed25519 signatures, BLAKE3 chains, browser verification
-
-**v0.2.0:** YubiKey PKCS#11 integration, Universal Backend architecture, production transport layer
 
 ---
 
@@ -309,9 +306,9 @@ TrustEdge features a **capability-based Universal Backend system** that provides
 
 **Supported Backends:**
 - **Keyring Backend**: OS keyring integration for key derivation and storage
-- **YubiKey Backend**: Hardware PIV operations with PKCS#11 support
+- **YubiKey Backend**: Hardware PIV operations (ECDSA P-256, RSA-2048) via `yubikey` crate
 - **Software HSM**: In-memory cryptographic operations for development
-- **TPM Backend**: TPM 2.0 operations and attestation (planned)
+- **TPM Backend**: Planned for future milestone
 
 **📖 For detailed backend documentation, see [docs/technical/universal-backend.md](docs/technical/universal-backend.md).**
 
@@ -343,12 +340,13 @@ TrustEdge supports secure client-server communication with **mutual authenticati
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **340+ automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **290+ automated tests** covering all aspects of the system:
 
-- **160 Core Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer
+- **160+ Core Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer
+- **18 YubiKey Simulation Tests**: Hardware backend behavior without physical device
+- **9 Hardware Integration Tests**: YubiKey PIV operations (require physical device)
 - **7 Archive Tests**: .trst format verification, cryptographic validation, attack resistance
 - **Security Tests**: Cryptographic isolation, tampering resistance, replay protection
-- **Hardware Tests**: YubiKey integration, PKCS#11 operations, certificate workflows
 
 ```bash
 # Run complete test suite
@@ -357,7 +355,7 @@ TrustEdge includes a comprehensive test suite with **340+ automated tests** cove
 # Run tests by category
 cargo test -p trustedge-core --lib                # Core cryptography tests (160)
 cargo test -p trustedge-trst-cli --test acceptance # Archive validation tests (7)
-cargo test --features yubikey                     # Hardware integration tests
+cargo test --features yubikey --test yubikey_integration  # Hardware tests (need YubiKey)
 ```
 
 **📖 For detailed testing procedures, see [docs/developer/testing.md](docs/developer/testing.md).**
@@ -414,7 +412,7 @@ For security issues, please follow our [responsible disclosure policy](SECURITY.
 - **Forward Secrecy**: Past communications remain secure even if keys are compromised
 - **Replay Protection**: Unique cryptographic fingerprints prevent message reuse
 - **Memory Safety**: Secure key material handling with automatic cleanup
-- **Hardware Security**: Optional YubiKey integration for hardware-backed operations
+- **Hardware Security**: Optional YubiKey PIV integration for hardware-backed operations
 
 **📖 For detailed security analysis, see [SECURITY.md](SECURITY.md) and [docs/technical/threat-model.md](docs/technical/threat-model.md).**
 
