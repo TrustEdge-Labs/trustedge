@@ -56,19 +56,18 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ Tiered CI pipeline (core blocking, experimental non-blocking) — v1.2
 - ✓ Dependency tree size baseline and regression tracking — v1.2
 - ✓ Root README documents stable/experimental crate split — v1.2
+- ✓ git2 and keyring feature-gated behind opt-in flags (not compiled by default) — v1.3
+- ✓ CI tests both default and feature-enabled builds — v1.3
+- ✓ Unused dependencies removed (pkcs11, sha2, tokio-test) via cargo-machete — v1.3
+- ✓ cargo-audit integrated into CI as blocking check — v1.3
+- ✓ RSA Marvin Attack advisory risk-accepted with documented rationale — v1.3
+- ✓ Cargo.lock tracked in git for reproducible security audits — v1.3
+- ✓ DEPENDENCIES.md covers all 10 crates with per-dependency justifications — v1.3
+- ✓ Security-critical dependencies documented with detailed rationale (15 entries) — v1.3
 
 ### Active
 
-## Current Milestone: v1.3 Dependency Audit & Rationalization
-
-**Goal:** Minimize and harden the dependency tree across all 10 crates — feature-gate heavy optional deps, remove unused deps, run security audit, document every remaining dependency.
-
-**Target features:**
-- Feature-gate git2 and keyring (opt-in, not compiled by default)
-- Full dependency audit across all 10 crates (stable + experimental)
-- Remove actually unnecessary dependencies
-- Install and integrate cargo-audit for security vulnerability scanning
-- Updated DEPENDENCIES.md with full workspace coverage
+(No active requirements — planning next milestone)
 
 ### Deferred
 
@@ -88,16 +87,17 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - **v1.0 Consolidation** — Monolith core + thin shells, 343 tests, zero API breaks
 - **v1.1 YubiKey Integration Overhaul** — Scorched-earth rewrite with fail-closed design, battle-tested libraries, 27 tests, unconditional CI
 - **v1.2 Scope Reduction** — 2-tier crate classification, dependency audit, tiered CI pipeline, dep tree tracking
-- **v1.3 Dependency Audit & Rationalization** — (in progress)
+- **v1.3 Dependency Audit & Rationalization** — Feature-gated heavy deps, removed unused deps, cargo-audit CI, comprehensive DEPENDENCIES.md
 
 ## Context
 
-Shipped v1.2 with 30,144 Rust LOC across 10 crates (5 stable, 5 experimental).
+Shipped v1.3 with 30,144 Rust LOC across 10 crates (5 stable, 5 experimental).
 Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048).
 370+ tests passing (160+ in core including 18 YubiKey simulation, 9 hardware integration with #[ignore]).
-Build time: 45s clean release. Dependency tree: 60 unique crates (baselined).
-CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally.
+Build time: 45s clean release. Dependency tree: 60 unique crates (baselined, warn at 70).
+CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally. cargo-audit runs as blocking check.
 Crate classification: Tier 1 (stable) = core, cli, trst-protocols, trst-cli, trst-wasm. Tier 2 (experimental) = wasm, pubky, pubky-advanced, receipts, attestation.
+Heavy optional deps (git2, keyring) feature-gated. All dependencies documented with justifications in DEPENDENCIES.md.
 Key generation and attestation deferred to future (yubikey crate API limitations).
 
 ## Constraints
@@ -136,6 +136,14 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | Keep trustedge-cli crypto deps | Direct instantiation, not redundancy with core | ✓ Good — correct architecture |
 | Tiered CI (core blocking, experimental non-blocking) | Experimental issues shouldn't block core development | ✓ Good — continue-on-error for tier 2 |
 | Dep tree baseline at 60 + warn at 70 | Informational tracking, non-blocking | ✓ Good — catches regression early |
+| Feature-gate git2 behind git-attestation flag | Heavy dep not needed by default | ✓ Good — default build skips git2 |
+| Feature-gate keyring behind keyring flag | Platform-specific dep not needed by default | ✓ Good — default build skips keyring |
+| dep:keyring syntax for feature disambiguation | Cargo feature naming conflict with dependency | ✓ Good — clean feature/dep separation |
+| Integration tests gated behind keyring feature | Tests depend on KeyringBackend unavailable without feature | ✓ Good — tests pass with/without feature |
+| Remove pkcs11 from trustedge-core | Genuinely unused — no imports found | ✓ Good — cleaner dep tree |
+| Accept RSA Marvin Attack advisory (RUSTSEC-2023-0071) | TrustEdge doesn't use RSA for production encryption | ✓ Good — documented in .cargo/audit.toml |
+| Track Cargo.lock in git | Reproducible security audits require pinned dep versions | ✓ Good — cargo-audit runs on exact versions |
+| DEPENDENCIES.md covers all 10 crates | v1.2 only documented 5 stable crates | ✓ Good — complete audit trail |
 
 ---
-*Last updated: 2026-02-12 after v1.3 milestone started*
+*Last updated: 2026-02-13 after v1.3 milestone complete*

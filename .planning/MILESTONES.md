@@ -99,3 +99,33 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
+
+## v1.3 Dependency Audit & Rationalization (Shipped: 2026-02-13)
+
+**Phases completed:** 4 phases (15-18), 5 plans, 7 tasks
+**Timeline:** 1 day (2026-02-12 → 2026-02-13)
+**Stats:** 37 files changed, 10,360 insertions, 185 deletions, 26 commits
+
+**Delivered:** Hardened the dependency tree across all 10 crates — feature-gated heavy optional deps (git2, keyring), removed unused deps, ran security audit with cargo-audit, and documented every remaining dependency with justification.
+
+**Key accomplishments:**
+- Feature-gated git2 and keyring behind opt-in flags — default builds skip heavy optional dependencies
+- CI validates feature-gated builds in both ci-check.sh and GitHub Actions
+- Removed unused dependencies (pkcs11, sha2, tokio-test) via cargo-machete audit
+- Integrated cargo-audit into CI as blocking check with RSA Marvin Attack advisory risk acceptance documented
+- Comprehensive DEPENDENCIES.md covering all 10 crates with per-dependency justifications and 15-entry security-critical rationale section
+
+**Tech debt carried forward:**
+- Key generation and attestation deferred (yubikey 0.7 API limitations, carried from v1.1)
+- TODO comments in envelope_v2_bridge.rs for Pubky integration (carried from v1.0)
+- 2 cargo-machete false positives (serde_bytes, getrandom) suppressed via config
+- RSA Marvin Attack advisory (RUSTSEC-2023-0071) accepted — TrustEdge does not use RSA for production encryption
+
+**Git range:** v1.2..6c51e44 (docs(phase-18): complete phase execution)
+
+**Archives:**
+- `.planning/milestones/v1.3-ROADMAP.md`
+- `.planning/milestones/v1.3-REQUIREMENTS.md`
+
+---
+

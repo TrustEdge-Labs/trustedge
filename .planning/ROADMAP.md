@@ -13,11 +13,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.0 Consolidation** - Phases 1-8 (shipped 2026-02-11)
 - ✅ **v1.1 YubiKey Integration Overhaul** - Phases 9-12 (shipped 2026-02-11)
 - ✅ **v1.2 Scope Reduction** - Phases 13-14 (shipped 2026-02-12)
-- 🚧 **v1.3 Dependency Audit & Rationalization** - Phases 15-18 (in progress)
-
-## Overview
-
-v1.3 hardens the dependency tree across all 10 crates by making heavy optional dependencies opt-in (git2, keyring), removing unused dependencies, running security audits, and documenting every remaining dependency with justification.
+- ✅ **v1.3 Dependency Audit & Rationalization** - Phases 15-18 (shipped 2026-02-13)
 
 ## Phases
 
@@ -48,77 +44,16 @@ Made TrustEdge maintainable by a solo developer — 2-tier crate classification 
 
 </details>
 
-### 🚧 v1.3 Dependency Audit & Rationalization (In Progress)
+<details>
+<summary>✅ v1.3 Dependency Audit & Rationalization (Phases 15-18) - SHIPPED 2026-02-13</summary>
 
-**Milestone Goal:** Minimize and harden the dependency tree — feature-gate heavy optional deps, remove unused deps, run security audit, document every remaining dependency.
+Hardened the dependency tree across all 10 crates — feature-gated heavy optional deps (git2, keyring), removed unused deps via cargo-machete, integrated cargo-audit into CI, and documented every remaining dependency with justification in DEPENDENCIES.md.
 
-- [x] **Phase 15: Feature Gating** - Move git2 and keyring behind opt-in feature flags
-- [x] **Phase 16: Dependency Audit** - Remove genuinely unused dependencies from workspace
-- [x] **Phase 17: Security Hardening** - Ensure dependency tree has no known vulnerabilities
-- [x] **Phase 18: Documentation** - Document every dependency across all 10 crates
+**See:** `.planning/milestones/v1.3-ROADMAP.md` for full phase details.
 
-## Phase Details
-
-### Phase 15: Feature Gating
-**Goal**: Heavy optional dependencies (git2, keyring) compile only when explicitly requested
-**Depends on**: Phase 14 (v1.2 complete)
-**Requirements**: GATE-01, GATE-02, GATE-03, GATE-04, GATE-05
-**Success Criteria** (what must be TRUE):
-  1. Running `cargo build --workspace` does not compile git2 or keyring
-  2. Running `cargo build --workspace --features git-attestation` compiles git2 and attestation code
-  3. Running `cargo build --workspace --features keyring` compiles keyring and backend code
-  4. CI pipeline tests both default build (no features) and feature-enabled builds
-  5. All tests pass with and without optional features enabled
-**Plans**: 2 plans
-
-Plans:
-- [x] 15-01-PLAN.md -- Feature-gate git2 and keyring dependencies behind opt-in feature flags
-- [x] 15-02-PLAN.md -- Update CI pipeline to test feature-gated builds
-
-### Phase 16: Dependency Audit
-**Goal**: Remove genuinely unused dependencies from workspace
-**Depends on**: Phase 15 (feature gating changes dep tree)
-**Requirements**: REM-01, REM-02, REM-03
-**Success Criteria** (what must be TRUE):
-  1. cargo-machete runs against all 10 crates with results documented
-  2. All genuinely unused dependencies are removed from crate Cargo.toml files
-  3. All workspace-level dependencies not referenced by any crate are removed
-  4. cargo build --workspace and cargo test --workspace still pass
-**Plans**: 1 plan
-
-Plans:
-- [x] 16-01-PLAN.md -- Run cargo-machete across all crates, remove unused dependencies, clean workspace
-
-### Phase 17: Security Hardening
-**Goal**: Dependency tree has no known vulnerabilities
-**Depends on**: Phase 16 (audit on final dep tree)
-**Requirements**: SEC-01, SEC-02, SEC-03
-**Success Criteria** (what must be TRUE):
-  1. Running `cargo audit` reports no known vulnerabilities in dependency tree
-  2. Any security advisories are either fixed via version bumps or documented with risk acceptance
-  3. CI pipeline runs `cargo audit` as a blocking check on every PR
-**Plans**: 1 plan
-
-Plans:
-- [x] 17-01-PLAN.md -- Run cargo-audit, resolve advisories, add to CI and local script
-
-### Phase 18: Documentation
-**Goal**: Every dependency across all 10 crates is documented with justification
-**Depends on**: Phase 17 (document final state)
-**Requirements**: DOC-01, DOC-02, DOC-03
-**Success Criteria** (what must be TRUE):
-  1. DEPENDENCIES.md covers all 10 crates (not just 5 stable crates from v1.2)
-  2. Every dependency has a one-line justification in DEPENDENCIES.md
-  3. Security-critical dependencies (crypto, TLS, key storage) have detailed rationale beyond one-line
-**Plans**: 1 plan
-
-Plans:
-- [x] 18-01-PLAN.md -- Rewrite DEPENDENCIES.md with all 10 crates, per-dependency justifications, and security-critical rationale
+</details>
 
 ## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 15 → 16 → 17 → 18
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -135,4 +70,4 @@ Phases execute in numeric order: 15 → 16 → 17 → 18
 | 18. Documentation | v1.3 | 1/1 | Complete | 2026-02-13 |
 
 ---
-*Last updated: 2026-02-13 after Phase 18 completion*
+*Last updated: 2026-02-13 after v1.3 milestone complete*
