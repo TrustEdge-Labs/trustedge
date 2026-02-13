@@ -71,7 +71,7 @@ jobs:
             -p trustedge-trst-protocols \
             -p trustedge-trst-cli \
             -p trustedge-trst-wasm \
-            -p cam-video-example \
+            -p trustedge-cam-video-examples \
             --all-targets --no-default-features -- -D warnings
 
       - name: clippy (experimental crates - non-blocking)
@@ -106,7 +106,7 @@ jobs:
             -p trustedge-trst-protocols \
             -p trustedge-trst-cli \
             -p trustedge-trst-wasm \
-            -p cam-video-example \
+            -p trustedge-cam-video-examples \
             --no-default-features --locked --verbose
 
       - name: tests (experimental crates - non-blocking)

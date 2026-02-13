@@ -98,7 +98,7 @@ if cargo clippy \
     -p trustedge-trst-protocols \
     -p trustedge-trst-cli \
     -p trustedge-trst-wasm \
-    -p cam-video-example \
+    -p trustedge-cam-video-examples \
     --all-targets --no-default-features -- -D warnings; then
     pass "clippy core crates"
 else
@@ -167,7 +167,7 @@ if cargo test \
     -p trustedge-trst-protocols \
     -p trustedge-trst-cli \
     -p trustedge-trst-wasm \
-    -p cam-video-example \
+    -p trustedge-cam-video-examples \
     --no-default-features --locked; then
     pass "core crate tests"
 else
