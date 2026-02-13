@@ -97,10 +97,10 @@ Plans:
   1. Running `cargo audit` reports no known vulnerabilities in dependency tree
   2. Any security advisories are either fixed via version bumps or documented with risk acceptance
   3. CI pipeline runs `cargo audit` as a blocking check on every PR
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- TBD (created during plan-phase)
+- [ ] 17-01-PLAN.md -- Run cargo-audit, resolve advisories, add to CI and local script
 
 ### Phase 18: Documentation
 **Goal**: Every dependency across all 10 crates is documented with justification
