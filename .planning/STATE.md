@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-12)
 ## Current Position
 
 Phase: 15 of 18 (Feature Gating)
-Plan: 1 of 1 (complete)
+Plan: 2 of 2 (complete)
 Status: Phase complete
-Last activity: 2026-02-13 — Phase 15 Plan 01 complete (feature-gated git2 and keyring)
+Last activity: 2026-02-13 — Phase 15 Plan 02 complete (CI pipeline feature testing)
 
-Progress: [████████░░] 80% (28/35 plans completed across all milestones)
+Progress: [████████░░] 83% (29/35 plans completed across all milestones)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28 (17 v1.0 + 6 v1.1 + 4 v1.2 + 1 v1.3)
-- Average duration: 5.2 min
-- Total execution time: ~2.4 hours
+- Total plans completed: 29 (17 v1.0 + 6 v1.1 + 4 v1.2 + 2 v1.3)
+- Average duration: 5.1 min
+- Total execution time: ~2.5 hours
 
 **By Milestone:**
 
@@ -30,7 +30,7 @@ Progress: [████████░░] 80% (28/35 plans completed across all
 | v1.0 | 8 | 17 | ~1.7 hours | ~6 min |
 | v1.1 | 4 | 6 | ~24 min | ~4 min |
 | v1.2 | 2 | 4 | ~15 min | ~4 min |
-| v1.3 | 1 | 1 | ~9 min | ~9 min |
+| v1.3 | 1 | 2 | ~11 min | ~5.5 min |
 
 ## Accumulated Context
 
@@ -44,6 +44,7 @@ Recent decisions affecting current work:
 - [v1.2]: Trimmed tokio features from "full" to minimal sets
 - [v1.2]: Tiered CI (core blocking, experimental non-blocking)
 - [v1.2]: Dep tree baseline at 60 + warn at 70
+- [Phase 15-02]: git-attestation and keyring CI steps are blocking (not continue-on-error) since they are Tier 1 core features
 
 ### Pending Todos
 
@@ -59,5 +60,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Phase 15 complete — git2 and keyring feature-gated, default build optimized
+Stopped at: Phase 15 complete — CI pipeline validates git-attestation and keyring features
 Resume file: None
