@@ -69,10 +69,11 @@ Made TrustEdge maintainable by a solo developer — 2-tier crate classification 
   3. Running `cargo build --workspace --features keyring` compiles keyring and backend code
   4. CI pipeline tests both default build (no features) and feature-enabled builds
   5. All tests pass with and without optional features enabled
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- TBD (created during plan-phase)
+- [ ] 15-01-PLAN.md -- Feature-gate git2 and keyring dependencies behind opt-in feature flags
+- [ ] 15-02-PLAN.md -- Update CI pipeline to test feature-gated builds
 
 ### Phase 16: Dependency Audit
 **Goal**: Remove genuinely unused dependencies from workspace
@@ -128,7 +129,7 @@ Phases execute in numeric order: 15 → 16 → 17 → 18
 | 12. CI Integration | v1.1 | 1/1 | Complete | 2026-02-11 |
 | 13. Crate Classification & Dependency Audit | v1.2 | 2/2 | Complete | 2026-02-12 |
 | 14. CI & Documentation | v1.2 | 2/2 | Complete | 2026-02-12 |
-| 15. Feature Gating | v1.3 | 0/? | Not started | - |
+| 15. Feature Gating | v1.3 | 0/2 | Planned | - |
 | 16. Dependency Audit | v1.3 | 0/? | Not started | - |
 | 17. Security Hardening | v1.3 | 0/? | Not started | - |
 | 18. Documentation | v1.3 | 0/? | Not started | - |
