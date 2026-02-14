@@ -27,10 +27,8 @@ without centralized key infrastructure.
 
 Key Features:
 • Generate and manage Pubky identities
-• Publish public keys to the decentralized Pubky network  
 • Resolve recipient keys by Pubky ID
 • Hybrid encryption (X25519 ECDH + AES-256-GCM)
-• Migration tools for envelope format upgrades
 
 Security Model:
 - Private keys are stored locally and never transmitted
@@ -87,17 +85,6 @@ enum Commands {
         /// Useful for scripting or when you only need the public identifier.
         #[arg(long, help = "Output only the Pubky ID")]
         id_only: bool,
-    },
-
-    /// Publish your public key to the Pubky network
-    Publish {
-        /// Private key file (32 bytes hex)
-        #[arg(short, long)]
-        key: PathBuf,
-
-        /// TrustEdge public key to publish (if different from Pubky key)
-        #[arg(long)]
-        trustedge_key: Option<PathBuf>,
     },
 
     /// Resolve a Pubky ID to get the TrustEdge public key
@@ -193,29 +180,6 @@ enum Commands {
         #[arg(short, long, help = "Your private key file (64 hex chars)")]
         key: PathBuf,
     },
-
-    /// Migrate v1 envelopes to v2 Pubky format
-    Migrate {
-        /// Input v1 envelope file
-        #[arg(short, long)]
-        input: PathBuf,
-
-        /// Output v2 envelope file
-        #[arg(short, long)]
-        output: PathBuf,
-
-        /// Recipient Pubky ID for v2 envelope
-        #[arg(short, long)]
-        recipient: String,
-
-        /// Your private key for v1 decryption
-        #[arg(long)]
-        v1_key: PathBuf,
-
-        /// Your Pubky private key for v2 encryption
-        #[arg(long)]
-        pubky_key: PathBuf,
-    },
 }
 
 fn main() -> Result<()> {
@@ -227,7 +191,6 @@ fn main() -> Result<()> {
             seed,
             id_only,
         } => generate_keypair(output, seed, id_only),
-        Commands::Publish { key, trustedge_key } => publish_key(key, trustedge_key),
         Commands::Resolve {
             pubky_id,
             output,
@@ -240,13 +203,6 @@ fn main() -> Result<()> {
             key,
         } => encrypt_data(input, output, recipient, key),
         Commands::Decrypt { input, output, key } => decrypt_data(input, output, key),
-        Commands::Migrate {
-            input,
-            output,
-            recipient,
-            v1_key,
-            pubky_key,
-        } => migrate_envelope(input, output, recipient, v1_key, pubky_key),
     }
 }
 
@@ -327,11 +283,6 @@ fn generate_keypair(output: Option<PathBuf>, seed: Option<String>, id_only: bool
     }
 
     Ok(())
-}
-
-fn publish_key(_key: PathBuf, _trustedge_key: Option<PathBuf>) -> Result<()> {
-    // TODO: Implement key publishing
-    anyhow::bail!("Key publishing not yet implemented - requires async Pubky client integration");
 }
 
 fn resolve_key(pubky_id: String, output: Option<PathBuf>, info: bool) -> Result<()> {
@@ -507,52 +458,4 @@ fn decrypt_data(input: PathBuf, output: PathBuf, key: PathBuf) -> Result<()> {
     );
 
     Ok(())
-}
-
-fn migrate_envelope(
-    input: PathBuf,
-    output: PathBuf,
-    recipient: String,
-    v1_key: PathBuf,
-    _pubky_key: PathBuf,
-) -> Result<()> {
-    println!("● Migrating envelope from v1 to v2 Pubky format...");
-
-    // Step 1: Read the v1 envelope
-    let v1_envelope_data = std::fs::read(&input).context("Failed to read v1 envelope file")?;
-
-    println!("   ● Read v1 envelope: {} bytes", v1_envelope_data.len());
-
-    // Step 2: Decrypt the v1 envelope using the old key
-    // For now, this is a placeholder - we need to implement v1 decryption
-    println!("   🔓 Decrypting v1 envelope...");
-
-    // Read the v1 private key
-    let _v1_key_data = std::fs::read_to_string(&v1_key).context("Failed to read v1 private key")?;
-
-    // This is a simplified approach - in reality, we'd need to:
-    // 1. Detect the v1 envelope format
-    // 2. Use the appropriate v1 decryption method
-    // 3. Extract the original plaintext
-
-    anyhow::bail!(
-        "V1 envelope decryption not yet implemented.\n\
-        \n\
-        To complete migration, you need to:\n\
-        1. Decrypt the v1 envelope manually using trustedge-core\n\
-        2. Re-encrypt the plaintext using trustedge-pubky encrypt\n\
-        \n\
-        Example workflow:\n\
-        # Decrypt v1 envelope\n\
-        trustedge-core --decrypt --input {} --out plaintext.dat --key-hex <v1-key>\n\
-        \n\
-        # Re-encrypt with Pubky\n\
-        trustedge-pubky encrypt --input plaintext.dat --output {} --recipient {}\n\
-        \n\
-        # Clean up\n\
-        rm plaintext.dat",
-        input.display(),
-        output.display(),
-        recipient
-    );
 }
