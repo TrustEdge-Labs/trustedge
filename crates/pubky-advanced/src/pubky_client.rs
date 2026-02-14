@@ -68,8 +68,8 @@ impl PubkyClient {
         let builder = ClientBuilder::default();
 
         if let Some(_homeserver) = homeserver {
-            // Note: This is a placeholder - actual Pubky client configuration may differ
-            // builder = builder.homeserver(homeserver);
+            // Homeserver configuration is accepted but not yet supported by the
+            // pubky client SDK. The parameter is retained for forward compatibility.
         }
 
         let client = builder
@@ -195,19 +195,6 @@ impl PubkyClient {
         Ok(())
     }
 
-    /// List all TrustEdge identities we can discover
-    pub async fn discover_identities(&self, limit: Option<usize>) -> Result<Vec<PubkyIdentity>> {
-        // This is a placeholder implementation
-        // In practice, this would involve querying the Pubky network for TrustEdge identity records
-        // The actual implementation would depend on Pubky's discovery mechanisms
-
-        let _limit = limit.unwrap_or(100);
-
-        // For now, return empty list
-        // TODO: Implement actual discovery logic based on Pubky capabilities
-        Ok(Vec::new())
-    }
-
     /// Get our own public key
     pub fn public_key(&self) -> PublicKey {
         self.keypair.public_key()
@@ -231,8 +218,8 @@ impl PubkyClient {
     ) -> Result<HashMap<String, x25519_dalek::PublicKey>> {
         let mut results = HashMap::new();
 
-        // TODO: Implement actual batch resolution for efficiency
-        // For now, resolve one by one
+        // Sequential resolution — Pubky protocol resolves one identity at a time.
+        // Errors are logged but do not abort resolution of remaining IDs.
         for pubky_id in pubky_ids {
             match self.resolve_encryption_key(pubky_id).await {
                 Ok(key) => {
