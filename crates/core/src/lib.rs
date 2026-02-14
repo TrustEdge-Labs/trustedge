@@ -99,7 +99,6 @@ pub mod backends;
 pub mod chain;
 pub mod crypto;
 pub mod envelope;
-pub mod envelope_v2_bridge;
 pub mod error;
 pub mod format;
 pub mod hybrid;
@@ -156,9 +155,6 @@ pub use crypto::{
     sign_manifest, verify_manifest, CryptoError, DeviceKeypair,
 };
 pub use envelope::{Envelope, EnvelopeMetadata};
-pub use envelope_v2_bridge::{
-    detect_envelope_format, EnvelopeFormat, EnvelopeInfo, UnifiedEnvelope,
-};
 pub use error::ManifestError; // ManifestError is re-exported from error.rs (which aliases ManifestFormatError)
 pub use error::{BackendError, TransportError, TrustEdgeError};
 pub use format::*;

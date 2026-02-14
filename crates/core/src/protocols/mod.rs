@@ -41,11 +41,6 @@
 //!   - `Envelope::unseal()` - verify and decrypt envelope
 //!   - `EnvelopeMetadata` - envelope header information
 //!
-//! - `envelope_v2_bridge.rs` (from `crates/core/src/envelope_v2_bridge.rs`)
-//!   - `detect_envelope_format()` - V1 vs V2 detection
-//!   - `EnvelopeFormat` enum - version enumeration
-//!   - `UnifiedEnvelope` - cross-version wrapper
-//!
 //! - `chain.rs` (from `crates/core/src/chain.rs` - validation logic)
 //!   - `validate_chain()` - continuity chain verification
 //!   - `chain_next()` - chain advancement
