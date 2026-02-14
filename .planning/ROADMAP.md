@@ -96,10 +96,10 @@ Plans:
   2. Software HSM advertises only implemented hash variants (no Blake2b)
   3. YubiKey generate_key returns actionable error message directing users to external tools
   4. All tests pass after stub removal
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 21-01: TBD
+- [ ] 21-01-PLAN.md -- Delete envelope_v2_bridge.rs, remove Blake2b hash variant, clean YubiKey generate_key TODO
 
 #### Phase 22: Pubky Stub Elimination
 **Goal**: Remove placeholders from experimental Pubky crates
