@@ -97,12 +97,6 @@ impl UniversalKeyringBackend {
             HashAlgorithm::Sha512 => {
                 pbkdf2_hmac::<sha2::Sha512>(&input, &salt_array, iterations, &mut key);
             }
-            _ => {
-                return Err(anyhow!(
-                    "Hash algorithm {:?} not supported by keyring backend",
-                    context.hash_algorithm
-                ));
-            }
         }
 
         Ok(key)
@@ -173,10 +167,6 @@ impl UniversalBackend for UniversalKeyringBackend {
                     let hash = Sha512::digest(&data);
                     Ok(CryptoResult::Hash(hash.to_vec()))
                 }
-                _ => Err(BackendError::UnsupportedOperation(format!(
-                    "Hash algorithm {:?} not supported by keyring backend",
-                    algorithm
-                ))),
             },
 
             _ => Err(BackendError::UnsupportedOperation(format!(
