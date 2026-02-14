@@ -67,10 +67,10 @@ Hardened the dependency tree across all 10 crates — feature-gated heavy option
   2. Insecure TLS skip is only available when insecure-tls feature flag is enabled
   3. CI validates that default build rejects invalid certificates
   4. Developer documentation clearly warns about insecure-tls feature being development-only
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 19-01: TBD
+- [ ] 19-01-PLAN.md -- Add insecure-tls feature flag, refactor QUIC TLS to secure-by-default, update CI
 
 #### Phase 20: Dead Code Removal
 **Goal**: Remove legacy and unused code from core crate
