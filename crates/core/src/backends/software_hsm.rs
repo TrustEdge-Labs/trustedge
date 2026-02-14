@@ -510,11 +510,6 @@ mod tests {
         Ok((backend, temp_dir))
     }
 
-    #[allow(dead_code)]
-    fn create_test_backend_with_config(config: SoftwareHsmConfig) -> Result<SoftwareHsmBackend> {
-        SoftwareHsmBackend::with_config(config)
-    }
-
     // ===== Configuration and Initialization Tests =====
 
     #[test]

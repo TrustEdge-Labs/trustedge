@@ -81,18 +81,6 @@ fn verify_signature_via_universal_backend(
     }
 }
 
-/// Helper function to generate key pair using the public UniversalBackend interface
-#[allow(dead_code)]
-fn generate_key_pair_via_universal_backend(
-    backend: &dyn UniversalBackend,
-    key_id: &str,
-    algorithm: AsymmetricAlgorithm,
-) -> Result<()> {
-    let gen_op = CryptoOperation::GenerateKeyPair { algorithm };
-    backend.perform_operation(key_id, gen_op)?;
-    Ok(())
-}
-
 /// Test helper to run CLI command and capture output
 fn run_cli_command(args: &[&str], key_store_path: &Path) -> Result<(i32, String, String)> {
     let mut cmd = Command::new("cargo");

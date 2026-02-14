@@ -28,8 +28,6 @@ pub struct TcpTransport {
     bytes_sent: u64,
     chunks_received: u64,
     chunks_sent: u64,
-    #[allow(dead_code)]
-    connection_start: Instant,
     last_activity: Instant,
 }
 
@@ -44,7 +42,6 @@ impl TcpTransport {
             bytes_sent: 0,
             chunks_received: 0,
             chunks_sent: 0,
-            connection_start: now,
             last_activity: now,
         }
     }
@@ -252,8 +249,7 @@ mod tests {
         assert_eq!(transport.chunks_received, 0);
         assert_eq!(transport.chunks_sent, 0);
 
-        // Timestamps should be initialized
-        assert!(transport.connection_start <= Instant::now());
+        // Timestamp should be initialized
         assert!(transport.last_activity <= Instant::now());
     }
 
@@ -348,13 +344,10 @@ mod tests {
         // Initially not connected
         assert!(transport.framed.is_none());
 
-        // Connection timestamps should be initialized
-        let start_time = transport.connection_start;
+        // Connection timestamp should be initialized
         let activity_time = transport.last_activity;
 
-        assert!(start_time <= Instant::now());
         assert!(activity_time <= Instant::now());
-        assert!(activity_time >= start_time);
     }
 
     #[tokio::test]

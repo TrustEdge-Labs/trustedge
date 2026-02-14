@@ -9,19 +9,14 @@
 //! Universal keyring backend implementation
 //!
 //! This module implements the UniversalBackend trait for the OS keyring,
-//! supporting key derivation and AES encryption/decryption operations.
+//! supporting key derivation and hash operations.
 
 use crate::backends::keyring::KeyringBackend;
 use crate::backends::traits::{BackendInfo, KeyMetadata};
 use crate::backends::universal::*;
 use crate::error::BackendError;
-use aes_gcm::{
-    aead::{Aead, KeyInit},
-    Aes256Gcm,
-};
 use anyhow::{anyhow, Result};
 use pbkdf2::pbkdf2_hmac;
-use rand_core::{OsRng, RngCore};
 use sha2::Sha256;
 
 /// Universal backend wrapper for KeyringBackend
@@ -111,50 +106,6 @@ impl UniversalKeyringBackend {
         }
 
         Ok(key)
-    }
-
-    /// Encrypt data using AES-256-GCM
-    #[allow(dead_code)] // Reserved for future use
-    fn encrypt_aes_gcm(&self, key: &[u8; 32], plaintext: &[u8]) -> Result<Vec<u8>> {
-        let cipher = Aes256Gcm::new_from_slice(key)?;
-
-        // Generate a random nonce
-        let mut nonce_bytes = [0u8; 12];
-        OsRng.fill_bytes(&mut nonce_bytes);
-
-        // Encrypt the data
-        let ciphertext = cipher
-            .encrypt((&nonce_bytes).into(), plaintext)
-            .map_err(|e| anyhow!("AES-GCM encryption failed: {}", e))?;
-
-        // Prepend nonce to ciphertext
-        let mut result = nonce_bytes.to_vec();
-        result.extend_from_slice(&ciphertext);
-
-        Ok(result)
-    }
-
-    /// Decrypt data using AES-256-GCM
-    #[allow(dead_code)] // Reserved for future use
-    fn decrypt_aes_gcm(&self, key: &[u8; 32], ciphertext: &[u8]) -> Result<Vec<u8>> {
-        if ciphertext.len() < 12 {
-            return Err(anyhow!("Ciphertext too short to contain nonce"));
-        }
-
-        let cipher = Aes256Gcm::new_from_slice(key)?;
-
-        // Extract nonce and ciphertext
-        let (nonce_bytes, encrypted_data) = ciphertext.split_at(12);
-        let nonce_array: &[u8; 12] = nonce_bytes
-            .try_into()
-            .map_err(|_| anyhow!("Nonce conversion failed"))?;
-
-        // Decrypt the data
-        let plaintext = cipher
-            .decrypt(nonce_array.into(), encrypted_data)
-            .map_err(|e| anyhow!("AES-GCM decryption failed: {}", e))?;
-
-        Ok(plaintext)
     }
 }
 

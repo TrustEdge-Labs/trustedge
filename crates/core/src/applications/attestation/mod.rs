@@ -333,6 +333,7 @@ fn read_envelope_attestation(path: &PathBuf) -> Result<Attestation> {
     #[derive(serde::Deserialize)]
     struct AttestationFile {
         envelope: Envelope,
+        // Field required for correct bincode deserialization layout
         #[allow(dead_code)]
         verification_key: [u8; 32],
         private_key: [u8; 32],
