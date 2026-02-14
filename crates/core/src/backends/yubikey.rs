@@ -302,16 +302,13 @@ impl YubiKeyBackend {
         _slot: SlotId,
         _algorithm: AsymmetricAlgorithm,
     ) -> Result<Vec<u8>, BackendError> {
-        // NOTE: Key generation requires PinPolicy and TouchPolicy types which are
-        // in a private module in yubikey crate 0.7. This will be addressed in a future
-        // update. For now, keys must be pre-generated using ykman or other tools.
-
-        // TODO: Implement key generation once yubikey crate exports policy types
-        // or find a workaround using the raw PIV protocol.
+        // Key generation requires PinPolicy and TouchPolicy types that are not
+        // publicly exported by the yubikey crate (v0.7). Use ykman CLI instead.
 
         Err(BackendError::UnsupportedOperation(
-            "Key generation not yet implemented. \
-             Generate keys using 'ykman piv keys generate' and import certificates."
+            "Key generation is not supported by TrustEdge. \
+             Use the YubiKey Manager CLI instead: \
+             `ykman piv keys generate -a ECCP256 9a pubkey.pem`"
                 .to_string(),
         ))
     }

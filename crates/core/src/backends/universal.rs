@@ -43,7 +43,6 @@ pub enum HashAlgorithm {
     Sha256,
     Sha384,
     Sha512,
-    Blake2b,
 }
 
 /// Key derivation context for backends that support key derivation

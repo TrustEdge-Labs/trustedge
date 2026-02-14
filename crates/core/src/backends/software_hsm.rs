@@ -343,10 +343,6 @@ impl SoftwareHsmBackend {
             HashAlgorithm::Sha256 => Ok(Sha256::digest(data).to_vec()),
             HashAlgorithm::Sha384 => Ok(Sha384::digest(data).to_vec()),
             HashAlgorithm::Sha512 => Ok(Sha512::digest(data).to_vec()),
-            HashAlgorithm::Blake2b => {
-                // Note: blake2 crate would be needed for full implementation
-                Err(anyhow::anyhow!("Blake2b not implemented in this demo"))
-            }
         }
     }
 }
@@ -1093,12 +1089,6 @@ mod tests {
             algorithm: AsymmetricAlgorithm::Rsa2048,
         };
         assert!(!backend.supports_operation(&unsupported_gen_key));
-
-        let unsupported_hash = CryptoOperation::Hash {
-            data: vec![1, 2, 3],
-            algorithm: HashAlgorithm::Blake2b,
-        };
-        assert!(!backend.supports_operation(&unsupported_hash));
     }
 
     #[test]
