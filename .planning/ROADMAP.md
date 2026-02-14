@@ -82,10 +82,10 @@ Plans:
   3. ProcessingSession contains only active fields
   4. Every #[allow(dead_code)] attribute either has a documented justification or the code is deleted
   5. Cargo build produces no dead_code warnings
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 20-01: TBD
+- [ ] 20-01-PLAN.md -- Delete legacy server functions, reserved keyring methods, dead struct fields, and audit all #[allow(dead_code)]
 
 #### Phase 21: Core Stub Elimination
 **Goal**: Remove incomplete features from trustedge-core
