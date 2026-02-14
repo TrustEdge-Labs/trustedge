@@ -29,16 +29,16 @@ Requirements for placeholder elimination. Each maps to roadmap phases.
 
 ### Stub Elimination (Core)
 
-- [ ] **STUB-01**: `envelope_v2_bridge.rs` deleted from trustedge-core
-- [ ] **STUB-02**: Blake2b hash variant removed from Software HSM (don't advertise what you can't do)
-- [ ] **STUB-03**: YubiKey `generate_key` returns clear error with external tool instructions (verify and clean up TODO comment)
+- [x] **STUB-01**: `envelope_v2_bridge.rs` deleted from trustedge-core
+- [x] **STUB-02**: Blake2b hash variant removed from Software HSM (don't advertise what you can't do)
+- [x] **STUB-03**: YubiKey `generate_key` returns clear error with external tool instructions (verify and clean up TODO comment)
 
 ### Stub Elimination (Pubky)
 
-- [ ] **PUBK-01**: Unimplemented `publish_key` CLI command removed from trustedge-pubky
-- [ ] **PUBK-02**: Placeholder `discover_identities()` removed or returns proper error
-- [ ] **PUBK-03**: Placeholder `migrate` command removed from trustedge-pubky
-- [ ] **PUBK-04**: TODO comments in pubky-advanced `batch_resolve` addressed (remove TODO, document as known limitation, or implement)
+- [x] **PUBK-01**: Unimplemented `publish_key` CLI command removed from trustedge-pubky
+- [x] **PUBK-02**: Placeholder `discover_identities()` removed or returns proper error
+- [x] **PUBK-03**: Placeholder `migrate` command removed from trustedge-pubky
+- [x] **PUBK-04**: TODO comments in pubky-advanced `batch_resolve` addressed (remove TODO, document as known limitation, or implement)
 
 ### TODO Hygiene
 
@@ -84,13 +84,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEAD-02 | Phase 20 | Complete |
 | DEAD-03 | Phase 20 | Complete |
 | DEAD-04 | Phase 20 | Complete |
-| STUB-01 | Phase 21 | Pending |
-| STUB-02 | Phase 21 | Pending |
-| STUB-03 | Phase 21 | Pending |
-| PUBK-01 | Phase 22 | Pending |
-| PUBK-02 | Phase 22 | Pending |
-| PUBK-03 | Phase 22 | Pending |
-| PUBK-04 | Phase 22 | Pending |
+| STUB-01 | Phase 21 | Complete |
+| STUB-02 | Phase 21 | Complete |
+| STUB-03 | Phase 21 | Complete |
+| PUBK-01 | Phase 22 | Complete |
+| PUBK-02 | Phase 22 | Complete |
+| PUBK-03 | Phase 22 | Complete |
+| PUBK-04 | Phase 22 | Complete |
 | TODO-01 | Phase 23 | Pending |
 
 **Coverage:**

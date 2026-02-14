@@ -13,7 +13,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — no misleading or incomplete features.
-**Current focus:** Phase 22 - Pubky Stub Elimination
+**Current focus:** Phase 23 - TODO Hygiene Sweep
 
 ## Current Position
 
