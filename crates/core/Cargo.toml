@@ -73,6 +73,7 @@ thiserror = { workspace = true }
 # Network dependencies
 quinn = "0.11"
 rustls = "0.23"
+webpki-roots = "0.26"
 
 # X.509 certificate generation and validation
 x509-cert = { version = "0.2", features = ["builder"], optional = true }
@@ -93,6 +94,9 @@ yubikey = ["dep:yubikey", "x509-cert", "der", "spki", "signature", "rcgen"]
 audio = ["cpal"]
 git-attestation = ["git2"]
 keyring = ["dep:keyring"]
+
+# Development: Security bypass flags
+insecure-tls = []  # Development only: skip TLS certificate verification in QUIC
 
 [package.metadata.docs.rs]
 all-features = true

@@ -19,6 +19,9 @@ use std::time::Duration;
 use tokio::io::AsyncWriteExt;
 use tokio::time::timeout;
 
+#[cfg(not(feature = "insecure-tls"))]
+use rustls::RootCertStore;
+
 /// QUIC transport implementation.
 pub struct QuicTransport {
     config: TransportConfig,
@@ -73,21 +76,37 @@ impl QuicTransport {
 
     /// Create a client endpoint with default TLS configuration.
     fn create_client_endpoint() -> Result<Endpoint> {
-        // Create a rustls client config that accepts any certificate
-        // Note: In production, you should use proper certificate validation
-        let crypto = rustls::ClientConfig::builder()
-            .dangerous()
-            .with_custom_certificate_verifier(Arc::new(SkipServerVerification))
-            .with_no_client_auth();
-
+        let crypto = Self::build_client_tls_config()?;
         let client_config = quinn::ClientConfig::new(Arc::new(
             quinn::crypto::rustls::QuicClientConfig::try_from(crypto)?,
         ));
-
         let mut endpoint = Endpoint::client("0.0.0.0:0".parse()?)?;
         endpoint.set_default_client_config(client_config);
-
         Ok(endpoint)
+    }
+
+    /// Build TLS client configuration.
+    /// Default: proper certificate verification using Mozilla root certificates.
+    /// With `insecure-tls` feature: skips certificate verification (DEVELOPMENT ONLY).
+    fn build_client_tls_config() -> Result<rustls::ClientConfig> {
+        #[cfg(not(feature = "insecure-tls"))]
+        {
+            let mut root_store = RootCertStore::empty();
+            root_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+            Ok(rustls::ClientConfig::builder()
+                .with_root_certificates(root_store)
+                .with_no_client_auth())
+        }
+        #[cfg(feature = "insecure-tls")]
+        {
+            // WARNING: This disables TLS certificate verification.
+            // Only use for local development and testing.
+            // Never enable insecure-tls in production builds.
+            Ok(rustls::ClientConfig::builder()
+                .dangerous()
+                .with_custom_certificate_verifier(Arc::new(SkipServerVerification))
+                .with_no_client_auth())
+        }
     }
 
     /// Create a client endpoint with hardware-backed certificate verification.
@@ -444,11 +463,15 @@ impl rustls::client::danger::ServerCertVerifier for HardwareBackedVerifier {
     }
 }
 
-/// A helper struct that skips certificate verification.
-/// WARNING: This is insecure and should only be used for development/testing.
+/// WARNING: Insecure TLS certificate verifier that accepts ALL certificates.
+/// This exists ONLY for local development and testing.
+/// NEVER enable the `insecure-tls` feature in production builds.
+/// To use: `cargo build --features insecure-tls`
+#[cfg(feature = "insecure-tls")]
 #[derive(Debug)]
 struct SkipServerVerification;
 
+#[cfg(feature = "insecure-tls")]
 impl rustls::client::danger::ServerCertVerifier for SkipServerVerification {
     fn verify_server_cert(
         &self,
