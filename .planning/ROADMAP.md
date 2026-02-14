@@ -125,10 +125,10 @@ Plans:
   2. Informational TODOs (future optimizations) only exist where current code works correctly
   3. All TODOs have clear context (what works now, what's deferred, why)
   4. CI validation confirms no new unimplemented TODOs can be added
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 23-01: TBD
+- [ ] 23-01-PLAN.md -- Confirm zero unimplemented TODOs, clean up stub terminology, add CI hygiene enforcement
 
 ## Progress
 
