@@ -5,36 +5,20 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-#![allow(unused_imports)] // KeyBackend and KeyContext used only with keyring feature
-
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
 use futures_util::{SinkExt, StreamExt};
-use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::time::{Duration, Instant};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::signal;
 use tokio::sync::broadcast;
 use tokio::time::timeout;
 use tokio_util::codec::{Framed, LengthDelimitedCodec};
 
-// network payload type from lib.rs
 #[cfg(feature = "keyring")]
 use trustedge_core::KeyringBackend;
-use trustedge_core::{
-    build_aad, server_authenticate, KeyBackend, KeyContext, Manifest, NetworkChunk, SessionManager,
-    SignedManifest, NONCE_LEN,
-};
-
-// ---- Crypto bits ------------------------------------------------------------
-
-use aes_gcm::{
-    aead::{Aead, KeyInit, Payload},
-    Aes256Gcm,
-};
-use ed25519_dalek::{Signature, VerifyingKey};
+use trustedge_core::{server_authenticate, NetworkChunk, SessionManager};
 
 // ---- CLI --------------------------------------------------------------------
 
@@ -110,16 +94,10 @@ struct Args {
 
 struct ProcessingSession {
     connection_id: u64,
-    #[allow(dead_code)]
-    chunks: HashMap<u64, (Vec<u8>, SignedManifest)>, // available if you later buffer
-    #[allow(dead_code)]
-    cipher: Option<Aes256Gcm>,
     output_file: Option<tokio::fs::File>,
 
     // stream invariants (locked by first valid chunk)
     expected_seq_next: u64,
-    #[allow(dead_code)]
-    stream_header_hash: Option<[u8; 32]>,
     stream_nonce_prefix: Option<[u8; 4]>,
     header_verified: bool,
     header_locked: bool,
@@ -132,8 +110,6 @@ struct ProcessingSession {
     // connection limits and tracking
     bytes_received: u64,
     chunks_received: u64,
-    #[allow(dead_code)]
-    connection_start: Instant,
     last_activity: Instant,
 }
 
@@ -156,48 +132,6 @@ async fn main() -> Result<()> {
             return Err(anyhow::anyhow!("Keyring support requires the 'keyring' feature. Build with: cargo build --features keyring"));
         }
     }
-
-    // Build cipher if decrypting
-    let cipher = if args.decrypt {
-        let key_bytes = if args.use_keyring {
-            #[cfg(feature = "keyring")]
-            {
-                let salt_hex = args
-                    .salt_hex
-                    .as_ref()
-                    .ok_or_else(|| anyhow!("--salt-hex required when using keyring"))?;
-                let salt_bytes = hex::decode(salt_hex)?;
-                anyhow::ensure!(
-                    salt_bytes.len() == 16,
-                    "Salt must be 16 bytes (32 hex chars)"
-                );
-                let mut salt = [0u8; 16];
-                salt.copy_from_slice(&salt_bytes);
-                println!("Using keyring passphrase with provided salt");
-
-                let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
-                let context = KeyContext::new(salt.to_vec());
-                let derived_key = backend.derive_key(&salt, &context)?;
-                let mut key_bytes = [0u8; 32];
-                key_bytes.copy_from_slice(&derived_key);
-                key_bytes
-            }
-            #[cfg(not(feature = "keyring"))]
-            {
-                return Err(anyhow::anyhow!("Keyring backend requires the 'keyring' feature. Build with: cargo build --features keyring"));
-            }
-        } else if let Some(ref key_hex) = args.key_hex {
-            parse_key_hex(key_hex)?
-        } else {
-            return Err(anyhow!(
-                "Either --key-hex or --use-keyring is required for --decrypt"
-            ));
-        };
-        let key_array: [u8; 32] = key_bytes.as_slice().try_into()?;
-        Some(Aes256Gcm::new((&key_array).into()))
-    } else {
-        None
-    };
 
     // Ensure output dir exists
     if let Some(ref dir) = args.output_dir {
@@ -273,11 +207,8 @@ async fn main() -> Result<()> {
                         let now = Instant::now();
                         let session = ProcessingSession {
                             connection_id,
-                            chunks: HashMap::new(),
-                            cipher: cipher.clone(),
                             output_file: None,
                             expected_seq_next: 1, // first chunk must be seq=1
-                            stream_header_hash: None,
                             stream_nonce_prefix: None,
                             header_verified: false,
                             header_locked: false,
@@ -286,7 +217,6 @@ async fn main() -> Result<()> {
                             client_identity: None,
                             bytes_received: 0,
                             chunks_received: 0,
-                            connection_start: now,
                             last_activity: now,
                         };
 
@@ -688,336 +618,5 @@ fn create_secure_ack(session: &ProcessingSession, ack_msg: &str) -> Result<Strin
     }
 }
 
-// ---- Legacy Connection handler (kept for compatibility) --------------------
-
-#[allow(dead_code)]
-async fn handle_connection(
-    mut stream: TcpStream,
-    mut session: ProcessingSession,
-    output_dir: Option<std::path::PathBuf>,
-    decrypt: bool,
-    verbose: bool,
-    require_auth: bool,
-    mut session_manager: Option<SessionManager>,
-) -> Result<()> {
-    let peer_addr = stream.peer_addr().context("Failed to get peer address")?;
-
-    // Perform authentication if required
-    if require_auth {
-        if let Some(ref mut mgr) = session_manager {
-            match server_authenticate(&mut stream, mgr).await {
-                Ok(auth_session) => {
-                    session.authenticated = true;
-                    session.session_id = Some(auth_session.session_id);
-                    session.client_identity = auth_session.client_identity.clone();
-
-                    if verbose {
-                        println!(
-                            "[AUTH] Connection #{} authenticated successfully. Client: {}",
-                            session.connection_id,
-                            auth_session
-                                .client_identity
-                                .as_deref()
-                                .unwrap_or("(anonymous)")
-                        );
-                    }
-                }
-                Err(e) => {
-                    eprintln!(
-                        "[AUTH] Connection #{} authentication failed: {}",
-                        session.connection_id, e
-                    );
-                    return Err(e.context("Authentication failed"));
-                }
-            }
-        } else {
-            return Err(anyhow!(
-                "Authentication required but no session manager available"
-            ));
-        }
-    }
-
-    let mut chunks_received = 0u64;
-    let mut total_enc_bytes = 0usize;
-    let mut total_pt_bytes = 0usize;
-
-    // If decrypting, create output file
-    if decrypt {
-        if let Some(ref dir) = output_dir {
-            let filename = format!("conn{}_decrypted.bin", session.connection_id);
-            let filepath = dir.join(filename);
-            session.output_file = Some(
-                tokio::fs::File::create(&filepath)
-                    .await
-                    .with_context(|| format!("Failed to create output file: {:?}", filepath))?,
-            );
-            println!(
-                "[WRITE] Connection #{}: Writing decrypted data to {:?}",
-                session.connection_id, filepath
-            );
-        }
-    }
-
-    loop {
-        // 4-byte little-endian length prefix (as in the client)
-        let mut len_bytes = [0u8; 4];
-        match stream.read_exact(&mut len_bytes).await {
-            Ok(_) => {}
-            Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => break,
-            Err(e) => return Err(e).context("Failed to read chunk length"),
-        }
-        let length = u32::from_le_bytes(len_bytes) as usize;
-        anyhow::ensure!(
-            length <= 100 * 1024 * 1024,
-            "Chunk too large: {} bytes",
-            length
-        );
-
-        if verbose {
-            println!(
-                "[READ] Connection #{}: Reading frame of {} bytes",
-                session.connection_id, length
-            );
-        }
-
-        let mut chunk_bytes = vec![0; length];
-        stream
-            .read_exact(&mut chunk_bytes)
-            .await
-            .context("Failed to read chunk")?;
-
-        let chunk: NetworkChunk =
-            bincode::deserialize(&chunk_bytes).context("Failed to deserialize NetworkChunk")?;
-        chunk.validate().context("Chunk validation failed")?;
-
-        chunks_received += 1;
-        total_enc_bytes += chunk.data.len();
-
-        if verbose {
-            println!(
-                "📨 Conn #{}: got chunk #{}, seq={}, nonce_len={}, ct_len={}, manifest_len={}",
-                session.connection_id,
-                chunks_received,
-                chunk.sequence,
-                chunk.nonce.len(),
-                chunk.data.len(),
-                chunk.manifest.len()
-            );
-        }
-
-        // Enforce basic ordering (simplest: strictly increasing)
-        anyhow::ensure!(
-            chunk.sequence == session.expected_seq_next,
-            "Out-of-order chunk: got seq={}, expected {}",
-            chunk.sequence,
-            session.expected_seq_next
-        );
-        session.expected_seq_next += 1;
-
-        // Decrypt path
-        if decrypt && session.cipher.is_some() {
-            let pt_len = process_and_decrypt_chunk(&chunk, &mut session, verbose).await?;
-            total_pt_bytes += pt_len;
-        }
-
-        // Save encrypted payload to disk (optional)
-        if let Some(ref dir) = output_dir {
-            save_chunk_to_disk(dir, session.connection_id, &chunk)
-                .await
-                .context("Failed to save chunk to disk")?;
-        }
-
-        // ACK
-        let ack = format!("ACK:{}", chunk.sequence);
-        stream
-            .write_all(&(ack.len() as u32).to_le_bytes())
-            .await
-            .context("Failed to write ACK length")?;
-        stream
-            .write_all(ack.as_bytes())
-            .await
-            .context("Failed to write ACK")?;
-    }
-
-    if let Some(ref mut f) = session.output_file {
-        f.flush().await.context("flush output file")?;
-    }
-
-    println!(
-        "● Connection #{} from {} finished: {} chunks, {} encrypted bytes, {} plaintext bytes",
-        session.connection_id, peer_addr, chunks_received, total_enc_bytes, total_pt_bytes
-    );
-
-    Ok(())
-}
-
-// ---- Chunk processing -------------------------------------------------------
-
-#[allow(dead_code)]
-async fn process_and_decrypt_chunk(
-    chunk: &NetworkChunk,
-    session: &mut ProcessingSession,
-    verbose: bool,
-) -> Result<usize> {
-    let cipher = session
-        .cipher
-        .as_ref()
-        .ok_or_else(|| anyhow!("cipher missing in session"))?;
-
-    // Deserialize SignedManifest
-    let sm: SignedManifest =
-        bincode::deserialize(&chunk.manifest).context("SignedManifest decode")?;
-
-    // Verify signature
-    let pubkey_arr: [u8; 32] = sm
-        .pubkey
-        .as_slice()
-        .try_into()
-        .context("pubkey length != 32")?;
-    let sig_arr: [u8; 64] = sm.sig.as_slice().try_into().context("sig length != 64")?;
-    let vk = VerifyingKey::from_bytes(&pubkey_arr).context("bad pubkey")?;
-    trustedge_core::format::verify_manifest_with_domain(
-        &vk,
-        &sm.manifest,
-        &Signature::from_bytes(&sig_arr),
-    )
-    .context("manifest signature verify failed")?;
-
-    // Decode manifest
-    let m: Manifest = bincode::deserialize(&sm.manifest).context("manifest decode")?;
-
-    // Lock stream invariants on first chunk
-    if session.stream_header_hash.is_none() {
-        session.stream_header_hash = Some(m.header_hash);
-        anyhow::ensure!(
-            chunk.nonce.len() == NONCE_LEN,
-            "nonce must be {} bytes",
-            NONCE_LEN
-        );
-        let mut prefix = [0u8; 4];
-        prefix.copy_from_slice(&chunk.nonce[..4]);
-        session.stream_nonce_prefix = Some(prefix);
-        if verbose {
-            println!(
-                "[LOCKED] Conn #{}: locked header_hash and nonce_prefix",
-                session.connection_id
-            );
-        }
-    }
-
-    // Enforce invariants
-    let shh = session.stream_header_hash.unwrap();
-    anyhow::ensure!(
-        m.header_hash == shh,
-        "manifest.header_hash changed mid-stream"
-    );
-
-    let snp = session.stream_nonce_prefix.unwrap();
-    anyhow::ensure!(
-        chunk.nonce[..4] == snp,
-        "record nonce prefix != stream nonce_prefix"
-    );
-
-    // Validate chunk length bounds before decrypt
-    anyhow::ensure!(
-        m.chunk_len > 0,
-        "manifest chunk_len must be > 0, got {}",
-        m.chunk_len
-    );
-
-    // Build AAD and decrypt
-    let mh = blake3::hash(&sm.manifest);
-    let aad = build_aad(
-        &m.header_hash,
-        chunk.sequence,
-        &chunk.nonce,
-        mh.as_bytes(),
-        m.chunk_len,
-    );
-    let nonce_array: &[u8; 12] = chunk
-        .nonce
-        .as_slice()
-        .try_into()
-        .map_err(|_| anyhow!("Invalid nonce length"))?;
-
-    let pt = cipher
-        .decrypt(
-            nonce_array.into(),
-            Payload {
-                msg: &chunk.data,
-                aad: &aad,
-            },
-        )
-        .map_err(|_| anyhow!("AES-GCM decrypt/verify failed"))?;
-
-    // Validate decrypted length matches manifest expectation
-    anyhow::ensure!(
-        pt.len() == m.chunk_len as usize,
-        "decrypted length {} != manifest chunk_len {}",
-        pt.len(),
-        m.chunk_len
-    );
-
-    // Verify plaintext hash
-    let pt_hash_rx = blake3::hash(&pt);
-    anyhow::ensure!(pt_hash_rx.as_bytes() == &m.pt_hash, "pt hash mismatch");
-
-    if verbose {
-        println!(
-            "[UNLOCKED] Conn #{}: decrypted seq {} ({} bytes)",
-            session.connection_id,
-            chunk.sequence,
-            pt.len()
-        );
-    }
-
-    // Write plaintext if requested
-    if let Some(ref mut f) = session.output_file {
-        use tokio::io::AsyncWriteExt;
-        f.write_all(&pt).await.context("write plaintext")?;
-    }
-
-    Ok(pt.len())
-}
-
 // ---- Helpers ----------------------------------------------------------------
-
-fn parse_key_hex(s: &str) -> Result<[u8; 32]> {
-    let bytes = hex::decode(s).context("key_hex not valid hex")?;
-    anyhow::ensure!(bytes.len() == 32, "key_hex must be 32 bytes (64 hex chars)");
-    let mut out = [0u8; 32];
-    out.copy_from_slice(&bytes);
-    Ok(out)
-}
-
-#[allow(dead_code)]
-async fn save_chunk_to_disk(
-    output_dir: &std::path::Path,
-    connection_id: u64,
-    chunk: &NetworkChunk,
-) -> Result<()> {
-    let chunk_filename = format!("conn{}_seq{}.bin", connection_id, chunk.sequence);
-    let chunk_path = output_dir.join(&chunk_filename);
-
-    tokio::fs::write(&chunk_path, &chunk.data)
-        .await
-        .with_context(|| format!("Failed to write chunk to {:?}", chunk_path))?;
-
-    let meta_filename = format!("conn{}_seq{}.meta.json", connection_id, chunk.sequence);
-    let meta_path = output_dir.join(&meta_filename);
-
-    let metadata = serde_json::json!({
-        "sequence": chunk.sequence,
-        "timestamp": chunk.timestamp,
-        "data_size": chunk.data.len(),
-        "manifest_size": chunk.manifest.len(),
-        "nonce_hex": hex::encode(chunk.nonce),
-        "received_at": chrono::Utc::now().to_rfc3339(),
-    });
-
-    tokio::fs::write(&meta_path, metadata.to_string())
-        .await
-        .with_context(|| format!("Failed to write metadata to {:?}", meta_path))?;
-
-    Ok(())
-}
+// (No helpers currently needed)
