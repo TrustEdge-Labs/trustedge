@@ -13,7 +13,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — no misleading or incomplete features.
-**Current focus:** Phase 21 - Core Stub Elimination
+**Current focus:** Phase 22 - Pubky Stub Elimination
 
 ## Current Position
 
@@ -62,8 +62,6 @@ Recent decisions affecting current work:
 - [Phase 20]: Removed all dead code without justification rather than annotating with #[allow(dead_code)]
 - [Phase 20]: Deleted legacy server functions that duplicated hardened handler
 - [Phase 20]: Removed reserved keyring encrypt/decrypt methods (never implemented)
-- [Phase 21]: Remove incomplete features rather than leaving TODOs
-- [Phase 21]: Fail-closed error messages with actionable guidance (YubiKey)
 - [Phase 21]: Remove incomplete features rather than leaving TODOs
 - [Phase 21]: Fail-closed error messages with actionable guidance (YubiKey)
 
