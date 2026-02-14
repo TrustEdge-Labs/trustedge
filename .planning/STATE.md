@@ -17,19 +17,19 @@ See: .planning/PROJECT.md (updated 2026-02-13)
 
 ## Current Position
 
-Phase: 22 of 23 (Pubky Stub Elimination)
+Phase: 23 of 23 (TODO Hygiene Sweep)
 Plan: 1 of 1 (complete)
 Status: Complete
-Last activity: 2026-02-14 — Phase 22 Plan 01 complete
+Last activity: 2026-02-13 — Phase 23 Plan 01 complete
 
-Progress: [████░░░░░░░░░░░░░░░░] 22%
+Progress: [█████████████████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4 (v1.4 milestone)
-- Average duration: 5.9 min
-- Total execution time: 0.4 hours
+- Total plans completed: 5 (v1.4 milestone)
+- Average duration: 5.8 min
+- Total execution time: 0.5 hours
 
 **By Phase:**
 
@@ -39,13 +39,15 @@ Progress: [████░░░░░░░░░░░░░░░░] 22%
 | 20 | 1 | 9 min 31 sec | 9 min 31 sec |
 | 21 | 1 | 3 min 59 sec | 3 min 59 sec |
 | 22 | 1 | 2 min 47 sec | 2 min 47 sec |
+| 23 | 1 | 5 min 36 sec | 5 min 36 sec |
 
 **Recent Trend:**
 - 19-01: 6 min (2 tasks, 5 files)
 - 20-01: 9 min 31 sec (2 tasks, 7 files)
 - 21-01: 3 min 59 sec (2 tasks, 6 files)
 - 22-01: 2 min 47 sec (2 tasks, 2 files)
-- Trend: Efficient execution, improving speed
+- 23-01: 5 min 36 sec (2 tasks, 4 files)
+- Trend: Consistent execution, v1.4 milestone complete
 
 ## Accumulated Context
 
@@ -66,6 +68,8 @@ Recent decisions affecting current work:
 - [Phase 20]: Removed reserved keyring encrypt/decrypt methods (never implemented)
 - [Phase 21]: Remove incomplete features rather than leaving TODOs
 - [Phase 21]: Fail-closed error messages with actionable guidance (YubiKey)
+- [Phase 23]: Use 'feature-disabled' terminology instead of 'stub' for cfg-gated features
+- [Phase 23]: Scan for multiple TODO/FIXME variants in CI to prevent regression
 
 ### Pending Todos
 
@@ -80,9 +84,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-14 (phase 22 execution)
-Stopped at: Completed 22-01-PLAN.md (Pubky Stub Elimination)
+Last session: 2026-02-13 (phase 23 execution)
+Stopped at: Completed 23-01-PLAN.md (TODO Hygiene Sweep) — v1.4 milestone complete
 Resume file: None
 
 ---
-*Last updated: 2026-02-14 after completing Phase 22 Plan 01*
+*Last updated: 2026-02-13 after completing Phase 23 Plan 01*
