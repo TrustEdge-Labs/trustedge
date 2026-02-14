@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-1.3-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v1.3)
+[![Version](https://img.shields.io/badge/version-1.4-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v1.4)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge: Hardware-Backed Security for IoT Devices
@@ -103,22 +103,25 @@ Open Core Model:
 
 ---
 
-## What's New in v1.3
+## What's New in v1.4
 
-**v1.3 Dependency Audit & Rationalization** — hardened the dependency tree across all 10 crates:
+**v1.4 Placeholder Elimination** — removed all stubs, dead code, and TODO markers across the workspace:
 
-- 🔒 **Feature Gating** - git2 and keyring behind opt-in feature flags (not compiled by default)
-- 🧹 **Dependency Cleanup** - Removed unused dependencies (pkcs11, sha2, tokio-test) via cargo-machete
-- 🛡️ **Security Audit** - cargo-audit integrated into CI as blocking check on every PR
-- 📋 **Documentation** - DEPENDENCIES.md covers all 10 crates with per-dependency justifications and 15-entry security rationale
+- 🔒 **QUIC TLS Secure-by-Default** - webpki-roots for production TLS; `insecure-tls` feature flag for development
+- 🧹 **Dead Code Removal** - Legacy server functions, reserved keyring methods, unused fields deleted
+- 🗑️ **Stub Elimination** - envelope_v2_bridge.rs, Blake2b placeholder, unimplemented Pubky CLI commands removed
+- ✅ **TODO Hygiene** - Zero TODO/FIXME markers; CI enforcement prevents reintroduction
+- 📝 **Terminology** - "Feature-disabled" replaces "stub" for cfg-gated code paths
 
 ### Previous Releases
+
+**v1.3 Dependency Audit** — Feature-gated git2 and keyring, removed unused dependencies via cargo-machete, cargo-audit CI integration, DEPENDENCIES.md with per-dependency justifications
 
 **v1.2 Scope Reduction** — 2-tier crate classification (stable/experimental), tokio feature trimming, tiered CI pipeline (core blocking, experimental non-blocking), dependency tree tracking
 
 **v1.1 YubiKey Overhaul** — Rewrote YubiKey backend from scratch: fail-closed design, `yubikey` crate stable API, rcgen for X.509, 18 simulation + 9 hardware tests, unconditional CI
 
-**v1.0 Consolidation** — Monolithic core + thin shells, 21 unused deps removed, ~2,500 LOC duplication eliminated, zero API breaks (196 semver checks), 343 tests, WASM verified
+**v1.0 Consolidation** — Monolithic core + thin shells, 21 unused deps removed, ~2,500 LOC duplication eliminated, zero API breaks (196 semver checks), WASM verified
 
 **v0.3.0 (P0 Release):** .trst archive system with cam.video profile, Ed25519 signatures, BLAKE3 chains, browser verification
 
@@ -340,13 +343,12 @@ TrustEdge supports secure client-server communication with **mutual authenticati
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **290+ automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **235+ automated tests** covering all aspects of the system:
 
-- **160+ Core Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer
-- **18 YubiKey Simulation Tests**: Hardware backend behavior without physical device
-- **9 Hardware Integration Tests**: YubiKey PIV operations (require physical device)
-- **7 Archive Tests**: .trst format verification, cryptographic validation, attack resistance
-- **Security Tests**: Cryptographic isolation, tampering resistance, replay protection
+- **164 Core Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer (includes 18 YubiKey simulation tests)
+- **9 Hardware Integration Tests**: YubiKey PIV operations (require physical device, run manually)
+- **22 Archive Tests**: .trst format wrap/verify, cryptographic validation, CLI integration
+- **40+ Integration Tests**: Pubky adapters, CLI workflows, cross-crate validation
 
 ```bash
 # Run complete test suite

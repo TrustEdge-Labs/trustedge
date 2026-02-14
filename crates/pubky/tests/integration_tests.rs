@@ -214,34 +214,6 @@ fn test_decrypt_invalid_key_format() {
         .stderr(predicate::str::contains("Invalid private key hex"));
 }
 
-/// Test migration command with missing files
-#[test]
-fn test_migrate_missing_files() {
-    let temp_dir = TempDir::new().unwrap();
-    let input_file = temp_dir.path().join("nonexistent.trst");
-    let output_file = temp_dir.path().join("output.trst");
-    let v1_key = temp_dir.path().join("v1_key.txt");
-    let pubky_key = temp_dir.path().join("pubky_key.txt");
-
-    let recipient = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
-
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
-    cmd.arg("migrate")
-        .arg("--input")
-        .arg(&input_file)
-        .arg("--output")
-        .arg(&output_file)
-        .arg("--recipient")
-        .arg(recipient)
-        .arg("--v1-key")
-        .arg(&v1_key)
-        .arg("--pubky-key")
-        .arg(&pubky_key)
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("Failed to read v1 envelope file"));
-}
-
 /// Test that generated keys are actually random (not deterministic without seed)
 #[test]
 fn test_key_generation_randomness() {

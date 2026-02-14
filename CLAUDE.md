@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build workspace
 cargo build --workspace --release
 
-# Test entire workspace (340+ tests)
+# Test entire workspace (235+ tests)
 cargo test --workspace
 
 # Test specific crates
@@ -70,7 +70,6 @@ TrustEdge is a Cargo workspace with 10 crates under `crates/`:
 | `auth.rs` | Ed25519 mutual authentication with sessions |
 | `audio.rs` | Live audio capture (feature-gated) |
 | `hybrid.rs` | RSA hybrid encryption (Pubky integration only) |
-| `envelope_v2_bridge.rs` | Format detection bridge (Pubky integration only) |
 
 ### Data Flow
 
@@ -140,7 +139,7 @@ cargo run -p trustedge-trst-cli -- verify archive.trst --device-pub "ed25519:...
 | Feature | Purpose | Dependencies |
 |---------|---------|--------------|
 | `audio` | Live microphone capture | cpal (ALSA/CoreAudio/WASAPI) |
-| `yubikey` | Hardware security keys | pkcs11, yubikey, x509-cert |
+| `yubikey` | Hardware security keys | yubikey, x509-cert, rcgen, der, spki, signature |
 
 Default build has no features enabled for fast CI and maximum portability.
 
