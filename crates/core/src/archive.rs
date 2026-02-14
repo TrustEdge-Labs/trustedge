@@ -207,32 +207,7 @@ mod tests {
         manifest.capture.started_at = "2025-01-15T10:30:00Z".to_string();
         manifest.capture.ended_at = "2025-01-15T10:30:06Z".to_string();
 
-        // Add test segments
-        manifest.segments = vec![
-            SegmentInfo {
-                chunk_file: "00000.bin".to_string(),
-                blake3_hash: hex::encode(crate::chain::segment_hash(b"test_chunk_0")),
-                start_time: "2025-01-15T10:30:00Z".to_string(),
-                duration_seconds: 2.0,
-                continuity_hash: "placeholder".to_string(),
-            },
-            SegmentInfo {
-                chunk_file: "00001.bin".to_string(),
-                blake3_hash: hex::encode(crate::chain::segment_hash(b"test_chunk_1")),
-                start_time: "2025-01-15T10:30:02Z".to_string(),
-                duration_seconds: 2.0,
-                continuity_hash: "placeholder".to_string(),
-            },
-            SegmentInfo {
-                chunk_file: "00002.bin".to_string(),
-                blake3_hash: hex::encode(crate::chain::segment_hash(b"test_chunk_2")),
-                start_time: "2025-01-15T10:30:04Z".to_string(),
-                duration_seconds: 2.0,
-                continuity_hash: "placeholder".to_string(),
-            },
-        ];
-
-        // Compute proper continuity chain
+        // Compute continuity chain up front
         let genesis = crate::chain::genesis();
         let hash0 = crate::chain::segment_hash(b"test_chunk_0");
         let hash1 = crate::chain::segment_hash(b"test_chunk_1");
@@ -242,9 +217,29 @@ mod tests {
         let continuity1 = crate::chain::chain_next(&continuity0, &hash1);
         let continuity2 = crate::chain::chain_next(&continuity1, &hash2);
 
-        manifest.segments[0].continuity_hash = hex::encode(continuity0);
-        manifest.segments[1].continuity_hash = hex::encode(continuity1);
-        manifest.segments[2].continuity_hash = hex::encode(continuity2);
+        manifest.segments = vec![
+            SegmentInfo {
+                chunk_file: "00000.bin".to_string(),
+                blake3_hash: hex::encode(hash0),
+                start_time: "2025-01-15T10:30:00Z".to_string(),
+                duration_seconds: 2.0,
+                continuity_hash: hex::encode(continuity0),
+            },
+            SegmentInfo {
+                chunk_file: "00001.bin".to_string(),
+                blake3_hash: hex::encode(hash1),
+                start_time: "2025-01-15T10:30:02Z".to_string(),
+                duration_seconds: 2.0,
+                continuity_hash: hex::encode(continuity1),
+            },
+            SegmentInfo {
+                chunk_file: "00002.bin".to_string(),
+                blake3_hash: hex::encode(hash2),
+                start_time: "2025-01-15T10:30:04Z".to_string(),
+                duration_seconds: 2.0,
+                continuity_hash: hex::encode(continuity2),
+            },
+        ];
 
         manifest.signature = Some("ed25519:test_signature".to_string());
 

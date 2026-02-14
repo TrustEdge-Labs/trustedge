@@ -528,8 +528,7 @@ mod tests {
             serde_json::from_slice(&unsealed1).expect("Failed to deserialize receipt1");
         assert_eq!(receipt1.amount, 1000);
 
-        // Step 3: Bob assigns to Charlie - this should use the ACTUAL amount from envelope1
-        // NOTE: This will fail until assign_receipt is fixed to actually decrypt the previous envelope
+        // Step 3: Bob assigns to Charlie
         let envelope2 = assign_receipt(
             &envelope1,
             &bob_key,
@@ -545,7 +544,6 @@ mod tests {
         let receipt2: Receipt =
             serde_json::from_slice(&unsealed2).expect("Failed to deserialize receipt2");
 
-        // CRITICAL TEST: The amount should match the original (currently fails due to hardcoded 1000)
         assert_eq!(
             receipt2.amount, receipt1.amount,
             "Amount should be preserved through assignment"
