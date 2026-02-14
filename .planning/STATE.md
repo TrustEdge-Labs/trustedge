@@ -13,22 +13,22 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — no misleading or incomplete features.
-**Current focus:** Phase 20 - Dead Code Removal
+**Current focus:** Phase 21 - Core Stub Elimination
 
 ## Current Position
 
-Phase: 20 of 23 (Dead Code Removal)
+Phase: 21 of 23 (Core Stub Elimination)
 Plan: 1 of 1 (complete)
 Status: Complete
-Last activity: 2026-02-14 — Phase 20 Plan 01 complete
+Last activity: 2026-02-14 — Phase 21 Plan 01 complete
 
-Progress: [████░░░░░░░░░░░░░░░░] 20%
+Progress: [████░░░░░░░░░░░░░░░░] 21%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2 (v1.4 milestone)
-- Average duration: 7.8 min
+- Total plans completed: 3 (v1.4 milestone)
+- Average duration: 6.6 min
 - Total execution time: 0.3 hours
 
 **By Phase:**
@@ -37,11 +37,13 @@ Progress: [████░░░░░░░░░░░░░░░░] 20%
 |-------|-------|-------|----------|
 | 19 | 1 | 6 min | 6 min |
 | 20 | 1 | 9 min 31 sec | 9 min 31 sec |
+| 21 | 1 | 3 min 59 sec | 3 min 59 sec |
 
 **Recent Trend:**
 - 19-01: 6 min (2 tasks, 5 files)
 - 20-01: 9 min 31 sec (2 tasks, 7 files)
-- Trend: Consistent execution
+- 21-01: 3 min 59 sec (2 tasks, 6 files)
+- Trend: Efficient execution
 
 ## Accumulated Context
 
@@ -60,6 +62,10 @@ Recent decisions affecting current work:
 - [Phase 20]: Removed all dead code without justification rather than annotating with #[allow(dead_code)]
 - [Phase 20]: Deleted legacy server functions that duplicated hardened handler
 - [Phase 20]: Removed reserved keyring encrypt/decrypt methods (never implemented)
+- [Phase 21]: Remove incomplete features rather than leaving TODOs
+- [Phase 21]: Fail-closed error messages with actionable guidance (YubiKey)
+- [Phase 21]: Remove incomplete features rather than leaving TODOs
+- [Phase 21]: Fail-closed error messages with actionable guidance (YubiKey)
 
 ### Pending Todos
 
@@ -74,9 +80,9 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-14 (phase 20 execution)
-Stopped at: Completed 20-01-PLAN.md (Dead Code Removal)
+Last session: 2026-02-14 (phase 21 execution)
+Stopped at: Completed 21-01-PLAN.md (Core Stub Elimination)
 Resume file: None
 
 ---
-*Last updated: 2026-02-14 after completing Phase 20 Plan 01*
+*Last updated: 2026-02-14 after completing Phase 21 Plan 01*
