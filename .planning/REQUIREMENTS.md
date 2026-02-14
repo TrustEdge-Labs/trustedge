@@ -78,26 +78,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| QUIC-01 | — | Pending |
-| QUIC-02 | — | Pending |
-| DEAD-01 | — | Pending |
-| DEAD-02 | — | Pending |
-| DEAD-03 | — | Pending |
-| DEAD-04 | — | Pending |
-| STUB-01 | — | Pending |
-| STUB-02 | — | Pending |
-| STUB-03 | — | Pending |
-| PUBK-01 | — | Pending |
-| PUBK-02 | — | Pending |
-| PUBK-03 | — | Pending |
-| PUBK-04 | — | Pending |
-| TODO-01 | — | Pending |
+| QUIC-01 | Phase 19 | Pending |
+| QUIC-02 | Phase 19 | Pending |
+| DEAD-01 | Phase 20 | Pending |
+| DEAD-02 | Phase 20 | Pending |
+| DEAD-03 | Phase 20 | Pending |
+| DEAD-04 | Phase 20 | Pending |
+| STUB-01 | Phase 21 | Pending |
+| STUB-02 | Phase 21 | Pending |
+| STUB-03 | Phase 21 | Pending |
+| PUBK-01 | Phase 22 | Pending |
+| PUBK-02 | Phase 22 | Pending |
+| PUBK-03 | Phase 22 | Pending |
+| PUBK-04 | Phase 22 | Pending |
+| TODO-01 | Phase 23 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14 ⚠️
+- Mapped to phases: 14
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-13*
-*Last updated: 2026-02-13 after initial definition*
+*Last updated: 2026-02-13 after roadmap creation*

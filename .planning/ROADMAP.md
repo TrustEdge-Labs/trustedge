@@ -13,7 +13,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.0 Consolidation** - Phases 1-8 (shipped 2026-02-11)
 - ✅ **v1.1 YubiKey Integration Overhaul** - Phases 9-12 (shipped 2026-02-11)
 - ✅ **v1.2 Scope Reduction** - Phases 13-14 (shipped 2026-02-12)
-- ✅ **v1.3 Dependency Audit & Rationalization** - Phases 15-18 (shipped 2026-02-13)
+- ✅ **v1.3 Dependency Audit** - Phases 15-18 (shipped 2026-02-13)
+- 🚧 **v1.4 Placeholder Elimination** - Phases 19-23 (in progress)
 
 ## Phases
 
@@ -53,7 +54,86 @@ Hardened the dependency tree across all 10 crates — feature-gated heavy option
 
 </details>
 
+### 🚧 v1.4 Placeholder Elimination (In Progress)
+
+**Milestone Goal:** Remove all placeholder code, incomplete features, and insecure defaults — if it doesn't work, it doesn't exist in the codebase.
+
+#### Phase 19: QUIC Security Hardening
+**Goal**: Secure QUIC TLS by default
+**Depends on**: Phase 18
+**Requirements**: QUIC-01, QUIC-02
+**Success Criteria** (what must be TRUE):
+  1. QUIC client enforces proper TLS certificate verification by default
+  2. Insecure TLS skip is only available when insecure-tls feature flag is enabled
+  3. CI validates that default build rejects invalid certificates
+  4. Developer documentation clearly warns about insecure-tls feature being development-only
+**Plans**: TBD
+
+Plans:
+- [ ] 19-01: TBD
+
+#### Phase 20: Dead Code Removal
+**Goal**: Remove legacy and unused code from core crate
+**Depends on**: Phase 19
+**Requirements**: DEAD-01, DEAD-02, DEAD-03, DEAD-04
+**Success Criteria** (what must be TRUE):
+  1. No legacy server functions remain in trustedge-server.rs
+  2. No reserved/unimplemented functions in universal_keyring.rs
+  3. ProcessingSession contains only active fields
+  4. Every #[allow(dead_code)] attribute either has a documented justification or the code is deleted
+  5. Cargo build produces no dead_code warnings
+**Plans**: TBD
+
+Plans:
+- [ ] 20-01: TBD
+
+#### Phase 21: Core Stub Elimination
+**Goal**: Remove incomplete features from trustedge-core
+**Depends on**: Phase 20
+**Requirements**: STUB-01, STUB-02, STUB-03
+**Success Criteria** (what must be TRUE):
+  1. envelope_v2_bridge.rs is deleted from codebase
+  2. Software HSM advertises only implemented hash variants (no Blake2b)
+  3. YubiKey generate_key returns actionable error message directing users to external tools
+  4. All tests pass after stub removal
+**Plans**: TBD
+
+Plans:
+- [ ] 21-01: TBD
+
+#### Phase 22: Pubky Stub Elimination
+**Goal**: Remove placeholders from experimental Pubky crates
+**Depends on**: Phase 21
+**Requirements**: PUBK-01, PUBK-02, PUBK-03, PUBK-04
+**Success Criteria** (what must be TRUE):
+  1. No unimplemented CLI commands remain in trustedge-pubky
+  2. discover_identities either removed or returns proper "not implemented" error
+  3. Placeholder migrate command removed from CLI
+  4. batch_resolve TODO comments either resolved or documented as known limitations
+  5. Pubky integration tests pass with only implemented functionality
+**Plans**: TBD
+
+Plans:
+- [ ] 22-01: TBD
+
+#### Phase 23: TODO Hygiene Sweep
+**Goal**: Zero unimplemented functionality TODOs
+**Depends on**: Phase 22
+**Requirements**: TODO-01
+**Success Criteria** (what must be TRUE):
+  1. Zero TODO comments indicating unimplemented functionality remain in codebase
+  2. Informational TODOs (future optimizations) only exist where current code works correctly
+  3. All TODOs have clear context (what works now, what's deferred, why)
+  4. CI validation confirms no new unimplemented TODOs can be added
+**Plans**: TBD
+
+Plans:
+- [ ] 23-01: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 19 → 20 → 21 → 22 → 23
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -62,12 +142,17 @@ Hardened the dependency tree across all 10 crates — feature-gated heavy option
 | 10. Backend Rewrite | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 11. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-11 |
 | 12. CI Integration | v1.1 | 1/1 | Complete | 2026-02-11 |
-| 13. Crate Classification & Dependency Audit | v1.2 | 2/2 | Complete | 2026-02-12 |
+| 13. Crate Classification | v1.2 | 2/2 | Complete | 2026-02-12 |
 | 14. CI & Documentation | v1.2 | 2/2 | Complete | 2026-02-12 |
 | 15. Feature Gating | v1.3 | 2/2 | Complete | 2026-02-12 |
 | 16. Dependency Audit | v1.3 | 1/1 | Complete | 2026-02-13 |
 | 17. Security Hardening | v1.3 | 1/1 | Complete | 2026-02-13 |
 | 18. Documentation | v1.3 | 1/1 | Complete | 2026-02-13 |
+| 19. QUIC Security Hardening | v1.4 | 0/0 | Not started | - |
+| 20. Dead Code Removal | v1.4 | 0/0 | Not started | - |
+| 21. Core Stub Elimination | v1.4 | 0/0 | Not started | - |
+| 22. Pubky Stub Elimination | v1.4 | 0/0 | Not started | - |
+| 23. TODO Hygiene Sweep | v1.4 | 0/0 | Not started | - |
 
 ---
-*Last updated: 2026-02-13 after v1.3 milestone complete*
+*Last updated: 2026-02-13 after v1.4 roadmap creation*
