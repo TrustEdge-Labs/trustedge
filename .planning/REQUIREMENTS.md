@@ -17,8 +17,8 @@ Requirements for placeholder elimination. Each maps to roadmap phases.
 
 ### QUIC Security
 
-- [ ] **QUIC-01**: QUIC client uses proper TLS certificate verification by default
-- [ ] **QUIC-02**: Insecure TLS skip is gated behind `insecure-tls` feature flag, only available for development
+- [x] **QUIC-01**: QUIC client uses proper TLS certificate verification by default
+- [x] **QUIC-02**: Insecure TLS skip is gated behind `insecure-tls` feature flag, only available for development
 
 ### Dead Code Removal
 
@@ -78,8 +78,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| QUIC-01 | Phase 19 | Pending |
-| QUIC-02 | Phase 19 | Pending |
+| QUIC-01 | Phase 19 | Complete |
+| QUIC-02 | Phase 19 | Complete |
 | DEAD-01 | Phase 20 | Pending |
 | DEAD-02 | Phase 20 | Pending |
 | DEAD-03 | Phase 20 | Pending |

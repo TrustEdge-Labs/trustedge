@@ -13,16 +13,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-13)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — no misleading or incomplete features.
-**Current focus:** Phase 19 - QUIC Security Hardening
+**Current focus:** Phase 20 - Dead Code Removal
 
 ## Current Position
 
-Phase: 19 of 23 (QUIC Security Hardening)
-Plan: 1 of 1 (complete)
-Status: Phase 19 complete
-Last activity: 2026-02-14 — Completed 19-01: Secure QUIC TLS by default
+Phase: 20 of 23 (Dead Code Removal)
+Plan: 0 of 0 (ready to plan)
+Status: Ready to plan
+Last activity: 2026-02-13 — Phase 19 complete, verified
 
-Progress: [████████████████████] 100%
+Progress: [████░░░░░░░░░░░░░░░░] 20%
 
 ## Performance Metrics
 

@@ -67,10 +67,10 @@ Hardened the dependency tree across all 10 crates — feature-gated heavy option
   2. Insecure TLS skip is only available when insecure-tls feature flag is enabled
   3. CI validates that default build rejects invalid certificates
   4. Developer documentation clearly warns about insecure-tls feature being development-only
-**Plans**: 1 plan
+**Plans**: 1 plan ✅
 
 Plans:
-- [ ] 19-01-PLAN.md -- Add insecure-tls feature flag, refactor QUIC TLS to secure-by-default, update CI
+- [x] 19-01-PLAN.md -- Add insecure-tls feature flag, refactor QUIC TLS to secure-by-default, update CI
 
 #### Phase 20: Dead Code Removal
 **Goal**: Remove legacy and unused code from core crate
@@ -148,7 +148,7 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23
 | 16. Dependency Audit | v1.3 | 1/1 | Complete | 2026-02-13 |
 | 17. Security Hardening | v1.3 | 1/1 | Complete | 2026-02-13 |
 | 18. Documentation | v1.3 | 1/1 | Complete | 2026-02-13 |
-| 19. QUIC Security Hardening | v1.4 | 0/0 | Not started | - |
+| 19. QUIC Security Hardening | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 20. Dead Code Removal | v1.4 | 0/0 | Not started | - |
 | 21. Core Stub Elimination | v1.4 | 0/0 | Not started | - |
 | 22. Pubky Stub Elimination | v1.4 | 0/0 | Not started | - |
