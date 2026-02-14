@@ -82,10 +82,10 @@ Plans:
   3. ProcessingSession contains only active fields
   4. Every #[allow(dead_code)] attribute either has a documented justification or the code is deleted
   5. Cargo build produces no dead_code warnings
-**Plans**: 1 plan
+**Plans**: 1 plan ✅
 
 Plans:
-- [ ] 20-01-PLAN.md -- Delete legacy server functions, reserved keyring methods, dead struct fields, and audit all #[allow(dead_code)]
+- [x] 20-01-PLAN.md -- Delete legacy server functions, reserved keyring methods, dead struct fields, and audit all #[allow(dead_code)]
 
 #### Phase 21: Core Stub Elimination
 **Goal**: Remove incomplete features from trustedge-core
@@ -149,10 +149,10 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23
 | 17. Security Hardening | v1.3 | 1/1 | Complete | 2026-02-13 |
 | 18. Documentation | v1.3 | 1/1 | Complete | 2026-02-13 |
 | 19. QUIC Security Hardening | v1.4 | 1/1 | Complete | 2026-02-13 |
-| 20. Dead Code Removal | v1.4 | 0/0 | Not started | - |
+| 20. Dead Code Removal | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 21. Core Stub Elimination | v1.4 | 0/0 | Not started | - |
 | 22. Pubky Stub Elimination | v1.4 | 0/0 | Not started | - |
 | 23. TODO Hygiene Sweep | v1.4 | 0/0 | Not started | - |
 
 ---
-*Last updated: 2026-02-13 after v1.4 roadmap creation*
+*Last updated: 2026-02-13 after Phase 20 completion*

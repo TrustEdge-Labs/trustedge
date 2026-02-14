@@ -22,10 +22,10 @@ Requirements for placeholder elimination. Each maps to roadmap phases.
 
 ### Dead Code Removal
 
-- [ ] **DEAD-01**: Legacy `handle_connection()`, `process_and_decrypt_chunk()`, `save_chunk_to_disk()` removed from trustedge-server.rs
-- [ ] **DEAD-02**: Reserved `encrypt_aes_gcm`/`decrypt_aes_gcm` removed from universal_keyring.rs
-- [ ] **DEAD-03**: `ProcessingSession` dead fields removed or activated
-- [ ] **DEAD-04**: All `#[allow(dead_code)]` attributes audited — each either justified or code deleted
+- [x] **DEAD-01**: Legacy `handle_connection()`, `process_and_decrypt_chunk()`, `save_chunk_to_disk()` removed from trustedge-server.rs
+- [x] **DEAD-02**: Reserved `encrypt_aes_gcm`/`decrypt_aes_gcm` removed from universal_keyring.rs
+- [x] **DEAD-03**: `ProcessingSession` dead fields removed or activated
+- [x] **DEAD-04**: All `#[allow(dead_code)]` attributes audited — each either justified or code deleted
 
 ### Stub Elimination (Core)
 
@@ -80,10 +80,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | QUIC-01 | Phase 19 | Complete |
 | QUIC-02 | Phase 19 | Complete |
-| DEAD-01 | Phase 20 | Pending |
-| DEAD-02 | Phase 20 | Pending |
-| DEAD-03 | Phase 20 | Pending |
-| DEAD-04 | Phase 20 | Pending |
+| DEAD-01 | Phase 20 | Complete |
+| DEAD-02 | Phase 20 | Complete |
+| DEAD-03 | Phase 20 | Complete |
+| DEAD-04 | Phase 20 | Complete |
 | STUB-01 | Phase 21 | Pending |
 | STUB-02 | Phase 21 | Pending |
 | STUB-03 | Phase 21 | Pending |
