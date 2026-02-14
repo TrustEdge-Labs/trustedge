@@ -111,10 +111,10 @@ Plans:
   3. Placeholder migrate command removed from CLI
   4. batch_resolve TODO comments either resolved or documented as known limitations
   5. Pubky integration tests pass with only implemented functionality
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 22-01: TBD
+- [ ] 22-01-PLAN.md -- Remove unimplemented CLI commands (publish, migrate), delete discover_identities placeholder, resolve batch_resolve TODO
 
 #### Phase 23: TODO Hygiene Sweep
 **Goal**: Zero unimplemented functionality TODOs
