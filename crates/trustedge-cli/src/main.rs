@@ -295,7 +295,7 @@ fn list_audio_devices() -> Result<()> {
     Ok(())
 }
 
-/// List available audio input devices (stub when audio not available)
+/// List available audio input devices (feature-disabled: provides guidance when audio not compiled)
 #[cfg(not(feature = "audio"))]
 fn list_audio_devices() -> Result<()> {
     println!("✖ Audio support not available in this build");
@@ -966,7 +966,7 @@ fn main() -> Result<()> {
     let signing = SigningKey::generate(&mut OsRng); // demo only
     let verify: VerifyingKey = signing.verifying_key();
 
-    // header fields (demo placeholders as needed)
+    // header fields (randomly generated per session)
     let mut nonce_prefix = [0u8; 4];
     OsRng.fill_bytes(&mut nonce_prefix);
     let mut key_id = [0u8; 16];

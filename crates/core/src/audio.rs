@@ -378,16 +378,16 @@ impl Drop for AudioCapture {
     }
 }
 
-// Stub implementation when audio feature is not available
+// Feature-disabled implementation: returns errors when audio feature is not compiled
 #[cfg(not(feature = "audio"))]
-/// Stub audio capture (audio feature not enabled)
+/// Audio capture (feature-disabled: returns errors when audio feature is not compiled)
 pub struct AudioCapture {
     _config: AudioConfig,
 }
 
 #[cfg(not(feature = "audio"))]
 impl AudioCapture {
-    /// Create a new audio capture instance (stub)
+    /// Create a new audio capture instance (feature-disabled)
     pub fn new(_config: AudioConfig) -> Result<Self> {
         Err(anyhow!(
             "Audio capture not available - this binary was compiled without audio support.\n\
@@ -398,47 +398,47 @@ impl AudioCapture {
         ))
     }
 
-    /// List available audio input devices (stub)
+    /// List available audio input devices (feature-disabled)
     pub fn list_devices(&self) -> Result<Vec<String>> {
         Err(anyhow!(
             "Audio capture not available - audio feature not enabled"
         ))
     }
 
-    /// Initialize the audio device and stream (stub)
+    /// Initialize the audio device and stream (feature-disabled)
     pub fn initialize(&mut self) -> Result<()> {
         Err(anyhow!(
             "Audio capture not available - audio feature not enabled"
         ))
     }
 
-    /// Start audio capture (stub)
+    /// Start audio capture (feature-disabled)
     pub fn start(&mut self) -> Result<()> {
         Err(anyhow!(
             "Audio capture not available - audio feature not enabled"
         ))
     }
 
-    /// Stop audio capture (stub)
+    /// Stop audio capture (feature-disabled)
     pub fn stop(&mut self) -> Result<()> {
-        Ok(()) // No-op for stub
+        Ok(()) // No-op for feature-disabled
     }
 
-    /// Get the next audio chunk (stub)
+    /// Get the next audio chunk (feature-disabled)
     pub fn next_chunk(&self) -> Result<AudioChunk> {
         Err(anyhow!(
             "Audio capture not available - audio feature not enabled"
         ))
     }
 
-    /// Try to get the next audio chunk (stub)
+    /// Try to get the next audio chunk (feature-disabled)
     pub fn try_next_chunk(&self) -> Result<Option<AudioChunk>> {
         Err(anyhow!(
             "Audio capture not available - audio feature not enabled"
         ))
     }
 
-    /// Get audio configuration (stub)
+    /// Get audio configuration (feature-disabled)
     pub fn config(&self) -> &AudioConfig {
         &self._config
     }
@@ -494,7 +494,7 @@ mod tests {
 
     #[test]
     #[cfg(not(feature = "audio"))]
-    fn test_audio_stub() {
+    fn test_audio_feature_disabled() {
         let config = AudioConfig::default();
         match AudioCapture::new(config) {
             Err(e) => {
