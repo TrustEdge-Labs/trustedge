@@ -337,6 +337,28 @@ else
     pass "dependency tree within baseline"
 fi
 
+# ── Step 22: TODO hygiene ──────────────────────────────────────────
+step "Step 22: TODO hygiene (no unimplemented markers)"
+# Scan for TODO/FIXME/HACK/XXX comments that indicate unimplemented functionality
+# Excludes: test fixtures, planning docs, target dir, .git dir
+todo_count=0
+while IFS= read -r match; do
+    # Skip test-only placeholder data (e.g., continuity_hash in test fixtures)
+    case "$match" in
+        *"#[cfg(test)]"*) continue ;;
+        *"_test_"*|*"test_"*) continue ;;
+    esac
+    echo "  Found: $match"
+    todo_count=$((todo_count + 1))
+done < <(grep -rn '// TODO\|// FIXME\|// HACK\|// XXX\|todo!()\|unimplemented!()' \
+    --include="*.rs" crates/ \
+    2>/dev/null || true)
+if [ "$todo_count" -gt 0 ]; then
+    fail "$todo_count unimplemented TODO/FIXME markers found"
+else
+    pass "No unimplemented TODO/FIXME markers"
+fi
+
 # ── Summary ─────────────────────────────────────────────────────────
 echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

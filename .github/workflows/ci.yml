@@ -52,6 +52,19 @@ jobs:
           fi
           echo "All source files have copyright headers"
 
+      - name: TODO hygiene (no unimplemented markers)
+        run: |
+          # Scan for TODO/FIXME/HACK/XXX that indicate unimplemented functionality
+          count=$(grep -rn '// TODO\|// FIXME\|// HACK\|// XXX\|todo!()\|unimplemented!()' \
+            --include="*.rs" crates/ 2>/dev/null | wc -l || echo 0)
+          if [ "$count" -gt 0 ]; then
+            echo "::error::Found $count unimplemented TODO/FIXME/HACK/XXX markers in crates/"
+            grep -rn '// TODO\|// FIXME\|// HACK\|// XXX\|todo!()\|unimplemented!()' \
+              --include="*.rs" crates/ || true
+            exit 1
+          fi
+          echo "No unimplemented TODO/FIXME markers found"
+
       - name: fmt
         run: cargo fmt --all -- --check
 
