@@ -129,3 +129,32 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
+
+## v1.4 Placeholder Elimination (Shipped: 2026-02-13)
+
+**Phases completed:** 5 phases (19-23), 5 plans, 10 tasks
+**Timeline:** 1 day (2026-02-13)
+**Stats:** 36 files changed, 2,626 insertions, 734 deletions, 15 commits
+
+**Delivered:** Removed all placeholder code, incomplete features, and insecure defaults from the codebase — if it doesn't work, it doesn't exist. Added CI enforcement to prevent regression.
+
+**Key accomplishments:**
+- Secured QUIC TLS by default with webpki-roots trust store; insecure bypass requires compile-time `insecure-tls` feature flag
+- Removed all dead code: legacy server functions, reserved keyring methods, unused struct fields, unjustified `#[allow(dead_code)]`
+- Eliminated core stubs: deleted envelope_v2_bridge.rs, removed Blake2b hash variant, cleaned YubiKey generate_key error
+- Cleaned experimental Pubky crates: removed unimplemented CLI commands (publish, migrate), placeholder functions, resolved batch_resolve TODOs
+- Enforced TODO hygiene: zero unimplemented markers, renamed "stub" to "feature-disabled" terminology, CI scans on every push/PR
+
+**Tech debt carried forward:**
+- Key generation and attestation deferred (yubikey 0.7 API limitations, carried from v1.1)
+- 2 cargo-machete false positives (serde_bytes, getrandom) suppressed via config
+- RSA Marvin Attack advisory (RUSTSEC-2023-0071) accepted (carried from v1.3)
+
+**Git range:** v1.3..84ab414 (docs(23-01): complete TODO hygiene sweep plan)
+
+**Archives:**
+- `.planning/milestones/v1.4-ROADMAP.md`
+- `.planning/milestones/v1.4-REQUIREMENTS.md`
+
+---
+

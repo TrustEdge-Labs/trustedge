@@ -64,18 +64,19 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ Cargo.lock tracked in git for reproducible security audits — v1.3
 - ✓ DEPENDENCIES.md covers all 10 crates with per-dependency justifications — v1.3
 - ✓ Security-critical dependencies documented with detailed rationale (15 entries) — v1.3
+- ✓ QUIC TLS secure-by-default with webpki-roots trust store — v1.4
+- ✓ Insecure TLS gated behind compile-time `insecure-tls` feature flag — v1.4
+- ✓ Legacy dead code removed (server functions, keyring methods, struct fields) — v1.4
+- ✓ All `#[allow(dead_code)]` audited — unjustified code deleted — v1.4
+- ✓ envelope_v2_bridge.rs deleted from codebase — v1.4
+- ✓ Blake2b hash variant removed (don't advertise unimplemented) — v1.4
+- ✓ Unimplemented Pubky CLI commands (publish, migrate) removed — v1.4
+- ✓ Zero TODO/FIXME/HACK/XXX markers indicating unimplemented functionality — v1.4
+- ✓ CI enforces TODO hygiene on every push/PR — v1.4
 
 ### Active
 
-## Current Milestone: v1.4 Placeholder Elimination
-
-**Goal:** Remove all placeholder code, incomplete features, and insecure defaults — if it doesn't work, it doesn't exist in the codebase.
-
-**Target features:**
-- QUIC TLS security: proper cert verification by default, insecure skip feature-gated
-- Dead code removal: legacy server functions, reserved keyring functions, dead fields
-- Stub elimination: delete envelope_v2_bridge.rs, remove Blake2b stub, clean Pubky placeholders
-- TODO hygiene: zero remaining TODOs indicating unimplemented functionality
+(None — planning next milestone)
 
 ### Deferred
 
@@ -96,16 +97,19 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - **v1.1 YubiKey Integration Overhaul** — Scorched-earth rewrite with fail-closed design, battle-tested libraries, 27 tests, unconditional CI
 - **v1.2 Scope Reduction** — 2-tier crate classification, dependency audit, tiered CI pipeline, dep tree tracking
 - **v1.3 Dependency Audit & Rationalization** — Feature-gated heavy deps, removed unused deps, cargo-audit CI, comprehensive DEPENDENCIES.md
+- **v1.4 Placeholder Elimination** — Secure-by-default QUIC TLS, dead code removal, stub elimination, TODO hygiene with CI enforcement
 
 ## Context
 
-Shipped v1.3 with 30,144 Rust LOC across 10 crates (5 stable, 5 experimental).
+Shipped v1.4 with 29,485 Rust LOC across 10 crates (5 stable, 5 experimental).
 Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048).
 370+ tests passing (160+ in core including 18 YubiKey simulation, 9 hardware integration with #[ignore]).
 Build time: 45s clean release. Dependency tree: 60 unique crates (baselined, warn at 70).
-CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally. cargo-audit runs as blocking check.
+CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally. cargo-audit runs as blocking check. TODO hygiene enforced on every push/PR.
 Crate classification: Tier 1 (stable) = core, cli, trst-protocols, trst-cli, trst-wasm. Tier 2 (experimental) = wasm, pubky, pubky-advanced, receipts, attestation.
 Heavy optional deps (git2, keyring) feature-gated. All dependencies documented with justifications in DEPENDENCIES.md.
+QUIC TLS secure-by-default with webpki-roots; insecure bypass requires `insecure-tls` feature flag.
+Zero placeholder code, unimplemented stubs, or misleading TODO comments remain in the codebase.
 Key generation and attestation deferred to future (yubikey crate API limitations).
 
 ## Constraints
@@ -152,6 +156,13 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | Accept RSA Marvin Attack advisory (RUSTSEC-2023-0071) | TrustEdge doesn't use RSA for production encryption | ✓ Good — documented in .cargo/audit.toml |
 | Track Cargo.lock in git | Reproducible security audits require pinned dep versions | ✓ Good — cargo-audit runs on exact versions |
 | DEPENDENCIES.md covers all 10 crates | v1.2 only documented 5 stable crates | ✓ Good — complete audit trail |
+| webpki-roots for QUIC TLS trust store | Consistent cross-platform behavior vs OS-native certs | ✓ Good — no platform-specific cert store issues |
+| insecure-tls as compile-time feature flag | Compile-time enforcement stronger than runtime config | ✓ Good — insecure code excluded from release builds |
+| Delete dead code, don't annotate | #[allow(dead_code)] hides problems; removal is permanent fix | ✓ Good — cleaner codebase, no hidden dead code |
+| Remove incomplete features rather than TODOs | If it doesn't work, it shouldn't exist in the codebase | ✓ Good — eliminates misleading API surface |
+| Fail-closed error messages with guidance | YubiKey generate_key directs users to external tools | ✓ Good — actionable rather than confusing |
+| "Feature-disabled" not "stub" terminology | Cfg-gated code returns errors, not placeholders — name it accurately | ✓ Good — clearer documentation |
+| CI TODO hygiene enforcement | Scan for TODO/FIXME/HACK/XXX on every push/PR | ✓ Good — prevents regression to incomplete code |
 
 ---
-*Last updated: 2026-02-13 after v1.4 milestone started*
+*Last updated: 2026-02-13 after v1.4 milestone completion*

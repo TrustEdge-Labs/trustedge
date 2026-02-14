@@ -14,7 +14,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.1 YubiKey Integration Overhaul** - Phases 9-12 (shipped 2026-02-11)
 - ✅ **v1.2 Scope Reduction** - Phases 13-14 (shipped 2026-02-12)
 - ✅ **v1.3 Dependency Audit** - Phases 15-18 (shipped 2026-02-13)
-- 🚧 **v1.4 Placeholder Elimination** - Phases 19-23 (in progress)
+- ✅ **v1.4 Placeholder Elimination** - Phases 19-23 (shipped 2026-02-13)
 
 ## Phases
 
@@ -54,86 +54,16 @@ Hardened the dependency tree across all 10 crates — feature-gated heavy option
 
 </details>
 
-### 🚧 v1.4 Placeholder Elimination (In Progress)
+<details>
+<summary>✅ v1.4 Placeholder Elimination (Phases 19-23) - SHIPPED 2026-02-13</summary>
 
-**Milestone Goal:** Remove all placeholder code, incomplete features, and insecure defaults — if it doesn't work, it doesn't exist in the codebase.
+Removed all placeholder code, incomplete features, and insecure defaults. Secured QUIC TLS by default, removed dead code and stubs from core and Pubky crates, enforced zero-TODO hygiene with CI enforcement on every push/PR.
 
-#### Phase 19: QUIC Security Hardening
-**Goal**: Secure QUIC TLS by default
-**Depends on**: Phase 18
-**Requirements**: QUIC-01, QUIC-02
-**Success Criteria** (what must be TRUE):
-  1. QUIC client enforces proper TLS certificate verification by default
-  2. Insecure TLS skip is only available when insecure-tls feature flag is enabled
-  3. CI validates that default build rejects invalid certificates
-  4. Developer documentation clearly warns about insecure-tls feature being development-only
-**Plans**: 1 plan ✅
+**See:** `.planning/milestones/v1.4-ROADMAP.md` for full phase details.
 
-Plans:
-- [x] 19-01-PLAN.md -- Add insecure-tls feature flag, refactor QUIC TLS to secure-by-default, update CI
-
-#### Phase 20: Dead Code Removal
-**Goal**: Remove legacy and unused code from core crate
-**Depends on**: Phase 19
-**Requirements**: DEAD-01, DEAD-02, DEAD-03, DEAD-04
-**Success Criteria** (what must be TRUE):
-  1. No legacy server functions remain in trustedge-server.rs
-  2. No reserved/unimplemented functions in universal_keyring.rs
-  3. ProcessingSession contains only active fields
-  4. Every #[allow(dead_code)] attribute either has a documented justification or the code is deleted
-  5. Cargo build produces no dead_code warnings
-**Plans**: 1 plan ✅
-
-Plans:
-- [x] 20-01-PLAN.md -- Delete legacy server functions, reserved keyring methods, dead struct fields, and audit all #[allow(dead_code)]
-
-#### Phase 21: Core Stub Elimination
-**Goal**: Remove incomplete features from trustedge-core
-**Depends on**: Phase 20
-**Requirements**: STUB-01, STUB-02, STUB-03
-**Success Criteria** (what must be TRUE):
-  1. envelope_v2_bridge.rs is deleted from codebase
-  2. Software HSM advertises only implemented hash variants (no Blake2b)
-  3. YubiKey generate_key returns actionable error message directing users to external tools
-  4. All tests pass after stub removal
-**Plans**: 1 plan ✅
-
-Plans:
-- [x] 21-01-PLAN.md -- Delete envelope_v2_bridge.rs, remove Blake2b hash variant, clean YubiKey generate_key TODO
-
-#### Phase 22: Pubky Stub Elimination
-**Goal**: Remove placeholders from experimental Pubky crates
-**Depends on**: Phase 21
-**Requirements**: PUBK-01, PUBK-02, PUBK-03, PUBK-04
-**Success Criteria** (what must be TRUE):
-  1. No unimplemented CLI commands remain in trustedge-pubky
-  2. discover_identities either removed or returns proper "not implemented" error
-  3. Placeholder migrate command removed from CLI
-  4. batch_resolve TODO comments either resolved or documented as known limitations
-  5. Pubky integration tests pass with only implemented functionality
-**Plans**: 1 plan ✅
-
-Plans:
-- [x] 22-01-PLAN.md -- Remove unimplemented CLI commands (publish, migrate), delete discover_identities placeholder, resolve batch_resolve TODO
-
-#### Phase 23: TODO Hygiene Sweep
-**Goal**: Zero unimplemented functionality TODOs
-**Depends on**: Phase 22
-**Requirements**: TODO-01
-**Success Criteria** (what must be TRUE):
-  1. Zero TODO comments indicating unimplemented functionality remain in codebase
-  2. Informational TODOs (future optimizations) only exist where current code works correctly
-  3. All TODOs have clear context (what works now, what's deferred, why)
-  4. CI validation confirms no new unimplemented TODOs can be added
-**Plans**: 1 plan ✅
-
-Plans:
-- [x] 23-01-PLAN.md -- Confirm zero unimplemented TODOs, clean up stub terminology, add CI hygiene enforcement
+</details>
 
 ## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 19 → 20 → 21 → 22 → 23
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -155,4 +85,4 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23
 | 23. TODO Hygiene Sweep | v1.4 | 1/1 | Complete | 2026-02-13 |
 
 ---
-*Last updated: 2026-02-13 after Phase 23 completion*
+*Last updated: 2026-02-13 after v1.4 milestone completion*
