@@ -170,8 +170,16 @@ else
     fail "clippy keyring"
 fi
 
-# ── Step 9: Feature powerset (cargo-hack) ───────────────────────────
-step "Step 9: Feature compatibility (cargo-hack)"
+# ── Step 9: Clippy (insecure-tls) ───────────────────────────────────
+step "Step 9: Clippy (trustedge-core with insecure-tls)"
+if cargo clippy --package trustedge-core --all-targets --features insecure-tls -- -D warnings; then
+    pass "clippy insecure-tls"
+else
+    fail "clippy insecure-tls"
+fi
+
+# ── Step 10: Feature powerset (cargo-hack) ──────────────────────────
+step "Step 10: Feature compatibility (cargo-hack)"
 if command -v cargo-hack &> /dev/null; then
     if cargo hack check --feature-powerset --no-dev-deps --package trustedge-core; then
         pass "cargo-hack feature powerset"
@@ -182,8 +190,8 @@ else
     skip "cargo-hack not installed"
 fi
 
-# ── Step 10: Build + test (tiered) ──────────────────────────────────
-step "Step 10: Build and test (tiered - core blocking, experimental non-blocking)"
+# ── Step 11: Build + test (tiered) ──────────────────────────────────
+step "Step 11: Build and test (tiered - core blocking, experimental non-blocking)"
 
 # Build remains workspace-wide
 cargo build --workspace --bins --no-default-features
@@ -215,8 +223,8 @@ else
     warn "experimental crate tests failed (non-blocking)"
 fi
 
-# ── Step 11: Audio tests ────────────────────────────────────────────
-step "Step 11: Tests (trustedge-core with audio)"
+# ── Step 12: Audio tests ────────────────────────────────────────────
+step "Step 12: Tests (trustedge-core with audio)"
 if pkg-config --exists alsa 2>/dev/null; then
     cargo build --package trustedge-core --bins --features audio
     if cargo test --package trustedge-core --features audio --locked; then
@@ -228,8 +236,8 @@ else
     skip "ALSA not available"
 fi
 
-# ── Step 12: YubiKey tests (simulation) ────────────────────────────
-step "Step 12: Tests (trustedge-core with yubikey simulation)"
+# ── Step 13: YubiKey tests (simulation) ────────────────────────────
+step "Step 13: Tests (trustedge-core with yubikey simulation)"
 if pkg-config --exists libpcsclite 2>/dev/null; then
     cargo build --package trustedge-core --bins --features yubikey
     if cargo test --package trustedge-core --features yubikey --lib --locked; then
@@ -241,24 +249,32 @@ else
     skip "PCSC not available"
 fi
 
-# ── Step 13: Tests (git-attestation) ───────────────────────────────
-step "Step 13: Tests (trustedge-core with git-attestation)"
+# ── Step 14: Tests (git-attestation) ───────────────────────────────
+step "Step 14: Tests (trustedge-core with git-attestation)"
 if cargo test --package trustedge-core --features git-attestation --locked; then
     pass "git-attestation tests"
 else
     fail "git-attestation tests"
 fi
 
-# ── Step 14: Tests (keyring) ───────────────────────────────────────
-step "Step 14: Tests (trustedge-core with keyring)"
+# ── Step 15: Tests (keyring) ───────────────────────────────────────
+step "Step 15: Tests (trustedge-core with keyring)"
 if cargo test --package trustedge-core --features keyring --locked; then
     pass "keyring tests"
 else
     fail "keyring tests"
 fi
 
-# ── Step 15: All features (clean first to avoid disk exhaustion) ────
-step "Step 15: All features combined"
+# ── Step 16: Tests (insecure-tls) ──────────────────────────────────
+step "Step 16: Tests (trustedge-core with insecure-tls)"
+if cargo test --package trustedge-core --features insecure-tls --locked; then
+    pass "insecure-tls tests"
+else
+    fail "insecure-tls tests"
+fi
+
+# ── Step 17: All features (clean first to avoid disk exhaustion) ────
+step "Step 17: All features combined"
 if pkg-config --exists alsa 2>/dev/null && pkg-config --exists libpcsclite 2>/dev/null; then
     cargo clean
     cargo build --workspace --bins --all-features
@@ -271,8 +287,8 @@ else
     skip "Not all platform libraries available"
 fi
 
-# ── Step 16: Downstream feature check ──────────────────────────────
-step "Step 16: Downstream crate feature check (trustedge-cli)"
+# ── Step 18: Downstream feature check ──────────────────────────────
+step "Step 18: Downstream crate feature check (trustedge-cli)"
 if command -v cargo-hack &> /dev/null; then
     if cargo hack check --feature-powerset --no-dev-deps --package trustedge-cli; then
         pass "downstream feature check"
@@ -283,8 +299,8 @@ else
     skip "cargo-hack not installed"
 fi
 
-# ── Step 17: WASM ───────────────────────────────────────────────────
-step "Step 17: WASM build verification"
+# ── Step 19: WASM ───────────────────────────────────────────────────
+step "Step 19: WASM build verification"
 if rustup target list --installed | grep -q wasm32-unknown-unknown; then
     if cargo check -p trustedge-wasm --target wasm32-unknown-unknown && \
        cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown; then
@@ -296,8 +312,8 @@ else
     skip "wasm32-unknown-unknown target not installed"
 fi
 
-# ── Step 18: Semver ─────────────────────────────────────────────────
-step "Step 18: API compatibility (cargo-semver-checks)"
+# ── Step 20: Semver ─────────────────────────────────────────────────
+step "Step 20: API compatibility (cargo-semver-checks)"
 if command -v cargo-semver-checks &> /dev/null; then
     if cargo semver-checks --package trustedge-core --baseline-rev HEAD~1 2>/dev/null; then
         pass "semver check"
@@ -308,8 +324,8 @@ else
     skip "cargo-semver-checks not installed"
 fi
 
-# ── Step 19: Dependency tree size ────────────────────────────────────
-step "Step 19: Dependency tree size check"
+# ── Step 21: Dependency tree size ────────────────────────────────────
+step "Step 21: Dependency tree size check"
 dep_count=$(cargo tree --workspace --depth 1 --prefix none --no-dedupe 2>/dev/null | sort -u | wc -l)
 baseline=60
 threshold=$((baseline + 10))

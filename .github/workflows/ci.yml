@@ -102,6 +102,9 @@ jobs:
       - name: clippy (trustedge-core with keyring)
         run: cargo clippy --package trustedge-core --all-targets --features keyring -- -D warnings
 
+      - name: clippy (trustedge-core with insecure-tls)
+        run: cargo clippy --package trustedge-core --all-targets --features insecure-tls -- -D warnings
+
       - name: Feature compatibility check (cargo-hack)
         run: cargo hack check --feature-powerset --no-dev-deps --package trustedge-core
 
@@ -149,6 +152,9 @@ jobs:
 
       - name: tests (trustedge-core with keyring)
         run: cargo test --package trustedge-core --features keyring --locked --verbose
+
+      - name: tests (trustedge-core with insecure-tls)
+        run: cargo test --package trustedge-core --features insecure-tls --locked --verbose
 
       - name: Build and test all features (trustedge-core)
         if: steps.audio-deps.outputs.audio-available == 'true'
