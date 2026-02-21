@@ -10,33 +10,19 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-13)
+See: .planning/PROJECT.md (updated 2026-02-21)
 
-**Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — no misleading or incomplete features.
-**Current focus:** Planning next milestone
+**Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
+**Current focus:** v1.5 Platform Consolidation
 
 ## Current Position
 
-Milestone: v1.4 Placeholder Elimination — SHIPPED 2026-02-13
-Status: Complete — all 5 milestones shipped (v1.0-v1.4)
-Last activity: 2026-02-13 — v1.4 milestone archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-21 — Milestone v1.5 started
 
 ## Performance Metrics
-
-**Velocity (v1.4):**
-- Total plans completed: 5 (5 phases)
-- Average duration: 5.6 min
-- Total execution time: 0.5 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 19 | 1 | 6 min | 6 min |
-| 20 | 1 | 9 min 31 sec | 9 min 31 sec |
-| 21 | 1 | 3 min 59 sec | 3 min 59 sec |
-| 22 | 1 | 2 min 47 sec | 2 min 47 sec |
-| 23 | 1 | 5 min 36 sec | 5 min 36 sec |
 
 **Cumulative (all milestones):**
 - v1.0: 8 phases, 17 plans, 31 tasks
@@ -66,9 +52,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-13 (v1.4 milestone completion)
-Stopped at: Milestone archived, git tag pending
+Last session: 2026-02-21 (v1.5 milestone start)
+Stopped at: Defining requirements
 Resume file: None
 
 ---
-*Last updated: 2026-02-13 after v1.4 milestone completion*
+*Last updated: 2026-02-21 after v1.5 milestone start*

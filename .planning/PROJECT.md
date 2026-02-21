@@ -76,7 +76,15 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Active
 
-(None — planning next milestone)
+#### Current Milestone: v1.5 Platform Consolidation
+
+**Goal:** Consolidate external service repos into the main trustedge workspace, mandate trustedge-core for crypto, and prune empty scaffold repos.
+
+**Target features:**
+- Merge trustedge-platform-api and trustedge-verify-core into a single service crate in the main workspace
+- Centralize te_shared types into the main workspace (Uuid/DateTime from platform-api, schema generation from shared-libs)
+- Replace manual crypto/chaining code in verify-core with trustedge-core
+- Delete 6 empty scaffold repos (audit, billing, device, identity, infra, ingestion)
 
 ### Deferred
 
@@ -111,6 +119,13 @@ Heavy optional deps (git2, keyring) feature-gated. All dependencies documented w
 QUIC TLS secure-by-default with webpki-roots; insecure bypass requires `insecure-tls` feature flag.
 Zero placeholder code, unimplemented stubs, or misleading TODO comments remain in the codebase.
 Key generation and attestation deferred to future (yubikey crate API limitations).
+
+**v1.5 consolidation targets (external repos):**
+- trustedge-platform-api: ~4,173 LOC, Axum/PostgreSQL REST API with CA, 11 integration tests
+- trustedge-verify-core: ~1,685 LOC, verification service with manual crypto/chaining, 17 tests
+- trustedge-shared-libs: ~501 LOC, te_shared wire types and schema generation
+- trustedge-dashboard: ~139 LOC SvelteKit frontend (out of scope for this milestone)
+- 6 empty scaffold repos: audit, billing, device, identity, infra, ingestion
 
 ## Constraints
 
@@ -165,4 +180,4 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | CI TODO hygiene enforcement | Scan for TODO/FIXME/HACK/XXX on every push/PR | ✓ Good — prevents regression to incomplete code |
 
 ---
-*Last updated: 2026-02-13 after v1.4 milestone completion*
+*Last updated: 2026-02-21 after v1.5 milestone start*
