@@ -18,11 +18,11 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 24 of 27 in v1.5 (Type Centralization)
-Plan: 1 of TBD in current phase
-Status: In progress
-Last activity: 2026-02-21 — 24-01 complete (trustedge-types crate created)
+Plan: 2 of 2 complete in current phase
+Status: Phase 24 complete
+Last activity: 2026-02-21 — 24-02 complete (trustedge-types integrated into core and CI)
 
-Progress: [█░░░░░░░░░] ~10% (v1.5 milestone)
+Progress: [██░░░░░░░░] ~20% (v1.5 milestone)
 
 ## Performance Metrics
 
@@ -38,7 +38,7 @@ Progress: [█░░░░░░░░░] ~10% (v1.5 milestone)
 
 | Phase | Plans | Tasks | Duration |
 |-------|-------|-------|----------|
-| 24. Type Centralization | 1 complete | 2 | 4 min |
+| 24. Type Centralization | 2 complete | 4 | 16 min |
 | 25. Service Consolidation | TBD | - | - |
 | 26. Crypto Deduplication | TBD | - | - |
 | 27. Ghost Repo Cleanup | TBD | - | - |
@@ -52,6 +52,7 @@ Progress: [█░░░░░░░░░] ~10% (v1.5 milestone)
 - [v1.5 roadmap]: Ghost repo cleanup (Phase 27) is independent of service work — can run anytime
 - [v1.5 roadmap]: Dashboard (~139 LOC SvelteKit) deferred — separate technology, future milestone
 - [Phase 24-type-centralization]: schemars 0.8 used (not 1.x) to preserve exact fixture match; no doc comments on structs (schemars includes them as 'description' field breaking fixture match)
+- [Phase 24-type-centralization]: Keep local VerifyReport in trst-cli (out_of_order: bool vs OutOfOrder struct); migrate SegmentRef/VerifyOptions/VerifyRequest to shared types
 
 ### Pending Todos
 
@@ -67,8 +68,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 24-01-PLAN.md (trustedge-types crate + schema generation)
-Resume file: .planning/phases/24-type-centralization/24-01-SUMMARY.md
+Stopped at: Completed 24-02-PLAN.md (trustedge-types integrated into core and CI)
+Resume file: .planning/phases/24-type-centralization/24-02-SUMMARY.md
 
 ---
-*Last updated: 2026-02-21 after completing Phase 24 Plan 01*
+*Last updated: 2026-02-21 after completing Phase 24 Plan 02*

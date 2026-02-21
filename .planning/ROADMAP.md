@@ -68,7 +68,7 @@ Removed all placeholder code, incomplete features, and insecure defaults. Secure
 
 **Milestone Goal:** Consolidate external service repos into the main trustedge workspace, mandate trustedge-core for all crypto, and prune empty scaffold repos.
 
-- [ ] **Phase 24: Type Centralization** - Migrate te_shared wire types into the main workspace as a standalone crate
+- [x] **Phase 24: Type Centralization** - Migrate te_shared wire types into the main workspace as a standalone crate (completed 2026-02-21)
 - [ ] **Phase 25: Service Consolidation** - Merge trustedge-platform-api and trustedge-verify-core into a single trustedge-platform crate
 - [ ] **Phase 26: Crypto Deduplication** - Replace manual crypto/chaining in the merged service with trustedge-core primitives
 - [ ] **Phase 27: Ghost Repo Cleanup** - Archive 6 empty scaffold repos and document their intended scope
@@ -84,7 +84,7 @@ Removed all placeholder code, incomplete features, and insecure defaults. Secure
   2. Uuid and DateTime types match platform-api's implementation — no conflicting type definitions across crates
   3. JSON schema generation for wire types works and produces output equivalent to the shared-libs version
   4. platform-api and verify-core source can reference the workspace crate without import errors
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 24-01-PLAN.md -- Create trustedge-types crate with wire types and schema generation
 - [ ] 24-02-PLAN.md -- Integrate trustedge-types into workspace and core
@@ -139,7 +139,7 @@ Plans:
 | 21. Core Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 22. Pubky Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 23. TODO Hygiene Sweep | v1.4 | 1/1 | Complete | 2026-02-13 |
-| 24. Type Centralization | 1/2 | In Progress|  | - |
+| 24. Type Centralization | 2/2 | Complete   | 2026-02-21 | - |
 | 25. Service Consolidation | v1.5 | 0/TBD | Not started | - |
 | 26. Crypto Deduplication | v1.5 | 0/TBD | Not started | - |
 | 27. Ghost Repo Cleanup | v1.5 | 0/TBD | Not started | - |
