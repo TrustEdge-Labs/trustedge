@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VerifyReport",
+  "type": "object",
+  "required": [
+    "continuity",
+    "device_id",
+    "duration_s",
+    "profile",
+    "segments",
+    "signature",
+    "verify_time_ms"
+  ],
+  "properties": {
+    "chain_tip": {
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "continuity": {
+      "type": "string"
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "duration_s": {
+      "type": "number",
+      "format": "float"
+    },
+    "error": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "first_gap_index": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "out_of_order": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/OutOfOrder"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "profile": {
+      "type": "string"
+    },
+    "segments": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "signature": {
+      "type": "string"
+    },
+    "verify_time_ms": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "OutOfOrder": {
+      "type": "object",
+      "required": [
+        "expected",
+        "found"
+      ],
+      "properties": {
+        "expected": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "found": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

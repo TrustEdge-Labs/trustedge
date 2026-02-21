@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Receipt",
+  "type": "object",
+  "required": [
+    "chain_tip",
+    "continuity",
+    "device_id",
+    "duration_s",
+    "issued_at",
+    "manifest_digest",
+    "profile",
+    "segments",
+    "service_kid",
+    "signature",
+    "verification_id"
+  ],
+  "properties": {
+    "chain_tip": {
+      "type": "string"
+    },
+    "continuity": {
+      "type": "string"
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "duration_s": {
+      "type": "number",
+      "format": "float"
+    },
+    "issued_at": {
+      "type": "string"
+    },
+    "manifest_digest": {
+      "type": "string"
+    },
+    "profile": {
+      "type": "string"
+    },
+    "segments": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "service_kid": {
+      "type": "string"
+    },
+    "signature": {
+      "type": "string"
+    },
+    "verification_id": {
+      "type": "string"
+    }
+  }
+}

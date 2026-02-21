@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VerifyRequest",
+  "type": "object",
+  "required": [
+    "device_pub",
+    "manifest",
+    "segments"
+  ],
+  "properties": {
+    "device_pub": {
+      "type": "string"
+    },
+    "manifest": true,
+    "options": {
+      "default": {
+        "return_receipt": false
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/VerifyOptions"
+        }
+      ]
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/SegmentRef"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "SegmentRef": {
+      "type": "object",
+      "required": [
+        "hash",
+        "index"
+      ],
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "index": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false
+    },
+    "VerifyOptions": {
+      "type": "object",
+      "properties": {
+        "device_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "return_receipt": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

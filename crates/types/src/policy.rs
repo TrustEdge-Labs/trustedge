@@ -9,7 +9,6 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-/// Policy definition for verification requirements.
 #[derive(Serialize, Deserialize, Clone, Debug, Default, JsonSchema)]
 pub struct PolicyV0 {
     pub required_profile: Option<String>,

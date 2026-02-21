@@ -9,7 +9,6 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-/// The result of a verification operation.
 #[derive(Serialize, Deserialize, Clone, Debug, Default, JsonSchema)]
 #[serde(deny_unknown_fields, rename_all = "snake_case")]
 pub struct VerifyReport {
@@ -30,7 +29,6 @@ pub struct VerifyReport {
     pub chain_tip: Option<String>,
 }
 
-/// Describes an out-of-order segment pair in the verification chain.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(deny_unknown_fields, rename_all = "snake_case")]
 pub struct OutOfOrder {

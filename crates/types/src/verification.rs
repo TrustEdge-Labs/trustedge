@@ -11,7 +11,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::verify_report::VerifyReport;
 
-/// A reference to a single verified segment.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(deny_unknown_fields, rename_all = "snake_case")]
 pub struct SegmentRef {
@@ -19,7 +18,6 @@ pub struct SegmentRef {
     pub hash: String,
 }
 
-/// Options controlling verification behavior.
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq, JsonSchema)]
 #[serde(deny_unknown_fields, rename_all = "snake_case")]
 pub struct VerifyOptions {
@@ -29,7 +27,6 @@ pub struct VerifyOptions {
     pub device_id: Option<String>,
 }
 
-/// Request payload sent to the verification service.
 #[derive(Serialize, Deserialize, Clone, Debug, JsonSchema)]
 #[serde(deny_unknown_fields, rename_all = "snake_case")]
 pub struct VerifyRequest {
@@ -40,7 +37,6 @@ pub struct VerifyRequest {
     pub options: VerifyOptions,
 }
 
-/// Response payload returned by the verification service.
 #[derive(Serialize, Deserialize, Clone, Debug, JsonSchema)]
 #[serde(deny_unknown_fields, rename_all = "snake_case")]
 pub struct VerifyResponse {

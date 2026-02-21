@@ -9,10 +9,6 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-/// Verification receipt issued by the TrustEdge verification service.
-///
-/// Note: This is the wire type for service receipts, distinct from the envelope-based
-/// transferable claims Receipt in trustedge-core.
 #[derive(Serialize, Deserialize, Clone, Debug, JsonSchema)]
 pub struct Receipt {
     pub verification_id: String,
