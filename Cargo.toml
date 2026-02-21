@@ -10,6 +10,7 @@
 members = [
     "crates/core",
     "crates/types",
+    "crates/platform",
     "crates/trustedge-cli",
     "crates/attestation",
     "crates/receipts",
@@ -27,6 +28,7 @@ members = [
 # Tier 1 (Stable) — production-committed, tested in CI, maintained:
 #   - trustedge-types         (shared wire types for platform services)
 #   - trustedge-core          (core cryptographic library)
+#   - trustedge-platform      (consolidated verification and CA service)
 #   - trustedge-cli           (main CLI binary)
 #   - trustedge-trst-protocols (archive format definitions)
 #   - trustedge-trst-cli      (archive CLI binary)
@@ -68,7 +70,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_bytes = "0.11"
 serde_json = "1.0"
 schemars = { version = "0.8", features = ["chrono", "uuid1"] }
-uuid = { version = "1", features = ["serde"] }
+uuid = { version = "1", features = ["serde", "v4"] }
 
 # Git operations
 git2 = "0.18"
@@ -94,6 +96,13 @@ wasm-bindgen = "0.2"
 js-sys = "0.3"
 serde-wasm-bindgen = "0.6"
 getrandom = { version = "0.2", features = ["js"] }
+
+# Platform service (feature-gated in trustedge-platform)
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "migrate"] }
+hyper = "1.0"
 
 # Development dependencies
 tokio = { version = "1.0", features = ["full"] }

@@ -1,0 +1,74 @@
+#
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# Project: trustedge — Privacy and trust at the edge.
+#
+
+[package]
+name = "trustedge-platform"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+description = "TrustEdge Platform — consolidated verification and CA service"
+
+[package.metadata.trustedge]
+tier = "stable"
+maintained = true
+
+[lib]
+name = "trustedge_platform"
+path = "src/lib.rs"
+
+# Always-on dependencies (verification core)
+[dependencies]
+trustedge-types = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+blake3 = { workspace = true }
+ed25519-dalek = { workspace = true }
+base64 = "0.22"
+chrono = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }
+tracing = "0.1"
+jsonwebtoken = "9.2"
+regex = "1.0"
+utoipa = { version = "4.0", features = ["axum_extras", "chrono", "uuid"], optional = true }
+
+# Feature-gated: postgres
+sqlx = { workspace = true, optional = true }
+dotenvy = { version = "0.15", optional = true }
+sha2 = { version = "0.10", optional = true }
+bcrypt = { version = "0.15", optional = true }
+
+# Feature-gated: ca
+trustedge-core = { path = "../core", optional = true }
+x509-parser = { version = "0.16", optional = true }
+der = { version = "0.7", optional = true }
+spki = { version = "0.7", optional = true }
+pkcs8 = { version = "0.10", optional = true }
+x509-cert = { version = "0.2", optional = true }
+const-oid = { version = "0.9", optional = true }
+hex = { version = "0.4", optional = true }
+
+# Feature-gated: http
+axum = { workspace = true, optional = true }
+tower = { workspace = true, optional = true }
+tower-http = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+utoipa-swagger-ui = { version = "6.0", features = ["axum"], optional = true }
+
+[features]
+default = []
+postgres = ["dep:sqlx", "dep:dotenvy", "dep:sha2", "dep:bcrypt"]
+ca = ["dep:trustedge-core", "dep:x509-parser", "dep:der", "dep:spki", "dep:pkcs8", "dep:x509-cert", "dep:const-oid", "dep:hex"]
+http = ["dep:axum", "dep:tower", "dep:tower-http", "dep:tokio", "dep:utoipa-swagger-ui"]
+openapi = ["dep:utoipa"]
+
+[dev-dependencies]
+tokio = { workspace = true }
+rand = { workspace = true }
