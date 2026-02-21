@@ -30,6 +30,7 @@ rand_core = { workspace = true, features = ["getrandom"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 trustedge-core = { path = "../core" }
+trustedge-types = { workspace = true }
 hex = { workspace = true }
 chacha20poly1305 = "0.10"
 rand = "0.8"

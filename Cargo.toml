@@ -25,6 +25,7 @@ members = [
 # Crate Classification
 #
 # Tier 1 (Stable) — production-committed, tested in CI, maintained:
+#   - trustedge-types         (shared wire types for platform services)
 #   - trustedge-core          (core cryptographic library)
 #   - trustedge-cli           (main CLI binary)
 #   - trustedge-trst-protocols (archive format definitions)
@@ -57,6 +58,9 @@ hkdf = "0.12"
 
 # Pubky integration
 pubky = "0.5.4"
+
+# Internal workspace crates
+trustedge-types = { path = "crates/types" }
 
 # Serialization
 bincode = "1.3"

@@ -61,6 +61,7 @@ serde = { workspace = true }
 serde_bytes = { workspace = true }
 serde_json = { workspace = true }
 trustedge-trst-protocols = { path = "../trst-protocols" }
+trustedge-types = { workspace = true }
 
 # Crate-specific dependencies not in workspace
 sha2 = "0.10"

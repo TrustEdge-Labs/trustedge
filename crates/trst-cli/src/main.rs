@@ -17,13 +17,16 @@ use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Args, Parser, Subcommand};
 use rand::prelude::*;
 use rand_chacha::ChaCha20Rng;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::time::Instant;
 use trustedge_core::{
     chain_next, encrypt_segment, generate_aad, genesis, read_archive, segment_hash, sign_manifest,
     validate_archive, verify_manifest, write_archive, CamVideoManifest, CaptureInfo, ChunkInfo,
     DeviceInfo, DeviceKeypair, SegmentInfo,
 };
+// Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
+// SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
+use trustedge_types::verification::{SegmentRef, VerifyOptions, VerifyRequest};
 
 #[derive(Debug)]
 struct WrapResult {
@@ -32,6 +35,10 @@ struct WrapResult {
     chunk_count: usize,
 }
 
+// NOTE: Differs from trustedge_types::verify_report::VerifyReport — this version uses
+// `out_of_order: Option<bool>` (a simple presence flag) while the shared type uses
+// `out_of_order: Option<OutOfOrder>` (structured {expected, found} hash strings from ChainError).
+// Kept local to avoid losing the boolean semantics used in CLI output formatting.
 #[derive(Serialize, Default)]
 struct VerifyReport {
     signature: String,  // "pass" | "fail" | "unknown"
@@ -47,26 +54,6 @@ struct VerifyReport {
     first_gap_index: Option<u32>, // Index of first continuity gap
     #[serde(skip_serializing_if = "Option::is_none")]
     out_of_order: Option<bool>, // Whether segments are out of order
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct SegmentRef {
-    index: u32,
-    hash: String, // Formatted as "b3:<hex>"
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct VerifyRequestOptions {
-    return_receipt: bool,
-    device_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct VerifyRequest {
-    device_pub: String,
-    manifest: CamVideoManifest,
-    segments: Vec<SegmentRef>,
-    options: VerifyRequestOptions,
 }
 
 #[derive(Parser, Debug)]
@@ -614,14 +601,17 @@ async fn handle_emit_request(args: EmitRequestCmd) -> Result<()> {
     })?;
     let device_pub = device_pub_content.trim().to_string();
 
-    // Build VerifyRequest
+    // Build VerifyRequest using shared trustedge_types::verification::VerifyRequest.
+    // CamVideoManifest is serialized to serde_json::Value for compatibility with the shared type.
+    let manifest_value = serde_json::to_value(&manifest)
+        .with_context(|| "Failed to serialize manifest to JSON value")?;
     let verify_request = VerifyRequest {
         device_pub: device_pub.clone(),
-        manifest: manifest.clone(),
+        manifest: manifest_value,
         segments,
-        options: VerifyRequestOptions {
+        options: VerifyOptions {
             return_receipt: true,
-            device_id: manifest.device.id.clone(),
+            device_id: Some(manifest.device.id.clone()),
         },
     };
 
