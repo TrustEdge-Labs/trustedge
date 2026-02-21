@@ -98,7 +98,11 @@ Plans:
   2. All device, receipt, verification, and JWKS endpoints respond correctly to requests
   3. The Certificate Authority from trustedge-ca is callable from within the consolidated crate
   4. All 11 integration tests from platform-api and all 17 tests from verify-core pass in the new crate
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 25-01-PLAN.md -- Create trustedge-platform crate with verification core and CA module
+- [ ] 25-02-PLAN.md -- Build HTTP layer and database module with consolidated router
+- [ ] 25-03-PLAN.md -- Migrate all tests and update CI/documentation
 
 ### Phase 26: Crypto Deduplication
 **Goal**: The consolidated service uses only trustedge-core for cryptography — no parallel hand-rolled implementations remain
