@@ -15,6 +15,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.2 Scope Reduction** - Phases 13-14 (shipped 2026-02-12)
 - ✅ **v1.3 Dependency Audit** - Phases 15-18 (shipped 2026-02-13)
 - ✅ **v1.4 Placeholder Elimination** - Phases 19-23 (shipped 2026-02-13)
+- 🚧 **v1.5 Platform Consolidation** - Phases 24-27 (in progress)
 
 ## Phases
 
@@ -63,6 +64,58 @@ Removed all placeholder code, incomplete features, and insecure defaults. Secure
 
 </details>
 
+### 🚧 v1.5 Platform Consolidation (In Progress)
+
+**Milestone Goal:** Consolidate external service repos into the main trustedge workspace, mandate trustedge-core for all crypto, and prune empty scaffold repos.
+
+- [ ] **Phase 24: Type Centralization** - Migrate te_shared wire types into the main workspace as a standalone crate
+- [ ] **Phase 25: Service Consolidation** - Merge trustedge-platform-api and trustedge-verify-core into a single trustedge-platform crate
+- [ ] **Phase 26: Crypto Deduplication** - Replace manual crypto/chaining in the merged service with trustedge-core primitives
+- [ ] **Phase 27: Ghost Repo Cleanup** - Archive 6 empty scaffold repos and document their intended scope
+
+## Phase Details
+
+### Phase 24: Type Centralization
+**Goal**: Shared wire types live in the main trustedge workspace, consumed by all service crates
+**Depends on**: Nothing (first phase of this milestone)
+**Requirements**: TYPE-01, TYPE-02, TYPE-03
+**Success Criteria** (what must be TRUE):
+  1. A `trustedge-shared` (or equivalent) crate exists in the main workspace and builds successfully
+  2. Uuid and DateTime types match platform-api's implementation — no conflicting type definitions across crates
+  3. JSON schema generation for wire types works and produces output equivalent to the shared-libs version
+  4. platform-api and verify-core source can reference the workspace crate without import errors
+**Plans**: TBD
+
+### Phase 25: Service Consolidation
+**Goal**: platform-api and verify-core run as a single unified service in the main workspace
+**Depends on**: Phase 24
+**Requirements**: SVC-01, SVC-02, SVC-03, SVC-04
+**Success Criteria** (what must be TRUE):
+  1. A single `trustedge-platform` crate in the main workspace compiles and starts a server
+  2. All device, receipt, verification, and JWKS endpoints respond correctly to requests
+  3. The Certificate Authority from trustedge-ca is callable from within the consolidated crate
+  4. All 11 integration tests from platform-api and all 17 tests from verify-core pass in the new crate
+**Plans**: TBD
+
+### Phase 26: Crypto Deduplication
+**Goal**: The consolidated service uses only trustedge-core for cryptography — no parallel hand-rolled implementations remain
+**Depends on**: Phase 25
+**Requirements**: CRYPTO-01, CRYPTO-02
+**Success Criteria** (what must be TRUE):
+  1. The manual crypto and chaining code that existed in verify-core is deleted from the codebase
+  2. Verification logic calls `trustedge_core::chain` and `trustedge_core::crypto` directly — no reimplemented equivalents
+  3. All verification tests continue to pass using the core-backed implementation
+**Plans**: TBD
+
+### Phase 27: Ghost Repo Cleanup
+**Goal**: The six empty scaffold repos are archived and their intended scope is recorded
+**Depends on**: Nothing (independent of other phases)
+**Requirements**: REPO-01, REPO-02
+**Success Criteria** (what must be TRUE):
+  1. All 6 repos (audit, billing-service, device-service, identity-service, infra, ingestion-service) are archived on GitHub and no longer accept pushes
+  2. A document in the main workspace records what each ghost repo was intended to become, so the scope is not lost
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -83,6 +136,10 @@ Removed all placeholder code, incomplete features, and insecure defaults. Secure
 | 21. Core Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 22. Pubky Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 23. TODO Hygiene Sweep | v1.4 | 1/1 | Complete | 2026-02-13 |
+| 24. Type Centralization | v1.5 | 0/TBD | Not started | - |
+| 25. Service Consolidation | v1.5 | 0/TBD | Not started | - |
+| 26. Crypto Deduplication | v1.5 | 0/TBD | Not started | - |
+| 27. Ghost Repo Cleanup | v1.5 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-13 after v1.4 milestone completion*
+*Last updated: 2026-02-21 after v1.5 roadmap creation*

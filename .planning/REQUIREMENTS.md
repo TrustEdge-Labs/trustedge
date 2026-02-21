@@ -57,23 +57,23 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SVC-01 | — | Pending |
-| SVC-02 | — | Pending |
-| SVC-03 | — | Pending |
-| SVC-04 | — | Pending |
-| TYPE-01 | — | Pending |
-| TYPE-02 | — | Pending |
-| TYPE-03 | — | Pending |
-| CRYPTO-01 | — | Pending |
-| CRYPTO-02 | — | Pending |
-| REPO-01 | — | Pending |
-| REPO-02 | — | Pending |
+| TYPE-01 | Phase 24 | Pending |
+| TYPE-02 | Phase 24 | Pending |
+| TYPE-03 | Phase 24 | Pending |
+| SVC-01 | Phase 25 | Pending |
+| SVC-02 | Phase 25 | Pending |
+| SVC-03 | Phase 25 | Pending |
+| SVC-04 | Phase 25 | Pending |
+| CRYPTO-01 | Phase 26 | Pending |
+| CRYPTO-02 | Phase 26 | Pending |
+| REPO-01 | Phase 27 | Pending |
+| REPO-02 | Phase 27 | Pending |
 
 **Coverage:**
 - v1.5 requirements: 11 total
-- Mapped to phases: 0
-- Unmapped: 11
+- Mapped to phases: 11
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-21*
-*Last updated: 2026-02-21 after initial definition*
+*Last updated: 2026-02-21 after roadmap creation*
