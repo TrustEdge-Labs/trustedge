@@ -22,9 +22,9 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ### Type Centralization
 
-- [ ] **TYPE-01**: te_shared types live in the main trustedge workspace as a workspace crate
-- [ ] **TYPE-02**: Uuid and DateTime types adopt platform-api's implementation
-- [ ] **TYPE-03**: JSON schema generation capability preserved from shared-libs version
+- [x] **TYPE-01**: te_shared types live in the main trustedge workspace as a workspace crate
+- [x] **TYPE-02**: Uuid and DateTime types adopt platform-api's implementation
+- [x] **TYPE-03**: JSON schema generation capability preserved from shared-libs version
 
 ### Crypto Deduplication
 
@@ -57,9 +57,9 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TYPE-01 | Phase 24 | Pending |
-| TYPE-02 | Phase 24 | Pending |
-| TYPE-03 | Phase 24 | Pending |
+| TYPE-01 | Phase 24 | Complete |
+| TYPE-02 | Phase 24 | Complete |
+| TYPE-03 | Phase 24 | Complete |
 | SVC-01 | Phase 25 | Pending |
 | SVC-02 | Phase 25 | Pending |
 | SVC-03 | Phase 25 | Pending |

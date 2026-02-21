@@ -84,7 +84,7 @@ Removed all placeholder code, incomplete features, and insecure defaults. Secure
   2. Uuid and DateTime types match platform-api's implementation — no conflicting type definitions across crates
   3. JSON schema generation for wire types works and produces output equivalent to the shared-libs version
   4. platform-api and verify-core source can reference the workspace crate without import errors
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 24-01-PLAN.md -- Create trustedge-types crate with wire types and schema generation
 - [ ] 24-02-PLAN.md -- Integrate trustedge-types into workspace and core
@@ -139,7 +139,7 @@ Plans:
 | 21. Core Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 22. Pubky Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 23. TODO Hygiene Sweep | v1.4 | 1/1 | Complete | 2026-02-13 |
-| 24. Type Centralization | v1.5 | 0/2 | Planned | - |
+| 24. Type Centralization | 1/2 | In Progress|  | - |
 | 25. Service Consolidation | v1.5 | 0/TBD | Not started | - |
 | 26. Crypto Deduplication | v1.5 | 0/TBD | Not started | - |
 | 27. Ghost Repo Cleanup | v1.5 | 0/TBD | Not started | - |
