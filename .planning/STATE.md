@@ -66,8 +66,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: v1.5 roadmap created — ready to begin planning Phase 24
-Resume file: None
+Stopped at: Phase 24 context gathered — ready to plan
+Resume file: .planning/phases/24-type-centralization/24-CONTEXT.md
 
 ---
-*Last updated: 2026-02-21 after v1.5 roadmap creation*
+*Last updated: 2026-02-21 after Phase 24 context gathering*
