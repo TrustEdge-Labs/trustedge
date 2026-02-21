@@ -23,6 +23,7 @@ cargo build --workspace --release
 cargo test --workspace
 
 # Test specific crates
+cargo test -p trustedge-types                     # Shared wire types (18 tests)
 cargo test -p trustedge-core --lib                # Core cryptography (160 tests)
 cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
 
@@ -37,10 +38,11 @@ cargo test --features yubikey --test yubikey_integration
 
 ## Architecture Overview
 
-TrustEdge is a Cargo workspace with 10 crates under `crates/`:
+TrustEdge is a Cargo workspace with 11 crates under `crates/`:
 
 **Core Platform:**
-- `trustedge-core` - Core cryptographic library: envelope encryption (AES-256-GCM), Universal Backend system, network client/server, auth, receipts, attestation
+- `trustedge-types` - Shared wire types for platform services (verification, receipts, policies); re-exported from trustedge-core
+- `trustedge-core` - Core cryptographic library: envelope encryption (AES-256-GCM), Universal Backend system, network client/server, auth, receipts, attestation; re-exports trustedge-types
 - `trustedge-cli` - Main CLI for envelope encryption (binary: `trustedge`)
 - `trustedge-receipts` - **Deprecated facade** re-exporting from core (removal planned August 2026)
 - `trustedge-attestation` - **Deprecated facade** re-exporting from core (removal planned August 2026)

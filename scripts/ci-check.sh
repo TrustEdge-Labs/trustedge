@@ -105,6 +105,7 @@ step "Step 4: Clippy (tiered - core blocking, experimental non-blocking)"
 
 # Core crates (blocking)
 if cargo clippy \
+    -p trustedge-types \
     -p trustedge-core \
     -p trustedge-cli \
     -p trustedge-trst-protocols \
@@ -198,6 +199,7 @@ cargo build --workspace --bins --no-default-features
 
 # Core crate tests (blocking)
 if cargo test \
+    -p trustedge-types \
     -p trustedge-core \
     -p trustedge-cli \
     -p trustedge-trst-protocols \
