@@ -139,7 +139,7 @@ Plans:
 | 21. Core Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 22. Pubky Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 23. TODO Hygiene Sweep | v1.4 | 1/1 | Complete | 2026-02-13 |
-| 24. Type Centralization | 2/2 | Complete   | 2026-02-21 | - |
+| 24. Type Centralization | 2/2 | Complete    | 2026-02-21 | - |
 | 25. Service Consolidation | v1.5 | 0/TBD | Not started | - |
 | 26. Crypto Deduplication | v1.5 | 0/TBD | Not started | - |
 | 27. Ghost Repo Cleanup | v1.5 | 0/TBD | Not started | - |
