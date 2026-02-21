@@ -66,6 +66,7 @@ utoipa-swagger-ui = { version = "6.0", features = ["axum"], optional = true }
 default = []
 postgres = ["dep:sqlx", "dep:dotenvy", "dep:sha2", "dep:bcrypt"]
 ca = ["dep:trustedge-core", "dep:x509-parser", "dep:der", "dep:spki", "dep:pkcs8", "dep:x509-cert", "dep:const-oid", "dep:hex"]
+yubikey = ["ca", "trustedge-core/yubikey"]
 http = ["dep:axum", "dep:tower", "dep:tower-http", "dep:tokio", "dep:utoipa-swagger-ui"]
 openapi = ["dep:utoipa"]
 
