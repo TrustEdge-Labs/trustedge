@@ -1,0 +1,37 @@
+#
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# Project: trustedge — Privacy and trust at the edge.
+#
+[package]
+name = "trustedge-types"
+version = "0.2.0"
+edition = "2021"
+description = "Shared wire types for TrustEdge platform services"
+authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
+license = "MPL-2.0"
+repository = "https://github.com/TrustEdge-Labs/trustedge"
+keywords = ["cryptography", "privacy", "edge-computing", "types", "serialization"]
+categories = ["cryptography", "data-structures"]
+
+[lib]
+name = "trustedge_types"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+uuid = { version = "1", features = ["serde"] }
+schemars = { version = "0.8", features = ["chrono", "uuid1"] }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.trustedge]
+tier = "stable"
+maintained = true
