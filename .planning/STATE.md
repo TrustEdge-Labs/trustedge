@@ -13,16 +13,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 24 - Type Centralization
+**Current focus:** Phase 25 - Service Consolidation
 
 ## Current Position
 
-Phase: 24 of 27 in v1.5 (Type Centralization)
-Plan: 2 of 2 complete in current phase
-Status: Phase 24 complete
-Last activity: 2026-02-21 — 24-02 complete (trustedge-types integrated into core and CI)
+Phase: 25 of 27 in v1.5 (Service Consolidation)
+Plan: 1 of 3 complete in current phase
+Status: Phase 25 in progress
+Last activity: 2026-02-21 — 25-01 complete (trustedge-platform crate created with verify + CA modules)
 
-Progress: [██░░░░░░░░] ~20% (v1.5 milestone)
+Progress: [███░░░░░░░] ~25% (v1.5 milestone)
 
 ## Performance Metrics
 
@@ -39,7 +39,7 @@ Progress: [██░░░░░░░░] ~20% (v1.5 milestone)
 | Phase | Plans | Tasks | Duration |
 |-------|-------|-------|----------|
 | 24. Type Centralization | 2 complete | 4 | 16 min |
-| 25. Service Consolidation | TBD | - | - |
+| 25. Service Consolidation | 1 of 3 complete | 2 | 10 min |
 | 26. Crypto Deduplication | TBD | - | - |
 | 27. Ghost Repo Cleanup | TBD | - | - |
 
@@ -53,6 +53,9 @@ Progress: [██░░░░░░░░] ~20% (v1.5 milestone)
 - [v1.5 roadmap]: Dashboard (~139 LOC SvelteKit) deferred — separate technology, future milestone
 - [Phase 24-type-centralization]: schemars 0.8 used (not 1.x) to preserve exact fixture match; no doc comments on structs (schemars includes them as 'description' field breaking fixture match)
 - [Phase 24-type-centralization]: Keep local VerifyReport in trst-cli (out_of_order: bool vs OutOfOrder struct); migrate SegmentRef/VerifyOptions/VerifyRequest to shared types
+- [Phase 25-01]: CA module is private (mod ca not pub mod ca) — Plan 02 exposes via HTTP layer
+- [Phase 25-01]: Phase 26 labels replace all TODO markers in copied CA code; zero TODO markers remain
+- [Phase 25-01]: BackendError (not anyhow::Error) in CAError::Backend — matches trustedge-core API
 
 ### Pending Todos
 
@@ -68,8 +71,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Phase 25 context gathered — ready to plan
-Resume file: .planning/phases/25-service-consolidation/25-CONTEXT.md
+Stopped at: Completed 25-01-PLAN.md (trustedge-platform crate skeleton)
+Resume file: .planning/phases/25-service-consolidation/25-02-PLAN.md
 
 ---
-*Last updated: 2026-02-21 after Phase 25 context gathering*
+*Last updated: 2026-02-21 after 25-01 completion*

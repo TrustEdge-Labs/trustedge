@@ -98,7 +98,7 @@ Plans:
   2. All device, receipt, verification, and JWKS endpoints respond correctly to requests
   3. The Certificate Authority from trustedge-ca is callable from within the consolidated crate
   4. All 11 integration tests from platform-api and all 17 tests from verify-core pass in the new crate
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 Plans:
 - [ ] 25-01-PLAN.md -- Create trustedge-platform crate with verification core and CA module
 - [ ] 25-02-PLAN.md -- Build HTTP layer and database module with consolidated router
@@ -144,7 +144,7 @@ Plans:
 | 22. Pubky Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 23. TODO Hygiene Sweep | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 24. Type Centralization | 2/2 | Complete    | 2026-02-21 | - |
-| 25. Service Consolidation | v1.5 | 0/TBD | Not started | - |
+| 25. Service Consolidation | 1/3 | In Progress|  | - |
 | 26. Crypto Deduplication | v1.5 | 0/TBD | Not started | - |
 | 27. Ghost Repo Cleanup | v1.5 | 0/TBD | Not started | - |
 
