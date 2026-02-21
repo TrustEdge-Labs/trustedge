@@ -68,8 +68,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 24-02-PLAN.md (trustedge-types integrated into core and CI)
-Resume file: .planning/phases/24-type-centralization/24-02-SUMMARY.md
+Stopped at: Phase 25 context gathered — ready to plan
+Resume file: .planning/phases/25-service-consolidation/25-CONTEXT.md
 
 ---
-*Last updated: 2026-02-21 after completing Phase 24 Plan 02*
+*Last updated: 2026-02-21 after Phase 25 context gathering*
