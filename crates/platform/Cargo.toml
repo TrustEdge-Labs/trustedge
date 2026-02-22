@@ -76,3 +76,12 @@ openapi = ["dep:utoipa"]
 [dev-dependencies]
 tokio = { workspace = true }
 rand = { workspace = true }
+ed25519-dalek = { workspace = true }
+anyhow = { workspace = true }
+base64 = "0.22"
+# HTTP integration test utilities
+axum = { workspace = true }
+tower = { workspace = true, features = ["util"] }
+# Platform integration test utilities (DB-backed tests, all #[ignore])
+axum-test = "18.7.0"
+sqlx = { workspace = true }
