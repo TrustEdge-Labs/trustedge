@@ -124,7 +124,9 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. All 6 repos (audit, billing-service, device-service, identity-service, infra, ingestion-service) are archived on GitHub and no longer accept pushes
   2. A document in the main workspace records what each ghost repo was intended to become, so the scope is not lost
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 27-01-PLAN.md -- Verify scaffolds, document scope in CLAUDE.md, update READMEs, archive all 6 repos
 
 ## Progress
 
@@ -149,7 +151,7 @@ Plans:
 | 24. Type Centralization | 2/2 | Complete    | 2026-02-21 | - |
 | 25. Service Consolidation | 3/3 | Complete    | 2026-02-22 | - |
 | 26. Crypto Deduplication | 2/2 | Complete    | 2026-02-22 | - |
-| 27. Ghost Repo Cleanup | v1.5 | 0/TBD | Not started | - |
+| 27. Ghost Repo Cleanup | v1.5 | 0/1 | Not started | - |
 
 ---
 *Last updated: 2026-02-21 after v1.5 roadmap creation*
