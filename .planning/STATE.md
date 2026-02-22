@@ -13,14 +13,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** v1.7 Security & Quality Hardening — Phase 32 complete
+**Current focus:** v1.7 Security & Quality Hardening — Phase 33 in progress
 
 ## Current Position
 
-Phase: 32 of 34 (Workspace Cleanup) — COMPLETE
-Plan: 3 of 3 in phase 32
-Status: Plan 32-03 complete (updated CI scripts and documentation to reflect post-cleanup workspace)
-Last activity: 2026-02-22 — executed 32-03 (CI and documentation cleanup)
+Phase: 33 of 34 (Platform Quality) — IN PROGRESS
+Plan: 2 of ? in phase 33
+Status: Plan 33-02 complete (hardened CORS for both build variants, refactored CA module as library-only with no Axum coupling)
+Last activity: 2026-02-22 — executed 33-02 (CORS hardening and CA module decoupling)
 
 Progress: [████░░░░░░] 42%
 
@@ -34,13 +34,17 @@ Progress: [████░░░░░░] 42%
 - v1.4: 5 phases, 5 plans, 10 tasks
 - v1.5: 4 phases, 8 plans, 16 tasks
 - v1.6: 3 phases, 6 plans, 11 tasks
-- **v1.7 so far: 3 phases, 7 plans, 11 tasks**
-- **Total: 33 phases, 58 plans, 103 tasks**
+- **v1.7 so far: 4 phases, 8 plans, 13 tasks**
+- **Total: 34 phases, 59 plans, 105 tasks**
 
 ## Accumulated Context
 
 ### Decisions
 
+- **33-01:** validate_verify_request_full: 4 checks ordered (segments, device_pub, manifest, hash format) — first-error-wins, matches prior inline handler behavior
+- **33-01:** build_receipt_if_requested: manifest_digest_fn parameter avoids feature-flag coupling in validation.rs
+- **33-01:** postgres handler retains inline receipt construction — DB storage interleaving makes extraction non-trivial
+- **33-01:** Feature-gated imports in handlers.rs to prevent unused-import warnings under each feature combination
 - **31-01:** Implemented Secret<T> in-house rather than adding secrecy crate — zeroize already a workspace dep, API surface is small
 - **31-01:** Used derive(Zeroize, ZeroizeOnDrop) rather than manual impl — cleaner and less error-prone
 - **31-01:** No Display/Deref/Serialize on Secret<T> — using {} or serde is a compile error by design
@@ -69,8 +73,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 32-03-PLAN.md (Updated CI scripts and documentation for post-cleanup workspace)
-Resume at: /gsd:execute-phase 33
+Stopped at: Completed 33-01-PLAN.md (Verify handler deduplication — extracted validate_verify_request_full and build_receipt_if_requested)
+Resume at: Continue phase 33
 
 ---
-*Last updated: 2026-02-22 after executing 32-03*
+*Last updated: 2026-02-22 after executing 33-01*
