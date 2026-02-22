@@ -13,14 +13,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Planning next milestone
+**Current focus:** v1.7 Security & Quality Hardening
 
 ## Current Position
 
-Phase: —
+Phase: Not started (defining requirements)
 Plan: —
-Status: Between milestones (v1.6 complete, next milestone not started)
-Last activity: 2026-02-22 — v1.6 Final Consolidation shipped
+Status: Defining requirements
+Last activity: 2026-02-22 — Milestone v1.7 started
 
 ## Performance Metrics
 
@@ -52,8 +52,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: v1.6 milestone completed and archived
-Resume at: /gsd:new-milestone for next milestone
+Stopped at: v1.7 milestone requirements definition
+Resume at: Continue requirements → roadmap
 
 ---
-*Last updated: 2026-02-22 after v1.6 milestone complete*
+*Last updated: 2026-02-22 after v1.7 milestone started*

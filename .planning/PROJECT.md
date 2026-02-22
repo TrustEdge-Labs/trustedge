@@ -91,7 +91,15 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Active
 
-(None — fresh for next milestone)
+## Current Milestone: v1.7 Security & Quality Hardening
+
+**Goal:** Address reviewer-identified security gaps, remove dead code, harden platform quality.
+
+**Target features:**
+- Secret zeroization for all sensitive fields (PIN, passphrase, JWT secret, password)
+- Removal of deprecated facade crates (receipts, attestation) and Tier 2 workspace separation
+- Platform verify_handler deduplication and CORS hardening
+- Platform-server integration test coverage
 
 ### Deferred
 
@@ -194,4 +202,4 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | debian-slim over alpine for Dockerfile | glibc compatibility with sqlx native-tls | ✓ Good — stable runtime base |
 
 ---
-*Last updated: 2026-02-22 after v1.6 milestone*
+*Last updated: 2026-02-22 after v1.7 milestone started*
