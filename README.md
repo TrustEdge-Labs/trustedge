@@ -117,7 +117,7 @@ Open Core Model:
 
 **v1.3 Dependency Audit** — Feature-gated git2 and keyring, removed unused dependencies via cargo-machete, cargo-audit CI integration, DEPENDENCIES.md with per-dependency justifications
 
-**v1.2 Scope Reduction** — 2-tier crate classification (stable/experimental), tokio feature trimming, tiered CI pipeline (core blocking, experimental non-blocking), dependency tree tracking
+**v1.2 Scope Reduction** — Dependency tree tracking, tokio feature trimming, dependency audit tooling
 
 **v1.1 YubiKey Overhaul** — Rewrote YubiKey backend from scratch: fail-closed design, `yubikey` crate stable API, rcgen for X.509, 18 simulation + 9 hardware tests, unconditional CI
 
@@ -135,46 +135,36 @@ TrustEdge is organized as a Cargo workspace with specialized crates:
 trustedge/
 ├── crates/
 │   ├── core/                     # Core cryptographic library (trustedge-core)
+│   ├── types/                    # Shared wire types (trustedge-types)
+│   ├── platform/                 # Verification and CA service (trustedge-platform)
+│   ├── platform-server/          # Standalone HTTP server binary
 │   ├── trustedge-cli/            # Main envelope encryption CLI (binary: trustedge)
 │   ├── trst-cli/                 # .trst archive CLI tool (trustedge-trst-cli, binary: trst)
-│   ├── trst-protocols/            # Canonical cam.video manifest types (WASM-compatible)
+│   ├── trst-protocols/           # Canonical cam.video manifest types (WASM-compatible)
 │   ├── trst-wasm/                # .trst verification WebAssembly bindings
-│   ├── attestation/              # Software attestation and provenance system
-│   ├── receipts/                 # Digital receipt system with ownership chains
 │   ├── wasm/                     # Core WebAssembly bindings
-│   ├── pubky/                    # Pubky network adapter (community/experimental)
-│   └── pubky-advanced/           # Advanced Pubky integration (community/experimental)
+│   └── experimental/             # Separate workspace for community/experimental crates
+│       ├── pubky/                # Pubky network adapter
+│       └── pubky-advanced/       # Advanced Pubky integration
 ├── examples/                     # Example implementations and demos
 └── docs/                         # Documentation and guides
 ```
 
-### Crate Classification
-
-TrustEdge uses a 2-tier classification system:
-
-| Tier | Crates | CI Policy | Maintenance |
-|------|--------|-----------|-------------|
-| **Tier 1 (Stable)** | core, cli, trst-protocols, trst-cli, trst-wasm | Full CI (blocking) | Actively maintained |
-| **Tier 2 (Experimental)** | wasm, pubky, pubky-advanced, receipts, attestation | Build-only (non-blocking) | No maintenance commitment |
-
-**Tier 1** crates are production-committed and receive comprehensive testing in CI. Failures block merge.
-
-**Tier 2** crates are community contributions or experimental. They build in CI but failures do not block core development. See individual crate READMEs for details.
+> **Experimental crates** (`trustedge-pubky`, `trustedge-pubky-advanced`) live in `crates/experimental/` as a separate Cargo workspace. They are not part of the root workspace build or CI pipeline.
 
 ### Crate Overview
 
-| Crate | Purpose | Tier | Documentation |
-|-------|---------|------|---------------|
-| **trustedge-core** | Core cryptographic library with envelope encryption | Stable | [Core Documentation](crates/core/) |
-| **trustedge-cli** | Main CLI for envelope encryption (binary: `trustedge`) | Stable | [CLI Documentation](crates/trustedge-cli/) |
-| **trustedge-trst-cli** | CLI for .trst archive creation and verification (binary: `trst`) | Stable | [Archive CLI Documentation](crates/trst-cli/) |
-| **trustedge-trst-protocols** | Canonical cam.video manifest types (WASM-compatible) | Stable | [Archive Format Documentation](crates/trst-protocols/) |
-| **trustedge-trst-wasm** | .trst archive verification in the browser | Stable | [Archive WASM Documentation](crates/trst-wasm/) |
-| **trustedge-attestation** | Software attestation and provenance tracking | Experimental | [Attestation Documentation](crates/attestation/) |
-| **trustedge-receipts** | Digital receipt system with cryptographic ownership transfer | Experimental | [Receipt Documentation](crates/receipts/) |
-| **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | Experimental | [WASM Documentation](crates/wasm/) |
-| **trustedge-pubky** | Pubky network adapter (community/experimental) | Experimental | [Pubky Documentation](crates/pubky/) |
-| **trustedge-pubky-advanced** | Hybrid encryption for Pubky (community/experimental) | Experimental | [Advanced Pubky Documentation](crates/pubky-advanced/) |
+| Crate | Purpose | Documentation |
+|-------|---------|---------------|
+| **trustedge-types** | Shared wire types for platform services (verification, receipts, policies) | [Types Documentation](crates/types/) |
+| **trustedge-core** | Core cryptographic library with envelope encryption | [Core Documentation](crates/core/) |
+| **trustedge-platform** | Consolidated verification and CA service (feature-gated: http, postgres, ca, yubikey) | [Platform Documentation](crates/platform/) |
+| **trustedge-platform-server** | Standalone HTTP server binary | [Server Documentation](crates/platform-server/) |
+| **trustedge-cli** | Main CLI for envelope encryption (binary: `trustedge`) | [CLI Documentation](crates/trustedge-cli/) |
+| **trustedge-trst-cli** | CLI for .trst archive creation and verification (binary: `trst`) | [Archive CLI Documentation](crates/trst-cli/) |
+| **trustedge-trst-protocols** | Canonical cam.video manifest types (WASM-compatible) | [Archive Format Documentation](crates/trst-protocols/) |
+| **trustedge-trst-wasm** | .trst archive verification in the browser | [Archive WASM Documentation](crates/trst-wasm/) |
+| **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | [WASM Documentation](crates/wasm/) |
 
 ---
 
@@ -325,7 +315,7 @@ TrustEdge includes a **production-ready digital receipt system** that enables cr
 - Attack resistance against tampering, replay, and forgery
 - 23 comprehensive security tests covering all attack scenarios
 
-**📖 For complete receipt system documentation, see [crates/receipts/](crates/receipts/).**
+**📖 For complete receipt system documentation, see [crates/core/](crates/core/).**
 
 ### Network Operations
 

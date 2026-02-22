@@ -11,7 +11,9 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ### Overview
 
-As part of the TrustEdge workspace consolidation project (Phases 4-7), all receipts and attestation functionality has been merged into `trustedge-core`. The standalone `trustedge-receipts` and `trustedge-attestation` crates now serve as deprecated facades that re-export from core.
+As part of the TrustEdge workspace consolidation project (Phases 4-7), all receipts and attestation functionality was merged into `trustedge-core`. The standalone `trustedge-receipts` and `trustedge-attestation` crates served as deprecated re-export facades.
+
+**As of v1.7 (February 2026), these facade crates have been removed from the workspace entirely.** They were never published to crates.io, so no yanking was needed. Git history preserves the removed code.
 
 **Why this change:**
 - **Single source of truth**: Core cryptographic operations centralized in one place
@@ -25,9 +27,9 @@ As part of the TrustEdge workspace consolidation project (Phases 4-7), all recei
 |---------|------|--------|
 | 0.2.0 | January 2026 | Facades active, no warnings |
 | 0.3.0 | February 2026 | Facades deprecated, compiler warnings issued |
-| 0.4.0 | August 2026 | Facades removed from workspace (breaking change) |
+| 0.4.0 / v1.7 | February 2026 | Facades **removed** from workspace (complete) |
 
-You have a **6-month migration window** to update your code.
+Migration is required. Use `trustedge-core` directly.
 
 ---
 
@@ -175,15 +177,6 @@ cargo clippy -- -D warnings
 3. Update those dependencies in your `Cargo.toml`
 4. If upstream dependencies haven't migrated yet, you may need to wait or contact the maintainers
 
-### Deprecation warnings during build
-
-**Cause:** You're using version 0.3.0 of the facade crates, which emit deprecation warnings.
-
-**Solution:**
-- This is expected behavior during the migration window
-- Follow the migration steps above to update to `trustedge-core`
-- Once migrated, warnings will disappear
-
 ### Shell crates (CLIs, WASM) fail to build after migration
 
 **Cause:** This should NOT happen. All TrustEdge shell crates (CLI tools, WASM bindings) already use `trustedge-core` directly.
@@ -200,9 +193,6 @@ If you encounter issues not covered in this guide:
 
 - **Check the CHANGELOG**: See [CHANGELOG.md](CHANGELOG.md) for deprecation notices and version history
 - **Open an issue**: https://github.com/TrustEdge-Labs/trustedge/issues
-- **Review facade READMEs**: Each deprecated crate has a README with specific migration instructions:
-  - [crates/receipts/README.md](crates/receipts/README.md)
-  - [crates/attestation/README.md](crates/attestation/README.md)
 
 ---
 
@@ -219,10 +209,6 @@ If you maintain a library that depends on `trustedge-receipts` or `trustedge-att
 
 ---
 
-## Timeline Reminder
+## Migration Complete
 
-- **Now through August 2026**: Update at your convenience using this guide
-- **August 2026 (version 0.4.0)**: Facade crates will be removed
-- **After 0.4.0**: Projects still using facades will fail to compile
-
-We recommend migrating as soon as possible to avoid last-minute issues before the 0.4.0 deadline.
+The facade crates (`trustedge-receipts`, `trustedge-attestation`) have been removed as of v1.7. All TrustEdge shell crates already use `trustedge-core` directly. External projects that referenced these crates (which were never published to crates.io) should use `trustedge-core` directly.

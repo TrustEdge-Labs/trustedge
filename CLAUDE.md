@@ -60,27 +60,23 @@ The dashboard is a SvelteKit app that provides a web UI for managing devices and
 
 ## Architecture Overview
 
-TrustEdge is a Cargo workspace with 12 crates under `crates/`:
+TrustEdge is a Cargo workspace with 9 crates under `crates/` (plus `examples/cam.video`):
 
 **Core Platform:**
 - `trustedge-types` - Shared wire types for platform services (verification, receipts, policies); re-exported from trustedge-core
 - `trustedge-core` - Core cryptographic library: envelope encryption (AES-256-GCM), Universal Backend system, network client/server, auth, receipts, attestation; re-exports trustedge-types
 - `trustedge-platform` - Consolidated verification and CA service: BLAKE3+Ed25519 verify engine, JWKS key manager, Axum HTTP layer, PostgreSQL multi-tenant backend; feature flags: `http`, `postgres`, `ca`, `yubikey`, `openapi`
+- `trustedge-platform-server` - Standalone HTTP server binary (Axum + clap CLI)
 - `trustedge-cli` - Main CLI for envelope encryption (binary: `trustedge`)
-- `trustedge-receipts` - **Deprecated facade** re-exporting from core (removal planned August 2026)
-- `trustedge-attestation` - **Deprecated facade** re-exporting from core (removal planned August 2026)
 - `trustedge-wasm` - WebAssembly bindings for browser integration
-
-**Pubky Network Integration (Community/Experimental):**
-- `trustedge-pubky` - Simple adapter for Pubky network key publishing/resolution
-- `trustedge-pubky-advanced` - Hybrid encryption with X25519 ECDH for Pubky
-
-> Note: Pubky crates are community contributions for [Pubky](https://pubky.org) ecosystem integration. They are not part of the core product roadmap. Core functionality uses `trustedge-core` directly.
 
 **Archive System (.trst format):**
 - `trustedge-trst-protocols` - Canonical cam.video manifest types (WASM-compatible, minimal dependencies)
 - `trustedge-trst-cli` - CLI tool (binary: `trst`) for wrap/verify operations
 - `trustedge-trst-wasm` - Browser verification (imports manifest types from trst-protocols)
+
+**Experimental Crates:**
+- Experimental community crates (`trustedge-pubky`, `trustedge-pubky-advanced`) live in `crates/experimental/` as a separate standalone workspace. They are not part of the root workspace or CI pipeline.
 
 **Web Dashboard:**
 - `web/dashboard/` - SvelteKit admin dashboard for device management and receipt viewing
@@ -97,7 +93,7 @@ TrustEdge is a Cargo workspace with 12 crates under `crates/`:
 | `manifest.rs` | Canonical JSON serialization for cam.video profile |
 | `auth.rs` | Ed25519 mutual authentication with sessions |
 | `audio.rs` | Live audio capture (feature-gated) |
-| `hybrid.rs` | RSA hybrid encryption (Pubky integration only) |
+| `hybrid.rs` | RSA hybrid encryption (asymmetric operations) |
 
 ### Data Flow
 

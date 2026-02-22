@@ -212,29 +212,6 @@ cd web/demo && npx serve .     # Serve at http://localhost:3000
 
 ---
 
-## 📦 Other Crate Features
-
-### `trustedge-attestation`
-
-```toml
-[features]
-symbols = []  # Include debug symbols in attestation
-```
-
-**Purpose**: Enables debug symbol extraction for software attestation.
-
-**Build Command**:
-```bash
-cargo build -p trustedge-attestation --features symbols
-```
-
-**What It Does**:
-- Extracts function symbols from compiled binaries
-- Includes symbol table in attestation artifacts
-- Useful for debugging and verification
-
----
-
 ## 🔍 Feature Detection at Runtime
 
 ### Checking Available Features

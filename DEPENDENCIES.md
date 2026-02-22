@@ -1,31 +1,42 @@
 # TrustEdge Dependency Audit
 
 **Last audited:** 2026-02-22
-**Milestone:** v1.5 (Platform Consolidation)
-**Scope:** All 12 workspace crates (6 stable tier, 5 experimental tier, 1 pending classification)
+**Milestone:** v1.7 (Security & Quality Hardening — Workspace Cleanup)
+**Scope:** All 9 root workspace crates
 
 This document provides comprehensive documentation of all dependencies across the TrustEdge workspace, with per-dependency justifications and security rationale for critical dependencies.
 
+> **Experimental crates** (`trustedge-pubky`, `trustedge-pubky-advanced`) live in `crates/experimental/` as a separate Cargo workspace. They are not part of the root workspace and are not covered in this audit.
+
 ## Table of Contents
 
-**Stable Tier (Production-Committed):**
-- [trustedge-platform](#trustedge-platform) - Consolidated verification and CA service (added v1.5)
+**Root Workspace Crates:**
+- [trustedge-types](#trustedge-types) - Shared wire types
+- [trustedge-platform](#trustedge-platform) - Consolidated verification and CA service
 - [trustedge-core](#trustedge-core) - Core cryptographic library
 - [trustedge-cli](#trustedge-cli) - Main CLI for envelope encryption
 - [trustedge-trst-protocols](#trustedge-trst-protocols) - Archive format definitions
 - [trustedge-trst-cli](#trustedge-trst-cli) - Archive CLI tool
 - [trustedge-trst-wasm](#trustedge-trst-wasm) - Browser archive verification
-
-**Experimental Tier (Community/Experimental):**
 - [trustedge-wasm](#trustedge-wasm) - General WASM bindings
-- [trustedge-pubky](#trustedge-pubky) - Pubky network adapter
-- [trustedge-pubky-advanced](#trustedge-pubky-advanced) - Pubky hybrid encryption
-- [trustedge-receipts](#trustedge-receipts) - Re-export facade (deprecated)
-- [trustedge-attestation](#trustedge-attestation) - Re-export facade (deprecated)
 
 **Additional Sections:**
 - [Security-Critical Dependency Rationale](#security-critical-dependency-rationale)
 - [Workspace Dependency Summary](#workspace-dependency-summary)
+
+---
+
+## trustedge-types
+
+Shared wire types for platform services (VerifyRequest, SegmentRef, VerifyReceipt, PolicySet, etc.).
+
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| serde | 1.0 | Serialization traits for all wire types | Used |
+| serde_json | 1.0 | JSON serialization for API wire types | Used |
+| schemars | 0.8 | JSON Schema generation for TypeScript type generation | Used |
+| uuid | 1 | UUID types for request/receipt IDs | Used |
+| chrono | 0.4 | DateTime types for timestamps | Used |
 
 ---
 
@@ -268,76 +279,6 @@ General WebAssembly bindings for TrustEdge cryptographic operations.
 
 ---
 
-## trustedge-pubky
-
-Simple adapter for Pubky network key publishing/resolution.
-
-| Dependency | Version | Justification | Status |
-|------------|---------|---------------|--------|
-| trustedge-core | path | Core library dependency | Used |
-| pubky | 0.5.4 | Pubky network client for key publishing/resolution | Used |
-| anyhow | 1.0 | Error handling for CLI binary | Used |
-| tokio | 1.0 | Async runtime for Pubky network operations | Used |
-| serde | 1.0 | JSON serialization for Pubky messages | Used |
-| serde_json | 1.0 | JSON serialization for Pubky messages | Used |
-| hex | 0.4 | Hex encoding for key display | Used |
-| thiserror | 1.0 | Structured error types | Used |
-| rand | 0.8 | Random number generation | Used |
-| clap | 4.5 | CLI argument parsing for trustedge-pubky binary | Used |
-
----
-
-## trustedge-pubky-advanced
-
-Hybrid encryption with X25519 ECDH for Pubky ecosystem integration.
-
-| Dependency | Version | Justification | Status |
-|------------|---------|---------------|--------|
-| trustedge-core | path | Core library dependency | Used |
-| pubky | 0.5.4 | Pubky network client | Used |
-| ed25519-dalek | 2 | Ed25519 signing for hybrid encryption | Used |
-| x25519-dalek | 2.0 | X25519 ECDH key agreement | Used |
-| aes-gcm | 0.10.3 | AES-256-GCM for hybrid encryption | Used |
-| hkdf | 0.12 | HKDF key derivation for hybrid encryption | Used |
-| blake3 | 1.5 | Hashing for key derivation | Used |
-| sha2 | 0.10 | SHA-256 for HKDF (used directly, not workspace) | Used |
-| serde | 1.0 | Serialization for hybrid messages | Used |
-| serde_json | 1.0 | JSON serialization for hybrid messages | Used |
-| bincode | 1.3 | Binary serialization for hybrid messages | Used |
-| anyhow | 1.0 | Error handling | Used |
-| hex | 0.4 | Hex encoding for keys | Used |
-| zeroize | 1.7 | Secure memory zeroing for key material | Used |
-| rand | 0.8 | Random number generation | Used |
-| thiserror | 1.0 | Structured error types | Used |
-| tokio | 1.0 | Async runtime | Used |
-| reqwest | 0.11 | HTTP client for Pubky network operations | Used |
-
----
-
-## trustedge-receipts
-
-Re-export facade for trustedge-core receipts module (deprecated, removal planned August 2026).
-
-| Dependency | Version | Justification | Status |
-|------------|---------|---------------|--------|
-| trustedge-core | path | Re-export facade (deprecated, removal planned August 2026) | Used (facade) |
-
-**Note:** Users should migrate to using `trustedge-core` directly. This crate provides no additional functionality.
-
----
-
-## trustedge-attestation
-
-Re-export facade for trustedge-core attestation module (deprecated, removal planned August 2026).
-
-| Dependency | Version | Justification | Status |
-|------------|---------|---------------|--------|
-| trustedge-core | path | Re-export facade (deprecated, removal planned August 2026) | Used (facade) |
-
-**Note:** Users should migrate to using `trustedge-core` directly. This crate provides no additional functionality.
-
----
-
 ## Security-Critical Dependency Rationale
 
 This section provides detailed justification for dependencies that handle cryptographic operations, TLS/transport security, or key storage. Each entry explains what the dependency does, why it was chosen over alternatives, how TrustEdge uses it, and any known security considerations.
@@ -352,31 +293,27 @@ This section provides detailed justification for dependencies that handle crypto
 
 **4. blake3**: Cryptographic hash function. Used for continuity chain hashing, manifest verification, and key derivation. Chosen over SHA-256 for performance (parallelizable, SIMD-optimized) while maintaining 256-bit security. Used across core, cli, trst-cli, and pubky-advanced.
 
-**5. rsa**: RSA asymmetric encryption. Used ONLY in Pubky hybrid encryption (experimental) and YubiKey PIV operations (feature-gated). NOT used in core production encryption path (which is Ed25519 + AES-256-GCM). Known advisory RUSTSEC-2023-0071 (Marvin Attack) accepted with risk documentation in .cargo/audit.toml since TrustEdge does not use RSA for decryption timing-sensitive operations.
+**5. rsa**: RSA asymmetric encryption. Used in asymmetric.rs for RSA operations and YubiKey PIV operations (feature-gated). NOT used in core production encryption path (which is Ed25519 + AES-256-GCM). Known advisory RUSTSEC-2023-0071 (Marvin Attack) accepted with risk documentation in .cargo/audit.toml since TrustEdge does not use RSA for decryption timing-sensitive operations.
 
 **6. p256** (NIST P-256 ECDH): Used in Software HSM backend for ECDH key agreement. Provides P-256 elliptic curve operations for backends that require NIST-approved algorithms.
 
-**7. x25519-dalek** (X25519): Used in trustedge-pubky-advanced for Diffie-Hellman key agreement in hybrid encryption. Provides modern elliptic curve key exchange complementing Ed25519 signing.
-
-**8. hkdf**: HMAC-based Key Derivation Function. Used in pubky-advanced for deriving symmetric keys from ECDH shared secrets. Industry-standard KDF specified in RFC 5869.
-
-**9. pbkdf2**: Password-based key derivation. Used in keyring backend for deriving encryption keys from stored secrets. Provides intentionally slow key derivation to resist brute-force attacks.
+**7. pbkdf2**: Password-based key derivation. Used in keyring backend for deriving encryption keys from stored secrets. Provides intentionally slow key derivation to resist brute-force attacks.
 
 ### TLS and Transport Security
 
-**10. rustls**: TLS implementation for QUIC transport. Pure-Rust TLS 1.3 library, chosen over OpenSSL bindings for portability and memory safety. Used by quinn for QUIC connection encryption.
+**8. rustls**: TLS implementation for QUIC transport. Pure-Rust TLS 1.3 library, chosen over OpenSSL bindings for portability and memory safety. Used by quinn for QUIC connection encryption.
 
-**11. quinn**: QUIC transport protocol implementation. Provides encrypted, multiplexed connections for TrustEdge's network transport layer. Built on rustls for TLS 1.3 support.
+**9. quinn**: QUIC transport protocol implementation. Provides encrypted, multiplexed connections for TrustEdge's network transport layer. Built on rustls for TLS 1.3 support.
 
 ### Key Storage and Hardware Security
 
-**12. keyring** (feature-gated): OS keyring integration for secure key storage. Provides cross-platform access to macOS Keychain, Windows Credential Manager, and Linux Secret Service. Feature-gated behind `keyring` flag to avoid platform-specific dependencies in default builds.
+**10. keyring** (feature-gated): OS keyring integration for secure key storage. Provides cross-platform access to macOS Keychain, Windows Credential Manager, and Linux Secret Service. Feature-gated behind `keyring` flag to avoid platform-specific dependencies in default builds.
 
-**13. yubikey** (feature-gated): YubiKey hardware security module interface. Provides PIV (Personal Identity Verification) operations for hardware-backed key storage and signing. Feature-gated behind `yubikey` flag. Depends on system PCSC daemon for hardware communication.
+**11. yubikey** (feature-gated): YubiKey hardware security module interface. Provides PIV (Personal Identity Verification) operations for hardware-backed key storage and signing. Feature-gated behind `yubikey` flag. Depends on system PCSC daemon for hardware communication.
 
-**14. zeroize**: Secure memory zeroing for cryptographic key material. Ensures keys are wiped from memory after use, preventing cold-boot and memory-dump attacks. Used across core, cli, and pubky-advanced for all key types.
+**12. zeroize**: Secure memory zeroing for cryptographic key material. Ensures keys are wiped from memory after use, preventing cold-boot and memory-dump attacks. Used across core and cli for all key types.
 
-**15. rcgen** (feature-gated): X.509 certificate generation for YubiKey operations. Generates self-signed certificates for PIV slot operations. Only compiled with yubikey feature.
+**13. rcgen** (feature-gated): X.509 certificate generation for YubiKey operations. Generates self-signed certificates for PIV slot operations. Only compiled with yubikey feature.
 
 ---
 
@@ -394,17 +331,14 @@ The workspace defines shared dependencies in `[workspace.dependencies]` to minim
 - rand 0.8
 - rand_core 0.6
 - rsa 0.9.10 (with pem feature)
-- x25519-dalek 2.0 (with static_secrets feature)
-- hkdf 0.12
-
-**Pubky Integration:**
-- pubky 0.5.4
 
 **Serialization:**
 - bincode 1.3
 - serde 1.0 (with derive feature)
 - serde_bytes 0.11
 - serde_json 1.0
+- schemars 0.8 (with chrono, uuid1 features)
+- uuid 1 (with serde, v4 features)
 
 **Git Operations:**
 - git2 0.18
@@ -438,15 +372,9 @@ The workspace defines shared dependencies in `[workspace.dependencies]` to minim
 **Development:**
 - tokio 1.0 (with full feature set for development only)
 
-**Note on Crate Classification:**
+**Note on Crate Structure:**
 
-The TrustEdge workspace uses a 2-tier classification system:
-
-- **Stable tier (6 crates):** Production-committed, tested in CI, actively maintained. These crates have `tier = "stable"` and `maintained = true` in their `[package.metadata.trustedge]` section. Includes: `trustedge-platform` (added v1.5), `trustedge-types`, `trustedge-core`, `trustedge-cli`, `trustedge-trst-protocols`, `trustedge-trst-cli`, `trustedge-trst-wasm`.
-
-- **Experimental tier (5 crates):** Community/experimental, build-only CI validation, no maintenance commitment. These crates have `tier = "experimental"` and `maintained = false` in their `[package.metadata.trustedge]` section.
-
-CI is tiered: stable crate test failures block builds, experimental crate failures are informational only.
+The TrustEdge root workspace contains 9 production crates. All root workspace crates are tested in CI — test failures block merges. Experimental community crates (`trustedge-pubky`, `trustedge-pubky-advanced`) live in a separate workspace at `crates/experimental/` and are not part of the root workspace build or CI.
 
 ---
 
