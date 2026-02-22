@@ -13,16 +13,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** v1.7 Security & Quality Hardening — Phase 31: Secret Hardening
+**Current focus:** v1.7 Security & Quality Hardening — Phase 32 next
 
 ## Current Position
 
-Phase: 31 of 34 (Secret Hardening)
-Plan: 1 of 1 in current phase
+Phase: 31 of 34 (Secret Hardening) — COMPLETE
+Plan: 2 of 2 in phase 31
 Status: Phase 31 complete
-Last activity: 2026-02-22 — executed 31-01 (Secret<T> wrapper type)
+Last activity: 2026-02-22 — executed 31-02 (Config secret hardening: YubiKeyConfig + SoftwareHsmConfig)
 
-Progress: [█░░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -34,7 +34,8 @@ Progress: [█░░░░░░░░░] 10%
 - v1.4: 5 phases, 5 plans, 10 tasks
 - v1.5: 4 phases, 8 plans, 16 tasks
 - v1.6: 3 phases, 6 plans, 11 tasks
-- **Total: 30 phases, 51 plans, 92 tasks**
+- **v1.7 so far: 1 phase, 2 plans, 4 tasks**
+- **Total: 31 phases, 53 plans, 96 tasks**
 
 ## Accumulated Context
 
@@ -43,6 +44,9 @@ Progress: [█░░░░░░░░░] 10%
 - **31-01:** Implemented Secret<T> in-house rather than adding secrecy crate — zeroize already a workspace dep, API surface is small
 - **31-01:** Used derive(Zeroize, ZeroizeOnDrop) rather than manual impl — cleaner and less error-prone
 - **31-01:** No Display/Deref/Serialize on Secret<T> — using {} or serde is a compile error by design
+- **31-02:** Builder pattern chosen over public struct fields — prevents accidental bypass of Secret<T> wrapping
+- **31-02:** pin() and default_passphrase() getters return &str via expose_secret() — minimal exposure surface
+- **31-02:** Stale pkcs11_module_path/slot fields in platform CA service removed (auto-fix Rule 1)
 
 ### Pending Todos
 
@@ -56,8 +60,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 31-01-PLAN.md (Secret<T> wrapper type)
-Resume at: /gsd:execute-phase 32 (or next plan in phase 31 if any)
+Stopped at: Completed 31-02-PLAN.md (Config secret hardening)
+Resume at: /gsd:execute-phase 32
 
 ---
-*Last updated: 2026-02-22 after executing 31-01*
+*Last updated: 2026-02-22 after executing 31-02*

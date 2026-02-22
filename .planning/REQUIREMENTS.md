@@ -19,7 +19,7 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 
 - [x] **SEC-01**: All sensitive fields (PIN, passphrase, JWT secret) are zeroized on drop
 - [x] **SEC-02**: Debug output redacts sensitive fields instead of printing plaintext
-- [ ] **SEC-03**: Serialize/Deserialize removed from config structs that contain secrets (YubiKeyConfig, SoftwareHsmConfig)
+- [x] **SEC-03**: Serialize/Deserialize removed from config structs that contain secrets (YubiKeyConfig, SoftwareHsmConfig)
 - [ ] **SEC-04**: LoginRequest.password is not leaked via Debug or accidental serialization
 
 ### Workspace Hygiene
@@ -68,7 +68,7 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 |-------------|-------|--------|
 | SEC-01 | Phase 31 | Complete |
 | SEC-02 | Phase 31 | Complete |
-| SEC-03 | Phase 31 | Pending |
+| SEC-03 | Phase 31 | Complete |
 | SEC-04 | Phase 31 | Pending |
 | WRK-01 | Phase 32 | Pending |
 | WRK-02 | Phase 32 | Pending |
@@ -88,4 +88,4 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after v1.7 roadmap created — all 14 requirements mapped to phases 31-34*
+*Last updated: 2026-02-22 after 31-02 — SEC-03 complete (YubiKeyConfig + SoftwareHsmConfig serde removed)*
