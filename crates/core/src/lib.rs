@@ -154,6 +154,8 @@ pub use crypto::{
     decrypt_segment, encrypt_segment, format_nonce, generate_aad, generate_nonce24, parse_nonce,
     sign_manifest, verify_manifest, CryptoError, DeviceKeypair,
 };
+// Ed25519 types re-exported for downstream crates (JWKS, key management)
+pub use ed25519_dalek::{SigningKey, VerifyingKey};
 pub use envelope::{Envelope, EnvelopeMetadata};
 pub use error::ManifestError; // ManifestError is re-exported from error.rs (which aliases ManifestFormatError)
 pub use error::{BackendError, TransportError, TrustEdgeError};

@@ -10,10 +10,10 @@
 
 use anyhow::{anyhow, Result};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
-use ed25519_dalek::{SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::{fs, path::Path};
+use trustedge_core::{SigningKey, VerifyingKey};
 
 #[derive(Debug, Clone)]
 pub struct KeyManager {
