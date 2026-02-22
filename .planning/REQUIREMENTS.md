@@ -32,8 +32,8 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 ### Platform Quality
 
 - [x] **PLT-01**: verify_handler shared validation logic extracted into single always-compiled function
-- [ ] **PLT-02**: Verify-only (non-postgres) build uses restrictive CORS instead of permissive
-- [ ] **PLT-03**: CA module routes either wired into router or documented as library-only
+- [x] **PLT-02**: Verify-only (non-postgres) build uses restrictive CORS instead of permissive
+- [x] **PLT-03**: CA module routes either wired into router or documented as library-only
 
 ### Platform Testing
 
@@ -75,8 +75,8 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 | WRK-03 | Phase 32 | Complete |
 | WRK-04 | Phase 32 | Complete |
 | PLT-01 | Phase 33 | Complete |
-| PLT-02 | Phase 33 | Pending |
-| PLT-03 | Phase 33 | Pending |
+| PLT-02 | Phase 33 | Complete |
+| PLT-03 | Phase 33 | Complete |
 | TST-01 | Phase 34 | Pending |
 | TST-02 | Phase 34 | Pending |
 | TST-03 | Phase 34 | Pending |

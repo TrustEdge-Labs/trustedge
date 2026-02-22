@@ -34,13 +34,16 @@ Progress: [████░░░░░░] 42%
 - v1.4: 5 phases, 5 plans, 10 tasks
 - v1.5: 4 phases, 8 plans, 16 tasks
 - v1.6: 3 phases, 6 plans, 11 tasks
-- **v1.7 so far: 4 phases, 8 plans, 13 tasks**
-- **Total: 34 phases, 59 plans, 105 tasks**
+- **v1.7 so far: 4 phases, 9 plans, 15 tasks**
+- **Total: 34 phases, 60 plans, 107 tasks**
 
 ## Accumulated Context
 
 ### Decisions
 
+- **33-02:** CorsLayer::new() used for verify-only build — tower-http default denies all cross-origin, no explicit deny config needed
+- **33-02:** CA api.rs validate functions return CAError instead of String — cleaner for library callers, consistent with module error type
+- **33-02:** Removed #[cfg(feature = "http")] gate on pub mod api — api.rs no longer imports axum, compiles with just ca feature
 - **33-01:** validate_verify_request_full: 4 checks ordered (segments, device_pub, manifest, hash format) — first-error-wins, matches prior inline handler behavior
 - **33-01:** build_receipt_if_requested: manifest_digest_fn parameter avoids feature-flag coupling in validation.rs
 - **33-01:** postgres handler retains inline receipt construction — DB storage interleaving makes extraction non-trivial
@@ -73,8 +76,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 33-01-PLAN.md (Verify handler deduplication — extracted validate_verify_request_full and build_receipt_if_requested)
+Stopped at: Completed 33-02-PLAN.md (CORS hardening and CA module decoupling — deny-all CORS for verify-only, explicit headers for postgres, CA api.rs as plain service functions)
 Resume at: Continue phase 33
 
 ---
-*Last updated: 2026-02-22 after executing 33-01*
+*Last updated: 2026-02-22 after executing 33-02*
