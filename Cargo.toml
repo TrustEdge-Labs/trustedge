@@ -14,28 +14,24 @@ members = [
     "crates/platform-server",
     "crates/trustedge-cli",
     "crates/wasm",
-    "crates/pubky",
-    "crates/pubky-advanced",
     "crates/trst-protocols",
     "crates/trst-cli",
     "crates/trst-wasm",
     "examples/cam.video",
 ]
 
-# Crate Classification
-#
-# Tier 1 (Stable) — production-committed, tested in CI, maintained:
+# Workspace crates:
 #   - trustedge-types         (shared wire types for platform services)
 #   - trustedge-core          (core cryptographic library)
 #   - trustedge-platform      (consolidated verification and CA service)
 #   - trustedge-platform-server (standalone HTTP server binary)
 #   - trustedge-cli           (main CLI binary)
+#   - trustedge-wasm          (general WASM bindings)
 #   - trustedge-trst-protocols (archive format definitions)
 #   - trustedge-trst-cli      (archive CLI binary)
 #   - trustedge-trst-wasm     (browser archive verification)
 #
-# Tier 2 (Experimental) — community/experimental, build-only CI, no maintenance commitment:
-#   - trustedge-wasm          (general WASM bindings)
+# Experimental crates (separate workspace at crates/experimental/):
 #   - trustedge-pubky         (Pubky network adapter)
 #   - trustedge-pubky-advanced (Pubky hybrid encryption)
 
@@ -53,11 +49,6 @@ pbkdf2 = "0.12"
 rand = "0.8"
 rand_core = "0.6"
 rsa = { version = "0.9.10", features = ["pem"] }
-x25519-dalek = { version = "2.0", features = ["static_secrets"] }
-hkdf = "0.12"
-
-# Pubky integration
-pubky = "0.5.4"
 
 # Internal workspace crates
 trustedge-types = { path = "crates/types" }
