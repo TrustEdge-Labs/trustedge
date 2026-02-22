@@ -1,0 +1,43 @@
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# MPL-2.0: https://mozilla.org/MPL/2.0/
+# Project: trustedge — Privacy and trust at the edge.
+
+# TrustEdge Platform — Docker Compose (backend only)
+# Dashboard runs natively: cd web/dashboard && npm run dev
+#
+# Usage:
+#   cp deploy/.env.example deploy/.env
+#   docker compose -f deploy/docker-compose.yml up
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: trustedge
+      POSTGRES_PASSWORD: trustedge_dev
+      POSTGRES_DB: trustedge
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trustedge"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  platform-server:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-3001}:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
