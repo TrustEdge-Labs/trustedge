@@ -18,11 +18,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 32 of 34 (Workspace Cleanup) — IN PROGRESS
-Plan: 1 of ? in phase 32
-Status: Plan 32-01 complete (deleted trustedge-receipts and trustedge-attestation facade crates)
-Last activity: 2026-02-22 — executed 32-01 (Delete deprecated facade crates)
+Plan: 2 of ? in phase 32
+Status: Plan 32-02 complete (isolated pubky crates into crates/experimental/ workspace)
+Last activity: 2026-02-22 — executed 32-02 (Experimental workspace isolation)
 
-Progress: [██░░░░░░░░] 25%
+Progress: [███░░░░░░░] 37%
 
 ## Performance Metrics
 
@@ -34,8 +34,8 @@ Progress: [██░░░░░░░░] 25%
 - v1.4: 5 phases, 5 plans, 10 tasks
 - v1.5: 4 phases, 8 plans, 16 tasks
 - v1.6: 3 phases, 6 plans, 11 tasks
-- **v1.7 so far: 2 phases, 4 plans, 7 tasks**
-- **Total: 32 phases, 55 plans, 99 tasks**
+- **v1.7 so far: 2 phases, 6 plans, 9 tasks**
+- **Total: 32 phases, 57 plans, 101 tasks**
 
 ## Accumulated Context
 
@@ -51,6 +51,9 @@ Progress: [██░░░░░░░░] 25%
 - **31-03:** CAConfig builder added alongside Default impl — guides callers to use builder, preventing direct struct literal construction
 - **31-03:** CI Step 23 uses grep -B2 on struct declarations — catches Serialize derive and missing [REDACTED] on all 4 secret-holding structs
 - **32-01:** Deleted facade crates immediately — they were not published to crates.io so no yanking needed; git history preserves them
+- **32-02:** Experimental workspace uses no [workspace.dependencies] — each crate pins explicit versions to avoid coupling
+- **32-02:** rsa retained in root workspace.dependencies — trustedge-core/asymmetric.rs uses it directly (not pubky-only)
+- **32-02:** Tier 1/Tier 2 classification replaced with flat list + experimental note pointing to crates/experimental/
 
 ### Pending Todos
 
@@ -64,8 +67,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 32-01-PLAN.md (Deleted trustedge-receipts and trustedge-attestation facade crates)
+Stopped at: Completed 32-02-PLAN.md (Isolated pubky crates into crates/experimental/ workspace)
 Resume at: /gsd:execute-phase 32
 
 ---
-*Last updated: 2026-02-22 after executing 32-01*
+*Last updated: 2026-02-22 after executing 32-02*

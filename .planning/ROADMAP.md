@@ -120,7 +120,7 @@ Plans:
   2. CI scripts and documentation contain no references to the deleted facade crates
   3. Tier 2 pubky crates live in a separate workspace or are excluded via `[workspace]` membership, so their transitive deps are absent from the root `Cargo.lock`
   4. `cargo machete` on the root workspace reports no unused workspace-level dependencies introduced by the removed crates
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 32-01-PLAN.md — Delete deprecated facade crates from workspace
@@ -152,7 +152,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 31. Secret Hardening | 3/3 | Complete    | 2026-02-22 | - |
-| 32. Workspace Cleanup | v1.7 | 1/3 | In Progress | - |
+| 32. Workspace Cleanup | 2/3 | In Progress|  | - |
 | 33. Platform Quality | v1.7 | 0/? | Not started | - |
 | 34. Platform Testing | v1.7 | 0/? | Not started | - |
 
