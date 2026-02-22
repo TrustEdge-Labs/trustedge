@@ -81,7 +81,7 @@ Each task was committed atomically:
 1. **Task 1: Harden CORS policy for both build variants** - `3e2d94f` (fix)
 2. **Task 2: Refactor CA module as library-only and annotate sub-modules** - `fab5351` (refactor)
 
-**Plan metadata:** (to be added after final commit)
+**Plan metadata:** `75bf1a4` (docs: complete plan)
 
 ## Files Created/Modified
 - `crates/platform/src/http/router.rs` - CORS hardening: deny-all for verify-only, explicit headers for postgres
