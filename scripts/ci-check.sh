@@ -379,6 +379,45 @@ else
     pass "No unimplemented TODO/FIXME markers"
 fi
 
+# ── Step 23: Secret struct derive check ────────────────────────────
+step "Step 23: Secret struct derive check (no Serialize on secret-holding structs)"
+SECRET_STRUCTS_OK=true
+
+# Check that secret-holding structs do NOT have derive(Serialize)
+for file_struct in \
+    "crates/core/src/backends/yubikey.rs:YubiKeyConfig" \
+    "crates/core/src/backends/software_hsm.rs:SoftwareHsmConfig" \
+    "crates/platform/src/ca/models.rs:LoginRequest" \
+    "crates/platform/src/ca/mod.rs:CAConfig"; do
+    FILE="${file_struct%%:*}"
+    STRUCT="${file_struct##*:}"
+
+    # Extract 2 lines before struct declaration, look for derive with Serialize
+    if grep -B2 "pub struct $STRUCT" "$FILE" | grep -q "Serialize"; then
+        fail "$STRUCT in $FILE still has Serialize derive"
+        SECRET_STRUCTS_OK=false
+    fi
+done
+
+# Check that secret-holding structs have manual Debug with [REDACTED]
+for file_struct in \
+    "crates/core/src/backends/yubikey.rs:YubiKeyConfig" \
+    "crates/core/src/backends/software_hsm.rs:SoftwareHsmConfig" \
+    "crates/platform/src/ca/models.rs:LoginRequest" \
+    "crates/platform/src/ca/mod.rs:CAConfig"; do
+    FILE="${file_struct%%:*}"
+    STRUCT="${file_struct##*:}"
+
+    if ! grep -q "REDACTED" "$FILE"; then
+        fail "$STRUCT in $FILE missing [REDACTED] in Debug impl"
+        SECRET_STRUCTS_OK=false
+    fi
+done
+
+if [ "$SECRET_STRUCTS_OK" = true ]; then
+    pass "No forbidden derives on secret-holding structs; all have [REDACTED] Debug impls"
+fi
+
 # ── Summary ─────────────────────────────────────────────────────────
 echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
