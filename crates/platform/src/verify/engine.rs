@@ -7,11 +7,12 @@
 //
 
 //! Verification engine — BLAKE3 continuity chaining and Ed25519 signature verification.
+//!
+//! All cryptographic operations delegate to trustedge_core's chain and crypto modules.
+//! No direct blake3 or ed25519_dalek calls remain in this module.
 
 use anyhow::{anyhow, Result};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
-use blake3::Hasher;
-use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -104,35 +105,34 @@ pub fn receipt_from_report(
 }
 
 fn verify_signature(manifest: &serde_json::Value, device_pub: &str) -> Result<VerificationResult> {
-    let device_pub = device_pub
-        .strip_prefix("ed25519:")
-        .ok_or_else(|| anyhow!("Device public key must have ed25519: prefix"))?;
+    // device_pub must have "ed25519:" prefix — core's verify_manifest expects it present
+    if !device_pub.starts_with("ed25519:") {
+        return Err(anyhow!("Device public key must have ed25519: prefix"));
+    }
 
-    let signature = manifest
+    let signature_b64 = manifest
         .get("signature")
         .and_then(|s| s.as_str())
         .ok_or_else(|| anyhow!("Missing signature in manifest"))?;
 
     let canonicalized = canonicalize_manifest_for_signature(manifest)?;
 
-    let public_key_bytes = BASE64
-        .decode(device_pub)
-        .map_err(|e| anyhow!("Invalid base64 in device public key: {}", e))?;
+    // Core's verify_manifest expects "ed25519:BASE64" format for the signature.
+    // The manifest stores the raw base64 without the prefix, so we prepend it.
+    let signature_str = format!("ed25519:{}", signature_b64);
 
-    let verifying_key = VerifyingKey::try_from(public_key_bytes.as_slice())
-        .map_err(|e| anyhow!("Invalid Ed25519 public key: {}", e))?;
-
-    let signature_bytes = BASE64
-        .decode(signature)
-        .map_err(|e| anyhow!("Invalid base64 signature: {}", e))?;
-
-    let signature = Signature::try_from(signature_bytes.as_slice())
-        .map_err(|e| anyhow!("Invalid Ed25519 signature: {}", e))?;
-
-    match verifying_key.verify(canonicalized.as_bytes(), &signature) {
-        Ok(()) => Ok(VerificationResult {
+    match trustedge_core::crypto::verify_manifest(
+        device_pub,
+        canonicalized.as_bytes(),
+        &signature_str,
+    ) {
+        Ok(true) => Ok(VerificationResult {
             passed: true,
             error: None,
+        }),
+        Ok(false) => Ok(VerificationResult {
+            passed: false,
+            error: Some("Signature verification failed".to_string()),
         }),
         Err(e) => Ok(VerificationResult {
             passed: false,
@@ -187,25 +187,33 @@ fn canonicalize_manifest_for_signature(manifest: &serde_json::Value) -> Result<S
     Ok(canonical)
 }
 
+/// Compute the genesis chain hash using trustedge_core's chain module.
+///
+/// Uses BASE64 (standard alphabet with padding) to match the existing wire format.
+/// Core's `genesis()` returns the raw `[u8; 32]` BLAKE3 hash bytes, which we
+/// format with the "b3:" prefix and standard base64 encoding.
 fn compute_genesis_hash() -> String {
-    let mut hasher = Hasher::new();
-    hasher.update(b"trustedge:genesis");
-    format!("b3:{}", BASE64.encode(hasher.finalize().as_bytes()))
+    format_b3(&trustedge_core::chain::genesis())
 }
 
+/// Compute a chain link using trustedge_core's chain module.
 fn compute_chain_link(prev: &str, hash: &str) -> String {
-    let mut hasher = Hasher::new();
-
     let prev_clean = prev.strip_prefix("b3:").unwrap_or(prev);
     let hash_clean = hash.strip_prefix("b3:").unwrap_or(hash);
 
     let prev_bytes = BASE64.decode(prev_clean).unwrap_or_default();
     let hash_bytes = BASE64.decode(hash_clean).unwrap_or_default();
 
-    hasher.update(&prev_bytes);
-    hasher.update(&hash_bytes);
+    let mut prev_arr = [0u8; 32];
+    let mut hash_arr = [0u8; 32];
+    if prev_bytes.len() == 32 {
+        prev_arr.copy_from_slice(&prev_bytes);
+    }
+    if hash_bytes.len() == 32 {
+        hash_arr.copy_from_slice(&hash_bytes);
+    }
 
-    format!("b3:{}", BASE64.encode(hasher.finalize().as_bytes()))
+    format_b3(&trustedge_core::chain::chain_next(&prev_arr, &hash_arr))
 }
 
 fn compute_chain_tip(segments: &[SegmentDigest]) -> Result<String> {
@@ -223,6 +231,14 @@ fn compute_chain_tip(segments: &[SegmentDigest]) -> Result<String> {
     Ok(chain_value)
 }
 
+/// Format a 32-byte hash as "b3:BASE64" using the standard base64 alphabet.
+///
+/// Uses the `base64` crate's STANDARD encoder (RFC 4648 with padding) to ensure
+/// consistent output with callers that decode using the same encoder.
+fn format_b3(bytes: &[u8; 32]) -> String {
+    format!("b3:{}", BASE64.encode(bytes))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -233,11 +249,8 @@ mod tests {
         let genesis = compute_genesis_hash();
         assert!(genesis.starts_with("b3:"));
 
-        let expected_hash = {
-            let mut hasher = Hasher::new();
-            hasher.update(b"trustedge:genesis");
-            format!("b3:{}", BASE64.encode(hasher.finalize().as_bytes()))
-        };
+        // Verify using trustedge_core's chain primitives directly
+        let expected_hash = format_b3(&trustedge_core::chain::genesis());
         assert_eq!(genesis, expected_hash);
     }
 
