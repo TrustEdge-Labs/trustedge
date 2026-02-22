@@ -18,11 +18,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 31 of 34 (Secret Hardening)
-Plan: — of — in current phase
-Status: Ready to plan
-Last activity: 2026-02-22 — v1.7 roadmap created, 4 phases defined (31-34), 14 requirements mapped
+Plan: 1 of 1 in current phase
+Status: Phase 31 complete
+Last activity: 2026-02-22 — executed 31-01 (Secret<T> wrapper type)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
@@ -40,7 +40,9 @@ Progress: [░░░░░░░░░░] 0%
 
 ### Decisions
 
-(Cleared for next milestone — see .planning/MILESTONES.md for v1.6 decisions)
+- **31-01:** Implemented Secret<T> in-house rather than adding secrecy crate — zeroize already a workspace dep, API surface is small
+- **31-01:** Used derive(Zeroize, ZeroizeOnDrop) rather than manual impl — cleaner and less error-prone
+- **31-01:** No Display/Deref/Serialize on Secret<T> — using {} or serde is a compile error by design
 
 ### Pending Todos
 
@@ -54,8 +56,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: v1.7 roadmap created — phases 31-34 defined, all 14 requirements mapped
-Resume at: /gsd:plan-phase 31
+Stopped at: Completed 31-01-PLAN.md (Secret<T> wrapper type)
+Resume at: /gsd:execute-phase 32 (or next plan in phase 31 if any)
 
 ---
-*Last updated: 2026-02-22 after v1.7 roadmap created*
+*Last updated: 2026-02-22 after executing 31-01*

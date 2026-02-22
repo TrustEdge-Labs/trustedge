@@ -104,7 +104,7 @@ Brought all satellite code into the monorepo and finalized the GitHub org struct
   2. `{:?}` formatting on any config or auth struct containing secrets outputs redacted placeholders, never plaintext values
   3. `serde::Serialize` and `serde::Deserialize` are absent from `YubiKeyConfig`, `SoftwareHsmConfig`, and `LoginRequest` — the compiler rejects any attempt to serialize them
   4. `LoginRequest.password` cannot be printed or serialized by accident — verified by inspecting derived trait list and Debug output in tests
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 31-01-PLAN.md — Create Secret<T> wrapper type with zeroize, redacted Debug, expose_secret()
@@ -146,7 +146,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 31. Secret Hardening | v1.7 | 0/3 | Planned | - |
+| 31. Secret Hardening | 1/3 | In Progress|  | - |
 | 32. Workspace Cleanup | v1.7 | 0/? | Not started | - |
 | 33. Platform Quality | v1.7 | 0/? | Not started | - |
 | 34. Platform Testing | v1.7 | 0/? | Not started | - |

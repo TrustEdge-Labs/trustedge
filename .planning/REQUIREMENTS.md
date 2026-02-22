@@ -17,8 +17,8 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 
 ### Secret Handling
 
-- [ ] **SEC-01**: All sensitive fields (PIN, passphrase, JWT secret) are zeroized on drop
-- [ ] **SEC-02**: Debug output redacts sensitive fields instead of printing plaintext
+- [x] **SEC-01**: All sensitive fields (PIN, passphrase, JWT secret) are zeroized on drop
+- [x] **SEC-02**: Debug output redacts sensitive fields instead of printing plaintext
 - [ ] **SEC-03**: Serialize/Deserialize removed from config structs that contain secrets (YubiKeyConfig, SoftwareHsmConfig)
 - [ ] **SEC-04**: LoginRequest.password is not leaked via Debug or accidental serialization
 
@@ -66,8 +66,8 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 31 | Pending |
-| SEC-02 | Phase 31 | Pending |
+| SEC-01 | Phase 31 | Complete |
+| SEC-02 | Phase 31 | Complete |
 | SEC-03 | Phase 31 | Pending |
 | SEC-04 | Phase 31 | Pending |
 | WRK-01 | Phase 32 | Pending |
