@@ -36,28 +36,43 @@ use crate::backends::universal::{
     SignatureAlgorithm, UniversalBackend,
 };
 use crate::error::BackendError;
+use crate::secret::Secret;
 use der::Encode;
 use rcgen::{
     CertificateParams, DistinguishedName, DnType, KeyPair, RemoteKeyPair, PKCS_ECDSA_P256_SHA256,
 };
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use spki::SubjectPublicKeyInfoRef;
+use std::fmt;
 use std::sync::{Arc, Mutex};
 use yubikey::piv::{AlgorithmId, SlotId};
 use yubikey::{Certificate, YubiKey};
 
 /// Configuration for YubiKey PIV backend
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// Does NOT implement Serialize/Deserialize — secret fields must not be written to disk.
+/// Use [`YubiKeyConfig::builder()`] to construct instances.
+#[derive(Clone)]
 pub struct YubiKeyConfig {
     /// PIN for PIV operations (optional - will prompt if not set)
-    pub pin: Option<String>,
+    pin: Option<Secret<String>>,
     /// Default PIV slot for operations (default: "9c" for Digital Signature)
     pub default_slot: String,
     /// Enable verbose logging for debugging
     pub verbose: bool,
     /// Maximum PIN retry attempts before lockout (default: 3)
     pub max_pin_retries: u8,
+}
+
+impl fmt::Debug for YubiKeyConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("YubiKeyConfig")
+            .field("pin", &"[REDACTED]")
+            .field("default_slot", &self.default_slot)
+            .field("verbose", &self.verbose)
+            .field("max_pin_retries", &self.max_pin_retries)
+            .finish()
+    }
 }
 
 impl Default for YubiKeyConfig {
@@ -67,6 +82,65 @@ impl Default for YubiKeyConfig {
             default_slot: "9c".to_string(),
             verbose: false,
             max_pin_retries: 3,
+        }
+    }
+}
+
+impl YubiKeyConfig {
+    /// Create a builder for `YubiKeyConfig`.
+    pub fn builder() -> YubiKeyConfigBuilder {
+        YubiKeyConfigBuilder::default()
+    }
+
+    /// Return the PIN as `&str` if set.
+    ///
+    /// The caller must not log or store the returned value.
+    pub fn pin(&self) -> Option<&str> {
+        self.pin.as_ref().map(|s| s.expose_secret().as_str())
+    }
+}
+
+/// Builder for [`YubiKeyConfig`].
+#[derive(Default)]
+pub struct YubiKeyConfigBuilder {
+    pin: Option<Secret<String>>,
+    default_slot: Option<String>,
+    verbose: bool,
+    max_pin_retries: Option<u8>,
+}
+
+impl YubiKeyConfigBuilder {
+    /// Set the PIN (moved into a `Secret<String>`).
+    pub fn pin(mut self, pin: String) -> Self {
+        self.pin = Some(Secret::new(pin));
+        self
+    }
+
+    /// Set the default PIV slot (e.g., `"9c"`).
+    pub fn default_slot(mut self, slot: String) -> Self {
+        self.default_slot = Some(slot);
+        self
+    }
+
+    /// Enable or disable verbose logging.
+    pub fn verbose(mut self, verbose: bool) -> Self {
+        self.verbose = verbose;
+        self
+    }
+
+    /// Set the maximum PIN retry attempts before lockout.
+    pub fn max_pin_retries(mut self, retries: u8) -> Self {
+        self.max_pin_retries = Some(retries);
+        self
+    }
+
+    /// Build the [`YubiKeyConfig`].
+    pub fn build(self) -> YubiKeyConfig {
+        YubiKeyConfig {
+            pin: self.pin,
+            default_slot: self.default_slot.unwrap_or_else(|| "9c".to_string()),
+            verbose: self.verbose,
+            max_pin_retries: self.max_pin_retries.unwrap_or(3),
         }
     }
 }
@@ -155,7 +229,7 @@ impl YubiKeyBackend {
 
     /// Verify PIN with retry limit enforcement
     fn verify_pin(&self, yk: &mut YubiKey) -> Result<(), BackendError> {
-        let pin = self.config.pin.as_ref().ok_or_else(|| {
+        let pin = self.config.pin().ok_or_else(|| {
             BackendError::HardwareError(
                 "PIN not configured. Set YubiKeyConfig.pin before operations.".to_string(),
             )
@@ -377,7 +451,7 @@ impl YubiKeyBackend {
             yubikey: Arc::clone(&self.yubikey),
             slot,
             public_key: public_key_bytes.to_vec(),
-            pin: self.config.pin.clone(),
+            pin: self.config.pin().map(|s| s.to_string()),
         };
 
         let key_pair = KeyPair::from_remote(Box::new(signing_key_pair)).map_err(|e| {
@@ -726,7 +800,7 @@ mod tests {
     fn test_default_config_values() {
         let config = YubiKeyConfig::default();
 
-        assert_eq!(config.pin, None);
+        assert!(config.pin().is_none());
         assert_eq!(config.default_slot, "9c");
         assert!(!config.verbose);
         assert_eq!(config.max_pin_retries, 3);
@@ -734,15 +808,63 @@ mod tests {
 
     #[test]
     fn test_custom_config_preserved() {
-        let custom_config = YubiKeyConfig {
-            pin: Some("654321".to_string()),
-            default_slot: "9a".to_string(),
-            verbose: true,
-            max_pin_retries: 5,
-        };
+        let custom_config = YubiKeyConfig::builder()
+            .pin("654321".to_string())
+            .default_slot("9a".to_string())
+            .verbose(true)
+            .max_pin_retries(5)
+            .build();
 
         let backend = YubiKeyBackend::with_config(custom_config);
         assert!(backend.is_ok());
+    }
+
+    // ========================================================================
+    // Security Tests — Debug redaction and builder
+    // ========================================================================
+
+    #[test]
+    fn test_config_debug_redacts_pin() {
+        let config = YubiKeyConfig::builder()
+            .pin("super-secret-pin".to_string())
+            .build();
+
+        let debug_output = format!("{:?}", config);
+        assert!(
+            debug_output.contains("[REDACTED]"),
+            "Debug output must contain [REDACTED], got: {}",
+            debug_output
+        );
+        assert!(
+            !debug_output.contains("super-secret-pin"),
+            "Debug output must NOT contain the actual PIN, got: {}",
+            debug_output
+        );
+    }
+
+    #[test]
+    fn test_config_builder_sets_fields() {
+        let config = YubiKeyConfig::builder()
+            .pin("123456".to_string())
+            .default_slot("9a".to_string())
+            .verbose(true)
+            .max_pin_retries(5)
+            .build();
+
+        assert_eq!(config.pin(), Some("123456"));
+        assert_eq!(config.default_slot, "9a");
+        assert!(config.verbose);
+        assert_eq!(config.max_pin_retries, 5);
+    }
+
+    #[test]
+    fn test_config_builder_defaults() {
+        let config = YubiKeyConfig::builder().build();
+
+        assert!(config.pin().is_none());
+        assert_eq!(config.default_slot, "9c");
+        assert!(!config.verbose);
+        assert_eq!(config.max_pin_retries, 3);
     }
 
     // ========================================================================

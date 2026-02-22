@@ -33,12 +33,12 @@ use x509_cert::Certificate;
 /// Uses YUBIKEY_TEST_PIN env var or falls back to default "123456"
 fn create_test_config() -> YubiKeyConfig {
     let pin = std::env::var("YUBIKEY_TEST_PIN").unwrap_or_else(|_| "123456".to_string());
-    YubiKeyConfig {
-        pin: Some(pin),
-        default_slot: "9c".to_string(),
-        verbose: true,
-        max_pin_retries: 3,
-    }
+    YubiKeyConfig::builder()
+        .pin(pin)
+        .default_slot("9c".to_string())
+        .verbose(true)
+        .max_pin_retries(3)
+        .build()
 }
 
 /// Create a backend connected to hardware, panicking with clear message if unavailable
@@ -326,8 +326,12 @@ fn test_ed25519_rejected_by_hardware_backend() {
 fn test_wrong_pin_returns_error() {
     // WARNING: This test consumes a PIN retry. Run sparingly to avoid lockout.
 
-    let mut config = create_test_config();
-    config.pin = Some("000000".to_string()); // Wrong PIN
+    let config = YubiKeyConfig::builder()
+        .pin("000000".to_string()) // Wrong PIN
+        .default_slot("9c".to_string())
+        .verbose(true)
+        .max_pin_retries(3)
+        .build();
 
     let backend = YubiKeyBackend::with_config(config)
         .expect("Backend creation should succeed even with wrong PIN");

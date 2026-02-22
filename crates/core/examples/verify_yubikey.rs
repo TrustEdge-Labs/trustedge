@@ -22,12 +22,12 @@ fn main() -> anyhow::Result<()> {
     println!("=====================================\n");
 
     // Configure YubiKey backend with default slot
-    let config = YubiKeyConfig {
-        pin: Some("123456".to_string()), // Default YubiKey PIN
-        default_slot: "9c".to_string(),  // Digital Signature slot
-        verbose: true,
-        max_pin_retries: 3,
-    };
+    let config = YubiKeyConfig::builder()
+        .pin("123456".to_string()) // Default YubiKey PIN
+        .default_slot("9c".to_string()) // Digital Signature slot
+        .verbose(true)
+        .max_pin_retries(3)
+        .build();
 
     println!("📋 Configuration:");
     println!("   PIN: Provided (using default: 123456)");

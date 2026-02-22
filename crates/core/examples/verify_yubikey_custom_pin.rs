@@ -41,17 +41,22 @@ fn main() -> anyhow::Result<()> {
     };
 
     // Configure YubiKey backend
-    let config = YubiKeyConfig {
-        pin,
-        default_slot: "9c".to_string(),
-        verbose: true,
-        max_pin_retries: 3,
+    let has_pin = pin.is_some();
+    let config = {
+        let mut builder = YubiKeyConfig::builder()
+            .default_slot("9c".to_string())
+            .verbose(true)
+            .max_pin_retries(3);
+        if let Some(p) = pin {
+            builder = builder.pin(p);
+        }
+        builder.build()
     };
 
     println!("\n📋 Configuration:");
     println!(
         "   PIN: {}",
-        if config.pin.is_some() {
+        if has_pin {
             "Provided"
         } else {
             "None (public ops only)"

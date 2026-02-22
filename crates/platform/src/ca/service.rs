@@ -385,11 +385,14 @@ pub async fn create_yubikey_ca_service(
     use trustedge_core::backends::yubikey::{YubiKeyBackend, YubiKeyConfig};
 
     // Configure YubiKey backend
-    let yubikey_config = YubiKeyConfig {
-        pkcs11_module_path: "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so".to_string(),
-        pin,           // Use provided PIN or None to prompt
-        slot: None,    // Auto-detect
-        verbose: true, // Enable verbose logging to debug key search
+    let yubikey_config = {
+        let mut builder = YubiKeyConfig::builder()
+            .default_slot("9c".to_string())
+            .verbose(true);
+        if let Some(p) = pin {
+            builder = builder.pin(p);
+        }
+        builder.build()
     };
 
     let backend = YubiKeyBackend::with_config(yubikey_config)
