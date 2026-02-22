@@ -1,0 +1,35 @@
+#
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# This source code is subject to the terms of the Mozilla Public License, v. 2.0.
+# If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# Project: trustedge — Privacy and trust at the edge.
+#
+
+[package]
+name = "trustedge-platform-server"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+description = "TrustEdge Platform Server — standalone binary that boots the platform HTTP service"
+
+[package.metadata.trustedge]
+tier = "stable"
+maintained = true
+
+[[bin]]
+name = "trustedge-platform-server"
+path = "src/main.rs"
+
+[dependencies]
+trustedge-platform = { path = "../platform", features = ["http", "postgres", "openapi"] }
+trustedge-core = { path = "../core" }
+anyhow = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[features]
+default = []
+ca = ["trustedge-platform/ca"]

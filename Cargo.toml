@@ -11,6 +11,7 @@ members = [
     "crates/core",
     "crates/types",
     "crates/platform",
+    "crates/platform-server",
     "crates/trustedge-cli",
     "crates/attestation",
     "crates/receipts",
@@ -29,6 +30,7 @@ members = [
 #   - trustedge-types         (shared wire types for platform services)
 #   - trustedge-core          (core cryptographic library)
 #   - trustedge-platform      (consolidated verification and CA service)
+#   - trustedge-platform-server (standalone HTTP server binary)
 #   - trustedge-cli           (main CLI binary)
 #   - trustedge-trst-protocols (archive format definitions)
 #   - trustedge-trst-cli      (archive CLI binary)
