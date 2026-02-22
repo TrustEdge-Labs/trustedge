@@ -17,12 +17,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 31 of 34 (Secret Hardening) — COMPLETE
-Plan: 3 of 3 in phase 31
-Status: Phase 31 complete (all SEC-* requirements done)
-Last activity: 2026-02-22 — executed 31-03 (Platform secret hardening: LoginRequest, CAConfig, AuthService)
+Phase: 32 of 34 (Workspace Cleanup) — IN PROGRESS
+Plan: 1 of ? in phase 32
+Status: Plan 32-01 complete (deleted trustedge-receipts and trustedge-attestation facade crates)
+Last activity: 2026-02-22 — executed 32-01 (Delete deprecated facade crates)
 
-Progress: [██░░░░░░░░] 20%
+Progress: [██░░░░░░░░] 25%
 
 ## Performance Metrics
 
@@ -34,8 +34,8 @@ Progress: [██░░░░░░░░] 20%
 - v1.4: 5 phases, 5 plans, 10 tasks
 - v1.5: 4 phases, 8 plans, 16 tasks
 - v1.6: 3 phases, 6 plans, 11 tasks
-- **v1.7 so far: 1 phase, 3 plans, 6 tasks**
-- **Total: 31 phases, 54 plans, 98 tasks**
+- **v1.7 so far: 2 phases, 4 plans, 7 tasks**
+- **Total: 32 phases, 55 plans, 99 tasks**
 
 ## Accumulated Context
 
@@ -50,6 +50,7 @@ Progress: [██░░░░░░░░] 20%
 - **31-03:** LoginRequest uses custom Deserialize via private LoginRequestRaw — password wrapped in Secret at JSON parsing boundary
 - **31-03:** CAConfig builder added alongside Default impl — guides callers to use builder, preventing direct struct literal construction
 - **31-03:** CI Step 23 uses grep -B2 on struct declarations — catches Serialize derive and missing [REDACTED] on all 4 secret-holding structs
+- **32-01:** Deleted facade crates immediately — they were not published to crates.io so no yanking needed; git history preserves them
 
 ### Pending Todos
 
@@ -63,8 +64,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 31-03-PLAN.md (Platform secret hardening: LoginRequest, CAConfig, AuthService + CI enforcement)
+Stopped at: Completed 32-01-PLAN.md (Deleted trustedge-receipts and trustedge-attestation facade crates)
 Resume at: /gsd:execute-phase 32
 
 ---
-*Last updated: 2026-02-22 after executing 31-03*
+*Last updated: 2026-02-22 after executing 32-01*

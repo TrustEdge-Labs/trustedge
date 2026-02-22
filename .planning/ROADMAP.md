@@ -109,7 +109,7 @@ Brought all satellite code into the monorepo and finalized the GitHub org struct
 Plans:
 - [x] 31-01-PLAN.md — Create Secret<T> wrapper type with zeroize, redacted Debug, expose_secret()
 - [x] 31-02-PLAN.md — Harden YubiKeyConfig and SoftwareHsmConfig (remove serde, builder pattern, Secret fields)
-- [ ] 31-03-PLAN.md — Harden LoginRequest, CAConfig, AuthService + CI regression check
+- [x] 31-03-PLAN.md — Harden LoginRequest, CAConfig, AuthService + CI regression check
 
 ### Phase 32: Workspace Cleanup
 **Goal**: Deprecated facade crates are gone from the workspace, and Tier 2 experimental crates are isolated so their dependency graph does not contaminate the shared Cargo.lock
@@ -123,7 +123,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 32-01-PLAN.md — Delete deprecated facade crates from workspace
+- [x] 32-01-PLAN.md — Delete deprecated facade crates from workspace
 - [ ] 32-02-PLAN.md — Isolate pubky crates into experimental workspace and clean root deps
 - [ ] 32-03-PLAN.md — Rewrite CI scripts and documentation to reflect new workspace structure
 
@@ -152,9 +152,9 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 31. Secret Hardening | 3/3 | Complete    | 2026-02-22 | - |
-| 32. Workspace Cleanup | v1.7 | 0/3 | Planned | - |
+| 32. Workspace Cleanup | v1.7 | 1/3 | In Progress | - |
 | 33. Platform Quality | v1.7 | 0/? | Not started | - |
 | 34. Platform Testing | v1.7 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-22 after v1.7 roadmap created*
+*Last updated: 2026-02-22 after executing 32-01*
