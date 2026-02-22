@@ -57,22 +57,22 @@ Requirements for Final Consolidation milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PLAT-01 | — | Pending |
-| PLAT-02 | — | Pending |
-| PLAT-03 | — | Pending |
-| PLAT-04 | — | Pending |
-| WEB-01 | — | Pending |
-| WEB-02 | — | Pending |
-| WEB-03 | — | Pending |
-| REPO-01 | — | Pending |
-| REPO-02 | — | Pending |
-| REPO-03 | — | Pending |
+| PLAT-01 | Phase 28 | Pending |
+| PLAT-02 | Phase 28 | Pending |
+| PLAT-03 | Phase 28 | Pending |
+| PLAT-04 | Phase 28 | Pending |
+| WEB-01 | Phase 29 | Pending |
+| WEB-02 | Phase 29 | Pending |
+| WEB-03 | Phase 29 | Pending |
+| REPO-01 | Phase 30 | Pending |
+| REPO-02 | Phase 30 | Pending |
+| REPO-03 | Phase 30 | Pending |
 
 **Coverage:**
 - v1.6 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10
+- Mapped to phases: 10
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after initial definition*
+*Last updated: 2026-02-22 after roadmap created (traceability complete)*

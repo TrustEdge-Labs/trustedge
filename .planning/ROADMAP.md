@@ -16,6 +16,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.3 Dependency Audit** - Phases 15-18 (shipped 2026-02-13)
 - ✅ **v1.4 Placeholder Elimination** - Phases 19-23 (shipped 2026-02-13)
 - ✅ **v1.5 Platform Consolidation** - Phases 24-27 (shipped 2026-02-22)
+- **v1.6 Final Consolidation** - Phases 28-30 (active)
 
 ## Phases
 
@@ -73,6 +74,45 @@ Consolidated external service repos (platform-api, verify-core, shared-libs) int
 
 </details>
 
+### v1.6 Final Consolidation
+
+- [ ] **Phase 28: Platform Server Binary** - Create `crates/platform-server` binary crate that boots trustedge-platform via Axum
+- [ ] **Phase 29: Dashboard Consolidation** - Move trustedge-dashboard into `web/dashboard/` and replace hardcoded types with generated schemas
+- [ ] **Phase 30: Repo Cleanup** - Delete 12 orphaned GitHub repos and update all documentation to reflect 3-repo org structure
+
+## Phase Details
+
+### Phase 28: Platform Server Binary
+**Goal**: The platform service runs as a deployable standalone binary
+**Depends on**: Nothing (trustedge-platform crate exists from v1.5)
+**Requirements**: PLAT-01, PLAT-02, PLAT-03, PLAT-04
+**Success Criteria** (what must be TRUE):
+  1. Running `trustedge-platform-server` starts an Axum HTTP server on the configured port
+  2. Server reads PORT, DATABASE_URL, and JWT_AUDIENCE from environment variables without code changes
+  3. Server routes all requests through `trustedge_platform::create_router()` — no routing logic in main.rs
+  4. Sending SIGTERM or SIGINT to the process causes graceful shutdown with no abrupt connection drops
+**Plans**: TBD
+
+### Phase 29: Dashboard Consolidation
+**Goal**: The dashboard lives in the monorepo and uses types generated from Rust schemas
+**Depends on**: Nothing (trustedge-types schemas available from v1.5)
+**Requirements**: WEB-01, WEB-02, WEB-03
+**Success Criteria** (what must be TRUE):
+  1. `web/dashboard/` contains all dashboard source files and the repo contains no references to an external dashboard location
+  2. `npm run dev` and `npm run build` succeed from `web/dashboard/` with no manual path adjustments
+  3. The file `web/dashboard/src/lib/types.ts` is generated from `trustedge-types` JSON schemas — no hand-written TypeScript interface definitions remain for types that exist in trustedge-types
+**Plans**: TBD
+
+### Phase 30: Repo Cleanup
+**Goal**: The TrustEdge-Labs GitHub org contains only the three active repos
+**Depends on**: Phase 29 (trustedge-dashboard repo deleted only after dashboard is moved in)
+**Requirements**: REPO-01, REPO-02, REPO-03
+**Success Criteria** (what must be TRUE):
+  1. The TrustEdge-Labs GitHub org lists exactly 3 repos: trustedge, trustedgelabs-website, shipsecure
+  2. CLAUDE.md contains no references to the 12 deleted repos (no stale repo links, no archived-repo tables for deleted repos)
+  3. Documentation accurately states the org has 3 repos and describes the scope of each
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -97,6 +137,9 @@ Consolidated external service repos (platform-api, verify-core, shared-libs) int
 | 25. Service Consolidation | v1.5 | 3/3 | Complete | 2026-02-22 |
 | 26. Crypto Deduplication | v1.5 | 2/2 | Complete | 2026-02-22 |
 | 27. Ghost Repo Cleanup | v1.5 | 1/1 | Complete | 2026-02-22 |
+| 28. Platform Server Binary | v1.6 | 0/? | Not started | - |
+| 29. Dashboard Consolidation | v1.6 | 0/? | Not started | - |
+| 30. Repo Cleanup | v1.6 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-22 after v1.5 milestone completion*
+*Last updated: 2026-02-22 after v1.6 roadmap created*

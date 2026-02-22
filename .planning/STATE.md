@@ -17,10 +17,14 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 28 — Platform Server Binary
 Plan: —
-Status: Defining requirements
-Last activity: 2026-02-22 — Milestone v1.6 started
+Status: Roadmap defined, ready for planning
+Last activity: 2026-02-22 — v1.6 roadmap created
+
+```
+v1.6 Progress: [          ] 0/3 phases
+```
 
 ## Performance Metrics
 
@@ -31,13 +35,21 @@ Last activity: 2026-02-22 — Milestone v1.6 started
 - v1.3: 4 phases, 5 plans, 7 tasks
 - v1.4: 5 phases, 5 plans, 10 tasks
 - v1.5: 4 phases, 8 plans, 16 tasks
-- **Total: 27 phases, 45 plans, 81 tasks**
+- **Total (through v1.5): 27 phases, 45 plans, 81 tasks**
+
+**v1.6 (in progress):**
+- 3 phases planned
+- Plans: TBD
+- Tasks: TBD
 
 ## Accumulated Context
 
 ### Decisions
 
-(New milestone — decisions will be logged as they're made)
+- Phase 28 before 29: Server binary and dashboard move are independent; numbered for natural delivery order (infra before web)
+- Phase 30 after 29: trustedge-dashboard repo deletion must follow successful dashboard move into `web/dashboard/`
+- Platform server binary goes in `crates/platform-server/` — thin main.rs, all routing in trustedge-platform
+- Dashboard types generated from trustedge-types schemars 0.8 schemas (no new tooling, one-time generation)
 
 ### Pending Todos
 
@@ -47,12 +59,13 @@ None.
 
 - Hardware tests require physical YubiKey 5 series (carried from prior milestones)
 - RSA Marvin Attack advisory (RUSTSEC-2023-0071) risk-accepted (carried from v1.3)
+- WEB-03 type generation: trustedge-types must expose schemars schemas; verify existing schema output before generating TypeScript
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Defining v1.6 requirements
-Resume file: .planning/PROJECT.md
+Stopped at: Roadmap created for v1.6
+Resume at: `/gsd:plan-phase 28`
 
 ---
-*Last updated: 2026-02-22 after v1.6 milestone started*
+*Last updated: 2026-02-22 after v1.6 roadmap created*
