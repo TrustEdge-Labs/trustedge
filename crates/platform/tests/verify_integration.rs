@@ -25,7 +25,7 @@ use trustedge_platform::verify::jwks::KeyManager;
 // HTTP endpoint tests (require `http` feature)
 // ---------------------------------------------------------------------------
 
-#[cfg(feature = "http")]
+#[cfg(all(feature = "http", not(feature = "postgres")))]
 mod http_tests {
     use super::*;
     use axum::{body::Body, http::Request};

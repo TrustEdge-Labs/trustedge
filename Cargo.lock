@@ -6043,7 +6043,6 @@ dependencies = [
  "axum-test",
  "base64 0.22.1",
  "bcrypt",
- "blake3",
  "chrono",
  "const-oid",
  "der 0.7.10",
@@ -6071,6 +6070,20 @@ dependencies = [
  "uuid",
  "x509-cert",
  "x509-parser 0.16.0",
+]
+
+[[package]]
+name = "trustedge-platform-server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "clap",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "trustedge-core",
+ "trustedge-platform",
 ]
 
 [[package]]

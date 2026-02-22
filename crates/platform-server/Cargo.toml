@@ -22,14 +22,16 @@ name = "trustedge-platform-server"
 path = "src/main.rs"
 
 [dependencies]
-trustedge-platform = { path = "../platform", features = ["http", "postgres", "openapi"] }
+trustedge-platform = { path = "../platform", features = ["http", "openapi"] }
 trustedge-core = { path = "../core" }
 anyhow = { workspace = true }
+axum = { workspace = true }
 clap = { workspace = true }
 tokio = { workspace = true }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]
-default = []
+default = ["postgres"]
+postgres = ["trustedge-platform/postgres"]
 ca = ["trustedge-platform/ca"]

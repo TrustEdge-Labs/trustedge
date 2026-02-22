@@ -21,7 +21,7 @@
 //! - test_verify_valid_payload: original expected 502 (proxy to verify-core). Now expects 400
 //!   (inline validation catches invalid segment hash format before verification).
 
-#![cfg(all(feature = "http", feature = "postgres"))]
+#![cfg(all(feature = "http", feature = "postgres", feature = "test-utils"))]
 
 use axum_test::TestServer;
 use serde_json::json;
