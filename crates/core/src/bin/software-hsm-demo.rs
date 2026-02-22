@@ -116,11 +116,11 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     // Create Software HSM backend with custom config
-    let config = SoftwareHsmConfig {
-        key_store_path: cli.key_store.clone(),
-        default_passphrase: "demo_passphrase_123!".to_string(),
-        metadata_file: cli.key_store.join("metadata.json"),
-    };
+    let config = SoftwareHsmConfig::builder()
+        .key_store_path(cli.key_store.clone())
+        .default_passphrase("demo_passphrase_123!".to_string())
+        .metadata_file(cli.key_store.join("metadata.json"))
+        .build();
 
     match cli.command {
         Commands::GenerateKey {

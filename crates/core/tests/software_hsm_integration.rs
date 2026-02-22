@@ -28,11 +28,11 @@ use trustedge_core::backends::{
 /// Test helper to create a temporary Software HSM setup
 fn create_test_hsm_setup() -> Result<(TempDir, SoftwareHsmConfig)> {
     let temp_dir = TempDir::new()?;
-    let config = SoftwareHsmConfig {
-        key_store_path: temp_dir.path().to_path_buf(),
-        default_passphrase: "integration_test_pass".to_string(),
-        metadata_file: temp_dir.path().join("hsm_metadata.json"),
-    };
+    let config = SoftwareHsmConfig::builder()
+        .key_store_path(temp_dir.path().to_path_buf())
+        .default_passphrase("integration_test_pass".to_string())
+        .metadata_file(temp_dir.path().join("hsm_metadata.json"))
+        .build();
     Ok((temp_dir, config))
 }
 
@@ -490,11 +490,11 @@ fn test_disk_space_and_permissions() -> Result<()> {
         let readonly_dir = _temp_dir.path().join("readonly_store");
         fs::create_dir(&readonly_dir)?;
 
-        let readonly_config = SoftwareHsmConfig {
-            key_store_path: readonly_dir.clone(),
-            default_passphrase: "test".to_string(),
-            metadata_file: readonly_dir.join("metadata.json"),
-        };
+        let readonly_config = SoftwareHsmConfig::builder()
+            .key_store_path(readonly_dir.clone())
+            .default_passphrase("test".to_string())
+            .metadata_file(readonly_dir.join("metadata.json"))
+            .build();
 
         // Make directory read-only
         let mut perms = fs::metadata(&readonly_dir)?.permissions();

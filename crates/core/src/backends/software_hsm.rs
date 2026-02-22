@@ -25,6 +25,7 @@ use crate::backends::universal::{
     SignatureAlgorithm, UniversalBackend,
 };
 use crate::error::BackendError;
+use crate::secret::Secret;
 use anyhow::{Context, Result};
 use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use p256::{
@@ -39,26 +40,106 @@ use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256, Sha384, Sha512};
 use std::collections::HashMap;
+use std::fmt;
 use std::fs;
 use std::path::PathBuf;
 
 /// Configuration for the Software HSM backend
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// Does NOT implement Serialize/Deserialize — secret fields must not be written to disk.
+/// Use [`SoftwareHsmConfig::builder()`] to construct instances.
+#[derive(Clone)]
 pub struct SoftwareHsmConfig {
     /// Directory to store private keys
     pub key_store_path: PathBuf,
-    /// Default passphrase for key encryption (in production, use secure input)
-    pub default_passphrase: String,
+    /// Default passphrase for key encryption (wrapped in Secret to prevent accidental logging)
+    default_passphrase: Secret<String>,
     /// Metadata file for key information
     pub metadata_file: PathBuf,
+}
+
+impl fmt::Debug for SoftwareHsmConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SoftwareHsmConfig")
+            .field("key_store_path", &self.key_store_path)
+            .field("default_passphrase", &"[REDACTED]")
+            .field("metadata_file", &self.metadata_file)
+            .finish()
+    }
 }
 
 impl Default for SoftwareHsmConfig {
     fn default() -> Self {
         Self {
             key_store_path: PathBuf::from("./software_hsm_keys"),
-            default_passphrase: "changeme123!".to_string(), // WARN: For demo only
+            default_passphrase: Secret::new("changeme123!".to_string()), // WARN: For demo only
             metadata_file: PathBuf::from("./software_hsm_keys/metadata.json"),
+        }
+    }
+}
+
+impl SoftwareHsmConfig {
+    /// Create a builder for `SoftwareHsmConfig`.
+    pub fn builder() -> SoftwareHsmConfigBuilder {
+        SoftwareHsmConfigBuilder::default()
+    }
+
+    /// Access the default passphrase as `&str`.
+    ///
+    /// The caller must not log or store the returned value.
+    pub fn default_passphrase(&self) -> &str {
+        self.default_passphrase.expose_secret().as_str()
+    }
+}
+
+/// Builder for [`SoftwareHsmConfig`].
+pub struct SoftwareHsmConfigBuilder {
+    key_store_path: Option<PathBuf>,
+    default_passphrase: Secret<String>,
+    metadata_file: Option<PathBuf>,
+}
+
+impl Default for SoftwareHsmConfigBuilder {
+    fn default() -> Self {
+        Self {
+            key_store_path: None,
+            default_passphrase: Secret::new(String::new()),
+            metadata_file: None,
+        }
+    }
+}
+
+impl SoftwareHsmConfigBuilder {
+    /// Set the key store directory path.
+    pub fn key_store_path(mut self, path: PathBuf) -> Self {
+        self.key_store_path = Some(path);
+        self
+    }
+
+    /// Set the default passphrase (moved into a `Secret<String>`).
+    pub fn default_passphrase(mut self, passphrase: String) -> Self {
+        self.default_passphrase = Secret::new(passphrase);
+        self
+    }
+
+    /// Set the metadata file path.
+    pub fn metadata_file(mut self, path: PathBuf) -> Self {
+        self.metadata_file = Some(path);
+        self
+    }
+
+    /// Build the [`SoftwareHsmConfig`].
+    pub fn build(self) -> SoftwareHsmConfig {
+        let key_store_path = self
+            .key_store_path
+            .unwrap_or_else(|| PathBuf::from("./software_hsm_keys"));
+        let metadata_file = self
+            .metadata_file
+            .unwrap_or_else(|| key_store_path.join("metadata.json"));
+        SoftwareHsmConfig {
+            key_store_path,
+            default_passphrase: self.default_passphrase,
+            metadata_file,
         }
     }
 }
@@ -497,13 +578,67 @@ mod tests {
 
     fn create_test_backend() -> Result<(SoftwareHsmBackend, TempDir)> {
         let temp_dir = TempDir::new()?;
-        let config = SoftwareHsmConfig {
-            key_store_path: temp_dir.path().to_path_buf(),
-            default_passphrase: "test123".to_string(),
-            metadata_file: temp_dir.path().join("metadata.json"),
-        };
+        let config = SoftwareHsmConfig::builder()
+            .key_store_path(temp_dir.path().to_path_buf())
+            .default_passphrase("test123".to_string())
+            .metadata_file(temp_dir.path().join("metadata.json"))
+            .build();
         let backend = SoftwareHsmBackend::with_config(config)?;
         Ok((backend, temp_dir))
+    }
+
+    // ===== Security Tests — Debug redaction and builder =====
+
+    #[test]
+    fn test_config_debug_redacts_passphrase() {
+        let temp_dir = TempDir::new().unwrap();
+        let config = SoftwareHsmConfig::builder()
+            .key_store_path(temp_dir.path().to_path_buf())
+            .default_passphrase("super-secret-passphrase".to_string())
+            .build();
+
+        let debug_output = format!("{:?}", config);
+        assert!(
+            debug_output.contains("[REDACTED]"),
+            "Debug output must contain [REDACTED], got: {}",
+            debug_output
+        );
+        assert!(
+            !debug_output.contains("super-secret-passphrase"),
+            "Debug output must NOT contain the actual passphrase, got: {}",
+            debug_output
+        );
+    }
+
+    #[test]
+    fn test_config_builder_sets_fields() {
+        let temp_dir = TempDir::new().unwrap();
+        let key_store = temp_dir.path().to_path_buf();
+        let metadata = temp_dir.path().join("meta.json");
+
+        let config = SoftwareHsmConfig::builder()
+            .key_store_path(key_store.clone())
+            .default_passphrase("my-passphrase".to_string())
+            .metadata_file(metadata.clone())
+            .build();
+
+        assert_eq!(config.key_store_path, key_store);
+        assert_eq!(config.default_passphrase(), "my-passphrase");
+        assert_eq!(config.metadata_file, metadata);
+    }
+
+    #[test]
+    fn test_config_builder_defaults_metadata_path() {
+        let temp_dir = TempDir::new().unwrap();
+        let key_store = temp_dir.path().to_path_buf();
+
+        let config = SoftwareHsmConfig::builder()
+            .key_store_path(key_store.clone())
+            .default_passphrase("pw".to_string())
+            .build();
+
+        // metadata_file should default to key_store_path/metadata.json
+        assert_eq!(config.metadata_file, key_store.join("metadata.json"));
     }
 
     // ===== Configuration and Initialization Tests =====
@@ -511,11 +646,11 @@ mod tests {
     #[test]
     fn test_backend_creation_default_config() -> Result<()> {
         let temp_dir = TempDir::new()?;
-        let config = SoftwareHsmConfig {
-            key_store_path: temp_dir.path().to_path_buf(),
-            default_passphrase: "test123".to_string(),
-            metadata_file: temp_dir.path().join("metadata.json"),
-        };
+        let config = SoftwareHsmConfig::builder()
+            .key_store_path(temp_dir.path().to_path_buf())
+            .default_passphrase("test123".to_string())
+            .metadata_file(temp_dir.path().join("metadata.json"))
+            .build();
 
         let backend = SoftwareHsmBackend::with_config(config)?;
         assert_eq!(backend.key_metadata.len(), 0);
@@ -534,11 +669,11 @@ mod tests {
     fn test_key_store_directory_creation() -> Result<()> {
         let temp_dir = TempDir::new()?;
         let key_store_path = temp_dir.path().join("new_hsm_store");
-        let config = SoftwareHsmConfig {
-            key_store_path: key_store_path.clone(),
-            default_passphrase: "test123".to_string(),
-            metadata_file: key_store_path.join("metadata.json"),
-        };
+        let config = SoftwareHsmConfig::builder()
+            .key_store_path(key_store_path.clone())
+            .default_passphrase("test123".to_string())
+            .metadata_file(key_store_path.join("metadata.json"))
+            .build();
 
         // Directory doesn't exist yet
         assert!(!key_store_path.exists());
@@ -554,11 +689,11 @@ mod tests {
     #[test]
     fn test_metadata_persistence() -> Result<()> {
         let temp_dir = TempDir::new()?;
-        let config = SoftwareHsmConfig {
-            key_store_path: temp_dir.path().to_path_buf(),
-            default_passphrase: "test123".to_string(),
-            metadata_file: temp_dir.path().join("metadata.json"),
-        };
+        let config = SoftwareHsmConfig::builder()
+            .key_store_path(temp_dir.path().to_path_buf())
+            .default_passphrase("test123".to_string())
+            .metadata_file(temp_dir.path().join("metadata.json"))
+            .build();
 
         // Create backend and add a key
         {
