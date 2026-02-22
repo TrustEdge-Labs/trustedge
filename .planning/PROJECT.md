@@ -10,7 +10,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## What This Is
 
-TrustEdge is a Rust workspace providing hardware-backed cryptographic operations for edge devices and IoT. A consolidated monolithic core (`trustedge-core`) owns all cryptographic operations — envelope encryption, signing, digital receipts, software attestation, and .trst archives — with thin CLI and WASM shells as frontends. The workspace includes 10 crates, with `trustedge-core` as the single source of truth.
+TrustEdge is a Rust workspace providing hardware-backed cryptographic operations for edge devices and IoT. A consolidated monolithic core (`trustedge-core`) owns all cryptographic operations — envelope encryption, signing, digital receipts, software attestation, and .trst archives — with thin CLI and WASM shells as frontends. The workspace includes 12 crates (including `trustedge-types` for shared wire types and `trustedge-platform` for the consolidated verification/CA service), with `trustedge-core` as the single source of truth for all crypto.
 
 ## Core Value
 
@@ -73,18 +73,18 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ Unimplemented Pubky CLI commands (publish, migrate) removed — v1.4
 - ✓ Zero TODO/FIXME/HACK/XXX markers indicating unimplemented functionality — v1.4
 - ✓ CI enforces TODO hygiene on every push/PR — v1.4
+- ✓ te_shared wire types centralized in workspace as trustedge-types crate — v1.5
+- ✓ platform-api and verify-core merged into unified trustedge-platform crate — v1.5
+- ✓ CA module preserved within trustedge-platform — v1.5
+- ✓ Combined REST API (verify, JWKS, devices, receipts) serves all endpoints — v1.5
+- ✓ All integration tests pass in consolidated platform crate — v1.5
+- ✓ Manual crypto/chaining code deleted, replaced with trustedge-core — v1.5
+- ✓ Verification uses trustedge_core::chain and trustedge_core::crypto — v1.5
+- ✓ 5 empty scaffold repos archived on GitHub with scope documentation — v1.5
 
 ### Active
 
-#### Current Milestone: v1.5 Platform Consolidation
-
-**Goal:** Consolidate external service repos into the main trustedge workspace, mandate trustedge-core for crypto, and prune empty scaffold repos.
-
-**Target features:**
-- Merge trustedge-platform-api and trustedge-verify-core into a single service crate in the main workspace
-- Centralize te_shared types into the main workspace (Uuid/DateTime from platform-api, schema generation from shared-libs)
-- Replace manual crypto/chaining code in verify-core with trustedge-core
-- Delete 6 empty scaffold repos (audit, billing, device, identity, infra, ingestion)
+(No active requirements — next milestone not yet defined)
 
 ### Deferred
 
@@ -106,26 +106,19 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - **v1.2 Scope Reduction** — 2-tier crate classification, dependency audit, tiered CI pipeline, dep tree tracking
 - **v1.3 Dependency Audit & Rationalization** — Feature-gated heavy deps, removed unused deps, cargo-audit CI, comprehensive DEPENDENCIES.md
 - **v1.4 Placeholder Elimination** — Secure-by-default QUIC TLS, dead code removal, stub elimination, TODO hygiene with CI enforcement
+- **v1.5 Platform Consolidation** — External repos merged into workspace (types, platform, verify), core owns all crypto, 5 scaffold repos archived
 
 ## Context
 
-Shipped v1.4 with 29,485 Rust LOC across 10 crates (5 stable, 5 experimental).
-Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048).
-370+ tests passing (160+ in core including 18 YubiKey simulation, 9 hardware integration with #[ignore]).
-Build time: 45s clean release. Dependency tree: 60 unique crates (baselined, warn at 70).
+Shipped v1.5 with 34,526 Rust LOC across 12 crates.
+Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx).
+External service repos consolidated: trustedge-platform-api + trustedge-verify-core merged into trustedge-platform; trustedge-shared-libs wire types migrated to trustedge-types.
+trustedge-core owns all crypto — platform calls core::chain and core::crypto; re-exports SigningKey/VerifyingKey for downstream use.
 CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally. cargo-audit runs as blocking check. TODO hygiene enforced on every push/PR.
-Crate classification: Tier 1 (stable) = core, cli, trst-protocols, trst-cli, trst-wasm. Tier 2 (experimental) = wasm, pubky, pubky-advanced, receipts, attestation.
-Heavy optional deps (git2, keyring) feature-gated. All dependencies documented with justifications in DEPENDENCIES.md.
-QUIC TLS secure-by-default with webpki-roots; insecure bypass requires `insecure-tls` feature flag.
-Zero placeholder code, unimplemented stubs, or misleading TODO comments remain in the codebase.
+Crate classification: Tier 1 (stable) = core, cli, types, platform, trst-protocols, trst-cli, trst-wasm. Tier 2 (experimental) = wasm, pubky, pubky-advanced, receipts, attestation.
+Heavy optional deps (git2, keyring) feature-gated. Platform features: http, postgres, ca, openapi, yubikey. Dependency tree baseline: 70 (raised from 60 for platform transitive deps).
+5 scaffold repos archived on GitHub (billing, device, identity, infra, ingestion). trustedge-dashboard (29-file SvelteKit) deferred.
 Key generation and attestation deferred to future (yubikey crate API limitations).
-
-**v1.5 consolidation targets (external repos):**
-- trustedge-platform-api: ~4,173 LOC, Axum/PostgreSQL REST API with CA, 11 integration tests
-- trustedge-verify-core: ~1,685 LOC, verification service with manual crypto/chaining, 17 tests
-- trustedge-shared-libs: ~501 LOC, te_shared wire types and schema generation
-- trustedge-dashboard: ~139 LOC SvelteKit frontend (out of scope for this milestone)
-- 6 empty scaffold repos: audit, billing, device, identity, infra, ingestion
 
 ## Constraints
 
@@ -178,6 +171,15 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | Fail-closed error messages with guidance | YubiKey generate_key directs users to external tools | ✓ Good — actionable rather than confusing |
 | "Feature-disabled" not "stub" terminology | Cfg-gated code returns errors, not placeholders — name it accurately | ✓ Good — clearer documentation |
 | CI TODO hygiene enforcement | Scan for TODO/FIXME/HACK/XXX on every push/PR | ✓ Good — prevents regression to incomplete code |
+| trustedge-types as standalone crate | Wire types shared across platform and CLI without pulling in core | ✓ Good — clean dependency separation |
+| schemars 0.8 (not 1.x) for types | Exact JSON schema fixture compatibility | ✓ Good — fixture tests pass without rewrite |
+| trustedge-platform unified crate | Single service crate instead of separate platform-api + verify-core | ✓ Good — simplified deployment and testing |
+| CA module as private mod (not pub) | Internal only, exposed through HTTP layer | ✓ Good — encapsulated implementation detail |
+| trustedge-core always-on for platform | Core crypto needed by all platform features, not just CA | ✓ Good — eliminated optional dep complexity |
+| Core re-exports SigningKey/VerifyingKey | Downstream crates use core's ed25519 types without direct dep | ✓ Good — single source of truth for key types |
+| format_b3() with STANDARD base64 | Wire format consistency for BLAKE3 digests | ✓ Good — matches existing platform-api format |
+| Archive 5 repos (not 6 as planned) | trustedge-audit was never created; document gap rather than fail | ✓ Good — accurate over bureaucratic |
+| trustedge-dashboard not archived | 29-file SvelteKit codebase has meaningful code | ✓ Good — deferred to future milestone |
 
 ---
-*Last updated: 2026-02-21 after v1.5 milestone start*
+*Last updated: 2026-02-22 after v1.5 milestone completion*

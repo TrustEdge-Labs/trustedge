@@ -158,3 +158,36 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
+
+## v1.5 Platform Consolidation (Shipped: 2026-02-22)
+
+**Phases completed:** 4 phases (24-27), 8 plans, 16 tasks
+**Timeline:** 2 days (2026-02-21 → 2026-02-22)
+**Stats:** 84 files changed, 10,940 insertions, 393 deletions, 34,526 Rust LOC, 49 commits
+
+**Delivered:** Consolidated external service repos (platform-api, verify-core, shared-libs) into the main trustedge workspace, mandated trustedge-core for all crypto, and archived 5 empty scaffold repos with scope documentation.
+
+**Key accomplishments:**
+- Created `trustedge-types` crate centralizing te_shared wire types with Uuid/DateTime from platform-api and JSON schema generation from shared-libs
+- Merged trustedge-platform-api and trustedge-verify-core into unified `trustedge-platform` crate with Axum HTTP layer, PostgreSQL backend, CA module, and BLAKE3+Ed25519 verify engine
+- Replaced all manual crypto/chaining code with `trustedge_core::chain` and `trustedge_core::crypto` — removed blake3 and ed25519-dalek from platform production deps
+- Added `SigningKey`/`VerifyingKey` re-exports to trustedge-core for downstream JWKS key management
+- Archived 5 scaffold repos (billing, device, identity, infra, ingestion) on GitHub with redirect READMEs; documented intended scope in CLAUDE.md
+
+**Tech debt carried forward:**
+- `trustedge-types` listed as production dep of platform but not imported — unused compile surface
+- Platform defines parallel VerifyRequest/VerifyOptions/SegmentDigest types instead of consuming from trustedge-types — schema divergence risk
+- 11 platform-api DB-backed integration tests require live PostgreSQL (#[ignore]) — matches YubiKey test pattern
+- trustedge-dashboard (29-file SvelteKit codebase) flagged but not archived — deferred to future milestone
+- Key generation and attestation deferred (yubikey 0.7 API limitations, carried from v1.1)
+- RSA Marvin Attack advisory (RUSTSEC-2023-0071) accepted (carried from v1.3)
+
+**Git range:** v1.4..HEAD (49 commits)
+
+**Archives:**
+- `.planning/milestones/v1.5-ROADMAP.md`
+- `.planning/milestones/v1.5-REQUIREMENTS.md`
+- `.planning/milestones/v1.5-MILESTONE-AUDIT.md`
+
+---
+
