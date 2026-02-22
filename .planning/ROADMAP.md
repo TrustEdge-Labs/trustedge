@@ -119,7 +119,11 @@ Plans:
   1. The TrustEdge-Labs GitHub org lists exactly 3 repos: trustedge, trustedgelabs-website, shipsecure
   2. CLAUDE.md contains no references to the 12 deleted repos (no stale repo links, no archived-repo tables for deleted repos)
   3. Documentation accurately states the org has 3 repos and describes the scope of each
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 30-01-PLAN.md -- Delete all orphaned repos from TrustEdge-Labs org (11 repos)
+- [ ] 30-02-PLAN.md -- Update CLAUDE.md and documentation to reflect 3-repo org structure
 
 ## Progress
 
