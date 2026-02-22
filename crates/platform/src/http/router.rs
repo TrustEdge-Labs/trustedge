@@ -42,13 +42,18 @@ pub fn create_router(state: AppState) -> Router {
         use super::handlers::{get_receipt_handler, register_device_handler};
         use axum::middleware;
 
+        // Dashboard dev origins — restrict to Content-Type, Authorization, Accept
         let cors = CorsLayer::new()
             .allow_origin([
                 "http://localhost:3000".parse().expect("valid origin"),
                 "http://localhost:8080".parse().expect("valid origin"),
             ])
             .allow_methods([axum::http::Method::GET, axum::http::Method::POST])
-            .allow_headers(tower_http::cors::Any);
+            .allow_headers([
+                axum::http::header::CONTENT_TYPE,
+                axum::http::header::AUTHORIZATION,
+                axum::http::header::ACCEPT,
+            ]);
 
         base.route("/v1/devices", post(register_device_handler))
             .route("/v1/receipts/:id", get(get_receipt_handler))
@@ -64,7 +69,8 @@ pub fn create_router(state: AppState) -> Router {
     #[cfg(not(feature = "postgres"))]
     let base = base
         .with_state(state)
-        .layer(CorsLayer::permissive())
+        // Same-origin only — no cross-origin requests allowed for verify-only builds
+        .layer(CorsLayer::new())
         .layer(TraceLayer::new_for_http());
 
     base
