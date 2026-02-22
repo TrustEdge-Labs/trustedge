@@ -16,7 +16,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.3 Dependency Audit** - Phases 15-18 (shipped 2026-02-13)
 - ✅ **v1.4 Placeholder Elimination** - Phases 19-23 (shipped 2026-02-13)
 - ✅ **v1.5 Platform Consolidation** - Phases 24-27 (shipped 2026-02-22)
-- **v1.6 Final Consolidation** - Phases 28-30 (active)
+- ✅ **v1.6 Final Consolidation** - Phases 28-30 (shipped 2026-02-22)
 
 ## Phases
 
@@ -74,84 +74,14 @@ Consolidated external service repos (platform-api, verify-core, shared-libs) int
 
 </details>
 
-### v1.6 Final Consolidation
+<details>
+<summary>✅ v1.6 Final Consolidation (Phases 28-30) - SHIPPED 2026-02-22</summary>
 
-- [x] **Phase 28: Platform Server Binary** - Create `crates/platform-server` binary crate that boots trustedge-platform via Axum (completed 2026-02-22)
-- [x] **Phase 29: Dashboard Consolidation** - Move trustedge-dashboard into `web/dashboard/` and replace hardcoded types with generated schemas (completed 2026-02-22)
-- [x] **Phase 30: Repo Cleanup** - Delete 12 orphaned GitHub repos and update all documentation to reflect 3-repo org structure (completed 2026-02-22)
+Brought all satellite code into the monorepo and finalized the GitHub org structure. Created standalone platform server binary (crates/platform-server) with Axum HTTP, clap CLI, and deployment artifacts. Moved SvelteKit dashboard into web/dashboard/ with TypeScript types generated from trustedge-types JSON schemas. Deleted 11 orphaned repos, reducing TrustEdge-Labs org to 3 repos (trustedge, trustedgelabs-website, shipsecure).
 
-## Phase Details
+**See:** `.planning/milestones/v1.6-ROADMAP.md` for full phase details.
 
-### Phase 28: Platform Server Binary
-**Goal**: The platform service runs as a deployable standalone binary
-**Depends on**: Nothing (trustedge-platform crate exists from v1.5)
-**Requirements**: PLAT-01, PLAT-02, PLAT-03, PLAT-04
-**Success Criteria** (what must be TRUE):
-  1. Running `trustedge-platform-server` starts an Axum HTTP server on the configured port
-  2. Server reads PORT, DATABASE_URL, and JWT_AUDIENCE from environment variables without code changes
-  3. Server routes all requests through `trustedge_platform::create_router()` — no routing logic in main.rs
-  4. Sending SIGTERM or SIGINT to the process causes graceful shutdown with no abrupt connection drops
-**Plans**: 2 plans
-
-Plans:
-- [ ] 28-01-PLAN.md — Create platform-server binary crate (Cargo.toml, main.rs, workspace registration)
-- [ ] 28-02-PLAN.md — Create deployment artifacts (Dockerfile, docker-compose.yml, .env.example)
-
-### Phase 29: Dashboard Consolidation
-**Goal**: The dashboard lives in the monorepo and uses types generated from Rust schemas
-**Depends on**: Nothing (trustedge-types schemas available from v1.5)
-**Requirements**: WEB-01, WEB-02, WEB-03
-**Success Criteria** (what must be TRUE):
-  1. `web/dashboard/` contains all dashboard source files and the repo contains no references to an external dashboard location
-  2. `npm run dev` and `npm run build` succeed from `web/dashboard/` with no manual path adjustments
-  3. The file `web/dashboard/src/lib/types.ts` is generated from `trustedge-types` JSON schemas — no hand-written TypeScript interface definitions remain for types that exist in trustedge-types
-**Plans**: 2 plans
-
-Plans:
-- [ ] 29-01-PLAN.md — Move dashboard files into web/dashboard/ and update CLAUDE.md
-- [ ] 29-02-PLAN.md — Create type generation script and replace hand-written types with generated schemas
-
-### Phase 30: Repo Cleanup
-**Goal**: The TrustEdge-Labs GitHub org contains only the three active repos
-**Depends on**: Phase 29 (trustedge-dashboard repo deleted only after dashboard is moved in)
-**Requirements**: REPO-01, REPO-02, REPO-03
-**Success Criteria** (what must be TRUE):
-  1. The TrustEdge-Labs GitHub org lists exactly 3 repos: trustedge, trustedgelabs-website, shipsecure
-  2. CLAUDE.md contains no references to the 12 deleted repos (no stale repo links, no archived-repo tables for deleted repos)
-  3. Documentation accurately states the org has 3 repos and describes the scope of each
-**Plans**: 2 plans
-
-Plans:
-- [x] 30-01-PLAN.md -- Delete all orphaned repos from TrustEdge-Labs org (11 repos)
-- [ ] 30-02-PLAN.md -- Update CLAUDE.md and documentation to reflect 3-repo org structure
-
-## Progress
-
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 1-8. [v1.0 phases] | v1.0 | 17/17 | Complete | 2026-02-11 |
-| 9. Cleanup | v1.1 | 1/1 | Complete | 2026-02-11 |
-| 10. Backend Rewrite | v1.1 | 2/2 | Complete | 2026-02-11 |
-| 11. Test Infrastructure | v1.1 | 2/2 | Complete | 2026-02-11 |
-| 12. CI Integration | v1.1 | 1/1 | Complete | 2026-02-11 |
-| 13. Crate Classification | v1.2 | 2/2 | Complete | 2026-02-12 |
-| 14. CI & Documentation | v1.2 | 2/2 | Complete | 2026-02-12 |
-| 15. Feature Gating | v1.3 | 2/2 | Complete | 2026-02-12 |
-| 16. Dependency Audit | v1.3 | 1/1 | Complete | 2026-02-13 |
-| 17. Security Hardening | v1.3 | 1/1 | Complete | 2026-02-13 |
-| 18. Documentation | v1.3 | 1/1 | Complete | 2026-02-13 |
-| 19. QUIC Security Hardening | v1.4 | 1/1 | Complete | 2026-02-13 |
-| 20. Dead Code Removal | v1.4 | 1/1 | Complete | 2026-02-13 |
-| 21. Core Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
-| 22. Pubky Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
-| 23. TODO Hygiene Sweep | v1.4 | 1/1 | Complete | 2026-02-13 |
-| 24. Type Centralization | v1.5 | 2/2 | Complete | 2026-02-21 |
-| 25. Service Consolidation | v1.5 | 3/3 | Complete | 2026-02-22 |
-| 26. Crypto Deduplication | v1.5 | 2/2 | Complete | 2026-02-22 |
-| 27. Ghost Repo Cleanup | v1.5 | 1/1 | Complete | 2026-02-22 |
-| 28. Platform Server Binary | v1.6 | 2/2 | Complete | 2026-02-22 |
-| 29. Dashboard Consolidation | 2/2 | Complete    | 2026-02-22 | - |
-| 30. Repo Cleanup | 2/2 | Complete    | 2026-02-22 | - |
+</details>
 
 ---
-*Last updated: 2026-02-22 after 30-01 GitHub org cleanup complete*
+*Last updated: 2026-02-22 after v1.6 milestone complete*

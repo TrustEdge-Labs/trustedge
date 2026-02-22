@@ -81,18 +81,17 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ Manual crypto/chaining code deleted, replaced with trustedge-core — v1.5
 - ✓ Verification uses trustedge_core::chain and trustedge_core::crypto — v1.5
 - ✓ 5 empty scaffold repos archived on GitHub with scope documentation — v1.5
+- ✓ Platform server binary (`trustedge-platform-server`) with Axum HTTP, clap CLI, graceful shutdown — v1.6
+- ✓ Server reads PORT, DATABASE_URL, JWT_AUDIENCE from environment variables — v1.6
+- ✓ Server boots router via `trustedge_platform::create_router()` (zero routing in main.rs) — v1.6
+- ✓ Dashboard moved into `web/dashboard/` with npm build/check passing — v1.6
+- ✓ Dashboard TypeScript types generated from `trustedge-types` JSON schemas — v1.6
+- ✓ 11 orphaned repos deleted from TrustEdge-Labs GitHub org — v1.6
+- ✓ CLAUDE.md and documentation updated for 3-repo org structure — v1.6
 
 ### Active
 
-#### Current Milestone: v1.6 Final Consolidation
-
-**Goal:** Bring all satellite code into the monorepo, add a platform server binary, finalize shared types, and delete all orphaned GitHub repos.
-
-**Target features:**
-- Platform server binary crate (`crates/platform-server`) with fresh `main.rs` booting Axum
-- Dashboard consolidation — move `trustedge-dashboard` SvelteKit app into `web/dashboard`
-- Types finalization — replace dashboard's hardcoded TypeScript interfaces with generated schemas from `trustedge-types`
-- GitHub repo purge — delete 12 repos, keep only `trustedge`, `trustedgelabs-website`, `shipsecure`
+(None — fresh for next milestone)
 
 ### Deferred
 
@@ -115,17 +114,18 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - **v1.3 Dependency Audit & Rationalization** — Feature-gated heavy deps, removed unused deps, cargo-audit CI, comprehensive DEPENDENCIES.md
 - **v1.4 Placeholder Elimination** — Secure-by-default QUIC TLS, dead code removal, stub elimination, TODO hygiene with CI enforcement
 - **v1.5 Platform Consolidation** — External repos merged into workspace (types, platform, verify), core owns all crypto, 5 scaffold repos archived
+- **v1.6 Final Consolidation** — Platform server binary, dashboard in monorepo with generated types, 11 orphaned repos deleted, 3-repo org
 
 ## Context
 
-Shipped v1.5 with 34,526 Rust LOC across 12 crates.
-Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx).
-External service repos consolidated: trustedge-platform-api + trustedge-verify-core merged into trustedge-platform; trustedge-shared-libs wire types migrated to trustedge-types.
+Shipped v1.6 with 34,526 Rust LOC across 12 crates + SvelteKit dashboard at web/dashboard/.
+Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit (TypeScript).
+TrustEdge-Labs GitHub org has exactly 3 repos: trustedge (main workspace), trustedgelabs-website, shipsecure.
 trustedge-core owns all crypto — platform calls core::chain and core::crypto; re-exports SigningKey/VerifyingKey for downstream use.
-CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally. cargo-audit runs as blocking check. TODO hygiene enforced on every push/PR.
-Crate classification: Tier 1 (stable) = core, cli, types, platform, trst-protocols, trst-cli, trst-wasm. Tier 2 (experimental) = wasm, pubky, pubky-advanced, receipts, attestation.
-Heavy optional deps (git2, keyring) feature-gated. Platform features: http, postgres, ca, openapi, yubikey. Dependency tree baseline: 70 (raised from 60 for platform transitive deps).
-11 orphaned repos permanently deleted from GitHub org (v1.6). TrustEdge-Labs org now has exactly 3 repos: trustedge, trustedgelabs-website, shipsecure.
+Platform server binary (`crates/platform-server/`) boots Axum via `trustedge_platform::create_router()` with deploy/ artifacts (Dockerfile, docker-compose.yml).
+Dashboard TypeScript types generated from trustedge-types JSON schemas — no hand-written type definitions for shared types.
+CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally. cargo-audit + TODO hygiene enforced on every push/PR.
+Heavy optional deps (git2, keyring) feature-gated. Platform features: http, postgres, ca, openapi, yubikey. Dependency tree baseline: 70.
 Key generation and attestation deferred to future (yubikey crate API limitations).
 
 ## Constraints
@@ -188,6 +188,10 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | format_b3() with STANDARD base64 | Wire format consistency for BLAKE3 digests | ✓ Good — matches existing platform-api format |
 | Archive 5 repos (not 6 as planned) | trustedge-audit was never created; document gap rather than fail | ✓ Good — accurate over bureaucratic |
 | trustedge-dashboard not archived | 29-file SvelteKit codebase has meaningful code | ✓ Good — deferred to future milestone |
+| Platform server as thin binary | main.rs is pure wiring — zero routing logic | ✓ Good — all routes in trustedge-platform |
+| TypeScript types generated from JSON schemas | json-schema-to-typescript as devDependency | ✓ Good — no hand-written type drift |
+| Delete repos (not archive) | All code consolidated, no external audience | ✓ Good — clean 3-repo org |
+| debian-slim over alpine for Dockerfile | glibc compatibility with sqlx native-tls | ✓ Good — stable runtime base |
 
 ---
-*Last updated: 2026-02-22 after v1.6 milestone started*
+*Last updated: 2026-02-22 after v1.6 milestone*

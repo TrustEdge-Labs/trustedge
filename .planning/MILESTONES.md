@@ -191,3 +191,34 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
+
+## v1.6 Final Consolidation (Shipped: 2026-02-22)
+
+**Phases completed:** 3 phases (28-30), 6 plans, 11 tasks
+**Timeline:** 1 day (2026-02-22)
+**Stats:** 353 files changed, 50,237 insertions, 12,730 deletions, 20 commits
+
+**Delivered:** Brought all satellite code into the monorepo, created a standalone platform server binary, and deleted all orphaned GitHub repos — reducing the TrustEdge-Labs org from 14 repos to 3.
+
+**Key accomplishments:**
+- Created `trustedge-platform-server` binary crate with Axum HTTP, clap CLI, graceful shutdown, and startup banner
+- Created deployment artifacts: multi-stage Dockerfile (debian-slim runtime), docker-compose.yml, .env.example
+- Moved trustedge-dashboard (SvelteKit) into `web/dashboard/` with npm build/check passing
+- Generated TypeScript types from `trustedge-types` JSON schemas via json-schema-to-typescript — replacing hand-written type definitions
+- Deleted 11 orphaned repos from TrustEdge-Labs GitHub org via `gh repo delete`
+- Updated CLAUDE.md and all documentation to reflect final 3-repo org structure (trustedge, trustedgelabs-website, shipsecure)
+
+**Tech debt carried forward:**
+- Key generation and attestation deferred (yubikey 0.7 API limitations, carried from v1.1)
+- RSA Marvin Attack advisory (RUSTSEC-2023-0071) accepted (carried from v1.3)
+- Platform defines parallel VerifyRequest/VerifyOptions types instead of consuming from trustedge-types (carried from v1.5)
+- Type generation is manual (one-time script, not CI-automated) — deferred to future milestone
+
+**Git range:** v1.5..70de3d1 (20 commits)
+
+**Archives:**
+- `.planning/milestones/v1.6-ROADMAP.md`
+- `.planning/milestones/v1.6-REQUIREMENTS.md`
+
+---
+
