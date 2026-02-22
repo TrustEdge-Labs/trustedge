@@ -17,13 +17,13 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 29 — Dashboard Consolidation
-Plan: 02 (complete)
-Status: Phase 29 complete (2 of 2 plans done)
-Last activity: 2026-02-22 — 29-02 TypeScript types generated from trustedge-types JSON schemas
+Phase: 30 — Repo Cleanup
+Plan: 01 (complete)
+Status: Phase 30 in progress (1 of 2 plans done)
+Last activity: 2026-02-22 — 30-01 Deleted 11 orphaned GitHub repos, TrustEdge-Labs org now has exactly 3 repos
 
 ```
-v1.6 Progress: [■■■       ] 2/3 phases (phases 28-29 complete, phase 30 pending)
+v1.6 Progress: [■■■■      ] 2.5/3 phases (phases 28-30 in progress, 30-01 complete)
 ```
 
 ## Performance Metrics
@@ -39,8 +39,8 @@ v1.6 Progress: [■■■       ] 2/3 phases (phases 28-29 complete, phase 30 pe
 
 **v1.6 (in progress):**
 - 3 phases planned
-- Plans: 4 complete (28-01, 28-02, 29-01, 29-02)
-- Tasks: 7 complete
+- Plans: 5 complete (28-01, 28-02, 29-01, 29-02, 30-01)
+- Tasks: 9 complete
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -48,6 +48,7 @@ v1.6 Progress: [■■■       ] 2/3 phases (phases 28-29 complete, phase 30 pe
 | 28    | 02   | 2 min    | 2     | 3     |
 | 29    | 01   | 5 min    | 2     | 22    |
 | 29    | 02   | 3 min    | 1     | 8     |
+| 30    | 01   | 5 min    | 2     | 0     |
 
 ## Accumulated Context
 
@@ -63,6 +64,8 @@ v1.6 Progress: [■■■       ] 2/3 phases (phases 28-29 complete, phase 30 pe
 - [Phase 29]: vitePreprocess() required in svelte.config.js for TypeScript in Svelte 4 script blocks
 - [Phase 29]: import.meta.env.VITE_* used for env vars in SvelteKit dashboard — $env/dynamic/public only allows PUBLIC_-prefixed vars
 - [Phase 29]: Separate import type statements required in Svelte 4 — inline type modifier not supported by acorn parser
+- [Phase 30-01]: 11 orphaned repos permanently deleted (not just archived) — all code lives in trustedge monorepo; org now has exactly 3 repos: trustedge, trustedgelabs-website, shipsecure
+- [Phase 30-01]: Org description set via GitHub API after .github profile repo was deleted
 - [Phase 29]: json-schema-to-typescript as devDependency in web/dashboard; DashboardReceipt naming to avoid collision with generated Receipt; Node.js dedup embedded in generate-types.sh for cross-schema interface deduplication
 
 ### Pending Todos
@@ -78,8 +81,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 29-02-PLAN.md
-Resume at: Phase 30 (trustedge-dashboard repo deletion)
+Stopped at: Completed 30-01-PLAN.md
+Resume at: Phase 30 Plan 02 (CLAUDE.md and documentation updates for final repo structure)
 
 ---
-*Last updated: 2026-02-22 after 29-02 type generation complete*
+*Last updated: 2026-02-22 after 30-01 GitHub org cleanup complete*
