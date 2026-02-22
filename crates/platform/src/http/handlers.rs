@@ -19,11 +19,19 @@ use serde_json::Value;
 use tracing::{info, warn};
 
 use crate::verify::{
-    engine::{receipt_from_report, verify_to_report},
-    signing::sign_receipt_jws,
+    engine::verify_to_report,
     types::{HealthResponse, VerifyRequest, VerifyResponse},
-    validation::{validate_segment_hashes, ValidationError},
+    validation::{validate_verify_request_full, ValidationError},
 };
+
+// The non-postgres handler uses the shared receipt builder from validation.rs.
+#[cfg(not(feature = "postgres"))]
+use crate::verify::validation::build_receipt_if_requested;
+
+// receipt_from_report and sign_receipt_jws are only used in the postgres handler,
+// which inlines receipt construction due to DB storage interleaving.
+#[cfg(feature = "postgres")]
+use crate::verify::{engine::receipt_from_report, signing::sign_receipt_jws};
 
 use super::state::AppState;
 
@@ -65,45 +73,7 @@ pub async fn verify_handler(
         request.device_pub
     );
 
-    // Ordered validation: empty segments → device_pub → manifest → hash format.
-    // This order ensures the most specific error is returned first.
-    if request.segments.is_empty() {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(ValidationError::new(
-                "invalid_segments",
-                "segments array cannot be empty",
-            )),
-        ));
-    }
-
-    if request.device_pub.is_empty() {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(ValidationError::new(
-                "invalid_device_pub",
-                "device_pub cannot be empty",
-            )),
-        ));
-    }
-
-    if request.manifest.is_null()
-        || request.manifest == serde_json::Value::Object(Default::default())
-        || request.manifest.as_str() == Some("")
-    {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(ValidationError::new(
-                "invalid_manifest",
-                "manifest cannot be empty",
-            )),
-        ));
-    }
-
-    if let Err(validation_error) = validate_segment_hashes(&request.segments) {
-        warn!("Validation failed: {}", validation_error.detail);
-        return Err((StatusCode::BAD_REQUEST, Json(validation_error)));
-    }
+    validate_verify_request_full(&request).map_err(|e| (StatusCode::BAD_REQUEST, Json(e)))?;
 
     let report = match verify_to_report(&request.manifest, &request.segments, &request.device_pub) {
         Ok(report) => report,
@@ -120,44 +90,12 @@ pub async fn verify_handler(
     };
 
     let verification_id = format!("v_{}", uuid::Uuid::new_v4().simple());
-    let mut receipt = None;
 
-    if let Some(options) = &request.options {
-        if options.return_receipt.unwrap_or(false)
-            && report.signature_verification.passed
-            && report.continuity_verification.passed
-        {
-            let device_id = options.device_id.as_deref().unwrap_or("unknown_device");
-            let manifest_digest = compute_manifest_digest_blake3(&request.manifest);
-            let now_rfc3339 = Utc::now().to_rfc3339();
-
-            let keys = state.keys.read().await;
-            let kid = keys.current_kid();
-
-            let receipt_obj = receipt_from_report(
-                &report,
-                &manifest_digest,
-                device_id,
-                &kid,
-                &now_rfc3339,
-                &report.metadata.chain_tip,
-            );
-
-            match sign_receipt_jws(&receipt_obj, &keys).await {
-                Ok(jws) => receipt = Some(jws),
-                Err(e) => {
-                    warn!("Failed to sign receipt: {}", e);
-                    return Err((
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        Json(ValidationError::new(
-                            "receipt_signing_failed",
-                            &format!("Failed to sign receipt: {}", e),
-                        )),
-                    ));
-                }
-            }
-        }
-    }
+    let keys = state.keys.read().await;
+    let receipt =
+        build_receipt_if_requested(&request, &report, &keys, compute_manifest_digest_blake3)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(e)))?;
 
     Ok(Json(VerifyResponse {
         verification_id,
@@ -185,45 +123,7 @@ pub async fn verify_handler(
         request.device_pub
     );
 
-    // Ordered validation: empty segments → device_pub → manifest → hash format.
-    // This order ensures the most specific error is returned first.
-    if request.segments.is_empty() {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(ValidationError::new(
-                "invalid_segments",
-                "segments array cannot be empty",
-            )),
-        ));
-    }
-
-    if request.device_pub.is_empty() {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(ValidationError::new(
-                "invalid_device_pub",
-                "device_pub cannot be empty",
-            )),
-        ));
-    }
-
-    if request.manifest.is_null()
-        || request.manifest == serde_json::Value::Object(Default::default())
-        || request.manifest.as_str() == Some("")
-    {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(ValidationError::new(
-                "invalid_manifest",
-                "manifest cannot be empty",
-            )),
-        ));
-    }
-
-    if let Err(validation_error) = validate_segment_hashes(&request.segments) {
-        warn!("Validation failed: {}", validation_error.detail);
-        return Err((StatusCode::BAD_REQUEST, Json(validation_error)));
-    }
+    validate_verify_request_full(&request).map_err(|e| (StatusCode::BAD_REQUEST, Json(e)))?;
 
     // Look up device record if device_id option was provided
     let device_id = if let Some(ref options) = request.options {
@@ -303,6 +203,7 @@ pub async fn verify_handler(
     let mut receipt = None;
     let mut receipt_id = None;
 
+    // Receipt construction inlined here due to DB storage interleaving.
     if let Some(ref options) = request.options {
         if options.return_receipt.unwrap_or(false)
             && report.signature_verification.passed
@@ -485,7 +386,7 @@ pub fn create_test_app(pool: sqlx::PgPool) -> axum::Router {
 // ---------------------------------------------------------------------------
 
 /// Compute BLAKE3 manifest digest (for receipt construction).
-fn compute_manifest_digest_blake3(manifest: &Value) -> String {
+pub(crate) fn compute_manifest_digest_blake3(manifest: &Value) -> String {
     let canonical = serde_json::to_string(manifest).unwrap_or_default();
     let hash = trustedge_core::chain::segment_hash(canonical.as_bytes());
     format!("b3:{}", BASE64.encode(hash))

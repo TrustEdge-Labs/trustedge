@@ -6,61 +6,27 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! REST API endpoints for Certificate Authority operations.
+//! CA service functions — library-only, no HTTP coupling.
+//!
+//! Status: Library-only. Contains plain async service functions for CA operations.
+//! These functions accept typed parameters directly and return typed results.
+//! When CA routes are wired into the HTTP layer, thin Axum handler shims will wrap these functions.
 
 use super::{error::CAError, models::*, service::CertificateAuthorityService};
-use axum::{
-    extract::{Path, Query, State},
-    http::StatusCode,
-    response::Json,
-    routing::{get, post},
-    Router,
-};
 use serde::Deserialize;
-use std::sync::Arc;
 
-pub type AppState = Arc<CertificateAuthorityService>;
-
-pub fn create_router(ca_service: Arc<CertificateAuthorityService>) -> Router {
-    Router::new()
-        .route("/health", get(health_check))
-        .route("/ca/certificate", get(get_ca_certificate))
-        .route("/certificates", post(issue_certificate))
-        .route("/certificates", get(list_certificates))
-        .route("/certificates/:serial/revoke", post(revoke_certificate))
-        .with_state(ca_service)
+/// Get the CA certificate PEM string.
+pub fn get_ca_certificate(ca_service: &CertificateAuthorityService) -> String {
+    ca_service.get_ca_certificate().to_string()
 }
 
-async fn health_check() -> &'static str {
-    "OK"
-}
-
-async fn get_ca_certificate(State(ca_service): State<AppState>) -> Result<String, StatusCode> {
-    Ok(ca_service.get_ca_certificate().to_string())
-}
-
-/// Issue a new certificate
-///
-/// POST /certificates
-///
-/// Request body: IssueCertificateRequest
-/// Response: IssueCertificateResponse with the issued certificate
-async fn issue_certificate(
-    State(ca_service): State<AppState>,
-    Json(request): Json<IssueCertificateRequest>,
-) -> Result<Json<IssueCertificateResponse>, (StatusCode, Json<ErrorResponse>)> {
+/// Issue a new certificate.
+pub async fn issue_certificate(
+    ca_service: &CertificateAuthorityService,
+    request: &IssueCertificateRequest,
+) -> Result<IssueCertificateResponse, CAError> {
     // Validate the certificate request
-    if let Err(validation_error) = validate_certificate_request(&request.certificate_request) {
-        tracing::warn!("Invalid certificate request: {}", validation_error);
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: "Invalid Request".to_string(),
-                message: validation_error,
-                code: Some("INVALID_CERT_REQUEST".to_string()),
-            }),
-        ));
-    }
+    validate_certificate_request(&request.certificate_request)?;
 
     // Future: Extract tenant ID from JWT auth instead of creating a new one
     let tenant_id = TenantId::new();
@@ -70,136 +36,260 @@ async fn issue_certificate(
         request.certificate_request.subject.common_name
     );
 
-    match ca_service
+    let certificate = ca_service
         .issue_certificate(&tenant_id, &request.certificate_request)
         .await
-    {
-        Ok(certificate) => {
-            tracing::info!(
-                "Certificate issued successfully: serial={}, subject={}",
-                certificate.serial_number,
-                certificate.subject
-            );
-            Ok(Json(IssueCertificateResponse { certificate }))
-        }
-        Err(e) => {
+        .map_err(|e| {
             tracing::error!("Failed to issue certificate: {}", e);
-            let (status, error_response) = map_ca_error_to_http(e);
-            Err((status, Json(error_response)))
-        }
-    }
+            e
+        })?;
+
+    tracing::info!(
+        "Certificate issued successfully: serial={}, subject={}",
+        certificate.serial_number,
+        certificate.subject
+    );
+
+    Ok(IssueCertificateResponse { certificate })
 }
 
-/// Validate certificate request parameters
-fn validate_certificate_request(request: &CertificateRequest) -> Result<(), String> {
+/// Revoke a certificate by serial number.
+pub async fn revoke_certificate(
+    ca_service: &CertificateAuthorityService,
+    serial: &str,
+    request: &RevokeCertificateRequest,
+) -> Result<(), CAError> {
+    // Validate the revocation request
+    validate_revocation_request(serial, request)?;
+
+    // Future: Extract tenant ID from JWT auth instead of creating a new one
+    let tenant_id = TenantId::new();
+
+    tracing::info!(
+        "Revoking certificate: serial={}, reason={}",
+        serial,
+        request.reason
+    );
+
+    ca_service
+        .revoke_certificate(&tenant_id, serial, &request.reason)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to revoke certificate: {}", e);
+            e
+        })?;
+
+    tracing::info!("Certificate revoked successfully: serial={}", serial);
+
+    Ok(())
+}
+
+/// List certificates with optional filtering and pagination.
+pub fn list_certificates(
+    query: &ListCertificatesQuery,
+) -> Result<ListCertificatesResponse, String> {
+    // Validate query parameters
+    validate_list_query(query)?;
+
+    // Future: Implement actual database query instead of mock data
+    let mock_certificates = create_mock_certificates(query);
+
+    let response = ListCertificatesResponse {
+        certificates: mock_certificates,
+        total: 2, // Future: Return real count from database
+        limit: query.limit.unwrap_or(50),
+        offset: query.offset.unwrap_or(0),
+    };
+
+    tracing::info!(
+        "Listed certificates: returned={} results",
+        response.certificates.len()
+    );
+
+    Ok(response)
+}
+
+/// Query parameters for listing certificates.
+#[derive(Debug, Deserialize)]
+pub struct ListCertificatesQuery {
+    /// Filter by certificate status
+    pub status: Option<String>,
+    /// Filter by subject (partial match)
+    pub subject: Option<String>,
+    /// Filter by serial number (exact match)
+    pub serial: Option<String>,
+    /// Filter by common name (partial match)
+    pub common_name: Option<String>,
+    /// Filter by organization (partial match)
+    pub organization: Option<String>,
+    /// Filter certificates expiring before this date (ISO 8601)
+    pub expires_before: Option<String>,
+    /// Filter certificates created after this date (ISO 8601)
+    pub created_after: Option<String>,
+    /// Maximum number of results to return
+    pub limit: Option<u32>,
+    /// Number of results to skip (for pagination)
+    pub offset: Option<u32>,
+    /// Sort field (serial, subject, created_at, expires_at)
+    pub sort_by: Option<String>,
+    /// Sort order (asc, desc)
+    pub sort_order: Option<String>,
+}
+
+/// Validate certificate request parameters.
+pub fn validate_certificate_request(request: &CertificateRequest) -> Result<(), CAError> {
     // Validate common name
     if request.subject.common_name.is_empty() {
-        return Err("Common name cannot be empty".to_string());
+        return Err(CAError::InvalidRequest(
+            "Common name cannot be empty".to_string(),
+        ));
     }
 
     if request.subject.common_name.len() > 64 {
-        return Err("Common name cannot exceed 64 characters".to_string());
+        return Err(CAError::InvalidRequest(
+            "Common name cannot exceed 64 characters".to_string(),
+        ));
     }
 
     // Basic DNS name validation for common name
     if request.subject.common_name.contains(' ') {
-        return Err("Common name cannot contain spaces".to_string());
+        return Err(CAError::InvalidRequest(
+            "Common name cannot contain spaces".to_string(),
+        ));
     }
 
     // Validate organization if provided
     if let Some(org) = &request.subject.organization {
         if org.is_empty() {
-            return Err("Organization cannot be empty if provided".to_string());
+            return Err(CAError::InvalidRequest(
+                "Organization cannot be empty if provided".to_string(),
+            ));
         }
         if org.len() > 64 {
-            return Err("Organization cannot exceed 64 characters".to_string());
+            return Err(CAError::InvalidRequest(
+                "Organization cannot exceed 64 characters".to_string(),
+            ));
         }
     }
 
     // Validate country if provided
     if let Some(country) = &request.subject.country {
         if country.len() != 2 {
-            return Err(
+            return Err(CAError::InvalidRequest(
                 "Country code must be exactly 2 characters (ISO 3166-1 alpha-2)".to_string(),
-            );
+            ));
         }
         if !country
             .chars()
             .all(|c| c.is_ascii_alphabetic() && c.is_uppercase())
         {
-            return Err("Country code must be uppercase letters only".to_string());
+            return Err(CAError::InvalidRequest(
+                "Country code must be uppercase letters only".to_string(),
+            ));
         }
     }
 
     // Validate validity period
     if let Some(days) = request.validity_days {
         if days == 0 {
-            return Err("Validity period must be at least 1 day".to_string());
+            return Err(CAError::InvalidRequest(
+                "Validity period must be at least 1 day".to_string(),
+            ));
         }
         if days > 3650 {
             // 10 years max
-            return Err("Validity period cannot exceed 10 years (3650 days)".to_string());
+            return Err(CAError::InvalidRequest(
+                "Validity period cannot exceed 10 years (3650 days)".to_string(),
+            ));
         }
     }
 
     // Validate key usage - must have at least one
     if request.key_usage.is_empty() {
-        return Err("At least one key usage must be specified".to_string());
+        return Err(CAError::InvalidRequest(
+            "At least one key usage must be specified".to_string(),
+        ));
     }
 
     // Validate extended key usage - must have at least one
     if request.extended_key_usage.is_empty() {
-        return Err("At least one extended key usage must be specified".to_string());
+        return Err(CAError::InvalidRequest(
+            "At least one extended key usage must be specified".to_string(),
+        ));
     }
 
     // Validate SAN entries
     if request.san_entries.is_empty() {
-        return Err("At least one Subject Alternative Name must be specified".to_string());
+        return Err(CAError::InvalidRequest(
+            "At least one Subject Alternative Name must be specified".to_string(),
+        ));
     }
 
     for san in &request.san_entries {
         match san {
             SubjectAlternativeName::DnsName(name) => {
                 if name.is_empty() {
-                    return Err("DNS name in SAN cannot be empty".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "DNS name in SAN cannot be empty".to_string(),
+                    ));
                 }
                 if name.len() > 253 {
-                    return Err("DNS name in SAN cannot exceed 253 characters".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "DNS name in SAN cannot exceed 253 characters".to_string(),
+                    ));
                 }
                 // Basic DNS validation
                 if name.starts_with('.') || name.ends_with('.') {
-                    return Err("DNS name cannot start or end with a dot".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "DNS name cannot start or end with a dot".to_string(),
+                    ));
                 }
                 if name.contains("..") {
-                    return Err("DNS name cannot contain consecutive dots".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "DNS name cannot contain consecutive dots".to_string(),
+                    ));
                 }
             }
             SubjectAlternativeName::Email(email) => {
                 if email.is_empty() {
-                    return Err("Email in SAN cannot be empty".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "Email in SAN cannot be empty".to_string(),
+                    ));
                 }
                 if !email.contains('@') || email.matches('@').count() != 1 {
-                    return Err("Invalid email format in SAN".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "Invalid email format in SAN".to_string(),
+                    ));
                 }
                 if email.len() > 254 {
-                    return Err("Email in SAN cannot exceed 254 characters".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "Email in SAN cannot exceed 254 characters".to_string(),
+                    ));
                 }
             }
             SubjectAlternativeName::IpAddress(ip) => {
                 if ip.parse::<std::net::IpAddr>().is_err() {
-                    return Err("Invalid IP address format in SAN".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "Invalid IP address format in SAN".to_string(),
+                    ));
                 }
             }
             SubjectAlternativeName::Uri(uri) => {
                 if uri.is_empty() {
-                    return Err("URI in SAN cannot be empty".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "URI in SAN cannot be empty".to_string(),
+                    ));
                 }
                 if uri.len() > 2048 {
-                    return Err("URI in SAN cannot exceed 2048 characters".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "URI in SAN cannot exceed 2048 characters".to_string(),
+                    ));
                 }
                 // Basic URI validation
                 if !uri.starts_with("http://") && !uri.starts_with("https://") {
-                    return Err("URI in SAN must start with http:// or https://".to_string());
+                    return Err(CAError::InvalidRequest(
+                        "URI in SAN must start with http:// or https://".to_string(),
+                    ));
                 }
             }
         }
@@ -208,32 +298,42 @@ fn validate_certificate_request(request: &CertificateRequest) -> Result<(), Stri
     Ok(())
 }
 
-/// Validate certificate revocation request
-fn validate_revocation_request(
+/// Validate certificate revocation request.
+pub fn validate_revocation_request(
     serial: &str,
     request: &RevokeCertificateRequest,
-) -> Result<(), String> {
+) -> Result<(), CAError> {
     // Validate serial number format
     if serial.is_empty() {
-        return Err("Serial number cannot be empty".to_string());
+        return Err(CAError::InvalidRequest(
+            "Serial number cannot be empty".to_string(),
+        ));
     }
 
     if serial.len() > 64 {
-        return Err("Serial number cannot exceed 64 characters".to_string());
+        return Err(CAError::InvalidRequest(
+            "Serial number cannot exceed 64 characters".to_string(),
+        ));
     }
 
     // Validate hex format
     if !serial.chars().all(|c| c.is_ascii_hexdigit()) {
-        return Err("Serial number must contain only hexadecimal characters".to_string());
+        return Err(CAError::InvalidRequest(
+            "Serial number must contain only hexadecimal characters".to_string(),
+        ));
     }
 
     // Validate revocation reason
     if request.reason.is_empty() {
-        return Err("Revocation reason cannot be empty".to_string());
+        return Err(CAError::InvalidRequest(
+            "Revocation reason cannot be empty".to_string(),
+        ));
     }
 
     if request.reason.len() > 255 {
-        return Err("Revocation reason cannot exceed 255 characters".to_string());
+        return Err(CAError::InvalidRequest(
+            "Revocation reason cannot exceed 255 characters".to_string(),
+        ));
     }
 
     // Validate reason is one of the standard RFC 5280 reasons
@@ -251,138 +351,17 @@ fn validate_revocation_request(
     ];
 
     if !valid_reasons.contains(&request.reason.as_str()) {
-        return Err(format!(
+        return Err(CAError::InvalidRequest(format!(
             "Invalid revocation reason. Must be one of: {}",
             valid_reasons.join(", ")
-        ));
+        )));
     }
 
     Ok(())
 }
 
-/// Map CA errors to HTTP status codes and error responses
-fn map_ca_error_to_http(error: CAError) -> (StatusCode, ErrorResponse) {
-    match error {
-        CAError::InvalidRequest(msg) => (
-            StatusCode::BAD_REQUEST,
-            ErrorResponse {
-                error: "Bad Request".to_string(),
-                message: msg,
-                code: Some("INVALID_REQUEST".to_string()),
-            },
-        ),
-        CAError::Authentication(msg) => (
-            StatusCode::UNAUTHORIZED,
-            ErrorResponse {
-                error: "Unauthorized".to_string(),
-                message: msg,
-                code: Some("AUTH_REQUIRED".to_string()),
-            },
-        ),
-        CAError::Authorization(msg) => (
-            StatusCode::FORBIDDEN,
-            ErrorResponse {
-                error: "Forbidden".to_string(),
-                message: msg,
-                code: Some("INSUFFICIENT_PERMISSIONS".to_string()),
-            },
-        ),
-        CAError::TenantNotFound(msg) => (
-            StatusCode::NOT_FOUND,
-            ErrorResponse {
-                error: "Not Found".to_string(),
-                message: msg,
-                code: Some("TENANT_NOT_FOUND".to_string()),
-            },
-        ),
-        CAError::CertificateGeneration(msg) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse {
-                error: "Certificate Generation Failed".to_string(),
-                message: msg,
-                code: Some("CERT_GEN_ERROR".to_string()),
-            },
-        ),
-        _ => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse {
-                error: "Internal Server Error".to_string(),
-                message: "An unexpected error occurred".to_string(),
-                code: Some("INTERNAL_ERROR".to_string()),
-            },
-        ),
-    }
-}
-
-#[derive(Debug, Deserialize)]
-struct ListCertificatesQuery {
-    /// Filter by certificate status
-    status: Option<String>,
-    /// Filter by subject (partial match)
-    subject: Option<String>,
-    /// Filter by serial number (exact match)
-    serial: Option<String>,
-    /// Filter by common name (partial match)
-    common_name: Option<String>,
-    /// Filter by organization (partial match)
-    organization: Option<String>,
-    /// Filter certificates expiring before this date (ISO 8601)
-    expires_before: Option<String>,
-    /// Filter certificates created after this date (ISO 8601)
-    created_after: Option<String>,
-    /// Maximum number of results to return
-    limit: Option<u32>,
-    /// Number of results to skip (for pagination)
-    offset: Option<u32>,
-    /// Sort field (serial, subject, created_at, expires_at)
-    sort_by: Option<String>,
-    /// Sort order (asc, desc)
-    sort_order: Option<String>,
-}
-
-/// List certificates with optional filtering and pagination
-///
-/// GET /certificates?status=Issued&limit=50&offset=0
-async fn list_certificates(
-    State(_ca_service): State<AppState>,
-    Query(query): Query<ListCertificatesQuery>,
-) -> Result<Json<ListCertificatesResponse>, (StatusCode, Json<ErrorResponse>)> {
-    // Validate query parameters
-    if let Err(validation_error) = validate_list_query(&query) {
-        tracing::warn!("Invalid list certificates query: {}", validation_error);
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: "Invalid Query Parameters".to_string(),
-                message: validation_error,
-                code: Some("INVALID_QUERY".to_string()),
-            }),
-        ));
-    }
-
-    // Future: Extract tenant ID from JWT auth instead of creating a new one
-    let _tenant_id = TenantId::new();
-
-    // Future: Implement actual database query instead of mock data
-    let mock_certificates = create_mock_certificates(&query);
-
-    let response = ListCertificatesResponse {
-        certificates: mock_certificates,
-        total: 2, // Future: Return real count from database
-        limit: query.limit.unwrap_or(50),
-        offset: query.offset.unwrap_or(0),
-    };
-
-    tracing::info!(
-        "Listed certificates: returned={} results",
-        response.certificates.len()
-    );
-
-    Ok(Json(response))
-}
-
-/// Validate list certificates query parameters
-fn validate_list_query(query: &ListCertificatesQuery) -> Result<(), String> {
+/// Validate list certificates query parameters.
+pub fn validate_list_query(query: &ListCertificatesQuery) -> Result<(), String> {
     // Validate status filter
     if let Some(status) = &query.status {
         match status.as_str() {
@@ -498,9 +477,9 @@ fn validate_list_query(query: &ListCertificatesQuery) -> Result<(), String> {
     Ok(())
 }
 
-/// Create mock certificates for demonstration
-/// Future: Replace with actual database queries
-fn create_mock_certificates(query: &ListCertificatesQuery) -> Vec<Certificate> {
+/// Create mock certificates for demonstration.
+/// Future: Replace with actual database queries.
+pub fn create_mock_certificates(query: &ListCertificatesQuery) -> Vec<Certificate> {
     use chrono::Utc;
     use uuid::Uuid;
 
@@ -596,52 +575,6 @@ fn create_mock_certificates(query: &ListCertificatesQuery) -> Vec<Certificate> {
     certificates[offset..end].to_vec()
 }
 
-/// Revoke a certificate
-///
-/// POST /certificates/{serial}/revoke
-async fn revoke_certificate(
-    State(ca_service): State<AppState>,
-    Path(serial): Path<String>,
-    Json(request): Json<RevokeCertificateRequest>,
-) -> Result<StatusCode, (StatusCode, Json<ErrorResponse>)> {
-    // Validate the revocation request
-    if let Err(validation_error) = validate_revocation_request(&serial, &request) {
-        tracing::warn!("Invalid revocation request: {}", validation_error);
-        return Err((
-            StatusCode::BAD_REQUEST,
-            Json(ErrorResponse {
-                error: "Invalid Request".to_string(),
-                message: validation_error,
-                code: Some("INVALID_REVOCATION_REQUEST".to_string()),
-            }),
-        ));
-    }
-
-    // Future: Extract tenant ID from JWT auth instead of creating a new one
-    let tenant_id = TenantId::new();
-
-    tracing::info!(
-        "Revoking certificate: serial={}, reason={}",
-        serial,
-        request.reason
-    );
-
-    match ca_service
-        .revoke_certificate(&tenant_id, &serial, &request.reason)
-        .await
-    {
-        Ok(()) => {
-            tracing::info!("Certificate revoked successfully: serial={}", serial);
-            Ok(StatusCode::NO_CONTENT)
-        }
-        Err(e) => {
-            tracing::error!("Failed to revoke certificate: {}", e);
-            let (status, error_response) = map_ca_error_to_http(e);
-            Err((status, Json(error_response)))
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -691,7 +624,10 @@ mod tests {
 
         let result = validate_certificate_request(&request);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Common name cannot be empty"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("Common name cannot be empty"));
     }
 
     #[test]
@@ -718,6 +654,7 @@ mod tests {
         assert!(result.is_err());
         assert!(result
             .unwrap_err()
+            .to_string()
             .contains("Country code must be exactly 2 characters"));
     }
 
@@ -780,6 +717,7 @@ mod tests {
         assert!(result.is_err());
         assert!(result
             .unwrap_err()
+            .to_string()
             .contains("Serial number cannot be empty"));
     }
 
@@ -793,6 +731,7 @@ mod tests {
         assert!(result.is_err());
         assert!(result
             .unwrap_err()
+            .to_string()
             .contains("Serial number must contain only hexadecimal characters"));
     }
 
@@ -806,6 +745,7 @@ mod tests {
         assert!(result.is_err());
         assert!(result
             .unwrap_err()
+            .to_string()
             .contains("Revocation reason cannot be empty"));
     }
 
@@ -817,7 +757,10 @@ mod tests {
 
         let result = validate_revocation_request("3701e7c1d6134032917ece67be150e25", &request);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Invalid revocation reason"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("Invalid revocation reason"));
     }
 
     #[test]
@@ -830,6 +773,7 @@ mod tests {
         assert!(result.is_err());
         assert!(result
             .unwrap_err()
+            .to_string()
             .contains("Revocation reason cannot exceed 255 characters"));
     }
 
