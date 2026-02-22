@@ -112,7 +112,10 @@ Plans:
   1. The manual crypto and chaining code that existed in verify-core is deleted from the codebase
   2. Verification logic calls `trustedge_core::chain` and `trustedge_core::crypto` directly — no reimplemented equivalents
   3. All verification tests continue to pass using the core-backed implementation
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 26-01-PLAN.md -- Replace engine.rs and handlers.rs crypto with trustedge-core primitives, rename CA markers
+- [ ] 26-02-PLAN.md -- Remove blake3/ed25519-dalek production deps, route jwks.rs through core re-exports, full validation
 
 ### Phase 27: Ghost Repo Cleanup
 **Goal**: The six empty scaffold repos are archived and their intended scope is recorded
@@ -145,7 +148,7 @@ Plans:
 | 23. TODO Hygiene Sweep | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 24. Type Centralization | 2/2 | Complete    | 2026-02-21 | - |
 | 25. Service Consolidation | 3/3 | Complete    | 2026-02-22 | - |
-| 26. Crypto Deduplication | v1.5 | 0/TBD | Not started | - |
+| 26. Crypto Deduplication | v1.5 | 0/2 | Not started | - |
 | 27. Ghost Repo Cleanup | v1.5 | 0/TBD | Not started | - |
 
 ---
