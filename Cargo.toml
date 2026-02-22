@@ -13,8 +13,6 @@ members = [
     "crates/platform",
     "crates/platform-server",
     "crates/trustedge-cli",
-    "crates/attestation",
-    "crates/receipts",
     "crates/wasm",
     "crates/pubky",
     "crates/pubky-advanced",
@@ -40,8 +38,6 @@ members = [
 #   - trustedge-wasm          (general WASM bindings)
 #   - trustedge-pubky         (Pubky network adapter)
 #   - trustedge-pubky-advanced (Pubky hybrid encryption)
-#   - trustedge-receipts      (re-export facade, use trustedge-core directly)
-#   - trustedge-attestation   (re-export facade, use trustedge-core directly)
 
 resolver = "2"
 

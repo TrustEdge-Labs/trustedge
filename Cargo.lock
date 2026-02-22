@@ -5953,13 +5953,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "trustedge-attestation"
-version = "0.3.0"
-dependencies = [
- "trustedge-core",
-]
-
-[[package]]
 name = "trustedge-cam-video-examples"
 version = "0.1.0"
 dependencies = [
@@ -6127,13 +6120,6 @@ dependencies = [
  "trustedge-core",
  "x25519-dalek",
  "zeroize",
-]
-
-[[package]]
-name = "trustedge-receipts"
-version = "0.3.0"
-dependencies = [
- "trustedge-core",
 ]
 
 [[package]]
