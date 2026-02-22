@@ -91,7 +91,11 @@ Consolidated external service repos (platform-api, verify-core, shared-libs) int
   2. Server reads PORT, DATABASE_URL, and JWT_AUDIENCE from environment variables without code changes
   3. Server routes all requests through `trustedge_platform::create_router()` — no routing logic in main.rs
   4. Sending SIGTERM or SIGINT to the process causes graceful shutdown with no abrupt connection drops
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 28-01-PLAN.md — Create platform-server binary crate (Cargo.toml, main.rs, workspace registration)
+- [ ] 28-02-PLAN.md — Create deployment artifacts (Dockerfile, docker-compose.yml, .env.example)
 
 ### Phase 29: Dashboard Consolidation
 **Goal**: The dashboard lives in the monorepo and uses types generated from Rust schemas
