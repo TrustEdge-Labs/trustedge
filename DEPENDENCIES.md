@@ -38,12 +38,11 @@ Consolidated verification and CA service. Merges trustedge-verify-core and trust
 | Dependency | Version | Justification | Status |
 |------------|---------|---------------|--------|
 | trustedge-types | path | Shared wire types (VerifyRequest, SegmentRef, etc.) | Used |
+| trustedge-core | path | Sole crypto dependency: BLAKE3 chain, Ed25519 verify, SigningKey/VerifyingKey re-exports | Used |
 | anyhow | 1.0 | Error propagation in verification functions | Used |
 | thiserror | 1.0 | Structured error types for CAError | Used |
 | serde | 1.0 | Serialization for all API types | Used |
 | serde_json | 1.0 | JSON manifest parsing and JWKS construction | Used |
-| blake3 | 1.5 | BLAKE3 continuity chain and manifest digest | Used |
-| ed25519-dalek | 2 | Ed25519 manifest signature verification | Used |
 | base64 | 0.22 | Base64 encode/decode for keys and signatures | Used |
 | chrono | 0.4 | Timestamp generation for receipts and JWKS | Used |
 | uuid | 1 | Verification and receipt IDs | Used |
@@ -51,6 +50,8 @@ Consolidated verification and CA service. Merges trustedge-verify-core and trust
 | tracing | 0.1 | Structured logging for handlers | Used |
 | jsonwebtoken | 9.2 | JWS receipt signing (EdDSA algorithm) | Used |
 | regex | 1.0 | Segment hash format validation (^b3:[0-9a-f]{64}$) | Used |
+
+**Crypto deduplication note (v1.5 Phase 26):** `blake3` and `ed25519-dalek` were removed as direct production dependencies in Phase 26. All cryptographic operations now route through `trustedge-core`, which re-exports `ed25519_dalek::{SigningKey, VerifyingKey}` for JWKS key management. blake3 and ed25519-dalek remain transitive dependencies (via trustedge-core) but trustedge-platform has no direct crypto imports.
 
 **Feature `http` (Axum HTTP layer):**
 
