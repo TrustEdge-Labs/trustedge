@@ -105,7 +105,11 @@ Plans:
   1. `web/dashboard/` contains all dashboard source files and the repo contains no references to an external dashboard location
   2. `npm run dev` and `npm run build` succeed from `web/dashboard/` with no manual path adjustments
   3. The file `web/dashboard/src/lib/types.ts` is generated from `trustedge-types` JSON schemas — no hand-written TypeScript interface definitions remain for types that exist in trustedge-types
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 29-01-PLAN.md — Move dashboard files into web/dashboard/ and update CLAUDE.md
+- [ ] 29-02-PLAN.md — Create type generation script and replace hand-written types with generated schemas
 
 ### Phase 30: Repo Cleanup
 **Goal**: The TrustEdge-Labs GitHub org contains only the three active repos
@@ -141,9 +145,9 @@ Plans:
 | 25. Service Consolidation | v1.5 | 3/3 | Complete | 2026-02-22 |
 | 26. Crypto Deduplication | v1.5 | 2/2 | Complete | 2026-02-22 |
 | 27. Ghost Repo Cleanup | v1.5 | 1/1 | Complete | 2026-02-22 |
-| 28. Platform Server Binary | 2/2 | Complete    | 2026-02-22 | - |
-| 29. Dashboard Consolidation | v1.6 | 0/? | Not started | - |
+| 28. Platform Server Binary | v1.6 | 2/2 | Complete | 2026-02-22 |
+| 29. Dashboard Consolidation | v1.6 | 0/2 | Not started | - |
 | 30. Repo Cleanup | v1.6 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-02-22 after v1.6 roadmap created*
+*Last updated: 2026-02-22 after phase 29 planning complete*
