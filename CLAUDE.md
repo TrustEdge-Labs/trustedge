@@ -40,6 +40,24 @@ cargo build -p trustedge-platform --features "http,postgres,ca"      # Full plat
 cargo test --features yubikey --test yubikey_integration
 ```
 
+### Dashboard (web/dashboard/)
+
+```bash
+# Install dependencies
+cd web/dashboard && npm install
+
+# Development server
+cd web/dashboard && npm run dev
+
+# Production build
+cd web/dashboard && npm run build
+
+# Type checking
+cd web/dashboard && npm run check
+```
+
+The dashboard is a SvelteKit app that provides a web UI for managing devices and viewing verification receipts. It connects to the platform server API at the URL configured in `.env.local` (defaults to `http://localhost:3001`).
+
 ## Architecture Overview
 
 TrustEdge is a Cargo workspace with 12 crates under `crates/`:
@@ -63,6 +81,9 @@ TrustEdge is a Cargo workspace with 12 crates under `crates/`:
 - `trustedge-trst-protocols` - Canonical cam.video manifest types (WASM-compatible, minimal dependencies)
 - `trustedge-trst-cli` - CLI tool (binary: `trst`) for wrap/verify operations
 - `trustedge-trst-wasm` - Browser verification (imports manifest types from trst-protocols)
+
+**Web Dashboard:**
+- `web/dashboard/` - SvelteKit admin dashboard for device management and receipt viewing
 
 ### Key Modules in `crates/core/src/`
 
@@ -98,7 +119,7 @@ These repos under TrustEdge-Labs were scaffolds for a planned microservice SaaS 
 | trustedge-ingestion-service | Data ingestion pipeline for device telemetry | Not implemented, deferred |
 | trustedge-infra | Infrastructure-as-code and deployment configs | Not implemented, deferred |
 
-> Note: A planned `trustedge-audit` (compliance logging) repo was never created. The trustedge-dashboard (SvelteKit frontend, ~139 LOC) is deferred to a future milestone and not archived.
+> Note: A planned `trustedge-audit` (compliance logging) repo was never created. The trustedge-dashboard has been moved into `web/dashboard/` in the main workspace.
 
 ## Code Standards
 
