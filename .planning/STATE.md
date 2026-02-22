@@ -18,12 +18,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 28 — Platform Server Binary
-Plan: 01 (complete)
-Status: Phase 28 Plan 01 complete
-Last activity: 2026-02-22 — 28-01 platform-server binary implemented
+Plan: 02 (complete)
+Status: Phase 28 complete (all 2 plans done)
+Last activity: 2026-02-22 — 28-02 deployment artifacts (Dockerfile, docker-compose, .env.example)
 
 ```
-v1.6 Progress: [■         ] 1/3 phases (partial — plan 1 of 1 in phase 28)
+v1.6 Progress: [■         ] 1/3 phases (phase 28 complete — 2 of 2 plans done)
 ```
 
 ## Performance Metrics
@@ -39,12 +39,13 @@ v1.6 Progress: [■         ] 1/3 phases (partial — plan 1 of 1 in phase 28)
 
 **v1.6 (in progress):**
 - 3 phases planned
-- Plans: 1 complete (28-01)
-- Tasks: 2 complete
+- Plans: 2 complete (28-01, 28-02)
+- Tasks: 4 complete
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 28    | 01   | 4 min    | 2     | 5     |
+| 28    | 02   | 2 min    | 2     | 3     |
 
 ## Accumulated Context
 
@@ -56,6 +57,7 @@ v1.6 Progress: [■         ] 1/3 phases (partial — plan 1 of 1 in phase 28)
 - Dashboard types generated from trustedge-types schemars 0.8 schemas (no new tooling, one-time generation)
 - [Phase 28]: postgres is always compiled into platform-server binary (default feature); verify-only mode is not a compile-time decision
 - [Phase 28]: platform-server test guards in verify_integration and platform_integration needed fixing when postgres feature became active workspace-wide
+- [Phase 28-02]: debian:bookworm-slim chosen over alpine for Dockerfile runtime stage — glibc compatibility with sqlx native-tls; postgres:16-alpine for compose service
 
 ### Pending Todos
 
@@ -70,8 +72,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 28-01-PLAN.md
-Resume at: Next plan in phase 28 or next phase
+Stopped at: Completed 28-02-PLAN.md
+Resume at: Phase 29 (dashboard move into web/dashboard/)
 
 ---
-*Last updated: 2026-02-22 after 28-01 platform-server binary complete*
+*Last updated: 2026-02-22 after 28-02 deployment artifacts complete*
