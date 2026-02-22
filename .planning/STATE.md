@@ -78,8 +78,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 25-03-PLAN.md (test migration, CI, validation fix, CLAUDE.md/DEPENDENCIES.md)
-Resume file: .planning/phases/26-crypto-deduplication/ (next phase)
+Stopped at: Phase 26 context gathered — ready to plan
+Resume file: .planning/phases/26-crypto-deduplication/26-CONTEXT.md
 
 ---
-*Last updated: 2026-02-22 after 25-03 completion*
+*Last updated: 2026-02-22 after Phase 26 context gathering*
