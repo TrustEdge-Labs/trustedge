@@ -17,10 +17,10 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 
 ## Current Position
 
-Phase: 26 of 27 in v1.5 (Crypto Deduplication) — IN PROGRESS
-Plan: 1 of 1 complete in current phase
-Status: Phase 26 Plan 01 complete — crypto deduplication done
-Last activity: 2026-02-22 — 26-01 complete (engine.rs, handlers.rs core delegation, CA Future: markers)
+Phase: 26 of 27 in v1.5 (Crypto Deduplication) — COMPLETE
+Plan: 2 of 2 complete in current phase
+Status: Phase 26 complete — blake3/ed25519-dalek removed from platform production deps, trustedge-core sole crypto dep
+Last activity: 2026-02-22 — 26-02 complete (SigningKey/VerifyingKey re-exported from core, platform Cargo.toml cleaned)
 
 Progress: [██████░░░░] ~60% (v1.5 milestone)
 
@@ -40,7 +40,7 @@ Progress: [██████░░░░] ~60% (v1.5 milestone)
 |-------|-------|-------|----------|
 | 24. Type Centralization | 2 complete | 4 | 16 min |
 | 25. Service Consolidation | 3 of 3 complete | 6 | 24 min |
-| 26. Crypto Deduplication | 1 of 1 complete | 2 | 2 min |
+| 26. Crypto Deduplication | 2 of 2 complete | 4 | 21 min |
 | 27. Ghost Repo Cleanup | TBD | - | - |
 
 ## Accumulated Context
@@ -67,6 +67,7 @@ Progress: [██████░░░░] ~60% (v1.5 milestone)
 - [Phase 26-01]: trustedge-core moved to always-on dependency (was optional/ca-gated) — all platform features need crypto primitives
 - [Phase 26-01]: format_b3() helper uses BASE64 crate's STANDARD encoder (not core's internal base64_encode) for consistent wire format
 - [Phase 26-01]: Ed25519 signature bridge — manifest JSON stores raw base64; prepend 'ed25519:' before calling trustedge_core::crypto::verify_manifest()
+- [Phase 26-02]: trustedge-core re-exports ed25519_dalek::{SigningKey, VerifyingKey} for JWKS key management; ed25519-dalek retained in dev-dependencies for test fixtures
 
 ### Pending Todos
 
@@ -81,8 +82,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 26-01-PLAN.md — crypto deduplication complete
-Resume file: .planning/phases/26-crypto-deduplication/26-01-SUMMARY.md
+Stopped at: Completed 26-02-PLAN.md — Phase 26 Crypto Deduplication complete
+Resume file: .planning/phases/26-crypto-deduplication/26-02-SUMMARY.md
 
 ---
-*Last updated: 2026-02-22 after Phase 26 Plan 01 completion*
+*Last updated: 2026-02-22 after Phase 26 Plan 02 completion*
