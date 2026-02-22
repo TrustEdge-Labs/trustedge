@@ -18,12 +18,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 28 — Platform Server Binary
-Plan: —
-Status: Roadmap defined, ready for planning
-Last activity: 2026-02-22 — v1.6 roadmap created
+Plan: 01 (complete)
+Status: Phase 28 Plan 01 complete
+Last activity: 2026-02-22 — 28-01 platform-server binary implemented
 
 ```
-v1.6 Progress: [          ] 0/3 phases
+v1.6 Progress: [■         ] 1/3 phases (partial — plan 1 of 1 in phase 28)
 ```
 
 ## Performance Metrics
@@ -39,8 +39,12 @@ v1.6 Progress: [          ] 0/3 phases
 
 **v1.6 (in progress):**
 - 3 phases planned
-- Plans: TBD
-- Tasks: TBD
+- Plans: 1 complete (28-01)
+- Tasks: 2 complete
+
+| Phase | Plan | Duration | Tasks | Files |
+|-------|------|----------|-------|-------|
+| 28    | 01   | 4 min    | 2     | 5     |
 
 ## Accumulated Context
 
@@ -50,6 +54,8 @@ v1.6 Progress: [          ] 0/3 phases
 - Phase 30 after 29: trustedge-dashboard repo deletion must follow successful dashboard move into `web/dashboard/`
 - Platform server binary goes in `crates/platform-server/` — thin main.rs, all routing in trustedge-platform
 - Dashboard types generated from trustedge-types schemars 0.8 schemas (no new tooling, one-time generation)
+- [Phase 28]: postgres is always compiled into platform-server binary (default feature); verify-only mode is not a compile-time decision
+- [Phase 28]: platform-server test guards in verify_integration and platform_integration needed fixing when postgres feature became active workspace-wide
 
 ### Pending Todos
 
@@ -64,8 +70,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Roadmap created for v1.6
-Resume at: `/gsd:plan-phase 28`
+Stopped at: Completed 28-01-PLAN.md
+Resume at: Next plan in phase 28 or next phase
 
 ---
-*Last updated: 2026-02-22 after v1.6 roadmap created*
+*Last updated: 2026-02-22 after 28-01 platform-server binary complete*

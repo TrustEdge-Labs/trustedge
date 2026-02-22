@@ -17,10 +17,10 @@ Requirements for Final Consolidation milestone. Each maps to roadmap phases.
 
 ### Platform Server
 
-- [ ] **PLAT-01**: Platform service runs as a standalone binary (`trustedge-platform-server`)
-- [ ] **PLAT-02**: Server loads configuration from environment variables (PORT, DATABASE_URL, JWT_AUDIENCE)
-- [ ] **PLAT-03**: Server boots Axum router via `trustedge-platform::create_router()`
-- [ ] **PLAT-04**: Server handles graceful shutdown on SIGTERM/SIGINT
+- [x] **PLAT-01**: Platform service runs as a standalone binary (`trustedge-platform-server`)
+- [x] **PLAT-02**: Server loads configuration from environment variables (PORT, DATABASE_URL, JWT_AUDIENCE)
+- [x] **PLAT-03**: Server boots Axum router via `trustedge-platform::create_router()`
+- [x] **PLAT-04**: Server handles graceful shutdown on SIGTERM/SIGINT
 
 ### Web Consolidation
 
@@ -57,10 +57,10 @@ Requirements for Final Consolidation milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PLAT-01 | Phase 28 | Pending |
-| PLAT-02 | Phase 28 | Pending |
-| PLAT-03 | Phase 28 | Pending |
-| PLAT-04 | Phase 28 | Pending |
+| PLAT-01 | Phase 28 | Complete |
+| PLAT-02 | Phase 28 | Complete |
+| PLAT-03 | Phase 28 | Complete |
+| PLAT-04 | Phase 28 | Complete |
 | WEB-01 | Phase 29 | Pending |
 | WEB-02 | Phase 29 | Pending |
 | WEB-03 | Phase 29 | Pending |
