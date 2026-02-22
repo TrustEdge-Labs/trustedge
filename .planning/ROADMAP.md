@@ -135,7 +135,11 @@ Plans:
   1. The shared verify validation function compiles and is called by all feature variants of `verify_handler` — no duplicated validation branches exist
   2. Building `trustedge-platform` without the `postgres` feature produces a server that returns `403` or `405` on cross-origin requests rather than accepting all origins
   3. CA module routes are either reachable via `create_router()` or a code comment explicitly marks the module as library-only with no HTTP exposure
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 33-01-PLAN.md -- Deduplicate verify handler validation and receipt construction
+- [ ] 33-02-PLAN.md -- Harden CORS policy and document CA module as library-only
 
 ### Phase 34: Platform Testing
 **Goal**: The platform-server binary has integration tests that verify startup wiring, and a full HTTP verify round-trip test confirms the pipeline works end-to-end
@@ -153,7 +157,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 31. Secret Hardening | 3/3 | Complete    | 2026-02-22 | - |
 | 32. Workspace Cleanup | 3/3 | Complete    | 2026-02-22 | - |
-| 33. Platform Quality | v1.7 | 0/? | Not started | - |
+| 33. Platform Quality | v1.7 | 0/2 | Planned | - |
 | 34. Platform Testing | v1.7 | 0/? | Not started | - |
 
 ---
