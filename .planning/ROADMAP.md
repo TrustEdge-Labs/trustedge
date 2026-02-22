@@ -120,7 +120,12 @@ Plans:
   2. CI scripts and documentation contain no references to the deleted facade crates
   3. Tier 2 pubky crates live in a separate workspace or are excluded via `[workspace]` membership, so their transitive deps are absent from the root `Cargo.lock`
   4. `cargo machete` on the root workspace reports no unused workspace-level dependencies introduced by the removed crates
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 32-01-PLAN.md — Delete deprecated facade crates from workspace
+- [ ] 32-02-PLAN.md — Isolate pubky crates into experimental workspace and clean root deps
+- [ ] 32-03-PLAN.md — Rewrite CI scripts and documentation to reflect new workspace structure
 
 ### Phase 33: Platform Quality
 **Goal**: Platform verify logic is deduplicated into a single always-compiled path, the non-postgres build uses restrictive CORS, and the CA module's exposure is explicitly documented or wired
@@ -147,7 +152,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 31. Secret Hardening | 3/3 | Complete    | 2026-02-22 | - |
-| 32. Workspace Cleanup | v1.7 | 0/? | Not started | - |
+| 32. Workspace Cleanup | v1.7 | 0/3 | Planned | - |
 | 33. Platform Quality | v1.7 | 0/? | Not started | - |
 | 34. Platform Testing | v1.7 | 0/? | Not started | - |
 
