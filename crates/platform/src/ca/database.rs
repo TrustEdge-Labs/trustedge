@@ -6,7 +6,10 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! Database module — Future: implements certificate storage with SQLx + PostgreSQL.
+//! CA database module — in-memory certificate storage.
+//!
+//! Status: Library-only. Provides multi-tenant certificate storage
+//! backed by an in-memory HashMap. Not connected to the platform PostgreSQL backend.
 
 use super::{error::CAResult, models::*};
 

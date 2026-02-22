@@ -6,7 +6,10 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! Authentication module — Future: implements JWT authentication and authorization.
+//! CA authentication module — JWT-based tenant authentication.
+//!
+//! Status: Library-only. Provides token generation and validation
+//! for CA service consumers. Not wired into the platform HTTP auth middleware.
 
 use super::{error::*, models::*};
 use trustedge_core::Secret;

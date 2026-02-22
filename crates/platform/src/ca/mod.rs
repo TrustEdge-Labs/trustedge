@@ -6,14 +6,16 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! Certificate Authority module — feature-gated behind `ca` feature.
+//! Certificate Authority module — library-only, not wired into the HTTP router.
 //!
-//! Enterprise-grade certificate authority built on TrustEdge's Universal Backend system.
-//! Provides hardware-backed PKI services with YubiKey and CloudHSM support.
+//! This module provides enterprise-grade PKI services using TrustEdge's Universal Backend system.
+//! It is feature-gated behind the `ca` feature flag and currently used only as a library
+//! (imported directly by consumers, not exposed via HTTP endpoints in `create_router()`).
 //!
-//! Note: This module is private to the crate. Plan 02 will expose it via the HTTP layer.
+//! **Future:** CA routes may be exposed via the platform HTTP layer behind the `ca` feature flag.
+//! When that happens, `api.rs` service functions will be wrapped with Axum handler shims.
 
-// Phase 26 will wire up all CA internals; suppress dead_code until then
+// Library-only module: functions are public API but not called from HTTP handlers yet
 #![allow(dead_code)]
 
 pub mod auth;
@@ -22,7 +24,6 @@ pub mod error;
 pub mod models;
 pub mod service;
 
-#[cfg(feature = "http")]
 pub mod api;
 
 use std::fmt;

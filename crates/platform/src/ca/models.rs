@@ -6,7 +6,9 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! CA data models.
+//! CA data models — certificate, tenant, and request types.
+//!
+//! Status: Stable types used by the CA service and its consumers.
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};

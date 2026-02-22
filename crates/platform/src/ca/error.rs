@@ -7,6 +7,8 @@
 //
 
 //! CA error types.
+//!
+//! Status: Stable error enum used by all CA operations.
 
 use thiserror::Error;
 

@@ -15,6 +15,7 @@
 
 pub mod verify;
 
+// CA module is library-only; not exposed via HTTP routes
 #[cfg(feature = "ca")]
 mod ca;
 

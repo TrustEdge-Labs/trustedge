@@ -6,7 +6,10 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! Certificate Authority service — hardware-backed PKI via UniversalBackend.
+//! CA service — core certificate authority operations.
+//!
+//! Status: Library-only. Provides certificate issuance, revocation,
+//! and listing via the Universal Backend system. Consumed directly by library callers.
 
 use super::{error::*, models::*};
 use chrono::{DateTime, Duration, Utc};
