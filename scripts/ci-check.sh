@@ -107,6 +107,7 @@ step "Step 4: Clippy (tiered - core blocking, experimental non-blocking)"
 if cargo clippy \
     -p trustedge-types \
     -p trustedge-core \
+    -p trustedge-platform \
     -p trustedge-cli \
     -p trustedge-trst-protocols \
     -p trustedge-trst-cli \
@@ -116,6 +117,14 @@ if cargo clippy \
     pass "clippy core crates"
 else
     fail "clippy core crates"
+fi
+
+# trustedge-platform feature combinations (blocking)
+if cargo clippy -p trustedge-platform --features "http" -- -D warnings && \
+   cargo clippy -p trustedge-platform --features "http,postgres,ca" -- -D warnings; then
+    pass "clippy trustedge-platform features"
+else
+    fail "clippy trustedge-platform features"
 fi
 
 # Experimental crates (non-blocking)
@@ -210,6 +219,15 @@ if cargo test \
     pass "core crate tests"
 else
     fail "core crate tests"
+fi
+
+# trustedge-platform tests (blocking — Tier 1 stable crate)
+if cargo test -p trustedge-platform --lib --locked && \
+   cargo test -p trustedge-platform --test verify_integration --locked && \
+   cargo test -p trustedge-platform --test verify_integration --features http --locked; then
+    pass "trustedge-platform tests"
+else
+    fail "trustedge-platform tests"
 fi
 
 # Experimental crate tests (non-blocking)
@@ -329,7 +347,7 @@ fi
 # ── Step 21: Dependency tree size ────────────────────────────────────
 step "Step 21: Dependency tree size check"
 dep_count=$(cargo tree --workspace --depth 1 --prefix none --no-dedupe 2>/dev/null | sort -u | wc -l)
-baseline=60
+baseline=70
 threshold=$((baseline + 10))
 echo "  Dependency tree: $dep_count unique crates (baseline: $baseline)"
 if [ "$dep_count" -gt "$threshold" ]; then

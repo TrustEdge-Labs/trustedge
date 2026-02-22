@@ -19,30 +19,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build workspace
 cargo build --workspace --release
 
-# Test entire workspace (235+ tests)
+# Test entire workspace (265+ tests)
 cargo test --workspace
 
 # Test specific crates
 cargo test -p trustedge-types                     # Shared wire types (18 tests)
 cargo test -p trustedge-core --lib                # Core cryptography (160 tests)
 cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
+cargo test -p trustedge-platform --lib            # Platform unit tests (12 tests)
+cargo test -p trustedge-platform --test verify_integration           # Verify integration (5 tests)
+cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (7 tests)
 
 # Run a single test
 cargo test -p trustedge-core test_name -- --nocapture
 
 # Build/test with optional features
-cargo build -p trustedge-cli --features audio     # Live audio capture CLI
-cargo build -p trustedge-core --features yubikey  # YubiKey hardware support
+cargo build -p trustedge-cli --features audio                        # Live audio capture CLI
+cargo build -p trustedge-core --features yubikey                     # YubiKey hardware support
+cargo build -p trustedge-platform --features "http,postgres,ca"      # Full platform service
 cargo test --features yubikey --test yubikey_integration
 ```
 
 ## Architecture Overview
 
-TrustEdge is a Cargo workspace with 11 crates under `crates/`:
+TrustEdge is a Cargo workspace with 12 crates under `crates/`:
 
 **Core Platform:**
 - `trustedge-types` - Shared wire types for platform services (verification, receipts, policies); re-exported from trustedge-core
 - `trustedge-core` - Core cryptographic library: envelope encryption (AES-256-GCM), Universal Backend system, network client/server, auth, receipts, attestation; re-exports trustedge-types
+- `trustedge-platform` - Consolidated verification and CA service: BLAKE3+Ed25519 verify engine, JWKS key manager, Axum HTTP layer, PostgreSQL multi-tenant backend; feature flags: `http`, `postgres`, `ca`, `yubikey`, `openapi`
 - `trustedge-cli` - Main CLI for envelope encryption (binary: `trustedge`)
 - `trustedge-receipts` - **Deprecated facade** re-exporting from core (removal planned August 2026)
 - `trustedge-attestation` - **Deprecated facade** re-exporting from core (removal planned August 2026)
@@ -138,10 +143,23 @@ cargo run -p trustedge-trst-cli -- verify archive.trst --device-pub "ed25519:...
 
 ## Feature Flags
 
+### trustedge-core
+
 | Feature | Purpose | Dependencies |
 |---------|---------|--------------|
 | `audio` | Live microphone capture | cpal (ALSA/CoreAudio/WASAPI) |
 | `yubikey` | Hardware security keys | yubikey, x509-cert, rcgen, der, spki, signature |
+
+### trustedge-platform
+
+| Feature | Purpose | Dependencies |
+|---------|---------|--------------|
+| `http` | Axum HTTP layer (verify, jwks, health endpoints) | axum, tower, tower-http, tokio |
+| `postgres` | PostgreSQL multi-tenant backend (devices, receipts, orgs) | sqlx, bcrypt |
+| `ca` | Certificate Authority service via UniversalBackend | trustedge-core, x509-parser |
+| `openapi` | OpenAPI schema generation | utoipa |
+| `yubikey` | YubiKey-backed CA operations | trustedge-core/yubikey |
+| `test-utils` | Exports `create_test_app` for integration tests | (no new deps) |
 
 Default build has no features enabled for fast CI and maximum portability.
 

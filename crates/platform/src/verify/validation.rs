@@ -47,7 +47,7 @@ pub fn validate_verify_request(request: &VerifyRequest) -> Result<(), Validation
     Ok(())
 }
 
-fn validate_segment_hashes(segments: &[SegmentDigest]) -> Result<(), ValidationError> {
+pub fn validate_segment_hashes(segments: &[SegmentDigest]) -> Result<(), ValidationError> {
     let hash_regex = Regex::new(r"^b3:[0-9a-f]{64}$").unwrap();
 
     for (i, segment) in segments.iter().enumerate() {

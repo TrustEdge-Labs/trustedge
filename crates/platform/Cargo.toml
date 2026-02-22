@@ -83,5 +83,6 @@ base64 = "0.22"
 axum = { workspace = true }
 tower = { workspace = true, features = ["util"] }
 # Platform integration test utilities (DB-backed tests, all #[ignore])
-axum-test = "18.7.0"
+# Uses 14.x which is compatible with axum 0.7 (our workspace version)
+axum-test = "14.10"
 sqlx = { workspace = true }

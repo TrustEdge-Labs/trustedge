@@ -1,14 +1,15 @@
 # TrustEdge Dependency Audit
 
-**Last audited:** 2026-02-13
-**Milestone:** v1.3 (Documentation & Security Hardening)
-**Scope:** All 10 workspace crates (5 stable tier, 5 experimental tier)
+**Last audited:** 2026-02-22
+**Milestone:** v1.5 (Platform Consolidation)
+**Scope:** All 12 workspace crates (6 stable tier, 5 experimental tier, 1 pending classification)
 
 This document provides comprehensive documentation of all dependencies across the TrustEdge workspace, with per-dependency justifications and security rationale for critical dependencies.
 
 ## Table of Contents
 
 **Stable Tier (Production-Committed):**
+- [trustedge-platform](#trustedge-platform) - Consolidated verification and CA service (added v1.5)
 - [trustedge-core](#trustedge-core) - Core cryptographic library
 - [trustedge-cli](#trustedge-cli) - Main CLI for envelope encryption
 - [trustedge-trst-protocols](#trustedge-trst-protocols) - Archive format definitions
@@ -25,6 +26,73 @@ This document provides comprehensive documentation of all dependencies across th
 **Additional Sections:**
 - [Security-Critical Dependency Rationale](#security-critical-dependency-rationale)
 - [Workspace Dependency Summary](#workspace-dependency-summary)
+
+---
+
+## trustedge-platform
+
+Consolidated verification and CA service. Merges trustedge-verify-core and trustedge-platform-api into a single crate with feature-gated modules.
+
+**Default (always-on — verification core):**
+
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| trustedge-types | path | Shared wire types (VerifyRequest, SegmentRef, etc.) | Used |
+| anyhow | 1.0 | Error propagation in verification functions | Used |
+| thiserror | 1.0 | Structured error types for CAError | Used |
+| serde | 1.0 | Serialization for all API types | Used |
+| serde_json | 1.0 | JSON manifest parsing and JWKS construction | Used |
+| blake3 | 1.5 | BLAKE3 continuity chain and manifest digest | Used |
+| ed25519-dalek | 2 | Ed25519 manifest signature verification | Used |
+| base64 | 0.22 | Base64 encode/decode for keys and signatures | Used |
+| chrono | 0.4 | Timestamp generation for receipts and JWKS | Used |
+| uuid | 1 | Verification and receipt IDs | Used |
+| rand | 0.8 | Key generation for KeyManager | Used |
+| tracing | 0.1 | Structured logging for handlers | Used |
+| jsonwebtoken | 9.2 | JWS receipt signing (EdDSA algorithm) | Used |
+| regex | 1.0 | Segment hash format validation (^b3:[0-9a-f]{64}$) | Used |
+
+**Feature `http` (Axum HTTP layer):**
+
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| axum | 0.7 | HTTP framework for REST API handlers | Used |
+| tower | 0.4 | Middleware composition | Used |
+| tower-http | 0.5 | CORS and TraceLayer middleware | Used |
+| tokio | 1.0 | Async runtime for HTTP service | Used |
+| sha2 | 0.10 | SHA-256 for Bearer token hashing in auth middleware | Used |
+| dotenvy | 0.15 | `.env` file loading for Config::from_env() | Used |
+| utoipa-swagger-ui | 6.0 | OpenAPI UI (also gated on `openapi` feature) | Used (optional) |
+
+**Feature `postgres` (multi-tenant backend):**
+
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| sqlx | 0.7 | PostgreSQL CRUD (organizations, devices, verifications, receipts) | Used |
+| bcrypt | 0.15 | Password hashing (reserved for future user auth) | Used (optional) |
+| sha2 | 0.10 | SHA-256 for token hashing (shared with http feature) | Used |
+| dotenvy | 0.15 | Env loading for database URL (shared with http feature) | Used |
+
+**Feature `ca` (Certificate Authority):**
+
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| trustedge-core | path | UniversalBackend for CA signing operations | Used |
+| x509-parser | 0.16 | X.509 certificate parsing and validation | Used |
+| der | 0.7 | DER encoding for certificate operations | Used |
+| spki | 0.7 | SubjectPublicKeyInfo for CA certificates | Used |
+| pkcs8 | 0.10 | PKCS#8 key format for CA | Used |
+| x509-cert | 0.2 | X.509 cert construction | Used |
+| const-oid | 0.9 | OID constants for X.509 extensions | Used |
+| hex | 0.4 | Hex encoding for certificate fingerprints | Used |
+
+**Feature `openapi` (API documentation):**
+
+| Dependency | Version | Justification | Status |
+|------------|---------|---------------|--------|
+| utoipa | 4.0 | OpenAPI schema generation from handler types | Used |
+
+**Consolidation note:** `reqwest` is NOT used in trustedge-platform. The key architectural change in v1.5 is that `verify_handler` calls `verify_to_report()` directly instead of forwarding to a separate verify-core HTTP service. This eliminates the HTTP forwarding round-trip and the reqwest dependency.
 
 ---
 
@@ -359,6 +427,13 @@ The workspace defines shared dependencies in `[workspace.dependencies]` to minim
 - serde-wasm-bindgen 0.6
 - getrandom 0.2 (with js feature)
 
+**Platform Service (trustedge-platform, feature-gated):**
+- axum 0.7 (HTTP framework)
+- tower 0.4 (middleware)
+- tower-http 0.5 (CORS, trace)
+- sqlx 0.7 (PostgreSQL, features: runtime-tokio-rustls, postgres, chrono, uuid, migrate)
+- hyper 1.0 (transitive from axum)
+
 **Development:**
 - tokio 1.0 (with full feature set for development only)
 
@@ -366,7 +441,7 @@ The workspace defines shared dependencies in `[workspace.dependencies]` to minim
 
 The TrustEdge workspace uses a 2-tier classification system:
 
-- **Stable tier (5 crates):** Production-committed, tested in CI, actively maintained. These crates have `tier = "stable"` and `maintained = true` in their `[package.metadata.trustedge]` section.
+- **Stable tier (6 crates):** Production-committed, tested in CI, actively maintained. These crates have `tier = "stable"` and `maintained = true` in their `[package.metadata.trustedge]` section. Includes: `trustedge-platform` (added v1.5), `trustedge-types`, `trustedge-core`, `trustedge-cli`, `trustedge-trst-protocols`, `trustedge-trst-cli`, `trustedge-trst-wasm`.
 
 - **Experimental tier (5 crates):** Community/experimental, build-only CI validation, no maintenance commitment. These crates have `tier = "experimental"` and `maintained = false` in their `[package.metadata.trustedge]` section.
 

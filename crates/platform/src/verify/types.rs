@@ -14,6 +14,7 @@ use serde_json::Value;
 use super::engine::{SegmentDigest, VerifyReport};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct VerifyRequest {
     pub device_pub: String,
