@@ -125,7 +125,7 @@ trustedge-core owns all crypto — platform calls core::chain and core::crypto; 
 CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally. cargo-audit runs as blocking check. TODO hygiene enforced on every push/PR.
 Crate classification: Tier 1 (stable) = core, cli, types, platform, trst-protocols, trst-cli, trst-wasm. Tier 2 (experimental) = wasm, pubky, pubky-advanced, receipts, attestation.
 Heavy optional deps (git2, keyring) feature-gated. Platform features: http, postgres, ca, openapi, yubikey. Dependency tree baseline: 70 (raised from 60 for platform transitive deps).
-5 scaffold repos archived on GitHub (billing, device, identity, infra, ingestion). trustedge-dashboard (29-file SvelteKit) deferred.
+11 orphaned repos permanently deleted from GitHub org (v1.6). TrustEdge-Labs org now has exactly 3 repos: trustedge, trustedgelabs-website, shipsecure.
 Key generation and attestation deferred to future (yubikey crate API limitations).
 
 ## Constraints

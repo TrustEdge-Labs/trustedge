@@ -18,9 +18,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 30 — Repo Cleanup
-Plan: 01 (complete)
-Status: Phase 30 in progress (1 of 2 plans done)
-Last activity: 2026-02-22 — 30-01 Deleted 11 orphaned GitHub repos, TrustEdge-Labs org now has exactly 3 repos
+Plan: 02 (complete)
+Status: Phase 30 complete (2 of 2 plans done)
+Last activity: 2026-02-22 — 30-02 Removed stale repo references from CLAUDE.md, updated documentation to reflect 3-repo org structure
 
 ```
 v1.6 Progress: [■■■■      ] 2.5/3 phases (phases 28-30 in progress, 30-01 complete)
@@ -55,7 +55,7 @@ v1.6 Progress: [■■■■      ] 2.5/3 phases (phases 28-30 in progress, 30-0
 ### Decisions
 
 - Phase 28 before 29: Server binary and dashboard move are independent; numbered for natural delivery order (infra before web)
-- Phase 30 after 29: trustedge-dashboard repo deletion must follow successful dashboard move into `web/dashboard/`
+- Phase 30 after 29: trustedge-dashboard repo deletion must follow successful dashboard move into `web/dashboard/` — RESOLVED in 30-01
 - Platform server binary goes in `crates/platform-server/` — thin main.rs, all routing in trustedge-platform
 - Dashboard types generated from trustedge-types schemars 0.8 schemas (no new tooling, one-time generation)
 - [Phase 28]: postgres is always compiled into platform-server binary (default feature); verify-only mode is not a compile-time decision
@@ -81,8 +81,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 30-01-PLAN.md
-Resume at: Phase 30 Plan 02 (CLAUDE.md and documentation updates for final repo structure)
+Stopped at: Completed 30-02-PLAN.md
+Resume at: Phase 30 complete — v1.6 milestone complete
 
 ---
-*Last updated: 2026-02-22 after 30-01 GitHub org cleanup complete*
+*Last updated: 2026-02-22 after 30-02 documentation cleanup complete*

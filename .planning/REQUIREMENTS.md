@@ -31,8 +31,8 @@ Requirements for Final Consolidation milestone. Each maps to roadmap phases.
 ### Repo Cleanup
 
 - [x] **REPO-01**: 12 orphaned repos deleted from TrustEdge-Labs GitHub org
-- [ ] **REPO-02**: CLAUDE.md updated to remove references to archived/deleted repos
-- [ ] **REPO-03**: Documentation updated to reflect final repo structure (3 repos: trustedge, website, shipsecure)
+- [x] **REPO-02**: CLAUDE.md updated to remove references to archived/deleted repos
+- [x] **REPO-03**: Documentation updated to reflect final repo structure (3 repos: trustedge, website, shipsecure)
 
 ## Future Requirements
 
@@ -65,8 +65,8 @@ Requirements for Final Consolidation milestone. Each maps to roadmap phases.
 | WEB-02 | Phase 29 | Complete |
 | WEB-03 | Phase 29 | Complete |
 | REPO-01 | Phase 30 | Complete |
-| REPO-02 | Phase 30 | Pending |
-| REPO-03 | Phase 30 | Pending |
+| REPO-02 | Phase 30 | Complete |
+| REPO-03 | Phase 30 | Complete |
 
 **Coverage:**
 - v1.6 requirements: 10 total
@@ -75,4 +75,4 @@ Requirements for Final Consolidation milestone. Each maps to roadmap phases.
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after 30-01 complete (REPO-01 satisfied)*
+*Last updated: 2026-02-22 after 30-02 complete (REPO-02 and REPO-03 satisfied)*
