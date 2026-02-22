@@ -151,7 +151,7 @@ Plans:
 | 24. Type Centralization | 2/2 | Complete    | 2026-02-21 | - |
 | 25. Service Consolidation | 3/3 | Complete    | 2026-02-22 | - |
 | 26. Crypto Deduplication | 2/2 | Complete    | 2026-02-22 | - |
-| 27. Ghost Repo Cleanup | 1/1 | Complete   | 2026-02-22 | - |
+| 27. Ghost Repo Cleanup | 1/1 | Complete    | 2026-02-22 | - |
 
 ---
 *Last updated: 2026-02-21 after v1.5 roadmap creation*
