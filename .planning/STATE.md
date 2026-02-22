@@ -23,7 +23,7 @@ Status: Phase 30 complete (2 of 2 plans done)
 Last activity: 2026-02-22 — 30-02 Removed stale repo references from CLAUDE.md, updated documentation to reflect 3-repo org structure
 
 ```
-v1.6 Progress: [■■■■      ] 2.5/3 phases (phases 28-30 in progress, 30-01 complete)
+v1.6 Progress: [■■■■■■■■■■] 3/3 phases complete (phases 28, 29, 30 all complete)
 ```
 
 ## Performance Metrics
@@ -37,10 +37,10 @@ v1.6 Progress: [■■■■      ] 2.5/3 phases (phases 28-30 in progress, 30-0
 - v1.5: 4 phases, 8 plans, 16 tasks
 - **Total (through v1.5): 27 phases, 45 plans, 81 tasks**
 
-**v1.6 (in progress):**
-- 3 phases planned
-- Plans: 5 complete (28-01, 28-02, 29-01, 29-02, 30-01)
-- Tasks: 9 complete
+**v1.6 (complete):**
+- 3 phases complete
+- Plans: 6 complete (28-01, 28-02, 29-01, 29-02, 30-01, 30-02)
+- Tasks: 11 complete
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
@@ -49,6 +49,7 @@ v1.6 Progress: [■■■■      ] 2.5/3 phases (phases 28-30 in progress, 30-0
 | 29    | 01   | 5 min    | 2     | 22    |
 | 29    | 02   | 3 min    | 1     | 8     |
 | 30    | 01   | 5 min    | 2     | 0     |
+| 30    | 02   | 2 min    | 2     | 4     |
 
 ## Accumulated Context
 
@@ -67,6 +68,7 @@ v1.6 Progress: [■■■■      ] 2.5/3 phases (phases 28-30 in progress, 30-0
 - [Phase 30-01]: 11 orphaned repos permanently deleted (not just archived) — all code lives in trustedge monorepo; org now has exactly 3 repos: trustedge, trustedgelabs-website, shipsecure
 - [Phase 30-01]: Org description set via GitHub API after .github profile repo was deleted
 - [Phase 29]: json-schema-to-typescript as devDependency in web/dashboard; DashboardReceipt naming to avoid collision with generated Receipt; Node.js dedup embedded in generate-types.sh for cross-schema interface deduplication
+- [Phase 30]: DEPENDENCIES.md provenance line left as historical context; source code migration comments in test files kept as provenance
 
 ### Pending Todos
 

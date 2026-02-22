@@ -78,7 +78,7 @@ Consolidated external service repos (platform-api, verify-core, shared-libs) int
 
 - [x] **Phase 28: Platform Server Binary** - Create `crates/platform-server` binary crate that boots trustedge-platform via Axum (completed 2026-02-22)
 - [x] **Phase 29: Dashboard Consolidation** - Move trustedge-dashboard into `web/dashboard/` and replace hardcoded types with generated schemas (completed 2026-02-22)
-- [ ] **Phase 30: Repo Cleanup** - Delete 12 orphaned GitHub repos and update all documentation to reflect 3-repo org structure
+- [x] **Phase 30: Repo Cleanup** - Delete 12 orphaned GitHub repos and update all documentation to reflect 3-repo org structure (completed 2026-02-22)
 
 ## Phase Details
 
@@ -151,7 +151,7 @@ Plans:
 | 27. Ghost Repo Cleanup | v1.5 | 1/1 | Complete | 2026-02-22 |
 | 28. Platform Server Binary | v1.6 | 2/2 | Complete | 2026-02-22 |
 | 29. Dashboard Consolidation | 2/2 | Complete    | 2026-02-22 | - |
-| 30. Repo Cleanup | v1.6 | 1/2 | In progress | - |
+| 30. Repo Cleanup | 2/2 | Complete   | 2026-02-22 | - |
 
 ---
 *Last updated: 2026-02-22 after 30-01 GitHub org cleanup complete*
