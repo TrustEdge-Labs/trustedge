@@ -360,25 +360,18 @@ pub struct ReceiptResponse {
 
 #[cfg(all(any(test, feature = "test-utils"), feature = "postgres"))]
 pub fn create_test_app(pool: sqlx::PgPool) -> axum::Router {
-    use crate::http::auth::auth_middleware;
-
     let keys = std::sync::Arc::new(tokio::sync::RwLock::new(
         crate::verify::jwks::KeyManager::new().expect("KeyManager should initialize for test"),
     ));
 
-    let app_state = AppState {
-        db_pool: pool.clone(),
+    let state = AppState {
+        db_pool: pool,
         keys,
     };
 
-    axum::Router::new()
-        .route("/v1/verify", axum::routing::post(verify_handler))
-        .route("/v1/devices", axum::routing::post(register_device_handler))
-        .route("/v1/receipts/:id", axum::routing::get(get_receipt_handler))
-        .route("/.well-known/jwks.json", axum::routing::get(jwks_handler))
-        .route("/healthz", axum::routing::get(health_handler))
-        .layer(axum::middleware::from_fn_with_state(pool, auth_middleware))
-        .with_state(app_state)
+    // Delegate to create_router so middleware stack is identical to production
+    // (build_base_router -> create_router chain applies CORS, TraceLayer, auth).
+    crate::http::create_router(state)
 }
 
 // ---------------------------------------------------------------------------

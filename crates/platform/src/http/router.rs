@@ -26,15 +26,23 @@ use super::{
     state::AppState,
 };
 
+/// Build the base router with routes shared across all feature configurations.
+///
+/// Both `create_router` and `create_test_app` ultimately call this function,
+/// ensuring a single source of truth for the route set (TST-02 parity).
+pub fn build_base_router() -> Router<AppState> {
+    Router::new()
+        .route("/v1/verify", post(verify_handler))
+        .route("/.well-known/jwks.json", get(jwks_handler))
+        .route("/healthz", get(health_handler))
+}
+
 /// Compose the full Axum router for the TrustEdge Platform service.
 ///
 /// When the `postgres` feature is enabled, the router includes device and
 /// receipt endpoints protected by the Bearer token auth middleware.
 pub fn create_router(state: AppState) -> Router {
-    let base = Router::new()
-        .route("/v1/verify", post(verify_handler))
-        .route("/.well-known/jwks.json", get(jwks_handler))
-        .route("/healthz", get(health_handler));
+    let base = build_base_router();
 
     #[cfg(feature = "postgres")]
     let base = {
