@@ -66,26 +66,26 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | — | Pending |
-| SEC-02 | — | Pending |
-| SEC-03 | — | Pending |
-| SEC-04 | — | Pending |
-| WRK-01 | — | Pending |
-| WRK-02 | — | Pending |
-| WRK-03 | — | Pending |
-| WRK-04 | — | Pending |
-| PLT-01 | — | Pending |
-| PLT-02 | — | Pending |
-| PLT-03 | — | Pending |
-| TST-01 | — | Pending |
-| TST-02 | — | Pending |
-| TST-03 | — | Pending |
+| SEC-01 | Phase 31 | Pending |
+| SEC-02 | Phase 31 | Pending |
+| SEC-03 | Phase 31 | Pending |
+| SEC-04 | Phase 31 | Pending |
+| WRK-01 | Phase 32 | Pending |
+| WRK-02 | Phase 32 | Pending |
+| WRK-03 | Phase 32 | Pending |
+| WRK-04 | Phase 32 | Pending |
+| PLT-01 | Phase 33 | Pending |
+| PLT-02 | Phase 33 | Pending |
+| PLT-03 | Phase 33 | Pending |
+| TST-01 | Phase 34 | Pending |
+| TST-02 | Phase 34 | Pending |
+| TST-03 | Phase 34 | Pending |
 
 **Coverage:**
 - v1.7 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14
+- Mapped to phases: 14
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after initial definition*
+*Last updated: 2026-02-22 after v1.7 roadmap created — all 14 requirements mapped to phases 31-34*

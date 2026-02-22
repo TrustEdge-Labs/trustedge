@@ -13,14 +13,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** v1.7 Security & Quality Hardening
+**Current focus:** v1.7 Security & Quality Hardening — Phase 31: Secret Hardening
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-22 — Milestone v1.7 started
+Phase: 31 of 34 (Secret Hardening)
+Plan: — of — in current phase
+Status: Ready to plan
+Last activity: 2026-02-22 — v1.7 roadmap created, 4 phases defined (31-34), 14 requirements mapped
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -52,8 +54,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: v1.7 milestone requirements definition
-Resume at: Continue requirements → roadmap
+Stopped at: v1.7 roadmap created — phases 31-34 defined, all 14 requirements mapped
+Resume at: /gsd:plan-phase 31
 
 ---
-*Last updated: 2026-02-22 after v1.7 milestone started*
+*Last updated: 2026-02-22 after v1.7 roadmap created*

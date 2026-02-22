@@ -17,6 +17,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.4 Placeholder Elimination** - Phases 19-23 (shipped 2026-02-13)
 - ✅ **v1.5 Platform Consolidation** - Phases 24-27 (shipped 2026-02-22)
 - ✅ **v1.6 Final Consolidation** - Phases 28-30 (shipped 2026-02-22)
+- 🚧 **v1.7 Security & Quality Hardening** - Phases 31-34 (in progress)
 
 ## Phases
 
@@ -83,5 +84,67 @@ Brought all satellite code into the monorepo and finalized the GitHub org struct
 
 </details>
 
+### v1.7 Security & Quality Hardening (In Progress)
+
+**Milestone Goal:** Address reviewer-identified security gaps, remove deprecated facade crates, harden platform quality, and add integration test coverage for the platform server.
+
+- [ ] **Phase 31: Secret Hardening** - Zeroize sensitive fields and eliminate secret leakage via Debug and serialization
+- [ ] **Phase 32: Workspace Cleanup** - Delete deprecated facade crates and separate Tier 2 crates from shared dependency graph
+- [ ] **Phase 33: Platform Quality** - Deduplicate verify handler logic, harden CORS, and resolve CA route ambiguity
+- [ ] **Phase 34: Platform Testing** - Add integration tests for platform-server wiring and full HTTP verify round-trip
+
+## Phase Details
+
+### Phase 31: Secret Hardening
+**Goal**: Sensitive values (PIN, passphrase, JWT secret, passwords) cannot leak through debug output, serialization, or memory reuse
+**Depends on**: Nothing (standalone security hardening, no cross-phase dependency)
+**Requirements**: SEC-01, SEC-02, SEC-03, SEC-04
+**Success Criteria** (what must be TRUE):
+  1. `cargo test` passes with zeroize applied to all sensitive struct fields — no test regression
+  2. `{:?}` formatting on any config or auth struct containing secrets outputs redacted placeholders, never plaintext values
+  3. `serde::Serialize` and `serde::Deserialize` are absent from `YubiKeyConfig`, `SoftwareHsmConfig`, and `LoginRequest` — the compiler rejects any attempt to serialize them
+  4. `LoginRequest.password` cannot be printed or serialized by accident — verified by inspecting derived trait list and Debug output in tests
+**Plans**: TBD
+
+### Phase 32: Workspace Cleanup
+**Goal**: Deprecated facade crates are gone from the workspace, and Tier 2 experimental crates are isolated so their dependency graph does not contaminate the shared Cargo.lock
+**Depends on**: Phase 31
+**Requirements**: WRK-01, WRK-02, WRK-03, WRK-04
+**Success Criteria** (what must be TRUE):
+  1. `cargo build --workspace` succeeds with `trustedge-receipts` and `trustedge-attestation` absent from the crates list — they do not exist on disk
+  2. CI scripts and documentation contain no references to the deleted facade crates
+  3. Tier 2 pubky crates live in a separate workspace or are excluded via `[workspace]` membership, so their transitive deps are absent from the root `Cargo.lock`
+  4. `cargo machete` on the root workspace reports no unused workspace-level dependencies introduced by the removed crates
+**Plans**: TBD
+
+### Phase 33: Platform Quality
+**Goal**: Platform verify logic is deduplicated into a single always-compiled path, the non-postgres build uses restrictive CORS, and the CA module's exposure is explicitly documented or wired
+**Depends on**: Phase 32
+**Requirements**: PLT-01, PLT-02, PLT-03
+**Success Criteria** (what must be TRUE):
+  1. The shared verify validation function compiles and is called by all feature variants of `verify_handler` — no duplicated validation branches exist
+  2. Building `trustedge-platform` without the `postgres` feature produces a server that returns `403` or `405` on cross-origin requests rather than accepting all origins
+  3. CA module routes are either reachable via `create_router()` or a code comment explicitly marks the module as library-only with no HTTP exposure
+**Plans**: TBD
+
+### Phase 34: Platform Testing
+**Goal**: The platform-server binary has integration tests that verify startup wiring, and a full HTTP verify round-trip test confirms the pipeline works end-to-end
+**Depends on**: Phase 33
+**Requirements**: TST-01, TST-02, TST-03
+**Success Criteria** (what must be TRUE):
+  1. `cargo test -p trustedge-platform-server` runs integration tests that construct `AppState`, confirm required environment variables are wired, and assert the router starts without panicking
+  2. `create_test_app()` applies the same CORS policy, tracing middleware, and auth middleware as `create_router()` — a test that passes through `create_test_app` exercises identical middleware to production
+  3. A test submits a correctly signed payload to the verify endpoint over HTTP and receives a receipt response with HTTP 200 — the full sign-then-verify pipeline is exercised in a single test
+**Plans**: TBD
+
+## Progress
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 31. Secret Hardening | v1.7 | 0/? | Not started | - |
+| 32. Workspace Cleanup | v1.7 | 0/? | Not started | - |
+| 33. Platform Quality | v1.7 | 0/? | Not started | - |
+| 34. Platform Testing | v1.7 | 0/? | Not started | - |
+
 ---
-*Last updated: 2026-02-22 after v1.6 milestone complete*
+*Last updated: 2026-02-22 after v1.7 roadmap created*
