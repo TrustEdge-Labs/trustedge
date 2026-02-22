@@ -89,7 +89,7 @@ Brought all satellite code into the monorepo and finalized the GitHub org struct
 **Milestone Goal:** Address reviewer-identified security gaps, remove deprecated facade crates, harden platform quality, and add integration test coverage for the platform server.
 
 - [x] **Phase 31: Secret Hardening** - Zeroize sensitive fields and eliminate secret leakage via Debug and serialization (completed 2026-02-22)
-- [ ] **Phase 32: Workspace Cleanup** - Delete deprecated facade crates and separate Tier 2 crates from shared dependency graph
+- [x] **Phase 32: Workspace Cleanup** - Delete deprecated facade crates and separate Tier 2 crates from shared dependency graph (completed 2026-02-22)
 - [ ] **Phase 33: Platform Quality** - Deduplicate verify handler logic, harden CORS, and resolve CA route ambiguity
 - [ ] **Phase 34: Platform Testing** - Add integration tests for platform-server wiring and full HTTP verify round-trip
 
@@ -120,7 +120,7 @@ Plans:
   2. CI scripts and documentation contain no references to the deleted facade crates
   3. Tier 2 pubky crates live in a separate workspace or are excluded via `[workspace]` membership, so their transitive deps are absent from the root `Cargo.lock`
   4. `cargo machete` on the root workspace reports no unused workspace-level dependencies introduced by the removed crates
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 32-01-PLAN.md — Delete deprecated facade crates from workspace
@@ -152,7 +152,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 31. Secret Hardening | 3/3 | Complete    | 2026-02-22 | - |
-| 32. Workspace Cleanup | 2/3 | In Progress|  | - |
+| 32. Workspace Cleanup | 3/3 | Complete   | 2026-02-22 | - |
 | 33. Platform Quality | v1.7 | 0/? | Not started | - |
 | 34. Platform Testing | v1.7 | 0/? | Not started | - |
 

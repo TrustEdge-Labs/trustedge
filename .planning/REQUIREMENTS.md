@@ -25,7 +25,7 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 ### Workspace Hygiene
 
 - [x] **WRK-01**: Deprecated facade crates (trustedge-receipts, trustedge-attestation) are deleted from workspace
-- [ ] **WRK-02**: CI scripts and documentation updated to remove facade references
+- [x] **WRK-02**: CI scripts and documentation updated to remove facade references
 - [x] **WRK-03**: Tier 2 experimental crates separated from Tier 1 dependency graph (pubky dep tree no longer in shared Cargo.lock)
 - [x] **WRK-04**: Workspace Cargo.toml cleaned of unused workspace dependencies after separation
 
@@ -71,7 +71,7 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 | SEC-03 | Phase 31 | Complete |
 | SEC-04 | Phase 31 | Complete |
 | WRK-01 | Phase 32 | Complete |
-| WRK-02 | Phase 32 | Pending |
+| WRK-02 | Phase 32 | Complete |
 | WRK-03 | Phase 32 | Complete |
 | WRK-04 | Phase 32 | Complete |
 | PLT-01 | Phase 33 | Pending |
