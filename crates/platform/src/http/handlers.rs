@@ -487,8 +487,8 @@ pub fn create_test_app(pool: sqlx::PgPool) -> axum::Router {
 /// Compute BLAKE3 manifest digest (for receipt construction).
 fn compute_manifest_digest_blake3(manifest: &Value) -> String {
     let canonical = serde_json::to_string(manifest).unwrap_or_default();
-    let hash = blake3::hash(canonical.as_bytes());
-    format!("b3:{}", BASE64.encode(hash.as_bytes()))
+    let hash = trustedge_core::chain::segment_hash(canonical.as_bytes());
+    format!("b3:{}", BASE64.encode(&hash))
 }
 
 /// Compute SHA-256 manifest digest (for DB storage — compatible with platform-api schema).

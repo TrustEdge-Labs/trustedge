@@ -6,7 +6,7 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! Authentication module — Phase 26 implements JWT authentication and authorization.
+//! Authentication module — Future: implements JWT authentication and authorization.
 
 use super::{error::*, models::*};
 
@@ -21,17 +21,17 @@ impl AuthService {
     }
 
     pub async fn authenticate(&self, _email: &str, _password: &str) -> CAResult<User> {
-        // Phase 26: Implement user authentication against database
+        // Future: Implement user authentication against database
         Err(CAError::Authentication("Not implemented".to_string()))
     }
 
     pub fn generate_token(&self, _user: &User) -> CAResult<String> {
-        // Phase 26: Generate JWT token with user claims and expiry
+        // Future: Generate JWT token with user claims and expiry
         Ok("placeholder-token".to_string())
     }
 
     pub fn verify_token(&self, _token: &str) -> CAResult<UserId> {
-        // Phase 26: Verify JWT token signature and return user ID
+        // Future: Verify JWT token signature and return user ID
         Err(CAError::Authentication("Not implemented".to_string()))
     }
 }

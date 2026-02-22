@@ -62,7 +62,7 @@ async fn issue_certificate(
         ));
     }
 
-    // Phase 26: Extract tenant ID from JWT auth instead of creating a new one
+    // Future: Extract tenant ID from JWT auth instead of creating a new one
     let tenant_id = TenantId::new();
 
     tracing::info!(
@@ -360,15 +360,15 @@ async fn list_certificates(
         ));
     }
 
-    // Phase 26: Extract tenant ID from JWT auth instead of creating a new one
+    // Future: Extract tenant ID from JWT auth instead of creating a new one
     let _tenant_id = TenantId::new();
 
-    // Phase 26: Implement actual database query instead of mock data
+    // Future: Implement actual database query instead of mock data
     let mock_certificates = create_mock_certificates(&query);
 
     let response = ListCertificatesResponse {
         certificates: mock_certificates,
-        total: 2, // Phase 26: Return real count from database
+        total: 2, // Future: Return real count from database
         limit: query.limit.unwrap_or(50),
         offset: query.offset.unwrap_or(0),
     };
@@ -499,7 +499,7 @@ fn validate_list_query(query: &ListCertificatesQuery) -> Result<(), String> {
 }
 
 /// Create mock certificates for demonstration
-/// Phase 26: Replace with actual database queries
+/// Future: Replace with actual database queries
 fn create_mock_certificates(query: &ListCertificatesQuery) -> Vec<Certificate> {
     use chrono::Utc;
     use uuid::Uuid;
@@ -617,7 +617,7 @@ async fn revoke_certificate(
         ));
     }
 
-    // Phase 26: Extract tenant ID from JWT auth instead of creating a new one
+    // Future: Extract tenant ID from JWT auth instead of creating a new one
     let tenant_id = TenantId::new();
 
     tracing::info!(

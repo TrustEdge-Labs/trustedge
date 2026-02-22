@@ -155,7 +155,7 @@ impl CertificateAuthorityService {
             )));
         }
 
-        // Phase 26: In a full implementation, this would:
+        // Future: In a full implementation, this would:
         // 1. Check if certificate exists and belongs to the tenant
         // 2. Verify certificate is not already revoked
         // 3. Update the certificate status in the database
@@ -177,7 +177,7 @@ impl CertificateAuthorityService {
         }
 
         // Simulate checking if certificate is already revoked
-        // Phase 26: replace with real database query
+        // Future: replace with real database query
         if serial_number == "deadbeefdeadbeef" {
             return Err(CAError::InvalidRequest(
                 "Certificate is already revoked".to_string(),
@@ -196,13 +196,13 @@ impl CertificateAuthorityService {
 
     /// Generate a Certificate Revocation List (CRL)
     pub async fn generate_crl(&self, _tenant_id: &TenantId) -> CAResult<String> {
-        // Phase 26: Implement CRL generation
+        // Future: Implement CRL generation
         // This would query the database for revoked certificates
         // and generate a proper CRL structure
 
         let crl_data = format!(
             "-----BEGIN X509 CRL-----\n{}\n-----END X509 CRL-----",
-            "Phase 26: Implement CRL generation"
+            "Future: Implement CRL generation"
         );
 
         Ok(crl_data)
@@ -406,9 +406,9 @@ pub async fn create_yubikey_ca_service(
         email: None,
     };
 
-    // Phase 26: Generate actual CA certificate using x509-cert
+    // Future: Generate actual CA certificate using x509-cert
     let ca_certificate = format!(
-        "-----BEGIN CERTIFICATE-----\nPhase 26: Generate CA certificate for {}\n-----END CERTIFICATE-----",
+        "-----BEGIN CERTIFICATE-----\nFuture: Generate CA certificate for {}\n-----END CERTIFICATE-----",
         ca_name
     );
 
