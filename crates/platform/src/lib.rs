@@ -18,10 +18,8 @@ pub mod verify;
 #[cfg(feature = "ca")]
 mod ca;
 
-// Placeholder: Plan 02 creates the database module
 #[cfg(feature = "postgres")]
-mod database;
+pub mod database;
 
-// Placeholder: Plan 02 creates the http module
 #[cfg(feature = "http")]
-mod http;
+pub mod http;
