@@ -10,6 +10,8 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::fmt;
+use trustedge_core::Secret;
 use uuid::Uuid;
 
 /// Unique identifier for tenants
@@ -173,10 +175,61 @@ pub struct RevokeCertificateRequest {
     pub reason: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+/// Login request — password is Secret<String> and cannot be printed or serialized by accident.
+///
+/// - No `derive(Serialize)` — any attempt to serialize a `LoginRequest` is a compile error.
+/// - Custom `Deserialize` implementation wraps the password in `Secret<String>` at the
+///   deserialization boundary, preventing the raw string from ever existing unwrapped.
+/// - Manual `Debug` implementation redacts the password field.
 pub struct LoginRequest {
     pub email: String,
-    pub password: String,
+    password: Secret<String>,
+}
+
+impl LoginRequest {
+    /// Construct a `LoginRequest`, wrapping `password` in `Secret<String>` immediately.
+    pub fn new(email: String, password: String) -> Self {
+        Self {
+            email,
+            password: Secret::new(password),
+        }
+    }
+
+    /// Access the password as a `&str`.
+    ///
+    /// The caller is responsible for not logging or persisting the returned value.
+    pub fn password(&self) -> &str {
+        self.password.expose_secret().as_str()
+    }
+}
+
+impl fmt::Debug for LoginRequest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("LoginRequest")
+            .field("email", &self.email)
+            .field("password", &"[REDACTED]")
+            .finish()
+    }
+}
+
+/// Private helper for deserializing `LoginRequest`.
+#[derive(Deserialize)]
+struct LoginRequestRaw {
+    email: String,
+    password: String,
+}
+
+impl<'de> Deserialize<'de> for LoginRequest {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let raw = LoginRequestRaw::deserialize(deserializer)?;
+        Ok(LoginRequest {
+            email: raw.email,
+            password: Secret::new(raw.password),
+        })
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -203,4 +256,56 @@ pub struct ErrorResponse {
     pub error: String,
     pub message: String,
     pub code: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_login_request_debug_redacts_password() {
+        let req = LoginRequest::new("user@example.com".to_string(), "s3cr3t!".to_string());
+        let debug_output = format!("{:?}", req);
+        assert!(
+            debug_output.contains("[REDACTED]"),
+            "Debug output must contain [REDACTED], got: {debug_output}"
+        );
+        assert!(
+            !debug_output.contains("s3cr3t!"),
+            "Debug output must NOT contain the actual password, got: {debug_output}"
+        );
+        assert!(
+            debug_output.contains("user@example.com"),
+            "Debug output should contain the email, got: {debug_output}"
+        );
+    }
+
+    #[test]
+    fn test_login_request_password_getter() {
+        let req = LoginRequest::new("a@b.com".to_string(), "my-password".to_string());
+        assert_eq!(req.password(), "my-password");
+    }
+
+    #[test]
+    fn test_login_request_deserialize() {
+        let json = r#"{"email":"a@b.com","password":"secret123"}"#;
+        let req: LoginRequest = serde_json::from_str(json).expect("deserialization failed");
+        assert_eq!(req.email, "a@b.com");
+        assert_eq!(req.password(), "secret123");
+    }
+
+    #[test]
+    fn test_login_request_deserialize_debug_redacts() {
+        let json = r#"{"email":"test@test.com","password":"hunter2"}"#;
+        let req: LoginRequest = serde_json::from_str(json).expect("deserialization failed");
+        let debug_output = format!("{:?}", req);
+        assert!(
+            debug_output.contains("[REDACTED]"),
+            "Debug of deserialized LoginRequest must redact password"
+        );
+        assert!(
+            !debug_output.contains("hunter2"),
+            "Debug must not expose password, got: {debug_output}"
+        );
+    }
 }

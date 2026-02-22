@@ -9,15 +9,17 @@
 //! Authentication module — Future: implements JWT authentication and authorization.
 
 use super::{error::*, models::*};
+use trustedge_core::Secret;
 
 pub struct AuthService {
-    #[allow(dead_code)]
-    jwt_secret: String,
+    jwt_secret: Secret<String>,
 }
 
 impl AuthService {
     pub fn new(jwt_secret: String) -> Self {
-        Self { jwt_secret }
+        Self {
+            jwt_secret: Secret::new(jwt_secret),
+        }
     }
 
     pub async fn authenticate(&self, _email: &str, _password: &str) -> CAResult<User> {
@@ -27,11 +29,13 @@ impl AuthService {
 
     pub fn generate_token(&self, _user: &User) -> CAResult<String> {
         // Future: Generate JWT token with user claims and expiry
+        // Access the secret only at the usage site: self.jwt_secret.expose_secret()
         Ok("placeholder-token".to_string())
     }
 
     pub fn verify_token(&self, _token: &str) -> CAResult<UserId> {
         // Future: Verify JWT token signature and return user ID
+        // Access the secret only at the usage site: self.jwt_secret.expose_secret()
         Err(CAError::Authentication("Not implemented".to_string()))
     }
 }
