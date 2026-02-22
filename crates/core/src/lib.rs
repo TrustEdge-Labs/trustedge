@@ -102,6 +102,7 @@ pub mod envelope;
 pub mod error;
 pub mod format;
 pub mod hybrid;
+pub mod secret;
 pub mod transport;
 pub mod vectors;
 
@@ -154,6 +155,7 @@ pub use crypto::{
     decrypt_segment, encrypt_segment, format_nonce, generate_aad, generate_nonce24, parse_nonce,
     sign_manifest, verify_manifest, CryptoError, DeviceKeypair,
 };
+pub use secret::Secret;
 // Ed25519 types re-exported for downstream crates (JWKS, key management)
 pub use ed25519_dalek::{SigningKey, VerifyingKey};
 pub use envelope::{Envelope, EnvelopeMetadata};

@@ -84,7 +84,7 @@ chrono = { version = "0.4", features = ["serde"] }
 hex = "0.4"
 num-traits = "0.2"
 thiserror = "1.0"
-zeroize = "1.7"
+zeroize = { version = "1.7", features = ["derive"] }
 
 # CLI and system
 clap = { version = "4.5", features = ["derive"] }
