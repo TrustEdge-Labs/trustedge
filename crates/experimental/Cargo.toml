@@ -1,0 +1,14 @@
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# MPL-2.0: https://mozilla.org/MPL/2.0/
+# Project: trustedge — Privacy and trust at the edge.
+#
+# Experimental workspace — community/experimental crates.
+# These crates are NOT part of the main workspace CI pipeline.
+# Build with: cd crates/experimental && cargo build
+
+[workspace]
+members = [
+    "pubky",
+    "pubky-advanced",
+]
+resolver = "2"
