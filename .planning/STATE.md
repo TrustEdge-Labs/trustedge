@@ -13,16 +13,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 25 - Service Consolidation
+**Current focus:** Phase 26 - Crypto Deduplication
 
 ## Current Position
 
-Phase: 25 of 27 in v1.5 (Service Consolidation) — COMPLETE
-Plan: 3 of 3 complete in current phase
-Status: Phase 25 complete — ready for Phase 26 (Crypto Deduplication)
-Last activity: 2026-02-22 — 25-03 complete (test migration, CI update, validation fix, docs)
+Phase: 26 of 27 in v1.5 (Crypto Deduplication) — IN PROGRESS
+Plan: 1 of 1 complete in current phase
+Status: Phase 26 Plan 01 complete — crypto deduplication done
+Last activity: 2026-02-22 — 26-01 complete (engine.rs, handlers.rs core delegation, CA Future: markers)
 
-Progress: [█████░░░░░] ~50% (v1.5 milestone)
+Progress: [██████░░░░] ~60% (v1.5 milestone)
 
 ## Performance Metrics
 
@@ -40,7 +40,7 @@ Progress: [█████░░░░░] ~50% (v1.5 milestone)
 |-------|-------|-------|----------|
 | 24. Type Centralization | 2 complete | 4 | 16 min |
 | 25. Service Consolidation | 3 of 3 complete | 6 | 24 min |
-| 26. Crypto Deduplication | TBD | - | - |
+| 26. Crypto Deduplication | 1 of 1 complete | 2 | 2 min |
 | 27. Ghost Repo Cleanup | TBD | - | - |
 
 ## Accumulated Context
@@ -64,6 +64,9 @@ Progress: [█████░░░░░] ~50% (v1.5 milestone)
 - [Phase 25-03]: Ordered validation: empty segments → device_pub → manifest → hash format (ensures correct error codes per test expectations)
 - [Phase 25-03]: #[serde(deny_unknown_fields)] on VerifyRequest — strict API hygiene, rejects unknown fields with 400
 - [Phase 25-03]: Dep tree baseline raised to 70 — platform crate adds transitive workspace deps
+- [Phase 26-01]: trustedge-core moved to always-on dependency (was optional/ca-gated) — all platform features need crypto primitives
+- [Phase 26-01]: format_b3() helper uses BASE64 crate's STANDARD encoder (not core's internal base64_encode) for consistent wire format
+- [Phase 26-01]: Ed25519 signature bridge — manifest JSON stores raw base64; prepend 'ed25519:' before calling trustedge_core::crypto::verify_manifest()
 
 ### Pending Todos
 
@@ -78,8 +81,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 26 context gathered — ready to plan
-Resume file: .planning/phases/26-crypto-deduplication/26-CONTEXT.md
+Stopped at: Completed 26-01-PLAN.md — crypto deduplication complete
+Resume file: .planning/phases/26-crypto-deduplication/26-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-22 after Phase 26 context gathering*
+*Last updated: 2026-02-22 after Phase 26 Plan 01 completion*

@@ -28,8 +28,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ### Crypto Deduplication
 
-- [ ] **CRYPTO-01**: Manual crypto and chaining code in verify-core deleted
-- [ ] **CRYPTO-02**: Verification logic uses `trustedge_core::chain` and `trustedge_core::crypto` instead of hand-rolled implementations
+- [x] **CRYPTO-01**: Manual crypto and chaining code in verify-core deleted
+- [x] **CRYPTO-02**: Verification logic uses `trustedge_core::chain` and `trustedge_core::crypto` instead of hand-rolled implementations
 
 ### Ghost Repo Cleanup
 
@@ -64,8 +64,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | SVC-02 | Phase 25 | Complete |
 | SVC-03 | Phase 25 | Complete |
 | SVC-04 | Phase 25 | Complete |
-| CRYPTO-01 | Phase 26 | Pending |
-| CRYPTO-02 | Phase 26 | Pending |
+| CRYPTO-01 | Phase 26 | Complete |
+| CRYPTO-02 | Phase 26 | Complete |
 | REPO-01 | Phase 27 | Pending |
 | REPO-02 | Phase 27 | Pending |
 
