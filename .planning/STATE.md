@@ -13,15 +13,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Planning next milestone
+**Current focus:** v1.6 Final Consolidation
 
 ## Current Position
 
-Phase: v1.5 complete (27 phases shipped across 6 milestones)
-Status: v1.5 Platform Consolidation shipped — awaiting next milestone
-Last activity: 2026-02-22 — v1.5 milestone archived and tagged
-
-Progress: All milestones v1.0-v1.5 shipped
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-22 — Milestone v1.6 started
 
 ## Performance Metrics
 
@@ -38,7 +37,7 @@ Progress: All milestones v1.0-v1.5 shipped
 
 ### Decisions
 
-(Cleared for next milestone — see PROJECT.md Key Decisions table for historical record)
+(New milestone — decisions will be logged as they're made)
 
 ### Pending Todos
 
@@ -52,8 +51,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: v1.5 milestone archived and tagged
-Resume file: .planning/MILESTONES.md
+Stopped at: Defining v1.6 requirements
+Resume file: .planning/PROJECT.md
 
 ---
-*Last updated: 2026-02-22 after v1.5 milestone completion*
+*Last updated: 2026-02-22 after v1.6 milestone started*

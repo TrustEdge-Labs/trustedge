@@ -84,7 +84,15 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Active
 
-(No active requirements — next milestone not yet defined)
+#### Current Milestone: v1.6 Final Consolidation
+
+**Goal:** Bring all satellite code into the monorepo, add a platform server binary, finalize shared types, and delete all orphaned GitHub repos.
+
+**Target features:**
+- Platform server binary crate (`crates/platform-server`) with fresh `main.rs` booting Axum
+- Dashboard consolidation — move `trustedge-dashboard` SvelteKit app into `web/dashboard`
+- Types finalization — replace dashboard's hardcoded TypeScript interfaces with generated schemas from `trustedge-types`
+- GitHub repo purge — delete 12 repos, keep only `trustedge`, `trustedgelabs-website`, `shipsecure`
 
 ### Deferred
 
@@ -182,4 +190,4 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | trustedge-dashboard not archived | 29-file SvelteKit codebase has meaningful code | ✓ Good — deferred to future milestone |
 
 ---
-*Last updated: 2026-02-22 after v1.5 milestone completion*
+*Last updated: 2026-02-22 after v1.6 milestone started*
