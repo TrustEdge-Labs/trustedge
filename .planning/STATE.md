@@ -13,16 +13,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 26 - Crypto Deduplication
+**Current focus:** Phase 27 - Ghost Repo Cleanup — COMPLETE (v1.5 milestone complete)
 
 ## Current Position
 
-Phase: 26 of 27 in v1.5 (Crypto Deduplication) — COMPLETE
-Plan: 2 of 2 complete in current phase
-Status: Phase 26 complete — blake3/ed25519-dalek removed from platform production deps, trustedge-core sole crypto dep
-Last activity: 2026-02-22 — 26-02 complete (SigningKey/VerifyingKey re-exported from core, platform Cargo.toml cleaned)
+Phase: 27 of 27 in v1.5 (Ghost Repo Cleanup) — COMPLETE
+Plan: 1 of 1 complete in current phase
+Status: Phase 27 complete — 5 scaffold repos archived on GitHub; CLAUDE.md documents archived service repo intent
+Last activity: 2026-02-22 — 27-01 complete (5 repos archived, CLAUDE.md updated)
 
-Progress: [██████░░░░] ~60% (v1.5 milestone)
+Progress: [██████████] 100% (v1.5 milestone COMPLETE)
 
 ## Performance Metrics
 
@@ -41,7 +41,7 @@ Progress: [██████░░░░] ~60% (v1.5 milestone)
 | 24. Type Centralization | 2 complete | 4 | 16 min |
 | 25. Service Consolidation | 3 of 3 complete | 6 | 24 min |
 | 26. Crypto Deduplication | 2 of 2 complete | 4 | 21 min |
-| 27. Ghost Repo Cleanup | TBD | - | - |
+| 27. Ghost Repo Cleanup | 1 of 1 complete | 2 | 2 min |
 
 ## Accumulated Context
 
@@ -68,6 +68,8 @@ Progress: [██████░░░░] ~60% (v1.5 milestone)
 - [Phase 26-01]: format_b3() helper uses BASE64 crate's STANDARD encoder (not core's internal base64_encode) for consistent wire format
 - [Phase 26-01]: Ed25519 signature bridge — manifest JSON stores raw base64; prepend 'ed25519:' before calling trustedge_core::crypto::verify_manifest()
 - [Phase 26-02]: trustedge-core re-exports ed25519_dalek::{SigningKey, VerifyingKey} for JWKS key management; ed25519-dalek retained in dev-dependencies for test fixtures
+- [Phase 27-01]: Plan listed 6 repos by short names but actual repos use trustedge- prefix; no trustedge-audit exists — 5 repos archived instead of 6
+- [Phase 27-01]: trustedge-dashboard has meaningful SvelteKit code (29 files) — not archived; trustedge-platform-api/shared-libs/verify-core excluded (consolidated codebase from v1.5)
 
 ### Pending Todos
 
@@ -75,15 +77,14 @@ None.
 
 ### Blockers/Concerns
 
-- Phase 27 requires GitHub access to archive 6 repos
 - Hardware tests require physical YubiKey 5 series (carried from prior milestones)
 - RSA Marvin Attack advisory (RUSTSEC-2023-0071) risk-accepted (carried from v1.3)
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 26-02-PLAN.md — Phase 26 Crypto Deduplication complete
-Resume file: .planning/phases/26-crypto-deduplication/26-02-SUMMARY.md
+Stopped at: Completed 27-01-PLAN.md — Phase 27 Ghost Repo Cleanup complete; v1.5 milestone complete
+Resume file: .planning/phases/27-ghost-repo-cleanup/27-01-SUMMARY.md
 
 ---
-*Last updated: 2026-02-22 after Phase 26 Plan 02 completion*
+*Last updated: 2026-02-22 after Phase 27 Plan 01 completion — v1.5 COMPLETE*

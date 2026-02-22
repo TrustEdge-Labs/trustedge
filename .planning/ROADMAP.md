@@ -71,7 +71,7 @@ Removed all placeholder code, incomplete features, and insecure defaults. Secure
 - [x] **Phase 24: Type Centralization** - Migrate te_shared wire types into the main workspace as a standalone crate (completed 2026-02-21)
 - [x] **Phase 25: Service Consolidation** - Merge trustedge-platform-api and trustedge-verify-core into a single trustedge-platform crate (completed 2026-02-22)
 - [x] **Phase 26: Crypto Deduplication** - Replace manual crypto/chaining in the merged service with trustedge-core primitives (completed 2026-02-22)
-- [ ] **Phase 27: Ghost Repo Cleanup** - Archive 6 empty scaffold repos and document their intended scope
+- [x] **Phase 27: Ghost Repo Cleanup** - Archive 6 empty scaffold repos and document their intended scope (completed 2026-02-22)
 
 ## Phase Details
 
@@ -124,7 +124,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. All 6 repos (audit, billing-service, device-service, identity-service, infra, ingestion-service) are archived on GitHub and no longer accept pushes
   2. A document in the main workspace records what each ghost repo was intended to become, so the scope is not lost
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 27-01-PLAN.md -- Verify scaffolds, document scope in CLAUDE.md, update READMEs, archive all 6 repos
 
@@ -151,7 +151,7 @@ Plans:
 | 24. Type Centralization | 2/2 | Complete    | 2026-02-21 | - |
 | 25. Service Consolidation | 3/3 | Complete    | 2026-02-22 | - |
 | 26. Crypto Deduplication | 2/2 | Complete    | 2026-02-22 | - |
-| 27. Ghost Repo Cleanup | v1.5 | 0/1 | Not started | - |
+| 27. Ghost Repo Cleanup | 1/1 | Complete   | 2026-02-22 | - |
 
 ---
 *Last updated: 2026-02-21 after v1.5 roadmap creation*

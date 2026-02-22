@@ -33,8 +33,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ### Ghost Repo Cleanup
 
-- [ ] **REPO-01**: 6 empty scaffold repos archived on GitHub (audit, billing-service, device-service, identity-service, infra, ingestion-service)
-- [ ] **REPO-02**: Consolidated service design documents what functionality the ghost repos intended, for future reference
+- [x] **REPO-01**: 6 empty scaffold repos archived on GitHub (audit, billing-service, device-service, identity-service, infra, ingestion-service)
+- [x] **REPO-02**: Consolidated service design documents what functionality the ghost repos intended, for future reference
 
 ## Future Requirements
 
@@ -66,8 +66,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | SVC-04 | Phase 25 | Complete |
 | CRYPTO-01 | Phase 26 | Complete |
 | CRYPTO-02 | Phase 26 | Complete |
-| REPO-01 | Phase 27 | Pending |
-| REPO-02 | Phase 27 | Pending |
+| REPO-01 | Phase 27 | Complete |
+| REPO-02 | Phase 27 | Complete |
 
 **Coverage:**
 - v1.5 requirements: 11 total
