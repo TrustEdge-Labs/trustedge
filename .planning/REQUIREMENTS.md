@@ -26,7 +26,7 @@ Requirements for Final Consolidation milestone. Each maps to roadmap phases.
 
 - [x] **WEB-01**: Dashboard source lives at `web/dashboard/` in the trustedge workspace
 - [x] **WEB-02**: Dashboard builds and runs from its new location
-- [ ] **WEB-03**: Dashboard's hardcoded `types.ts` replaced with types generated from `trustedge-types` schemas
+- [x] **WEB-03**: Dashboard's hardcoded `types.ts` replaced with types generated from `trustedge-types` schemas
 
 ### Repo Cleanup
 
@@ -63,7 +63,7 @@ Requirements for Final Consolidation milestone. Each maps to roadmap phases.
 | PLAT-04 | Phase 28 | Complete |
 | WEB-01 | Phase 29 | Complete |
 | WEB-02 | Phase 29 | Complete |
-| WEB-03 | Phase 29 | Pending |
+| WEB-03 | Phase 29 | Complete |
 | REPO-01 | Phase 30 | Pending |
 | REPO-02 | Phase 30 | Pending |
 | REPO-03 | Phase 30 | Pending |

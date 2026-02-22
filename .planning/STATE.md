@@ -18,12 +18,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 29 — Dashboard Consolidation
-Plan: 01 (complete)
-Status: Phase 29 in progress (1 of 2 plans done)
-Last activity: 2026-02-22 — 29-01 dashboard moved into web/dashboard/ (npm build + check pass)
+Plan: 02 (complete)
+Status: Phase 29 complete (2 of 2 plans done)
+Last activity: 2026-02-22 — 29-02 TypeScript types generated from trustedge-types JSON schemas
 
 ```
-v1.6 Progress: [■■        ] 1.5/3 phases (phase 28 complete, phase 29 plan 01 done)
+v1.6 Progress: [■■■       ] 2/3 phases (phases 28-29 complete, phase 30 pending)
 ```
 
 ## Performance Metrics
@@ -39,14 +39,15 @@ v1.6 Progress: [■■        ] 1.5/3 phases (phase 28 complete, phase 29 plan 0
 
 **v1.6 (in progress):**
 - 3 phases planned
-- Plans: 3 complete (28-01, 28-02, 29-01)
-- Tasks: 6 complete
+- Plans: 4 complete (28-01, 28-02, 29-01, 29-02)
+- Tasks: 7 complete
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 28    | 01   | 4 min    | 2     | 5     |
 | 28    | 02   | 2 min    | 2     | 3     |
 | 29    | 01   | 5 min    | 2     | 22    |
+| 29    | 02   | 3 min    | 1     | 8     |
 
 ## Accumulated Context
 
@@ -62,6 +63,7 @@ v1.6 Progress: [■■        ] 1.5/3 phases (phase 28 complete, phase 29 plan 0
 - [Phase 29]: vitePreprocess() required in svelte.config.js for TypeScript in Svelte 4 script blocks
 - [Phase 29]: import.meta.env.VITE_* used for env vars in SvelteKit dashboard — $env/dynamic/public only allows PUBLIC_-prefixed vars
 - [Phase 29]: Separate import type statements required in Svelte 4 — inline type modifier not supported by acorn parser
+- [Phase 29]: json-schema-to-typescript as devDependency in web/dashboard; DashboardReceipt naming to avoid collision with generated Receipt; Node.js dedup embedded in generate-types.sh for cross-schema interface deduplication
 
 ### Pending Todos
 
@@ -71,13 +73,13 @@ None.
 
 - Hardware tests require physical YubiKey 5 series (carried from prior milestones)
 - RSA Marvin Attack advisory (RUSTSEC-2023-0071) risk-accepted (carried from v1.3)
-- WEB-03 type generation: trustedge-types must expose schemars schemas; verify existing schema output before generating TypeScript
+- WEB-03 type generation: RESOLVED in 29-02 — types.ts now generated from crates/types/tests/fixtures/*.json
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 29-01-PLAN.md
-Resume at: Phase 29 Plan 02 (type generation from trustedge-types schemars schemas)
+Stopped at: Completed 29-02-PLAN.md
+Resume at: Phase 30 (trustedge-dashboard repo deletion)
 
 ---
-*Last updated: 2026-02-22 after 29-01 dashboard move complete*
+*Last updated: 2026-02-22 after 29-02 type generation complete*
