@@ -17,12 +17,12 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 
 ## Current Position
 
-Phase: 25 of 27 in v1.5 (Service Consolidation)
-Plan: 2 of 3 complete in current phase
-Status: Phase 25 in progress
-Last activity: 2026-02-21 — 25-02 complete (HTTP layer + database module, inline verification, no HTTP forwarding)
+Phase: 25 of 27 in v1.5 (Service Consolidation) — COMPLETE
+Plan: 3 of 3 complete in current phase
+Status: Phase 25 complete — ready for Phase 26 (Crypto Deduplication)
+Last activity: 2026-02-22 — 25-03 complete (test migration, CI update, validation fix, docs)
 
-Progress: [████░░░░░░] ~35% (v1.5 milestone)
+Progress: [█████░░░░░] ~50% (v1.5 milestone)
 
 ## Performance Metrics
 
@@ -39,7 +39,7 @@ Progress: [████░░░░░░] ~35% (v1.5 milestone)
 | Phase | Plans | Tasks | Duration |
 |-------|-------|-------|----------|
 | 24. Type Centralization | 2 complete | 4 | 16 min |
-| 25. Service Consolidation | 2 of 3 complete | 4 | 15 min |
+| 25. Service Consolidation | 3 of 3 complete | 6 | 24 min |
 | 26. Crypto Deduplication | TBD | - | - |
 | 27. Ghost Repo Cleanup | TBD | - | - |
 
@@ -60,6 +60,10 @@ Progress: [████░░░░░░] ~35% (v1.5 milestone)
 - [Phase 25-02]: verify_core_url removed from AppState and Config — verification is inline via verify_to_report()
 - [Phase 25-02]: Dual manifest digest: blake3 for receipt JWS construction, sha2 for DB storage (platform-api schema compat)
 - [Phase 25-02]: postgres feature does NOT depend on http feature — they remain independent
+- [Phase 25-03]: axum-test 14.x used (not 18.x) — must match axum 0.7 workspace version
+- [Phase 25-03]: Ordered validation: empty segments → device_pub → manifest → hash format (ensures correct error codes per test expectations)
+- [Phase 25-03]: #[serde(deny_unknown_fields)] on VerifyRequest — strict API hygiene, rejects unknown fields with 400
+- [Phase 25-03]: Dep tree baseline raised to 70 — platform crate adds transitive workspace deps
 
 ### Pending Todos
 
@@ -67,16 +71,15 @@ None.
 
 ### Blockers/Concerns
 
-- Phase 25 requires access to external repos (trustedge-platform-api, trustedge-verify-core)
 - Phase 27 requires GitHub access to archive 6 repos
 - Hardware tests require physical YubiKey 5 series (carried from prior milestones)
 - RSA Marvin Attack advisory (RUSTSEC-2023-0071) risk-accepted (carried from v1.3)
 
 ## Session Continuity
 
-Last session: 2026-02-21
-Stopped at: Completed 25-02-PLAN.md (HTTP layer + database module)
-Resume file: .planning/phases/25-service-consolidation/25-03-PLAN.md
+Last session: 2026-02-22
+Stopped at: Completed 25-03-PLAN.md (test migration, CI, validation fix, CLAUDE.md/DEPENDENCIES.md)
+Resume file: .planning/phases/26-crypto-deduplication/ (next phase)
 
 ---
-*Last updated: 2026-02-21 after 25-02 completion*
+*Last updated: 2026-02-22 after 25-03 completion*

@@ -69,7 +69,7 @@ Removed all placeholder code, incomplete features, and insecure defaults. Secure
 **Milestone Goal:** Consolidate external service repos into the main trustedge workspace, mandate trustedge-core for all crypto, and prune empty scaffold repos.
 
 - [x] **Phase 24: Type Centralization** - Migrate te_shared wire types into the main workspace as a standalone crate (completed 2026-02-21)
-- [ ] **Phase 25: Service Consolidation** - Merge trustedge-platform-api and trustedge-verify-core into a single trustedge-platform crate
+- [x] **Phase 25: Service Consolidation** - Merge trustedge-platform-api and trustedge-verify-core into a single trustedge-platform crate (completed 2026-02-22)
 - [ ] **Phase 26: Crypto Deduplication** - Replace manual crypto/chaining in the merged service with trustedge-core primitives
 - [ ] **Phase 27: Ghost Repo Cleanup** - Archive 6 empty scaffold repos and document their intended scope
 
@@ -98,7 +98,7 @@ Plans:
   2. All device, receipt, verification, and JWKS endpoints respond correctly to requests
   3. The Certificate Authority from trustedge-ca is callable from within the consolidated crate
   4. All 11 integration tests from platform-api and all 17 tests from verify-core pass in the new crate
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 25-01-PLAN.md -- Create trustedge-platform crate with verification core and CA module
 - [x] 25-02-PLAN.md -- Build HTTP layer and database module with consolidated router
@@ -144,7 +144,7 @@ Plans:
 | 22. Pubky Stub Elimination | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 23. TODO Hygiene Sweep | v1.4 | 1/1 | Complete | 2026-02-13 |
 | 24. Type Centralization | 2/2 | Complete    | 2026-02-21 | - |
-| 25. Service Consolidation | 2/3 | In Progress|  | - |
+| 25. Service Consolidation | 3/3 | Complete   | 2026-02-22 | - |
 | 26. Crypto Deduplication | v1.5 | 0/TBD | Not started | - |
 | 27. Ghost Repo Cleanup | v1.5 | 0/TBD | Not started | - |
 
