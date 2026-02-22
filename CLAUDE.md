@@ -107,19 +107,12 @@ TrustEdge is a Cargo workspace with 12 crates under `crates/`:
 4. Envelope creation with metadata manifest
 5. Transport (local file or network)
 
-### Archived Service Repos
+### GitHub Organization
 
-These repos under TrustEdge-Labs were scaffolds for a planned microservice SaaS platform (open-core model). They were archived in v1.5 after consolidating into the monolithic trustedge-platform crate. All contained only a README at time of archival.
-
-| Repo | Intended Scope | Current Status |
-|------|----------------|----------------|
-| trustedge-billing-service | Subscription and usage billing for SaaS customers | Not implemented, deferred |
-| trustedge-device-service | Device registration and management API | Consolidated into trustedge-platform (postgres feature) |
-| trustedge-identity-service | Authentication and identity management | Consolidated into trustedge-platform (http/postgres features) |
-| trustedge-ingestion-service | Data ingestion pipeline for device telemetry | Not implemented, deferred |
-| trustedge-infra | Infrastructure-as-code and deployment configs | Not implemented, deferred |
-
-> Note: A planned `trustedge-audit` (compliance logging) repo was never created. The trustedge-dashboard has been moved into `web/dashboard/` in the main workspace.
+The TrustEdge-Labs GitHub org contains 3 repos:
+- **trustedge** — This monorepo: Rust workspace + SvelteKit dashboard
+- **trustedgelabs-website** — Product website
+- **shipsecure** — Separate product
 
 ## Code Standards
 
