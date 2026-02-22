@@ -17,13 +17,13 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 28 — Platform Server Binary
-Plan: 02 (complete)
-Status: Phase 28 complete (all 2 plans done)
-Last activity: 2026-02-22 — 28-02 deployment artifacts (Dockerfile, docker-compose, .env.example)
+Phase: 29 — Dashboard Consolidation
+Plan: 01 (complete)
+Status: Phase 29 in progress (1 of 2 plans done)
+Last activity: 2026-02-22 — 29-01 dashboard moved into web/dashboard/ (npm build + check pass)
 
 ```
-v1.6 Progress: [■         ] 1/3 phases (phase 28 complete — 2 of 2 plans done)
+v1.6 Progress: [■■        ] 1.5/3 phases (phase 28 complete, phase 29 plan 01 done)
 ```
 
 ## Performance Metrics
@@ -39,13 +39,14 @@ v1.6 Progress: [■         ] 1/3 phases (phase 28 complete — 2 of 2 plans don
 
 **v1.6 (in progress):**
 - 3 phases planned
-- Plans: 2 complete (28-01, 28-02)
-- Tasks: 4 complete
+- Plans: 3 complete (28-01, 28-02, 29-01)
+- Tasks: 6 complete
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 28    | 01   | 4 min    | 2     | 5     |
 | 28    | 02   | 2 min    | 2     | 3     |
+| 29    | 01   | 5 min    | 2     | 22    |
 
 ## Accumulated Context
 
@@ -58,6 +59,9 @@ v1.6 Progress: [■         ] 1/3 phases (phase 28 complete — 2 of 2 plans don
 - [Phase 28]: postgres is always compiled into platform-server binary (default feature); verify-only mode is not a compile-time decision
 - [Phase 28]: platform-server test guards in verify_integration and platform_integration needed fixing when postgres feature became active workspace-wide
 - [Phase 28-02]: debian:bookworm-slim chosen over alpine for Dockerfile runtime stage — glibc compatibility with sqlx native-tls; postgres:16-alpine for compose service
+- [Phase 29]: vitePreprocess() required in svelte.config.js for TypeScript in Svelte 4 script blocks
+- [Phase 29]: import.meta.env.VITE_* used for env vars in SvelteKit dashboard — $env/dynamic/public only allows PUBLIC_-prefixed vars
+- [Phase 29]: Separate import type statements required in Svelte 4 — inline type modifier not supported by acorn parser
 
 ### Pending Todos
 
@@ -72,8 +76,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 28-02-PLAN.md
-Resume at: Phase 29 (dashboard move into web/dashboard/)
+Stopped at: Completed 29-01-PLAN.md
+Resume at: Phase 29 Plan 02 (type generation from trustedge-types schemars schemas)
 
 ---
-*Last updated: 2026-02-22 after 28-02 deployment artifacts complete*
+*Last updated: 2026-02-22 after 29-01 dashboard move complete*

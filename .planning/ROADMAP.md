@@ -146,7 +146,7 @@ Plans:
 | 26. Crypto Deduplication | v1.5 | 2/2 | Complete | 2026-02-22 |
 | 27. Ghost Repo Cleanup | v1.5 | 1/1 | Complete | 2026-02-22 |
 | 28. Platform Server Binary | v1.6 | 2/2 | Complete | 2026-02-22 |
-| 29. Dashboard Consolidation | v1.6 | 0/2 | Not started | - |
+| 29. Dashboard Consolidation | 1/2 | In Progress|  | - |
 | 30. Repo Cleanup | v1.6 | 0/? | Not started | - |
 
 ---
