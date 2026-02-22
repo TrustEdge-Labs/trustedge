@@ -100,23 +100,14 @@ else
     fail "cargo fmt — run: cargo fmt --all"
 fi
 
-# ── Step 4: Clippy (tiered) ────────────────────────────────────────
-step "Step 4: Clippy (tiered - core blocking, experimental non-blocking)"
+# ── Step 4: Clippy (workspace) ─────────────────────────────────────
+step "Step 4: Clippy (workspace)"
 
-# Core crates (blocking)
-if cargo clippy \
-    -p trustedge-types \
-    -p trustedge-core \
-    -p trustedge-platform \
-    -p trustedge-cli \
-    -p trustedge-trst-protocols \
-    -p trustedge-trst-cli \
-    -p trustedge-trst-wasm \
-    -p trustedge-cam-video-examples \
-    --all-targets --no-default-features -- -D warnings; then
-    pass "clippy core crates"
+# All workspace crates
+if cargo clippy --workspace --all-targets --no-default-features -- -D warnings; then
+    pass "clippy workspace"
 else
-    fail "clippy core crates"
+    fail "clippy workspace"
 fi
 
 # trustedge-platform feature combinations (blocking)
@@ -125,19 +116,6 @@ if cargo clippy -p trustedge-platform --features "http" -- -D warnings && \
     pass "clippy trustedge-platform features"
 else
     fail "clippy trustedge-platform features"
-fi
-
-# Experimental crates (non-blocking)
-if cargo clippy \
-    -p trustedge-wasm \
-    -p trustedge-pubky \
-    -p trustedge-pubky-advanced \
-    -p trustedge-receipts \
-    -p trustedge-attestation \
-    --all-targets --no-default-features -- -D warnings 2>/dev/null; then
-    pass "clippy experimental crates"
-else
-    warn "clippy experimental crates failed (non-blocking)"
 fi
 
 # ── Step 5: Clippy (audio) ──────────────────────────────────────────
@@ -200,47 +178,26 @@ else
     skip "cargo-hack not installed"
 fi
 
-# ── Step 11: Build + test (tiered) ──────────────────────────────────
-step "Step 11: Build and test (tiered - core blocking, experimental non-blocking)"
+# ── Step 11: Build + test (workspace) ───────────────────────────────
+step "Step 11: Build and test (workspace)"
 
-# Build remains workspace-wide
+# Build all workspace crates
 cargo build --workspace --bins --no-default-features
 
-# Core crate tests (blocking)
-if cargo test \
-    -p trustedge-types \
-    -p trustedge-core \
-    -p trustedge-cli \
-    -p trustedge-trst-protocols \
-    -p trustedge-trst-cli \
-    -p trustedge-trst-wasm \
-    -p trustedge-cam-video-examples \
-    --no-default-features --locked; then
-    pass "core crate tests"
+# Workspace tests (all crates)
+if cargo test --workspace --no-default-features --locked; then
+    pass "workspace tests"
 else
-    fail "core crate tests"
+    fail "workspace tests"
 fi
 
-# trustedge-platform tests (blocking — Tier 1 stable crate)
+# trustedge-platform tests (feature combinations)
 if cargo test -p trustedge-platform --lib --locked && \
    cargo test -p trustedge-platform --test verify_integration --locked && \
    cargo test -p trustedge-platform --test verify_integration --features http --locked; then
     pass "trustedge-platform tests"
 else
     fail "trustedge-platform tests"
-fi
-
-# Experimental crate tests (non-blocking)
-if cargo test \
-    -p trustedge-wasm \
-    -p trustedge-pubky \
-    -p trustedge-pubky-advanced \
-    -p trustedge-receipts \
-    -p trustedge-attestation \
-    --no-default-features --locked 2>/dev/null; then
-    pass "experimental crate tests"
-else
-    warn "experimental crate tests failed (non-blocking)"
 fi
 
 # ── Step 12: Audio tests ────────────────────────────────────────────

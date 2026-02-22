@@ -80,27 +80,8 @@ jobs:
       - name: Install YubiKey dependencies
         run: sudo apt-get install -y libpcsclite-dev pkgconf
 
-      - name: clippy (core crates)
-        run: |
-          cargo clippy \
-            -p trustedge-core \
-            -p trustedge-cli \
-            -p trustedge-trst-protocols \
-            -p trustedge-trst-cli \
-            -p trustedge-trst-wasm \
-            -p trustedge-cam-video-examples \
-            --all-targets --no-default-features -- -D warnings
-
-      - name: clippy (experimental crates - non-blocking)
-        continue-on-error: true
-        run: |
-          cargo clippy \
-            -p trustedge-wasm \
-            -p trustedge-pubky \
-            -p trustedge-pubky-advanced \
-            -p trustedge-receipts \
-            -p trustedge-attestation \
-            --all-targets --no-default-features -- -D warnings
+      - name: clippy (workspace)
+        run: cargo clippy --workspace --all-targets --no-default-features -- -D warnings
 
       - name: clippy (trustedge-core with audio)
         if: steps.audio-deps.outputs.audio-available == 'true'
@@ -124,27 +105,8 @@ jobs:
       - name: build binaries (required for integration tests)
         run: cargo build --workspace --bins --no-default-features
 
-      - name: tests (core crates)
-        run: |
-          cargo test \
-            -p trustedge-core \
-            -p trustedge-cli \
-            -p trustedge-trst-protocols \
-            -p trustedge-trst-cli \
-            -p trustedge-trst-wasm \
-            -p trustedge-cam-video-examples \
-            --no-default-features --locked --verbose
-
-      - name: tests (experimental crates - non-blocking)
-        continue-on-error: true
-        run: |
-          cargo test \
-            -p trustedge-wasm \
-            -p trustedge-pubky \
-            -p trustedge-pubky-advanced \
-            -p trustedge-receipts \
-            -p trustedge-attestation \
-            --no-default-features --locked --verbose
+      - name: tests (workspace)
+        run: cargo test --workspace --no-default-features --locked --verbose
 
       - name: build binaries with audio (required for integration tests)
         if: steps.audio-deps.outputs.audio-available == 'true'
@@ -184,9 +146,9 @@ jobs:
           # Count unique crates in dependency tree
           dep_count=$(cargo tree --workspace --depth 1 --prefix none --no-dedupe 2>/dev/null | sort -u | wc -l)
           echo "Dependency tree size: $dep_count unique crates"
-          # Baseline: established 2026-02-12 during v1.2 Phase 14
+          # Baseline: updated 2026-02-22 during v1.7 Phase 32 (post-facade removal, post-pubky isolation)
           # If count exceeds baseline + 10, warn (not block)
-          baseline=60
+          baseline=70
           threshold=$((baseline + 10))
           if [ "$dep_count" -gt "$threshold" ]; then
             echo "::warning::Dependency tree grew beyond threshold ($dep_count > $threshold). Review new dependencies."
