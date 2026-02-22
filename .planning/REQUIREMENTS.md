@@ -17,7 +17,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 - [x] **SVC-01**: platform-api and verify-core merged into a single `trustedge-platform` service crate in the main trustedge workspace
 - [x] **SVC-02**: trustedge-ca (Certificate Authority) from platform-api preserved as a workspace crate or module
-- [ ] **SVC-03**: Combined REST API surface serves all existing endpoints (devices, receipts, verification, JWKS)
+- [x] **SVC-03**: Combined REST API surface serves all existing endpoints (devices, receipts, verification, JWKS)
 - [ ] **SVC-04**: All existing integration tests from both services pass in the consolidated crate
 
 ### Type Centralization
@@ -62,7 +62,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | TYPE-03 | Phase 24 | Complete |
 | SVC-01 | Phase 25 | Complete |
 | SVC-02 | Phase 25 | Complete |
-| SVC-03 | Phase 25 | Pending |
+| SVC-03 | Phase 25 | Complete |
 | SVC-04 | Phase 25 | Pending |
 | CRYPTO-01 | Phase 26 | Pending |
 | CRYPTO-02 | Phase 26 | Pending |

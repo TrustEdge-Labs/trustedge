@@ -18,11 +18,11 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 25 of 27 in v1.5 (Service Consolidation)
-Plan: 1 of 3 complete in current phase
+Plan: 2 of 3 complete in current phase
 Status: Phase 25 in progress
-Last activity: 2026-02-21 — 25-01 complete (trustedge-platform crate created with verify + CA modules)
+Last activity: 2026-02-21 — 25-02 complete (HTTP layer + database module, inline verification, no HTTP forwarding)
 
-Progress: [███░░░░░░░] ~25% (v1.5 milestone)
+Progress: [████░░░░░░] ~35% (v1.5 milestone)
 
 ## Performance Metrics
 
@@ -39,7 +39,7 @@ Progress: [███░░░░░░░] ~25% (v1.5 milestone)
 | Phase | Plans | Tasks | Duration |
 |-------|-------|-------|----------|
 | 24. Type Centralization | 2 complete | 4 | 16 min |
-| 25. Service Consolidation | 1 of 3 complete | 2 | 10 min |
+| 25. Service Consolidation | 2 of 3 complete | 4 | 15 min |
 | 26. Crypto Deduplication | TBD | - | - |
 | 27. Ghost Repo Cleanup | TBD | - | - |
 
@@ -56,6 +56,10 @@ Progress: [███░░░░░░░] ~25% (v1.5 milestone)
 - [Phase 25-01]: CA module is private (mod ca not pub mod ca) — Plan 02 exposes via HTTP layer
 - [Phase 25-01]: Phase 26 labels replace all TODO markers in copied CA code; zero TODO markers remain
 - [Phase 25-01]: BackendError (not anyhow::Error) in CAError::Backend — matches trustedge-core API
+- [Phase 25-02]: sha2 and dotenvy available under both http and postgres features — both need them independently
+- [Phase 25-02]: verify_core_url removed from AppState and Config — verification is inline via verify_to_report()
+- [Phase 25-02]: Dual manifest digest: blake3 for receipt JWS construction, sha2 for DB storage (platform-api schema compat)
+- [Phase 25-02]: postgres feature does NOT depend on http feature — they remain independent
 
 ### Pending Todos
 
@@ -71,8 +75,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 25-01-PLAN.md (trustedge-platform crate skeleton)
-Resume file: .planning/phases/25-service-consolidation/25-02-PLAN.md
+Stopped at: Completed 25-02-PLAN.md (HTTP layer + database module)
+Resume file: .planning/phases/25-service-consolidation/25-03-PLAN.md
 
 ---
-*Last updated: 2026-02-21 after 25-01 completion*
+*Last updated: 2026-02-21 after 25-02 completion*
