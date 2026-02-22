@@ -3,13 +3,13 @@
 	import { page } from '$app/stores';
 	import { api } from '$lib/api';
 	import type { ApiError } from '$lib/api';
-	import type { Receipt } from '$lib/types';
+	import type { DashboardReceipt } from '$lib/types-local';
 	import StatusPill from '$lib/components/StatusPill.svelte';
 	import KeyValue from '$lib/components/KeyValue.svelte';
 	import JsonViewer from '$lib/components/JsonViewer.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 
-	let receipt: Receipt | null = null;
+	let receipt: DashboardReceipt | null = null;
 	let loading = true;
 	let error: string | null = null;
 	let receiptId: string;

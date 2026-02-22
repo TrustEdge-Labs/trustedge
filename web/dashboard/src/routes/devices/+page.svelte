@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
 	import type { ApiError } from '$lib/api';
-	import type { Device, DevicesResponse, CreateDeviceRequest } from '$lib/types';
+	import type { Device, DevicesResponse, CreateDeviceRequest } from '$lib/types-local';
 	import KeyValue from '$lib/components/KeyValue.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 

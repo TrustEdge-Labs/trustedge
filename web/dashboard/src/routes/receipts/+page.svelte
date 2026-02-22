@@ -2,12 +2,12 @@
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
 	import type { ApiError } from '$lib/api';
-	import type { Receipt, ReceiptsResponse } from '$lib/types';
+	import type { DashboardReceipt, ReceiptsResponse } from '$lib/types-local';
 	import { config } from '$lib/config';
 	import StatusPill from '$lib/components/StatusPill.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 
-	let receipts: Receipt[] = [];
+	let receipts: DashboardReceipt[] = [];
 	let loading = true;
 	let error: string | null = null;
 	let total = 0;
