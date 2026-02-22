@@ -88,7 +88,7 @@ Brought all satellite code into the monorepo and finalized the GitHub org struct
 
 **Milestone Goal:** Address reviewer-identified security gaps, remove deprecated facade crates, harden platform quality, and add integration test coverage for the platform server.
 
-- [ ] **Phase 31: Secret Hardening** - Zeroize sensitive fields and eliminate secret leakage via Debug and serialization
+- [x] **Phase 31: Secret Hardening** - Zeroize sensitive fields and eliminate secret leakage via Debug and serialization (completed 2026-02-22)
 - [ ] **Phase 32: Workspace Cleanup** - Delete deprecated facade crates and separate Tier 2 crates from shared dependency graph
 - [ ] **Phase 33: Platform Quality** - Deduplicate verify handler logic, harden CORS, and resolve CA route ambiguity
 - [ ] **Phase 34: Platform Testing** - Add integration tests for platform-server wiring and full HTTP verify round-trip
@@ -104,7 +104,7 @@ Brought all satellite code into the monorepo and finalized the GitHub org struct
   2. `{:?}` formatting on any config or auth struct containing secrets outputs redacted placeholders, never plaintext values
   3. `serde::Serialize` and `serde::Deserialize` are absent from `YubiKeyConfig`, `SoftwareHsmConfig`, and `LoginRequest` — the compiler rejects any attempt to serialize them
   4. `LoginRequest.password` cannot be printed or serialized by accident — verified by inspecting derived trait list and Debug output in tests
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 31-01-PLAN.md — Create Secret<T> wrapper type with zeroize, redacted Debug, expose_secret()
@@ -146,7 +146,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 31. Secret Hardening | v1.7 | 2/3 | In Progress | - |
+| 31. Secret Hardening | 3/3 | Complete   | 2026-02-22 | - |
 | 32. Workspace Cleanup | v1.7 | 0/? | Not started | - |
 | 33. Platform Quality | v1.7 | 0/? | Not started | - |
 | 34. Platform Testing | v1.7 | 0/? | Not started | - |

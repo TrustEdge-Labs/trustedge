@@ -18,9 +18,9 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 31 of 34 (Secret Hardening) — COMPLETE
-Plan: 2 of 2 in phase 31
-Status: Phase 31 complete
-Last activity: 2026-02-22 — executed 31-02 (Config secret hardening: YubiKeyConfig + SoftwareHsmConfig)
+Plan: 3 of 3 in phase 31
+Status: Phase 31 complete (all SEC-* requirements done)
+Last activity: 2026-02-22 — executed 31-03 (Platform secret hardening: LoginRequest, CAConfig, AuthService)
 
 Progress: [██░░░░░░░░] 20%
 
@@ -34,8 +34,8 @@ Progress: [██░░░░░░░░] 20%
 - v1.4: 5 phases, 5 plans, 10 tasks
 - v1.5: 4 phases, 8 plans, 16 tasks
 - v1.6: 3 phases, 6 plans, 11 tasks
-- **v1.7 so far: 1 phase, 2 plans, 4 tasks**
-- **Total: 31 phases, 53 plans, 96 tasks**
+- **v1.7 so far: 1 phase, 3 plans, 6 tasks**
+- **Total: 31 phases, 54 plans, 98 tasks**
 
 ## Accumulated Context
 
@@ -47,6 +47,9 @@ Progress: [██░░░░░░░░] 20%
 - **31-02:** Builder pattern chosen over public struct fields — prevents accidental bypass of Secret<T> wrapping
 - **31-02:** pin() and default_passphrase() getters return &str via expose_secret() — minimal exposure surface
 - **31-02:** Stale pkcs11_module_path/slot fields in platform CA service removed (auto-fix Rule 1)
+- **31-03:** LoginRequest uses custom Deserialize via private LoginRequestRaw — password wrapped in Secret at JSON parsing boundary
+- **31-03:** CAConfig builder added alongside Default impl — guides callers to use builder, preventing direct struct literal construction
+- **31-03:** CI Step 23 uses grep -B2 on struct declarations — catches Serialize derive and missing [REDACTED] on all 4 secret-holding structs
 
 ### Pending Todos
 
@@ -60,8 +63,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 31-02-PLAN.md (Config secret hardening)
+Stopped at: Completed 31-03-PLAN.md (Platform secret hardening: LoginRequest, CAConfig, AuthService + CI enforcement)
 Resume at: /gsd:execute-phase 32
 
 ---
-*Last updated: 2026-02-22 after executing 31-02*
+*Last updated: 2026-02-22 after executing 31-03*
