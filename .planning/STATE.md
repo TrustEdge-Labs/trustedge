@@ -13,16 +13,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** v1.7 Security & Quality Hardening — Phase 33 in progress
+**Current focus:** v1.7 Security & Quality Hardening — Phase 34 in progress
 
 ## Current Position
 
-Phase: 33 of 34 (Platform Quality) — IN PROGRESS
-Plan: 2 of ? in phase 33
-Status: Plan 33-02 complete (hardened CORS for both build variants, refactored CA module as library-only with no Axum coupling)
-Last activity: 2026-02-22 — executed 33-02 (CORS hardening and CA module decoupling)
+Phase: 34 of 34 (Platform Testing) — IN PROGRESS
+Plan: 1 of ? in phase 34
+Status: Plan 34-01 complete (5-test wiring suite for platform-server: Config env loading, AppState construction, router health + verify rejection)
+Last activity: 2026-02-23 — executed 34-01 (platform-server wiring integration tests)
 
-Progress: [████░░░░░░] 42%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -34,13 +34,17 @@ Progress: [████░░░░░░] 42%
 - v1.4: 5 phases, 5 plans, 10 tasks
 - v1.5: 4 phases, 8 plans, 16 tasks
 - v1.6: 3 phases, 6 plans, 11 tasks
-- **v1.7 so far: 4 phases, 9 plans, 15 tasks**
-- **Total: 34 phases, 60 plans, 107 tasks**
+- **v1.7 so far: 5 phases, 10 plans, 16 tasks**
+- **Total: 35 phases, 61 plans, 108 tasks**
 
 ## Accumulated Context
 
 ### Decisions
 
+- **34-01:** Axum returns 422 Unprocessable Entity (not 400) for JSON extraction failures — test asserts UNPROCESSABLE_ENTITY
+- **34-01:** OnceLock<Mutex<()>> pattern serializes env-var tests to prevent parallel-thread races on PORT variable
+- **34-01:** serde_json added as explicit dev-dep in platform-server — integration test binaries don't inherit transitive deps
+- **34-01:** Tests run with --no-default-features to exercise verify-only code paths (no db_pool in AppState)
 - **33-02:** CorsLayer::new() used for verify-only build — tower-http default denies all cross-origin, no explicit deny config needed
 - **33-02:** CA api.rs validate functions return CAError instead of String — cleaner for library callers, consistent with module error type
 - **33-02:** Removed #[cfg(feature = "http")] gate on pub mod api — api.rs no longer imports axum, compiles with just ca feature
@@ -75,9 +79,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Completed 33-02-PLAN.md (CORS hardening and CA module decoupling — deny-all CORS for verify-only, explicit headers for postgres, CA api.rs as plain service functions)
-Resume at: Continue phase 33
+Last session: 2026-02-23
+Stopped at: Completed 34-01-PLAN.md (platform-server wiring integration tests — 5 tests covering Config env loading, AppState construction, router health, and verify endpoint rejection)
+Resume at: Continue phase 34
 
 ---
-*Last updated: 2026-02-22 after executing 33-02*
+*Last updated: 2026-02-23 after executing 34-01*

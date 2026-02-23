@@ -149,7 +149,7 @@ Plans:
   1. `cargo test -p trustedge-platform-server` runs integration tests that construct `AppState`, confirm required environment variables are wired, and assert the router starts without panicking
   2. `create_test_app()` applies the same CORS policy, tracing middleware, and auth middleware as `create_router()` — a test that passes through `create_test_app` exercises identical middleware to production
   3. A test submits a correctly signed payload to the verify endpoint over HTTP and receives a receipt response with HTTP 200 — the full sign-then-verify pipeline is exercised in a single test
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 34-01-PLAN.md -- Platform-server wiring tests (Config, AppState, router health)
@@ -162,7 +162,7 @@ Plans:
 | 31. Secret Hardening | 3/3 | Complete    | 2026-02-22 | - |
 | 32. Workspace Cleanup | 3/3 | Complete    | 2026-02-22 | - |
 | 33. Platform Quality | 2/2 | Complete    | 2026-02-22 | - |
-| 34. Platform Testing | v1.7 | 0/2 | Not started | - |
+| 34. Platform Testing | 1/2 | In Progress|  | - |
 
 ---
 *Last updated: 2026-02-22 after executing 32-01*
