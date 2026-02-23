@@ -31,6 +31,12 @@ tokio = { workspace = true }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
+[dev-dependencies]
+tower = { workspace = true, features = ["util"] }
+axum = { workspace = true }
+tokio = { workspace = true }
+serde_json = { workspace = true }
+
 [features]
 default = ["postgres"]
 postgres = ["trustedge-platform/postgres"]
