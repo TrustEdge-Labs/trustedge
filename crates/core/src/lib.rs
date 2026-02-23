@@ -123,8 +123,8 @@ pub use audio::AudioCapture;
 pub use audio::{AudioChunk, AudioConfig};
 pub use auth::{
     client_authenticate, server_authenticate, AuthChallenge, AuthMessage, AuthMessageType,
-    ClientAuthResponse, ServerAuthConfirm, ServerCertificate, SessionInfo, SessionManager,
-    SESSION_ID_SIZE, SESSION_TIMEOUT,
+    ClientAuthResponse, ClientAuthResult, ServerAuthConfirm, ServerCertificate, SessionInfo,
+    SessionManager, SESSION_ID_SIZE, SESSION_TIMEOUT,
 };
 pub use backends::{
     AsymmetricAlgorithm,

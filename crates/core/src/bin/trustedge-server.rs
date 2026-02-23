@@ -106,6 +106,8 @@ struct ProcessingSession {
     authenticated: bool,
     session_id: Option<[u8; 16]>,
     client_identity: Option<String>,
+    /// ECDH-derived session encryption key (available when authenticated)
+    session_key: Option<[u8; 32]>,
 
     // connection limits and tracking
     bytes_received: u64,
@@ -215,6 +217,7 @@ async fn main() -> Result<()> {
                             authenticated: !args.require_auth, // authenticated if auth not required
                             session_id: None,
                             client_identity: None,
+                            session_key: None,
                             bytes_received: 0,
                             chunks_received: 0,
                             last_activity: now,
@@ -350,6 +353,7 @@ async fn handle_hardened_connection(
                     session.authenticated = true;
                     session.session_id = Some(auth_session.session_id);
                     session.client_identity = auth_session.client_identity.clone();
+                    session.session_key = Some(auth_session.session_key);
 
                     // Recreate framed transport
                     let codec = LengthDelimitedCodec::builder()

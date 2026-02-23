@@ -219,8 +219,8 @@ async fn main() -> Result<()> {
     })?;
     println!("Connected successfully!");
 
-    // Perform authentication if enabled
-    if args.enable_auth {
+    // Perform authentication if enabled, capturing session key
+    let auth_session_key = if args.enable_auth {
         // Load or create client certificate
         let client_cert = if let Some(cert_path) = &args.client_cert {
             load_client_cert(cert_path).context("Failed to load client certificate")?
@@ -245,30 +245,33 @@ async fn main() -> Result<()> {
         };
 
         // Perform client authentication
-        match client_authenticate(
+        let auth_result = client_authenticate(
             &mut stream,
             client_cert.signing_key()?,
             Some(client_cert.identity.clone()),
             None,
         )
         .await
-        {
-            Ok((session_id, _server_cert)) => {
-                if args.verbose {
-                    println!(
-                        "[AUTH] Authenticated successfully with server. Session ID: {}",
-                        hex::encode(session_id)
-                    );
-                }
-            }
-            Err(e) => {
-                return Err(anyhow::anyhow!("Authentication failed: {}", e));
-            }
-        }
-    }
+        .context("Authentication failed")?;
 
-    // Determine AES key
-    let key_bytes = if args.use_keyring {
+        if args.verbose {
+            println!(
+                "[AUTH] Authenticated successfully with server. Session ID: {}",
+                hex::encode(auth_result.session_id)
+            );
+        }
+        Some(auth_result.session_key)
+    } else {
+        None
+    };
+
+    // Determine AES key: prefer auth-derived key, then --key-hex, then keyring, then random
+    let key_bytes = if let Some(session_key) = auth_session_key {
+        if args.verbose {
+            println!("[KEY] Using ECDH-derived session key from authentication");
+        }
+        session_key
+    } else if args.use_keyring {
         #[cfg(feature = "keyring")]
         {
             let salt_hex = args

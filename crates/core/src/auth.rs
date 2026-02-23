@@ -16,6 +16,7 @@ use std::collections::HashMap;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+use zeroize::Zeroize;
 
 /// Session timeout duration (30 minutes)
 pub const SESSION_TIMEOUT: Duration = Duration::from_secs(1800);
@@ -252,6 +253,65 @@ impl AuthMessage {
     }
 }
 
+/// Derive a session encryption key via X25519 ECDH.
+///
+/// Both sides independently call this with their own private key and the other
+/// party's public key. DH commutativity guarantees the same output:
+///   client_secret * server_pub == server_secret * client_pub
+///
+/// The challenge bytes and both public keys are mixed into the KDF for:
+/// - Freshness: challenge is random per handshake (replay protection)
+/// - Channel binding: public keys prevent unknown-key-share attacks
+fn derive_session_key(
+    my_signing_key: &SigningKey,
+    their_public_key: &VerifyingKey,
+    challenge: &[u8; CHALLENGE_SIZE],
+) -> Result<[u8; 32]> {
+    // Convert Ed25519 keys to X25519 (same pattern as envelope.rs)
+    let x25519_secret = x25519_dalek::StaticSecret::from(my_signing_key.to_scalar_bytes());
+    let x25519_public = x25519_dalek::PublicKey::from(their_public_key.to_montgomery().to_bytes());
+
+    // X25519 Diffie-Hellman
+    let shared_secret = x25519_secret.diffie_hellman(&x25519_public);
+
+    // Reject low-order points
+    if shared_secret.as_bytes().iter().all(|&b| b == 0) {
+        return Err(anyhow!("ECDH produced zero shared secret"));
+    }
+
+    // KDF input: ECDH shared secret + challenge + both public keys (sorted order)
+    let my_pub = my_signing_key.verifying_key().to_bytes();
+    let their_pub = their_public_key.to_bytes();
+
+    let mut key_material = Vec::with_capacity(32 + CHALLENGE_SIZE + 64);
+    key_material.extend_from_slice(shared_secret.as_bytes());
+    key_material.extend_from_slice(challenge);
+    // Deterministic ordering: lower pubkey first (both sides compute the same order)
+    if my_pub < their_pub {
+        key_material.extend_from_slice(&my_pub);
+        key_material.extend_from_slice(&their_pub);
+    } else {
+        key_material.extend_from_slice(&their_pub);
+        key_material.extend_from_slice(&my_pub);
+    }
+
+    // blake3::derive_key provides domain-separated KDF (BLAKE3 spec Section 4.4)
+    let session_key = blake3::derive_key("TRUSTEDGE_SESSION_KEY_V1", &key_material);
+    key_material.zeroize();
+
+    Ok(session_key)
+}
+
+/// Result of a successful client authentication handshake
+pub struct ClientAuthResult {
+    /// Session ID assigned by the server
+    pub session_id: [u8; SESSION_ID_SIZE],
+    /// Server's certificate (for identity verification)
+    pub server_certificate: ServerCertificate,
+    /// Shared session encryption key derived from ECDH
+    pub session_key: [u8; 32],
+}
+
 /// Active session information
 #[derive(Debug, Clone)]
 pub struct SessionInfo {
@@ -267,6 +327,8 @@ pub struct SessionInfo {
     pub expires_at: u64,
     /// Whether the session is authenticated
     pub authenticated: bool,
+    /// Shared session encryption key derived from ECDH (zeroized on drop)
+    pub session_key: [u8; 32],
 }
 
 impl SessionInfo {
@@ -369,6 +431,13 @@ impl SessionManager {
             .verify(&challenge.challenge, &signature)
             .map_err(|e| anyhow!("Client challenge signature verification failed: {}", e))?;
 
+        // Derive session encryption key via X25519 ECDH
+        let session_key = derive_session_key(
+            &self.server_signing_key,
+            &client_verifying_key,
+            &challenge.challenge,
+        )?;
+
         // Generate session ID
         let mut session_id = [0u8; SESSION_ID_SIZE];
         OsRng.fill_bytes(&mut session_id);
@@ -382,6 +451,7 @@ impl SessionManager {
             created_at: now,
             expires_at,
             authenticated: true,
+            session_key,
         };
 
         // Store session
@@ -549,7 +619,7 @@ pub async fn client_authenticate(
     client_signing_key: &SigningKey,
     client_identity: Option<String>,
     expected_server_identity: Option<&str>,
-) -> Result<([u8; SESSION_ID_SIZE], ServerCertificate)> {
+) -> Result<ClientAuthResult> {
     // Send client hello
     let hello_msg = AuthMessage::new(AuthMessageType::ClientHello, &"TrustEdge Client v1.0")?;
     let hello_bytes = bincode::serialize(&hello_msg)?;
@@ -659,7 +729,18 @@ pub async fn client_authenticate(
                 .verify(session_data.as_bytes(), &signature)
                 .context("Server session signature verification failed")?;
 
-            Ok((confirm.session_id, challenge.server_cert))
+            // Derive session encryption key via X25519 ECDH
+            let session_key = derive_session_key(
+                client_signing_key,
+                &server_verifying_key,
+                &challenge.challenge,
+            )?;
+
+            Ok(ClientAuthResult {
+                session_id: confirm.session_id,
+                server_certificate: challenge.server_cert,
+                session_key,
+            })
         }
         AuthMessageType::AuthError => {
             let error_msg: String = response_msg.deserialize_payload()?;

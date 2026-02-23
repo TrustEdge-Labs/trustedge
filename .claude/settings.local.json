@@ -23,7 +23,19 @@
       "Bash(cargo metadata:*)",
       "Bash(python3:*)",
       "Bash(done)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "Bash(tail:*)",
+      "Bash(find /home/john/vault/projects/github.com/trustedge-platform-api -type f \\\\\\( -name \"*.rs\" \\\\\\) ! -path \"*target*\" ! -path \"*.git*\" -exec wc -l {} +)",
+      "Bash(__NEW_LINE_a9edf1af25640c6a__ echo \"\")",
+      "Bash(find /home/john/vault/projects/github.com/trustedge-verify-core -type f \\\\\\( -name \"*.rs\" \\\\\\) ! -path \"*target*\" ! -path \"*.git*\" -exec wc -l {} +)",
+      "Bash(__NEW_LINE_48be724aa3889bc4__ echo \"\")",
+      "Bash(find /home/john/vault/projects/github.com/trustedge-shared-libs -type f \\\\\\( -name \"*.rs\" \\\\\\) ! -path \"*node_modules*\" ! -path \"*target*\" ! -path \"*.git*\" -exec wc -l {} +)",
+      "Bash(node:*)",
+      "Skill(gsd:audit-milestone)",
+      "Bash(echo === $repo ===:*)",
+      "Skill(gsd:progress)",
+      "Bash(git stash:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
