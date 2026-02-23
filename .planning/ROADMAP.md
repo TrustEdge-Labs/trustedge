@@ -18,6 +18,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.5 Platform Consolidation** - Phases 24-27 (shipped 2026-02-22)
 - ✅ **v1.6 Final Consolidation** - Phases 28-30 (shipped 2026-02-22)
 - ✅ **v1.7 Security & Quality Hardening** - Phases 31-34 (shipped 2026-02-23)
+- 🚧 **v1.8 KDF Architecture Fix** - Phases 35-37 (in progress)
 
 ## Phases
 
@@ -94,4 +95,63 @@ Hardened secret handling with in-house Secret<T> wrapper (zeroize, redacted Debu
 </details>
 
 ---
-*Last updated: 2026-02-23 after v1.7 milestone completion*
+
+### 🚧 v1.8 KDF Architecture Fix (In Progress)
+
+**Milestone Goal:** Fix incorrect KDF usage across the codebase — replace PBKDF2-per-chunk with HKDF hierarchical key derivation in envelope.rs, and harden keyring backend parameters.
+
+## Phases
+
+- [ ] **Phase 35: HKDF Infrastructure** - Add hkdf workspace dependency and establish correct HKDF input structure in envelope.rs, eliminating the ad-hoc CatKDF construction
+- [ ] **Phase 36: Envelope Format Migration** - Rewrite envelope encryption to HKDF-once with counter nonces and versioned format supporting both v1 (legacy) and v2 (HKDF) decryption paths
+- [ ] **Phase 37: Keyring Hardening** - Increase PBKDF2 parameters in both keyring backends to OWASP 2023 recommended levels
+
+## Phase Details
+
+### Phase 35: HKDF Infrastructure
+**Goal**: The hkdf crate is wired into the workspace and envelope.rs uses correctly structured HKDF inputs with domain separation — no ad-hoc key material concatenation
+**Depends on**: Nothing (first phase of this milestone)
+**Requirements**: ENV-04, ENV-05, ENV-06
+**Success Criteria** (what must be TRUE):
+  1. `hkdf` crate appears as a workspace dependency with a pinned version in the root Cargo.toml
+  2. The ad-hoc CatKDF construction (concatenating shared_secret + salt + sequence + metadata as IKM) is gone from envelope.rs
+  3. HKDF inputs use structured fields: ECDH shared secret as IKM, a TrustEdge-specific domain separation string as info
+  4. `cargo test -p trustedge-core --lib` passes with no regressions
+**Plans**: TBD
+
+### Phase 36: Envelope Format Migration
+**Goal**: Envelope encryption uses HKDF-once key derivation with deterministic counter nonces, and the format version field enables backward-compatible decryption of both old (PBKDF2-per-chunk) and new (HKDF-once) envelopes
+**Depends on**: Phase 35
+**Requirements**: ENV-01, ENV-02, ENV-03, VER-01, VER-02, TST-01, TST-02
+**Success Criteria** (what must be TRUE):
+  1. Encrypting a multi-chunk envelope derives DerivedKey exactly once via HKDF-Extract + Expand, not once per chunk
+  2. Per-chunk nonces are deterministic counters (NoncePrefix || chunk_index || last_flag), not randomly generated salts
+  3. Encrypted envelopes carry a version field; v2 envelopes are produced by default
+  4. Decrypting a v1 (legacy PBKDF2-per-chunk) envelope succeeds without modification to the stored data
+  5. All existing envelope tests pass; a new multi-chunk round-trip test covering the v2 format passes
+**Plans**: TBD
+
+### Phase 37: Keyring Hardening
+**Goal**: Both keyring backends use OWASP 2023-recommended PBKDF2 parameters — 600,000 iterations and 32-byte salts — so keyring-encrypted secrets resist modern brute-force attacks
+**Depends on**: Phase 35
+**Requirements**: KEY-01, KEY-02, KEY-03, KEY-04, TST-03
+**Success Criteria** (what must be TRUE):
+  1. `keyring.rs` PBKDF2 iteration count reads 600,000 (not 100,000) in source
+  2. `keyring.rs` salt length reads 32 bytes (not 16 bytes) in source
+  3. `universal_keyring.rs` PBKDF2 iteration count reads 600,000 in source
+  4. `universal_keyring.rs` salt length reads 32 bytes in source
+  5. Keyring encryption/decryption tests pass with updated parameters; `cargo test -p trustedge-core --lib` passes
+**Plans**: TBD
+
+## Progress
+
+**Execution Order:** 35 → 36 → 37 (Phase 37 may run after Phase 36 or parallel once Phase 35 completes)
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 35. HKDF Infrastructure | 0/TBD | Not started | - |
+| 36. Envelope Format Migration | 0/TBD | Not started | - |
+| 37. Keyring Hardening | 0/TBD | Not started | - |
+
+---
+*Last updated: 2026-02-22 after v1.8 roadmap created*

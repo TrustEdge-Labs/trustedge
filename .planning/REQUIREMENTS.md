@@ -65,27 +65,27 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENV-01 | — | Pending |
-| ENV-02 | — | Pending |
-| ENV-03 | — | Pending |
-| ENV-04 | — | Pending |
-| ENV-05 | — | Pending |
-| ENV-06 | — | Pending |
-| VER-01 | — | Pending |
-| VER-02 | — | Pending |
-| KEY-01 | — | Pending |
-| KEY-02 | — | Pending |
-| KEY-03 | — | Pending |
-| KEY-04 | — | Pending |
-| TST-01 | — | Pending |
-| TST-02 | — | Pending |
-| TST-03 | — | Pending |
+| ENV-01 | Phase 36 | Pending |
+| ENV-02 | Phase 36 | Pending |
+| ENV-03 | Phase 36 | Pending |
+| ENV-04 | Phase 35 | Pending |
+| ENV-05 | Phase 35 | Pending |
+| ENV-06 | Phase 35 | Pending |
+| VER-01 | Phase 36 | Pending |
+| VER-02 | Phase 36 | Pending |
+| KEY-01 | Phase 37 | Pending |
+| KEY-02 | Phase 37 | Pending |
+| KEY-03 | Phase 37 | Pending |
+| KEY-04 | Phase 37 | Pending |
+| TST-01 | Phase 36 | Pending |
+| TST-02 | Phase 36 | Pending |
+| TST-03 | Phase 37 | Pending |
 
 **Coverage:**
 - v1.8 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15
+- Mapped to phases: 15
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after initial definition*
+*Last updated: 2026-02-22 after roadmap created — traceability complete*

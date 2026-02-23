@@ -13,14 +13,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** v1.8 KDF Architecture Fix — fixing KDF usage across envelope.rs and keyring backends.
+**Current focus:** Phase 35 — HKDF Infrastructure
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-22 — Milestone v1.8 started
+Phase: 35 of 37 (HKDF Infrastructure)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-02-22 — v1.8 roadmap created, phases 35-37 defined
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -35,7 +35,17 @@ Progress: [░░░░░░░░░░] 0%
 - v1.5: 4 phases, 8 plans, 16 tasks
 - v1.6: 3 phases, 6 plans, 11 tasks
 - v1.7: 4 phases, 10 plans, 18 tasks
-- **Total: 34 phases, 61 plans, 110 tasks**
+- **Total prior: 34 phases, 61 plans, 110 tasks**
+
+**v1.8 (current):**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| 35. HKDF Infrastructure | TBD | - | - |
+| 36. Envelope Format Migration | TBD | - | - |
+| 37. Keyring Hardening | TBD | - | - |
+
+*Updated after each plan completion*
 
 ## Accumulated Context
 
@@ -45,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 - Keyring backends: Harden PBKDF2 iterations (100k → 600k) and salt length (16 → 32 bytes)
 - Experimental crates (pubky-advanced): Out of scope for this milestone
 - auth.rs BLAKE3::derive_key: Already correct, no changes needed
+- software_hsm.rs PBKDF2: Already hardened to 600k in prior commit, out of scope
 
 ### Pending Todos
 
@@ -58,8 +69,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Milestone v1.8 setup — defining requirements
-Resume at: Define REQUIREMENTS.md, then create ROADMAP.md
+Stopped at: Roadmap created — Phase 35 ready to plan
+Resume file: None
 
 ---
-*Last updated: 2026-02-22 after v1.8 milestone started*
+*Last updated: 2026-02-22 after v1.8 roadmap created*
