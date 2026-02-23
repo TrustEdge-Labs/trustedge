@@ -17,20 +17,21 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 This document describes the wire format and network protocol for chunk transfer between TrustEdge clients and servers. The protocol provides privacy-preserving, authenticated, and integrity-checked streaming of data with comprehensive validation and tamper detection.
 
 **Key Features:**
-- **TCP-based transport** with plans for QUIC/TLS
+- **TCP-based transport** with QUIC/TLS support (webpki-roots, secure-by-default)
 - **Length-prefixed message framing** for reliable parsing
 - **Comprehensive validation** with strict security invariants
 - **Real-time processing** with ACK/response flow
 - **Complete tamper detection** preventing replay and reordering attacks
+- **Automated key exchange** via X25519 ECDH during authentication handshake
 
 ---
 
 ## 1. Transport Layer
 
-- **Current:** TCP with comprehensive validation and error handling
+- **Primary:** TCP with comprehensive validation and error handling
+- **QUIC/TLS:** Implemented with webpki-roots for production TLS; `insecure-tls` feature flag for development
 - **Connection Management:** Configurable timeouts, automatic retry logic, and graceful shutdown
 - **Message Framing:** Length-prefixed (u32, little-endian) followed by bincode-encoded payload
-- **Future:** QUIC/TLS for enhanced security and performance
 - **Flow Control:** ACK/response protocol with error reporting
 
 ### 1.1. Connection Resilience
@@ -216,59 +217,43 @@ struct FileHeader {
 
 ## 4. Security Considerations
 
-- **Confidentiality:** AES-256-GCM per chunk
+- **Confidentiality:** AES-256-GCM per chunk, with session keys derived via X25519 ECDH when auth is active
 - **Integrity:** Ed25519 signatures on manifests, AES-GCM tags, and nonce prefix integrity
-- **Replay Protection:** Sequence numbers and timestamps
-- **Extensibility:** Protocol is versioned and designed for future upgrades (e.g., QUIC, mutual TLS, chunk reordering, error handling)
+- **Key Exchange:** Automated X25519 ECDH during auth handshake with BLAKE3 domain-separated KDF
+- **Replay Protection:** Sequence numbers, timestamps, and random challenge bytes mixed into session key KDF
+- **Memory Safety:** Key material protected with `Secret<T>` wrapper and zeroize-on-drop
+- **Extensibility:** Protocol is versioned and designed for future upgrades (chunk reordering, error handling)
 
 ### Key Selection & Backend Architecture
 
-**Current Implementation:**
-- The decryption key must be provided via `--key-hex` (64-char hex) or derived from the keyring using `--use-keyring` and `--salt-hex` (32 hex chars, 16 bytes).
-- In decrypt mode, one of these must be provided; random key is not allowed.
-- In encrypt mode, if neither is provided, a random key is generated and optionally saved with `--key-out`.
+**Key Selection Priority (client):**
 
-**Planned Modular Backend System (Phase 2):**
-The key management system will be refactored to support pluggable backends:
+When authentication is enabled (`--enable-auth`), the session encryption key is derived automatically via X25519 ECDH during the auth handshake — no manual key sharing required. The priority order:
 
-```rust
-trait KeyBackend {
-    fn derive_key(&self, key_id: &[u8; 16], context: &KeyContext) -> Result<[u8; 32]>;
-    fn store_key(&self, key_id: &[u8; 16], key_data: &[u8; 32]) -> Result<()>;
-    fn rotate_key(&self, old_id: &[u8; 16], new_id: &[u8; 16]) -> Result<()>;
-    fn list_keys(&self) -> Result<Vec<KeyMetadata>>;
-}
+1. **Auth-derived key** (ECDH session key from authentication handshake)
+2. **`--key-hex`** (64-char hex, manual key)
+3. **`--use-keyring`** + `--salt-hex` (keyring-derived via PBKDF2)
+4. **Random key** (generated and printed for encrypt-only mode)
 
-// Backend implementations:
-// - KeyringBackend (current PBKDF2 implementation)
-// - TpmBackend (TPM 2.0 integration)
-// - HsmBackend (Hardware Security Module)
-// - MatterBackend (Matter certificate-based keys)
-```
+**ECDH Session Key Derivation:**
 
-**Backend Selection CLI (Planned):**
-```bash
-# Use keyring backend (current default)
---backend keyring --salt-hex <salt>
+During the auth handshake, both client and server independently derive the same 256-bit session key:
 
-# Use TPM backend
---backend tpm --device-path /dev/tpm0 --key-handle <handle>
+1. Ed25519 keys are converted to X25519 (`SigningKey::to_scalar_bytes()` / `VerifyingKey::to_montgomery()`)
+2. Standard X25519 Diffie-Hellman produces a shared secret
+3. BLAKE3 `derive_key` with domain `"TRUSTEDGE_SESSION_KEY_V1"` mixes: shared secret + challenge bytes + both public keys (deterministically ordered)
+4. Low-order point rejection prevents invalid curve attacks
 
-# Use HSM backend  
---backend hsm --pkcs11-lib /usr/lib/libpkcs11.so --slot-id 0
+No additional wire messages are needed — the session key is a side-effect of the existing challenge-response handshake.
 
-# Use Matter certificate backend
---backend matter --fabric-id <id> --device-cert <path>
-```
+**Universal Backend System (Implemented):**
 
-**Migration Between Backends (Planned):**
-```bash
-# Migrate from keyring to TPM
-trustedge-core --migrate-backend \
-  --from keyring --salt-hex <salt> \
-  --to tpm --device-path /dev/tpm0 \
-  --key-id <key-id>
-```
+The key management system uses pluggable backends via the `UniversalBackend` trait:
+
+- **Software HSM** — In-memory cryptographic operations with key persistence
+- **Keyring Backend** — OS keyring integration with PBKDF2 key derivation (feature-gated: `keyring`)
+- **YubiKey Backend** — Hardware PIV operations with ECDSA P-256 and RSA-2048 (feature-gated: `yubikey`)
+- **TPM Backend** — Planned for future milestone
 
 **Mutual Exclusivity:** Backend selection flags are mutually exclusive. Only one backend may be specified per operation.
 
@@ -378,36 +363,20 @@ struct DeviceAttestationData {
 ```
 
 ### 6.3 Enhanced Key Management Protocol
-**Status:** Planned for Phase 2
+**Status:** Partially implemented
 
-- **Multi-backend key derivation** (keyring, TPM, HSM)
-- **Key rotation protocol** with backward compatibility
-- **Hardware security module integration** for enterprise deployments
-- **Distributed key management** for multi-device scenarios
-
-**Key Rotation Message Flow:**
-```
-Client → Server: KeyRotationRequest {
-    old_key_id: [u8; 16],
-    new_key_id: [u8; 16], 
-    rotation_signature: Vec<u8>,
-    effective_timestamp: u64
-}
-
-Server → Client: KeyRotationResponse {
-    status: RotationStatus,
-    confirmed_key_id: [u8; 16],
-    migration_required: bool
-}
-```
+- ✅ **Multi-backend key derivation** — Universal Backend system with Software HSM, Keyring, YubiKey
+- ✅ **X25519 ECDH session keys** — Automatic key exchange during auth handshake
+- **Key rotation protocol** with backward compatibility (planned)
+- **Distributed key management** for multi-device scenarios (planned)
 
 ### 6.4 Advanced Transport Features
-**Status:** Planned for Phase 4
+**Status:** Partially implemented
 
-- **QUIC transport layer** for improved performance and security
-- **Mutual TLS authentication** for production deployments
-- **Connection pooling** and multiplexing for high-throughput scenarios
-- **Chunk retransmission** and error recovery protocols
+- ✅ **QUIC transport layer** — Implemented with webpki-roots TLS; `insecure-tls` feature flag
+- ✅ **Mutual authentication** — Ed25519 challenge-response with X25519 ECDH key exchange
+- **Connection pooling** and multiplexing for high-throughput scenarios (planned)
+- **Chunk retransmission** and error recovery protocols (planned)
 
 ### 6.5 Audit and Compliance Extensions
 **Status:** Planned for Phase 5

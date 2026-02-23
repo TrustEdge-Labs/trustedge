@@ -14,10 +14,10 @@ TrustEdge is currently in active development. Security updates are provided for:
 
 | Version | Status | Support Level |
 | ------- | ------ | ------------- |
-| v1.0.x | ✅ Current | Active security fixes |
+| v1.7.x | ✅ Current | Active security fixes |
 | main branch | 🔄 Development | Active security fixes |
-| v0.3.x | ⏳ Legacy | Best effort |
-| < v0.3 | ❌ Unsupported | No security support |
+| v1.0–v1.6 | ⏳ Legacy | Best effort |
+| < v1.0 | ❌ Unsupported | No security support |
 
 **Note**: As of v1.0, TrustEdge follows semantic versioning. Security fixes will be backported to the latest release.
 
@@ -41,11 +41,13 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 2. **Memory Safety**: Relies on Rust's memory safety guarantees
 3. **External Audit**: No third-party security audit completed yet
 
-### Current Security Status (v1.0)
+### Current Security Status (v1.7)
 
 **✅ Implemented Security Features:**
 - AES-256-GCM authenticated encryption
 - Ed25519 digital signatures for provenance with domain separation
+- **X25519 ECDH Session Key Exchange**: Automated key derivation during auth handshake with BLAKE3 domain-separated KDF
+- **Secret<T> Wrapper Type**: Zeroize-on-drop protection with redacted Debug for all sensitive fields (PINs, passphrases, JWT secrets, passwords)
 - PBKDF2 key derivation with keyring integration
 - Connection timeouts and retry logic
 - Graceful shutdown handling
@@ -53,9 +55,10 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 - **DoS Protection**: Resource bounds and limits enforcement
 - **Bounds Checking**: Comprehensive validation of chunk sizes and stream limits
 - **Length Integrity**: Cryptographic binding of chunk lengths via AAD
-- **Mutual Authentication**: Ed25519-based client-server authentication with session management
-- **YubiKey Hardware Integration**: PKCS#11 hardware-backed signing and attestation
-- **Digital Receipt System**: Cryptographic ownership chains with attack resistance (23 security tests)
+- **Mutual Authentication**: Ed25519-based client-server authentication with X25519 ECDH key exchange
+- **CORS Hardening**: Restrictive CORS policies for verify-only and postgres platform builds
+- **YubiKey Hardware Integration**: Hardware-backed signing and attestation via `yubikey` crate
+- **Digital Receipt System**: Cryptographic ownership chains with attack resistance
 - **Software Attestation**: Tamper-evident build provenance with Ed25519 signatures
 
 **📋 Planned Security Features:**
@@ -210,8 +213,8 @@ TrustEdge aims to align with:
 
 ---
 
-**Document Version**: 2.0
-**Last Updated**: February 11, 2026
+**Document Version**: 3.0
+**Last Updated**: February 22, 2026
 **Next Review**: May 2026
 
 ---

@@ -24,20 +24,23 @@ Complete guide to TrustEdge's mutual authentication system for secure network op
 
 ## Overview
 
-TrustEdge implements **mutual authentication** using Ed25519 digital signatures to establish secure, validated sessions between clients and servers. This system ensures:
+TrustEdge implements **mutual authentication** using Ed25519 digital signatures with **automated X25519 ECDH key exchange** to establish secure, encrypted sessions between clients and servers. This system ensures:
 
 - **Server Authentication**: Clients verify they're connecting to legitimate TrustEdge servers
 - **Client Authorization**: Servers validate client identity and authorize access
+- **Session Encryption**: X25519 ECDH derives a shared encryption key during the handshake — no out-of-band key sharing needed
 - **Session Security**: Cryptographically secure session IDs prevent unauthorized access
 - **Automatic Certificate Management**: Ed25519 key pairs and certificates generated automatically
 
 ### Security Benefits
 
-✅ **Mutual Trust**: Both client and server authenticate each other  
-✅ **Identity Verification**: Ed25519 certificates provide cryptographic proof of identity  
-✅ **Session Isolation**: Each connection gets unique, time-limited session  
-✅ **Replay Protection**: Challenge-response protocol prevents replay attacks  
-✅ **Forward Security**: Sessions expire automatically with configurable timeouts  
+✅ **Mutual Trust**: Both client and server authenticate each other
+✅ **Automated Key Exchange**: X25519 ECDH derives session encryption keys from the auth handshake
+✅ **Identity Verification**: Ed25519 certificates provide cryptographic proof of identity
+✅ **Session Isolation**: Each connection gets unique, time-limited session with unique encryption key
+✅ **Replay Protection**: Challenge-response protocol prevents replay attacks
+✅ **Channel Binding**: Both public keys mixed into KDF prevent unknown-key-share attacks
+✅ **Forward Security**: Sessions expire automatically with configurable timeouts
 
 [↑ Back to top](#table-of-contents)
 
@@ -75,7 +78,8 @@ TrustEdge implements **mutual authentication** using Ed25519 digital signatures 
 2. **Server certificate**: Creates identity certificate with your specified identity
 3. **Client connection**: Generates client identity certificate on first use
 4. **Mutual handshake**: Challenge-response authentication between both parties
-5. **Secure session**: Establishes cryptographically secure session for data transfer
+5. **Key exchange**: X25519 ECDH derives a shared session encryption key (both sides compute independently)
+6. **Secure session**: Data transfer uses the ECDH-derived key — no `--key-hex` or `--use-keyring` needed
 
 [↑ Back to top](#table-of-contents)
 
@@ -189,20 +193,34 @@ sequenceDiagram
 This authentication flow provides:
 
 1. **🔐 Mutual Authentication**: Both client and server prove their identities using Ed25519 signatures
-2. **🛡️ Identity Verification**: Certificates cryptographically bind identity strings to public keys  
-3. **🔄 Challenge-Response**: Prevents replay attacks with fresh random challenges
-4. **⏱️ Session Security**: Time-limited sessions with cryptographically secure IDs
-5. **🎯 Forward Security**: Each session uses unique identifiers, limiting exposure
+2. **🔑 Automated Key Exchange**: X25519 ECDH derives a shared session encryption key from existing Ed25519 keys — no wire-format change needed
+3. **🛡️ Identity Verification**: Certificates cryptographically bind identity strings to public keys
+4. **🔄 Challenge-Response**: Prevents replay attacks with fresh random challenges mixed into the KDF
+5. **⏱️ Session Security**: Time-limited sessions with cryptographically secure IDs
+6. **🎯 Forward Security**: Each session uses unique identifiers and unique encryption keys, limiting exposure
+7. **🔗 Channel Binding**: Both public keys (deterministically ordered) are mixed into the BLAKE3 KDF, preventing unknown-key-share attacks
 
 ### Implementation References
 
 | Component | Source Code | Purpose |
 |-----------|-------------|---------|
-| **Authentication Flow** | [`src/auth.rs:server_authenticate()`](trustedge-core/src/auth.rs) | Server-side authentication implementation |
-| **Challenge Generation** | [`src/auth.rs:client_authenticate()`](trustedge-core/src/auth.rs) | Client-side authentication implementation |
-| **Certificate Management** | [`src/auth.rs:ClientCertificate`](trustedge-core/src/auth.rs) | Certificate creation and validation |
-| **Session Management** | [`src/auth.rs:SessionManager`](trustedge-core/src/auth.rs) | Session lifecycle and validation |
-| **Integration Tests** | [`tests/auth_integration.rs`](trustedge-core/tests/auth_integration.rs) | Complete authentication test suite |
+| **Authentication Flow** | [`src/auth.rs:server_authenticate()`](../../crates/core/src/auth.rs) | Server-side authentication implementation |
+| **Challenge Generation** | [`src/auth.rs:client_authenticate()`](../../crates/core/src/auth.rs) | Client-side authentication, returns `ClientAuthResult` with session key |
+| **ECDH Key Derivation** | [`src/auth.rs:derive_session_key()`](../../crates/core/src/auth.rs) | X25519 ECDH + BLAKE3 KDF for session encryption key |
+| **Certificate Management** | [`src/auth.rs:ClientCertificate`](../../crates/core/src/auth.rs) | Certificate creation and validation |
+| **Session Management** | [`src/auth.rs:SessionManager`](../../crates/core/src/auth.rs) | Session lifecycle and validation |
+| **Integration Tests** | [`tests/auth_integration.rs`](../../crates/core/tests/auth_integration.rs) | Authentication + ECDH key agreement tests |
+
+### How ECDH Session Key Derivation Works
+
+When authentication is enabled, both sides independently derive the same session encryption key:
+
+1. **Ed25519 to X25519 Conversion**: Each party converts their Ed25519 signing key to an X25519 key using `SigningKey::to_scalar_bytes()` and `VerifyingKey::to_montgomery()`
+2. **Diffie-Hellman**: Standard X25519 DH produces a shared secret (DH commutativity: `client_secret * server_pub == server_secret * client_pub`)
+3. **KDF**: BLAKE3 `derive_key` with domain `"TRUSTEDGE_SESSION_KEY_V1"` mixes the shared secret, challenge bytes, and both public keys (deterministically ordered)
+4. **Result**: Both sides produce an identical 32-byte AES-256 session key without transmitting any key material
+
+The client uses this key automatically for encryption; the server stores it in the `ProcessingSession` for decryption. No `--key-hex` flag is needed when auth is active.
 
 ### Certificate Format
 
@@ -368,10 +386,11 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 ### Session Lifecycle
 
 1. **Authentication**: Mutual challenge-response creates session
-2. **Session ID**: 64-bit cryptographically random session identifier  
-3. **Timeout**: Configurable session timeout (default: 300 seconds)
-4. **Validation**: All requests validated against active session
-5. **Cleanup**: Expired sessions automatically removed
+2. **Key Derivation**: X25519 ECDH derives a shared 256-bit session encryption key
+3. **Session ID**: 128-bit cryptographically random session identifier
+4. **Timeout**: Session timeout of 30 minutes (1800 seconds)
+5. **Validation**: All requests validated against active session
+6. **Cleanup**: Expired sessions automatically removed; key material zeroized
 
 ### Session Configuration
 
@@ -463,7 +482,7 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 
 **Does NOT Protect Against:**
 - ❌ Compromised client/server private keys
-- ❌ Network traffic analysis (use TLS for transport encryption)
+- ❌ Network traffic analysis (ECDH-derived keys encrypt data but not metadata; use TLS/QUIC for transport encryption)
 - ❌ Side-channel attacks on cryptographic operations
 - ❌ Social engineering or credential theft
 

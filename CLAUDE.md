@@ -91,7 +91,7 @@ TrustEdge is a Cargo workspace with 9 crates under `crates/` (plus `examples/cam
 | `crypto.rs` | XChaCha20-Poly1305 encryption, Ed25519 signing |
 | `chain.rs` | BLAKE3-based continuity chain with genesis seed |
 | `manifest.rs` | Canonical JSON serialization for cam.video profile |
-| `auth.rs` | Ed25519 mutual authentication with sessions |
+| `auth.rs` | Ed25519 mutual authentication with X25519 ECDH session key derivation |
 | `audio.rs` | Live audio capture (feature-gated) |
 | `hybrid.rs` | RSA hybrid encryption (asymmetric operations) |
 
@@ -208,6 +208,14 @@ Default build has no features enabled for fast CI and maximum portability.
 ### Network Testing
 
 ```bash
+# With authentication (ECDH-derived session key - no --key-hex needed):
+# Terminal 1: Server
+./target/release/trustedge-server --listen 127.0.0.1:8080 --require-auth --decrypt
+
+# Terminal 2: Client
+./target/release/trustedge-client --server 127.0.0.1:8080 --input test.txt --enable-auth --server-cert server.cert
+
+# Without authentication (manual key sharing):
 # Terminal 1: Server
 ./target/release/trustedge-server --listen 127.0.0.1:8080 --decrypt --key-hex $(openssl rand -hex 32)
 

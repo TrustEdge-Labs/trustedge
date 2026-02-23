@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-1.4-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v1.4)
+[![Version](https://img.shields.io/badge/version-1.7-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v1.7)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge: Hardware-Backed Security for IoT Devices
@@ -88,7 +88,7 @@ Open Core Model:
 - **🧾 Digital Receipt System**: Cryptographically secure transferable receipts with ownership chains
 - **🏗️ Universal Backend System**: Pluggable crypto operations (Software HSM, Keyring, YubiKey)
 - **🎵 Live Audio Capture**: Real-time microphone input with configurable quality
-- **🌐 Network Operations**: Secure client-server communication with mutual authentication
+- **🌐 Network Operations**: Secure client-server communication with mutual authentication and automated ECDH key exchange
 - **🔑 Hardware Integration**: YubiKey PIV support with ECDSA P-256 and RSA-2048 signing
 - **⚡ Algorithm Agility**: Configurable cryptographic algorithms with forward compatibility
 - **🛡️ Memory Safety**: Proper key material cleanup with zeroization
@@ -96,32 +96,39 @@ Open Core Model:
 ### Technology Stack
 
 - **Language**: Rust (stable) for memory safety and performance
-- **Cryptography**: AES-256-GCM, Ed25519, PBKDF2, BLAKE3 with algorithm agility
+- **Cryptography**: AES-256-GCM, Ed25519, X25519 ECDH, PBKDF2, BLAKE3 with algorithm agility
 - **Audio**: Cross-platform support (Linux/ALSA, Windows/WASAPI, macOS/CoreAudio)
 - **Hardware**: YubiKey PIV operations via `yubikey` crate and PCSC
-- **Network**: Ed25519-based mutual authentication with session management
+- **Network**: Ed25519-based mutual authentication with X25519 ECDH session key derivation
 
 ---
 
-## What's New in v1.4
+## What's New in v1.7
 
-**v1.4 Placeholder Elimination** — removed all stubs, dead code, and TODO markers across the workspace:
+**v1.7 Security & Quality Hardening** — comprehensive security hardening with `Secret<T>` wrapper type and automated ECDH key exchange:
 
-- 🔒 **QUIC TLS Secure-by-Default** - webpki-roots for production TLS; `insecure-tls` feature flag for development
-- 🧹 **Dead Code Removal** - Legacy server functions, reserved keyring methods, unused fields deleted
-- 🗑️ **Stub Elimination** - envelope_v2_bridge.rs, Blake2b placeholder, unimplemented Pubky CLI commands removed
-- ✅ **TODO Hygiene** - Zero TODO/FIXME markers; CI enforcement prevents reintroduction
-- 📝 **Terminology** - "Feature-disabled" replaces "stub" for cfg-gated code paths
+- 🔑 **Automated Key Exchange** - X25519 ECDH session key derivation during auth handshake; no out-of-band `--key-hex` needed when auth is enabled
+- 🛡️ **Secret<T> Wrapper** - Zeroize-on-drop wrapper with redacted Debug, no Display/Deref/Serialize for all sensitive fields (PINs, passphrases, JWT secrets)
+- 🔐 **Envelope ECDH Fix** - Replaced broken scalar math with standard X25519 ECDH via `x25519-dalek`
+- 🧹 **Deprecated Crates Deleted** - Removed `trustedge-receipts` and `trustedge-attestation` facade crates
+- 🔒 **CORS Hardened** - Restrictive CORS policies for verify-only and postgres platform builds
+- ✅ **16 New Integration Tests** - Wiring, HTTP round-trip, CORS parity, router consistency
 
 ### Previous Releases
 
-**v1.3 Dependency Audit** — Feature-gated git2 and keyring, removed unused dependencies via cargo-machete, cargo-audit CI integration, DEPENDENCIES.md with per-dependency justifications
+**v1.6 Final Consolidation** — `trustedge-platform-server` binary crate with Axum/clap, Docker deployment (Dockerfile + docker-compose), dashboard moved to `web/dashboard/`, 11 orphaned repos deleted from GitHub org
 
-**v1.2 Scope Reduction** — Dependency tree tracking, tokio feature trimming, dependency audit tooling
+**v1.5 Platform Consolidation** — `trustedge-types` shared wire types, `trustedge-platform` merged from platform-api + verify-core with feature-gated http/postgres/ca/yubikey, crypto deduplication via `trustedge_core::chain`
 
-**v1.1 YubiKey Overhaul** — Rewrote YubiKey backend from scratch: fail-closed design, `yubikey` crate stable API, rcgen for X.509, 18 simulation + 9 hardware tests, unconditional CI
+**v1.4 Placeholder Elimination** — QUIC TLS secure-by-default, dead code removal, stub elimination, TODO hygiene with CI enforcement
 
-**v1.0 Consolidation** — Monolithic core + thin shells, 21 unused deps removed, ~2,500 LOC duplication eliminated, zero API breaks (196 semver checks), WASM verified
+**v1.3 Dependency Audit** — Feature-gated git2 and keyring, cargo-machete/cargo-audit CI, DEPENDENCIES.md
+
+**v1.2 Scope Reduction** — Dependency tree tracking, tokio feature trimming, tiered CI
+
+**v1.1 YubiKey Overhaul** — Rewrote YubiKey backend: fail-closed design, `yubikey` crate stable API, rcgen X.509, 18 simulation + 9 hardware tests
+
+**v1.0 Consolidation** — Monolithic core + thin shells, 21 unused deps removed, ~2,500 LOC duplication eliminated, WASM verified
 
 **v0.3.0 (P0 Release):** .trst archive system with cam.video profile, Ed25519 signatures, BLAKE3 chains, browser verification
 
@@ -319,12 +326,13 @@ TrustEdge includes a **production-ready digital receipt system** that enables cr
 
 ### Network Operations
 
-TrustEdge supports secure client-server communication with **mutual authentication** using Ed25519 digital signatures and cryptographically secure session management.
+TrustEdge supports secure client-server communication with **mutual authentication** using Ed25519 digital signatures and **automated X25519 ECDH key exchange** for session encryption.
 
 **Security Features:**
 - Mutual authentication between clients and servers
+- Automated session encryption key derivation via X25519 ECDH (no out-of-band key sharing needed)
 - Session isolation with time-limited cryptographic sessions
-- Replay protection through challenge-response protocols
+- Replay protection through challenge-response protocols with BLAKE3 domain-separated KDF
 - Forward security with automatic session expiration
 
 **📖 For authentication setup and network security, see [docs/user/authentication.md](docs/user/authentication.md).**
@@ -333,19 +341,22 @@ TrustEdge supports secure client-server communication with **mutual authenticati
 
 ## Testing & Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **235+ automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **270+ automated tests** covering all aspects of the system:
 
-- **164 Core Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer (includes 18 YubiKey simulation tests)
+- **155 Core Unit Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer (includes 18 YubiKey simulation tests)
+- **4 Auth Integration Tests**: Mutual authentication, session management, ECDH session key derivation, key uniqueness
 - **9 Hardware Integration Tests**: YubiKey PIV operations (require physical device, run manually)
 - **22 Archive Tests**: .trst format wrap/verify, cryptographic validation, CLI integration
-- **40+ Integration Tests**: Pubky adapters, CLI workflows, cross-crate validation
+- **30+ Platform Tests**: Verification engine, HTTP round-trip, CORS, router parity
+- **18 Type Tests**: Shared wire type validation
 
 ```bash
 # Run complete test suite
 ./scripts/ci-check.sh
 
 # Run tests by category
-cargo test -p trustedge-core --lib                # Core cryptography tests (160)
+cargo test -p trustedge-core --lib                # Core cryptography tests (155)
+cargo test -p trustedge-core --test auth_integration # Auth + ECDH tests (4)
 cargo test -p trustedge-trst-cli --test acceptance # Archive validation tests (7)
 cargo test --features yubikey --test yubikey_integration  # Hardware tests (need YubiKey)
 ```
@@ -401,9 +412,10 @@ For security issues, please follow our [responsible disclosure policy](SECURITY.
 ### Security Properties
 
 - **Cryptographic Isolation**: Only intended recipients can decrypt data
+- **Automated Key Exchange**: X25519 ECDH derives session keys during auth handshake with BLAKE3 KDF
 - **Forward Secrecy**: Past communications remain secure even if keys are compromised
 - **Replay Protection**: Unique cryptographic fingerprints prevent message reuse
-- **Memory Safety**: Secure key material handling with automatic cleanup
+- **Memory Safety**: Secure key material handling with `Secret<T>` wrapper and automatic zeroization
 - **Hardware Security**: Optional YubiKey PIV integration for hardware-backed operations
 
 **📖 For detailed security analysis, see [SECURITY.md](SECURITY.md) and [docs/technical/threat-model.md](docs/technical/threat-model.md).**
@@ -431,7 +443,7 @@ cd trustedge
 ./scripts/ci-check.sh
 
 # Run specific component tests
-cargo test -p trustedge-core                      # Core cryptography (160 tests)
+cargo test -p trustedge-core                      # Core cryptography (155+ tests)
 cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
 ```
 
