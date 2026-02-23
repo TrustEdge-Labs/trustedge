@@ -26,9 +26,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy entire workspace source
 COPY . .
 
-# Build only the platform-server binary in release mode
-# postgres feature is enabled by default in Cargo.toml
-RUN cargo build -p trustedge-platform-server --release
+# Build the platform-server binary in release mode with postgres for production
+RUN cargo build -p trustedge-platform-server --features postgres --release
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 

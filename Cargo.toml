@@ -91,7 +91,6 @@ getrandom = { version = "0.2", features = ["js"] }
 axum = "0.7"
 tower = "0.4"
 tower-http = { version = "0.5", features = ["cors", "trace"] }
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "migrate"] }
 hyper = "1.0"
 
 # Development dependencies

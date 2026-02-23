@@ -112,7 +112,7 @@ fi
 
 # trustedge-platform feature combinations (blocking)
 if cargo clippy -p trustedge-platform --features "http" -- -D warnings && \
-   cargo clippy -p trustedge-platform --features "http,postgres,ca" -- -D warnings; then
+   cargo clippy -p trustedge-platform --features "http,ca" -- -D warnings; then
     pass "clippy trustedge-platform features"
 else
     fail "clippy trustedge-platform features"

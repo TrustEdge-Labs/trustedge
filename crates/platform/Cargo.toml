@@ -38,8 +38,7 @@ jsonwebtoken = "9.2"
 regex = "1.0"
 utoipa = { version = "4.0", features = ["axum_extras", "chrono", "uuid"], optional = true }
 
-# Feature-gated: postgres
-sqlx = { workspace = true, optional = true }
+# Feature-gated: postgres (sqlx removed — re-add when DB work resumes)
 bcrypt = { version = "0.15", optional = true }
 
 # Feature-gated: http (token hashing and env config loading)
@@ -64,7 +63,7 @@ utoipa-swagger-ui = { version = "6.0", features = ["axum"], optional = true }
 
 [features]
 default = []
-postgres = ["dep:sqlx", "dep:bcrypt", "dep:sha2", "dep:dotenvy"]
+postgres = ["dep:bcrypt", "dep:sha2", "dep:dotenvy"]
 ca = ["dep:x509-parser", "dep:der", "dep:spki", "dep:pkcs8", "dep:x509-cert", "dep:const-oid", "dep:hex"]
 yubikey = ["ca", "trustedge-core/yubikey"]
 http = ["dep:axum", "dep:tower", "dep:tower-http", "dep:tokio", "dep:utoipa-swagger-ui", "dep:sha2", "dep:dotenvy"]
@@ -83,4 +82,3 @@ tower = { workspace = true, features = ["util"] }
 # Platform integration test utilities (DB-backed tests, all #[ignore])
 # Uses 14.x which is compatible with axum 0.7 (our workspace version)
 axum-test = "14.10"
-sqlx = { workspace = true }
