@@ -20,9 +20,9 @@ Fix incorrect KDF usage across the codebase. Critical: replace PBKDF2-per-chunk 
 - [ ] **ENV-01**: Envelope encryption derives encryption keys from ECDH shared secrets using HKDF-SHA256, not PBKDF2
 - [ ] **ENV-02**: Encryption key is derived once per envelope via HKDF-Extract + Expand, producing DerivedKey and NoncePrefix — not re-derived per chunk
 - [ ] **ENV-03**: Per-chunk nonces use deterministic counter mode (NoncePrefix || chunk_index || last_flag) instead of random salt generation
-- [ ] **ENV-04**: HKDF info parameter includes domain separation string for cryptographic binding to the TrustEdge envelope context
-- [ ] **ENV-05**: Ad-hoc CatKDF construction (concatenating shared_secret + salt + sequence + metadata as IKM) is eliminated in favor of structured HKDF inputs
-- [ ] **ENV-06**: `hkdf` crate added as workspace dependency with appropriate version
+- [x] **ENV-04**: HKDF info parameter includes domain separation string for cryptographic binding to the TrustEdge envelope context
+- [x] **ENV-05**: Ad-hoc CatKDF construction (concatenating shared_secret + salt + sequence + metadata as IKM) is eliminated in favor of structured HKDF inputs
+- [x] **ENV-06**: `hkdf` crate added as workspace dependency with appropriate version
 
 ### Envelope Versioning
 
@@ -68,9 +68,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENV-01 | Phase 36 | Pending |
 | ENV-02 | Phase 36 | Pending |
 | ENV-03 | Phase 36 | Pending |
-| ENV-04 | Phase 35 | Pending |
-| ENV-05 | Phase 35 | Pending |
-| ENV-06 | Phase 35 | Pending |
+| ENV-04 | Phase 35 | Complete |
+| ENV-05 | Phase 35 | Complete |
+| ENV-06 | Phase 35 | Complete |
 | VER-01 | Phase 36 | Pending |
 | VER-02 | Phase 36 | Pending |
 | KEY-01 | Phase 37 | Pending |

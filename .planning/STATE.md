@@ -18,11 +18,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 35 of 37 (HKDF Infrastructure)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-22 — v1.8 roadmap created, phases 35-37 defined
+Plan: 1 of TBD in current phase
+Status: In progress
+Last activity: 2026-02-23 — Completed 35-01: HKDF workspace dependency + HKDF-SHA256 envelope key derivation
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
@@ -41,7 +41,7 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 35. HKDF Infrastructure | TBD | - | - |
+| 35. HKDF Infrastructure | 1 | 2 tasks | 2/plan |
 | 36. Envelope Format Migration | TBD | - | - |
 | 37. Keyring Hardening | TBD | - | - |
 
@@ -56,6 +56,8 @@ Progress: [░░░░░░░░░░] 0%
 - Experimental crates (pubky-advanced): Out of scope for this milestone
 - auth.rs BLAKE3::derive_key: Already correct, no changes needed
 - software_hsm.rs PBKDF2: Already hardened to 600k in prior commit, out of scope
+- 35-01: HKDF-SHA256 chosen over PBKDF2 for ECDH key extraction — RFC 5869 Extract+Expand with b"TRUSTEDGE_ENVELOPE_V1" domain separation
+- 35-01: pbkdf2_iterations field preserved in ChunkManifest at literal 100_000u32 for format compatibility until Phase 36
 
 ### Pending Todos
 
@@ -68,9 +70,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Roadmap created — Phase 35 ready to plan
+Last session: 2026-02-23
+Stopped at: Completed 35-01-PLAN.md — HKDF dependency added, PBKDF2 CatKDF replaced with HKDF-SHA256
 Resume file: None
 
 ---
-*Last updated: 2026-02-22 after v1.8 roadmap created*
+*Last updated: 2026-02-23 after 35-01 completed*

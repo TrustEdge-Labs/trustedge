@@ -102,7 +102,7 @@ Hardened secret handling with in-house Secret<T> wrapper (zeroize, redacted Debu
 
 ## Phases
 
-- [ ] **Phase 35: HKDF Infrastructure** - Add hkdf workspace dependency and establish correct HKDF input structure in envelope.rs, eliminating the ad-hoc CatKDF construction
+- [x] **Phase 35: HKDF Infrastructure** - Add hkdf workspace dependency and establish correct HKDF input structure in envelope.rs, eliminating the ad-hoc CatKDF construction
 - [ ] **Phase 36: Envelope Format Migration** - Rewrite envelope encryption to HKDF-once with counter nonces and versioned format supporting both v1 (legacy) and v2 (HKDF) decryption paths
 - [ ] **Phase 37: Keyring Hardening** - Increase PBKDF2 parameters in both keyring backends to OWASP 2023 recommended levels
 
@@ -119,7 +119,7 @@ Hardened secret handling with in-house Secret<T> wrapper (zeroize, redacted Debu
   4. `cargo test -p trustedge-core --lib` passes with no regressions
 **Plans:** 1 plan
 Plans:
-- [ ] 35-01-PLAN.md -- Wire hkdf dependency and replace PBKDF2 CatKDF with HKDF-SHA256 in envelope.rs
+- [x] 35-01-PLAN.md -- Wire hkdf dependency and replace PBKDF2 CatKDF with HKDF-SHA256 in envelope.rs
 
 ### Phase 36: Envelope Format Migration
 **Goal**: Envelope encryption uses HKDF-once key derivation with deterministic counter nonces, and the format version field enables backward-compatible decryption of both old (PBKDF2-per-chunk) and new (HKDF-once) envelopes
@@ -151,9 +151,9 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 35. HKDF Infrastructure | 0/1 | Planning complete | - |
+| 35. HKDF Infrastructure | 1/1 | Complete | 2026-02-23 |
 | 36. Envelope Format Migration | 0/TBD | Not started | - |
 | 37. Keyring Hardening | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-02-22 after Phase 35 planning complete*
+*Last updated: 2026-02-23 after 35-01 completed*
