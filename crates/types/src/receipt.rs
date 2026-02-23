@@ -10,7 +10,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, JsonSchema)]
-pub struct Receipt {
+pub struct VerificationReceipt {
     pub verification_id: String,
     pub profile: String,
     pub device_id: String,

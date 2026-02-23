@@ -23,7 +23,7 @@ export interface OutOfOrder {
   found: number;
 }
 
-export interface Receipt {
+export interface VerificationReceipt {
   chain_tip: string;
   continuity: string;
   device_id: string;

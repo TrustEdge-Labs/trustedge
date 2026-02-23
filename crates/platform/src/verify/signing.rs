@@ -12,7 +12,7 @@ use anyhow::{anyhow, Result};
 use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 
-use super::engine::Receipt;
+use super::engine::ReceiptClaims;
 use super::jwks::KeyManager;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -21,10 +21,10 @@ struct JwsPayload {
     sub: String,
     iat: i64,
     exp: i64,
-    receipt: Receipt,
+    receipt: ReceiptClaims,
 }
 
-pub async fn sign_receipt_jws(receipt: &Receipt, key_manager: &KeyManager) -> Result<String> {
+pub async fn sign_receipt_jws(receipt: &ReceiptClaims, key_manager: &KeyManager) -> Result<String> {
     let now = chrono::Utc::now().timestamp();
     let exp = now + 3600; // 1 hour expiration
 

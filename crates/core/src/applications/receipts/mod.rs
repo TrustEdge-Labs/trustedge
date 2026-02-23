@@ -6,15 +6,15 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! # TrustEdge Receipts - The Contract Writer
+//! # TrustEdge OwnershipReceipts - The Contract Writer
 //!
 //! This module represents the "Contract Writer" in our office analogy.
 //! It handles business logic for transferable claims (receipts) without worrying
 //! about cryptographic details. That's the job of the "Security Guard" (trustedge-core).
 //!
-//! ## The Receipt System
+//! ## The OwnershipReceipt System
 //!
-//! A Receipt represents a transferable claim with these properties:
+//! A OwnershipReceipt represents a transferable claim with these properties:
 //! - **Issuer**: Who is making the claim (current owner)
 //! - **Beneficiary**: Who is receiving the claim (new owner)
 //! - **Amount**: The value being claimed
@@ -23,7 +23,7 @@
 //! ## Usage
 //!
 //! ```rust
-//! use trustedge_core::{Receipt, create_receipt, assign_receipt};
+//! use trustedge_core::{OwnershipReceipt, create_receipt, assign_receipt};
 //! use ed25519_dalek::SigningKey;
 //! use rand::rngs::OsRng;
 //!
@@ -50,7 +50,7 @@ use serde::{Deserialize, Serialize};
 /// This is the "contract" that the Contract Writer creates. It contains all the
 /// business logic about ownership, amounts, and chain links, but no cryptographic details.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct Receipt {
+pub struct OwnershipReceipt {
     /// The public key of the entity creating the assignment (the current owner).
     pub issuer: [u8; 32],
     /// The public key of the entity receiving the claim (the new owner).
@@ -66,7 +66,7 @@ pub struct Receipt {
     pub created_at: u64,
 }
 
-impl Receipt {
+impl OwnershipReceipt {
     /// Create a new origin receipt (start of a chain)
     pub fn new_origin(
         issuer_key: &SigningKey,
@@ -79,7 +79,7 @@ impl Receipt {
             .unwrap_or_default()
             .as_secs();
 
-        Receipt {
+        OwnershipReceipt {
             issuer: issuer_key.verifying_key().to_bytes(),
             beneficiary: beneficiary_key.to_bytes(),
             amount,
@@ -102,7 +102,7 @@ impl Receipt {
             .unwrap_or_default()
             .as_secs();
 
-        Receipt {
+        OwnershipReceipt {
             issuer: issuer_key.verifying_key().to_bytes(),
             beneficiary: beneficiary_key.to_bytes(),
             amount,
@@ -132,7 +132,7 @@ impl Receipt {
     /// Validate the business logic of this receipt
     pub fn validate(&self) -> Result<()> {
         if self.amount == 0 {
-            return Err(anyhow::anyhow!("Receipt amount cannot be zero"));
+            return Err(anyhow::anyhow!("OwnershipReceipt amount cannot be zero"));
         }
 
         // Validate that keys can be parsed
@@ -148,7 +148,7 @@ impl Receipt {
         if self.created_at > now + 300 {
             // Not more than 5 minutes in future
             return Err(anyhow::anyhow!(
-                "Receipt timestamp is too far in the future"
+                "OwnershipReceipt timestamp is too far in the future"
             ));
         }
 
@@ -156,10 +156,10 @@ impl Receipt {
     }
 }
 
-/// Creates a new, origin Receipt wrapped in a signed Envelope.
+/// Creates a new, origin OwnershipReceipt wrapped in a signed Envelope.
 ///
 /// This function initiates a new chain of ownership. The Contract Writer creates
-/// the business logic (Receipt), then hands it to the Security Guard (Envelope::seal)
+/// the business logic (OwnershipReceipt), then hands it to the Security Guard (Envelope::seal)
 /// to secure it in a tamper-proof container.
 ///
 /// # Arguments
@@ -177,12 +177,14 @@ pub fn create_receipt(
     description: Option<String>,
 ) -> Result<Envelope> {
     // The Contract Writer creates the business logic
-    let receipt = Receipt::new_origin(issuer_key, beneficiary_key, amount, description);
+    let receipt = OwnershipReceipt::new_origin(issuer_key, beneficiary_key, amount, description);
 
     // Validate the business rules
-    receipt.validate().context("Receipt validation failed")?;
+    receipt
+        .validate()
+        .context("OwnershipReceipt validation failed")?;
 
-    // Serialize the business logic (the Receipt) into a payload
+    // Serialize the business logic (the OwnershipReceipt) into a payload
     let payload = serde_json::to_vec(&receipt).context("Failed to serialize receipt")?;
 
     // Hand the payload to the Security Guard (Envelope::seal) to secure it
@@ -190,7 +192,7 @@ pub fn create_receipt(
         .context("Failed to seal receipt in envelope")
 }
 
-/// Assigns an existing Receipt to a new beneficiary, creating a new chained Envelope.
+/// Assigns an existing OwnershipReceipt to a new beneficiary, creating a new chained Envelope.
 ///
 /// This creates a new link in the ownership chain. The current beneficiary (assigner)
 /// creates a new receipt assigning their claim to someone else.
@@ -228,7 +230,7 @@ pub fn assign_receipt(
         .context("Failed to unseal previous envelope - assigner key may be invalid")?;
 
     // Deserialize the previous receipt to get the amount
-    let previous_receipt: Receipt = serde_json::from_slice(&previous_payload)
+    let previous_receipt: OwnershipReceipt = serde_json::from_slice(&previous_payload)
         .context("Failed to deserialize previous receipt")?;
 
     // Use the actual amount from the previous receipt
@@ -238,7 +240,7 @@ pub fn assign_receipt(
     let prev_hash = previous_envelope.hash();
 
     // Create the new receipt that represents the assignment
-    let assignment_receipt = Receipt::new_assignment(
+    let assignment_receipt = OwnershipReceipt::new_assignment(
         assigner_key,
         new_beneficiary_key,
         amount,
@@ -260,25 +262,28 @@ pub fn assign_receipt(
         .context("Failed to seal assignment receipt in envelope")
 }
 
-/// Extract and verify a Receipt from an Envelope
+/// Extract and verify a OwnershipReceipt from an Envelope
 ///
 /// This function asks the Security Guard to verify and unseal the envelope,
-/// then deserializes the business logic (Receipt) for the Contract Writer to examine.
+/// then deserializes the business logic (OwnershipReceipt) for the Contract Writer to examine.
 ///
 /// # Arguments
 /// * `envelope` - The envelope to extract the receipt from
 /// * `decryption_key` - The private key needed to decrypt the envelope
 ///
 /// # Returns
-/// The Receipt contained in the envelope, or an error
-pub fn extract_receipt(envelope: &Envelope, decryption_key: &SigningKey) -> Result<Receipt> {
+/// The OwnershipReceipt contained in the envelope, or an error
+pub fn extract_receipt(
+    envelope: &Envelope,
+    decryption_key: &SigningKey,
+) -> Result<OwnershipReceipt> {
     // Ask the Security Guard to verify and unseal the envelope
     let payload = envelope
         .unseal(decryption_key)
         .context("Failed to unseal envelope")?;
 
     // Deserialize the business logic
-    let receipt: Receipt =
+    let receipt: OwnershipReceipt =
         serde_json::from_slice(&payload).context("Failed to deserialize receipt from payload")?;
 
     // Validate the business rules
@@ -339,7 +344,7 @@ mod tests {
         let alice_key = SigningKey::generate(&mut OsRng);
         let bob_key = SigningKey::generate(&mut OsRng);
 
-        let receipt = Receipt::new_origin(
+        let receipt = OwnershipReceipt::new_origin(
             &alice_key,
             &bob_key.verifying_key(),
             1000,
@@ -455,7 +460,8 @@ mod tests {
         let bob_key = SigningKey::generate(&mut OsRng);
 
         // Valid receipt
-        let valid_receipt = Receipt::new_origin(&alice_key, &bob_key.verifying_key(), 1000, None);
+        let valid_receipt =
+            OwnershipReceipt::new_origin(&alice_key, &bob_key.verifying_key(), 1000, None);
         assert!(valid_receipt.validate().is_ok());
 
         // Invalid receipt - zero amount
@@ -496,7 +502,7 @@ mod tests {
             .expect("Failed to unseal envelope");
 
         // Deserialize the receipt from the unsealed data
-        let receipt: Receipt =
+        let receipt: OwnershipReceipt =
             serde_json::from_slice(&unsealed_data).expect("Failed to deserialize receipt");
 
         // Verify the receipt data matches what we expect
@@ -524,7 +530,7 @@ mod tests {
 
         // Step 2: Bob unseals to verify he received 1000 units
         let unsealed1 = envelope1.unseal(&bob_key).expect("Bob failed to unseal");
-        let receipt1: Receipt =
+        let receipt1: OwnershipReceipt =
             serde_json::from_slice(&unsealed1).expect("Failed to deserialize receipt1");
         assert_eq!(receipt1.amount, 1000);
 
@@ -541,7 +547,7 @@ mod tests {
         let unsealed2 = envelope2
             .unseal(&charlie_key)
             .expect("Charlie failed to unseal");
-        let receipt2: Receipt =
+        let receipt2: OwnershipReceipt =
             serde_json::from_slice(&unsealed2).expect("Failed to deserialize receipt2");
 
         assert_eq!(
@@ -630,7 +636,8 @@ mod tests {
 
         // Verify Bob can unseal and get correct amount
         let payload1 = envelope1.unseal(&bob_key).expect("Bob failed to unseal");
-        let receipt1: Receipt = serde_json::from_slice(&payload1).expect("Failed to deserialize");
+        let receipt1: OwnershipReceipt =
+            serde_json::from_slice(&payload1).expect("Failed to deserialize");
         assert_eq!(receipt1.amount, original_amount);
         assert_eq!(receipt1.issuer, alice_key.verifying_key().to_bytes());
         assert_eq!(receipt1.beneficiary, bob_key.verifying_key().to_bytes());
@@ -648,7 +655,8 @@ mod tests {
         let payload2 = envelope2
             .unseal(&charlie_key)
             .expect("Charlie failed to unseal");
-        let receipt2: Receipt = serde_json::from_slice(&payload2).expect("Failed to deserialize");
+        let receipt2: OwnershipReceipt =
+            serde_json::from_slice(&payload2).expect("Failed to deserialize");
         assert_eq!(
             receipt2.amount, original_amount,
             "Amount should be preserved"
@@ -676,7 +684,8 @@ mod tests {
 
         // Verify Eve can unseal and amount is still preserved
         let payload4 = envelope4.unseal(&eve_key).expect("Eve failed to unseal");
-        let receipt4: Receipt = serde_json::from_slice(&payload4).expect("Failed to deserialize");
+        let receipt4: OwnershipReceipt =
+            serde_json::from_slice(&payload4).expect("Failed to deserialize");
         assert_eq!(
             receipt4.amount, original_amount,
             "Amount should be preserved through entire chain"
@@ -732,7 +741,8 @@ mod tests {
         let payload1 = envelope1
             .unseal(&bob_key)
             .expect("Failed to unseal max amount");
-        let receipt1: Receipt = serde_json::from_slice(&payload1).expect("Failed to deserialize");
+        let receipt1: OwnershipReceipt =
+            serde_json::from_slice(&payload1).expect("Failed to deserialize");
         assert_eq!(
             receipt1.amount, max_amount,
             "Max amount should be preserved"
@@ -751,7 +761,8 @@ mod tests {
         let payload2 = envelope2
             .unseal(&charlie_key)
             .expect("Failed to unseal assigned max amount");
-        let receipt2: Receipt = serde_json::from_slice(&payload2).expect("Failed to deserialize");
+        let receipt2: OwnershipReceipt =
+            serde_json::from_slice(&payload2).expect("Failed to deserialize");
         assert_eq!(
             receipt2.amount, max_amount,
             "Max amount should be preserved through assignment"
@@ -848,7 +859,7 @@ mod tests {
 
         let error_msg = result.unwrap_err().to_string();
         assert!(
-            error_msg.contains("Receipt validation failed"),
+            error_msg.contains("OwnershipReceipt validation failed"),
             "Error should be about receipt validation"
         );
     }
@@ -872,7 +883,8 @@ mod tests {
 
         // Verify description is preserved
         let payload1 = envelope1.unseal(&bob_key).expect("Failed to unseal");
-        let receipt1: Receipt = serde_json::from_slice(&payload1).expect("Failed to deserialize");
+        let receipt1: OwnershipReceipt =
+            serde_json::from_slice(&payload1).expect("Failed to deserialize");
         assert_eq!(receipt1.description, Some(long_description.clone()));
 
         // Assign with different description
@@ -889,7 +901,8 @@ mod tests {
         let payload2 = envelope2
             .unseal(&charlie_key)
             .expect("Failed to unseal assignment");
-        let receipt2: Receipt = serde_json::from_slice(&payload2).expect("Failed to deserialize");
+        let receipt2: OwnershipReceipt =
+            serde_json::from_slice(&payload2).expect("Failed to deserialize");
         assert_eq!(receipt2.description, Some(assignment_desc.to_string()));
         assert_ne!(
             receipt2.description, receipt1.description,
@@ -1027,9 +1040,9 @@ mod tests {
         // But they represent different transactions
         let payload1 = envelope1.unseal(&bob_key).expect("Failed to unseal first");
         let payload3 = envelope3.unseal(&bob_key).expect("Failed to unseal second");
-        let receipt1: Receipt =
+        let receipt1: OwnershipReceipt =
             serde_json::from_slice(&payload1).expect("Failed to deserialize first");
-        let receipt3: Receipt =
+        let receipt3: OwnershipReceipt =
             serde_json::from_slice(&payload3).expect("Failed to deserialize second");
 
         // Timestamps should be different (or at least not identical in all fields)
@@ -1062,7 +1075,8 @@ mod tests {
 
         // Verify amount is preserved
         let payload2 = envelope2.unseal(&charlie_key).expect("Failed to unseal");
-        let receipt2: Receipt = serde_json::from_slice(&payload2).expect("Failed to deserialize");
+        let receipt2: OwnershipReceipt =
+            serde_json::from_slice(&payload2).expect("Failed to deserialize");
         assert_eq!(
             receipt2.amount, original_amount,
             "Amount should be preserved"
@@ -1070,7 +1084,7 @@ mod tests {
 
         // Simulate tampering by trying to create a receipt with a different amount
         // but using the same envelope structure (this should fail due to signature mismatch)
-        let tampered_receipt = Receipt::new_assignment(
+        let tampered_receipt = OwnershipReceipt::new_assignment(
             &bob_key,
             &charlie_key.verifying_key(),
             original_amount * 2, // Double the amount
@@ -1108,8 +1122,9 @@ mod tests {
         let tampered_payload_unsealed = tampered_envelope
             .unseal(&charlie_key)
             .expect("Failed to unseal tampered");
-        let tampered_receipt_unsealed: Receipt = serde_json::from_slice(&tampered_payload_unsealed)
-            .expect("Failed to deserialize tampered");
+        let tampered_receipt_unsealed: OwnershipReceipt =
+            serde_json::from_slice(&tampered_payload_unsealed)
+                .expect("Failed to deserialize tampered");
         assert_eq!(
             tampered_receipt_unsealed.amount,
             original_amount * 2,
@@ -1215,9 +1230,9 @@ mod tests {
             .expect("Failed to unseal second envelope");
 
         // The payloads should be identical (same receipt data)
-        let receipt1: Receipt =
+        let receipt1: OwnershipReceipt =
             serde_json::from_slice(&payload1).expect("Failed to deserialize first");
-        let receipt2: Receipt =
+        let receipt2: OwnershipReceipt =
             serde_json::from_slice(&payload2).expect("Failed to deserialize second");
 
         assert_eq!(
@@ -1266,7 +1281,7 @@ mod tests {
             let payload = envelope
                 .unseal(&bob_key)
                 .unwrap_or_else(|_| panic!("Failed to unseal envelope for amount {}", amount));
-            let receipt: Receipt = serde_json::from_slice(&payload)
+            let receipt: OwnershipReceipt = serde_json::from_slice(&payload)
                 .unwrap_or_else(|_| panic!("Failed to deserialize receipt for amount {}", amount));
 
             assert_eq!(

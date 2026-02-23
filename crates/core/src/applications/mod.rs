@@ -36,10 +36,10 @@
 //! After Phase 2-8 migration, this module will contain:
 //!
 //! - `receipts/` (from `crates/receipts/` - 1,281 LOC, 23 tests)
-//!   - `Receipt` type - digital receipt with cryptographic ownership
+//!   - `OwnershipReceipt` type - digital receipt with cryptographic ownership
 //!   - `ReceiptChain` - ownership transfer chain
 //!   - `ReceiptPolicy` - validation policies
-//!   - Receipt issuance, verification, and transfer operations
+//!   - OwnershipReceipt issuance, verification, and transfer operations
 //!
 //! - `attestation/` (from `crates/attestation/`)
 //!   - `Attestation` type - software attestation records
@@ -60,13 +60,13 @@
 //! ## Usage Example
 //!
 //! ```rust,ignore
-//! use trustedge_core::applications::{Receipt, Attestation, SessionManager};
+//! use trustedge_core::applications::{OwnershipReceipt, Attestation, SessionManager};
 //! use ed25519_dalek::SigningKey;
 //! use rand::rngs::OsRng;
 //!
 //! // Create a digital receipt
 //! let issuer_key = SigningKey::generate(&mut OsRng);
-//! let receipt = Receipt::issue("item-id", "owner-id", &issuer_key)?;
+//! let receipt = OwnershipReceipt::issue("item-id", "owner-id", &issuer_key)?;
 //!
 //! // Verify receipt ownership
 //! receipt.verify_ownership("owner-id")?;

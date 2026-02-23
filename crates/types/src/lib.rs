@@ -45,7 +45,7 @@ pub use uuid::Uuid;
 /// Prelude module for convenient glob imports.
 pub mod prelude {
     pub use crate::policy::PolicyV0;
-    pub use crate::receipt::Receipt;
+    pub use crate::receipt::VerificationReceipt;
     pub use crate::verification::{SegmentRef, VerifyOptions, VerifyRequest, VerifyResponse};
     pub use crate::verify_report::{OutOfOrder, VerifyReport};
     pub use crate::{DateTime, Utc, Uuid};
@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_receipt_round_trip() {
-        let original = Receipt {
+        let original = VerificationReceipt {
             verification_id: "verify_abc123def456".to_string(),
             profile: "cam.video".to_string(),
             device_id: "device_12345".to_string(),
@@ -150,7 +150,8 @@ mod tests {
         };
 
         let json = serde_json::to_string(&original).expect("Failed to serialize");
-        let deserialized: Receipt = serde_json::from_str(&json).expect("Failed to deserialize");
+        let deserialized: VerificationReceipt =
+            serde_json::from_str(&json).expect("Failed to deserialize");
 
         assert_eq!(original.verification_id, deserialized.verification_id);
         assert_eq!(original.profile, deserialized.profile);

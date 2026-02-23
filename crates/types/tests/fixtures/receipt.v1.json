@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Receipt",
+  "title": "VerificationReceipt",
   "type": "object",
   "required": [
     "chain_tip",

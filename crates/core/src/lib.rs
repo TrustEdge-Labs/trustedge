@@ -176,7 +176,7 @@ pub use trustedge_types::{DateTime, Utc, Uuid};
 
 // Receipt system re-exports (Layer 4 applications)
 pub use applications::receipts::{
-    assign_receipt, create_receipt, extract_receipt, verify_receipt_chain, Receipt,
+    assign_receipt, create_receipt, extract_receipt, verify_receipt_chain, OwnershipReceipt,
 };
 
 // Attestation system re-exports (Layer 4 applications)

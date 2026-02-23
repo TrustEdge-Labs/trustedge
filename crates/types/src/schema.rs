@@ -17,7 +17,7 @@ use std::collections::BTreeMap;
 use schemars::{schema::RootSchema, schema_for};
 use serde_json::Value;
 
-use crate::receipt::Receipt;
+use crate::receipt::VerificationReceipt;
 use crate::verification::{VerifyRequest, VerifyResponse};
 use crate::verify_report::VerifyReport;
 
@@ -51,9 +51,9 @@ pub fn verify_report_schema() -> RootSchema {
     schema_for!(VerifyReport)
 }
 
-/// Generate the JSON schema for `Receipt`.
+/// Generate the JSON schema for `VerificationReceipt`.
 pub fn receipt_schema() -> RootSchema {
-    schema_for!(Receipt)
+    schema_for!(VerificationReceipt)
 }
 
 /// Generate the JSON schema for `VerifyRequest`.

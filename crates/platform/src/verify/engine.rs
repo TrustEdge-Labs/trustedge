@@ -48,7 +48,7 @@ pub struct VerificationMetadata {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
-pub struct Receipt {
+pub struct ReceiptClaims {
     pub verification_id: String,
     pub device_id: String,
     pub manifest_digest: String,
@@ -92,8 +92,8 @@ pub fn receipt_from_report(
     kid: &str,
     now_rfc3339: &str,
     chain_tip: &str,
-) -> Receipt {
-    Receipt {
+) -> ReceiptClaims {
+    ReceiptClaims {
         verification_id: format!("v_{}", uuid::Uuid::new_v4().simple()),
         device_id: device_id.to_string(),
         manifest_digest: manifest_digest.to_string(),
