@@ -13,16 +13,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 35 — HKDF Infrastructure
+**Current focus:** Phase 36 — Envelope Format Migration
 
 ## Current Position
 
-Phase: 35 of 37 (HKDF Infrastructure)
+Phase: 36 of 37 (Envelope Format Migration)
 Plan: 1 of TBD in current phase
 Status: In progress
-Last activity: 2026-02-23 — Completed 35-01: HKDF workspace dependency + HKDF-SHA256 envelope key derivation
+Last activity: 2026-02-23 — Completed 36-01: v2 envelope format with HKDF-once key derivation and deterministic nonces
 
-Progress: [█░░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -42,7 +42,7 @@ Progress: [█░░░░░░░░░] 10%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 35. HKDF Infrastructure | 1 | 2 tasks | 2/plan |
-| 36. Envelope Format Migration | TBD | - | - |
+| 36. Envelope Format Migration | 1+ | 2 tasks | 2/plan |
 | 37. Keyring Hardening | TBD | - | - |
 
 *Updated after each plan completion*
@@ -58,6 +58,10 @@ Progress: [█░░░░░░░░░] 10%
 - software_hsm.rs PBKDF2: Already hardened to 600k in prior commit, out of scope
 - 35-01: HKDF-SHA256 chosen over PBKDF2 for ECDH key extraction — RFC 5869 Extract+Expand with b"TRUSTEDGE_ENVELOPE_V1" domain separation
 - 35-01: pbkdf2_iterations field preserved in ChunkManifest at literal 100_000u32 for format compatibility until Phase 36
+- 36-01: Single HKDF derivation per envelope produces 40-byte OKM — 32-byte AES-256-GCM key + 8-byte nonce prefix
+- 36-01: Deterministic nonce layout: nonce_prefix[0..8] || chunk_index[1..4] (BE u32 low 3 bytes) || last_flag (0xFF/0x00)
+- 36-01: Envelope.version field (serde default=1) enables v1/v2 dispatch in Plan 02 decrypt path
+- 36-01: ChunkManifest key_derivation_salt and pbkdf2_iterations zeroed for v2 envelopes (serde shape preserved)
 
 ### Pending Todos
 
@@ -71,8 +75,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 35-01-PLAN.md — HKDF dependency added, PBKDF2 CatKDF replaced with HKDF-SHA256
+Stopped at: Completed 36-01-PLAN.md — v2 envelope format with HKDF-once key derivation and deterministic counter nonces
 Resume file: None
 
 ---
-*Last updated: 2026-02-23 after 35-01 completed*
+*Last updated: 2026-02-23 after 36-01 completed*

@@ -131,7 +131,7 @@ Plans:
   3. Encrypted envelopes carry a version field; v2 envelopes are produced by default
   4. Decrypting a v1 (legacy PBKDF2-per-chunk) envelope succeeds without modification to the stored data
   5. All existing envelope tests pass; a new multi-chunk round-trip test covering the v2 format passes
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 36-01-PLAN.md -- Restructure Envelope struct + v2 seal path with HKDF-once key derivation and deterministic nonces
 - [ ] 36-02-PLAN.md -- V1 backward-compatible decrypt + try-then-fallback unseal + test suite
@@ -155,7 +155,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 35. HKDF Infrastructure | 1/1 | Complete    | 2026-02-23 |
-| 36. Envelope Format Migration | 0/2 | Not started | - |
+| 36. Envelope Format Migration | 1/2 | In Progress|  |
 | 37. Keyring Hardening | 0/TBD | Not started | - |
 
 ---

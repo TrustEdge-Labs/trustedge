@@ -17,16 +17,16 @@ Fix incorrect KDF usage across the codebase. Critical: replace PBKDF2-per-chunk 
 
 ### Envelope KDF (Critical)
 
-- [ ] **ENV-01**: Envelope encryption derives encryption keys from ECDH shared secrets using HKDF-SHA256, not PBKDF2
-- [ ] **ENV-02**: Encryption key is derived once per envelope via HKDF-Extract + Expand, producing DerivedKey and NoncePrefix — not re-derived per chunk
-- [ ] **ENV-03**: Per-chunk nonces use deterministic counter mode (NoncePrefix || chunk_index || last_flag) instead of random salt generation
+- [x] **ENV-01**: Envelope encryption derives encryption keys from ECDH shared secrets using HKDF-SHA256, not PBKDF2
+- [x] **ENV-02**: Encryption key is derived once per envelope via HKDF-Extract + Expand, producing DerivedKey and NoncePrefix — not re-derived per chunk
+- [x] **ENV-03**: Per-chunk nonces use deterministic counter mode (NoncePrefix || chunk_index || last_flag) instead of random salt generation
 - [x] **ENV-04**: HKDF info parameter includes domain separation string for cryptographic binding to the TrustEdge envelope context
 - [x] **ENV-05**: Ad-hoc CatKDF construction (concatenating shared_secret + salt + sequence + metadata as IKM) is eliminated in favor of structured HKDF inputs
 - [x] **ENV-06**: `hkdf` crate added as workspace dependency with appropriate version
 
 ### Envelope Versioning
 
-- [ ] **VER-01**: Envelope format includes version field to distinguish v1 (legacy PBKDF2-per-chunk) from v2 (HKDF-once) formats
+- [x] **VER-01**: Envelope format includes version field to distinguish v1 (legacy PBKDF2-per-chunk) from v2 (HKDF-once) formats
 - [ ] **VER-02**: Decryption path supports both v1 and v2 envelope formats via version-based dispatch, preserving backward compatibility for existing encrypted data
 
 ### Keyring Hardening (Moderate)
@@ -65,13 +65,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENV-01 | Phase 36 | Pending |
-| ENV-02 | Phase 36 | Pending |
-| ENV-03 | Phase 36 | Pending |
+| ENV-01 | Phase 36 | Complete |
+| ENV-02 | Phase 36 | Complete |
+| ENV-03 | Phase 36 | Complete |
 | ENV-04 | Phase 35 | Complete |
 | ENV-05 | Phase 35 | Complete |
 | ENV-06 | Phase 35 | Complete |
-| VER-01 | Phase 36 | Pending |
+| VER-01 | Phase 36 | Complete |
 | VER-02 | Phase 36 | Pending |
 | KEY-01 | Phase 37 | Pending |
 | KEY-02 | Phase 37 | Pending |
