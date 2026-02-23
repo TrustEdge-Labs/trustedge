@@ -222,3 +222,33 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
+
+## v1.7 Security & Quality Hardening (Shipped: 2026-02-23)
+
+**Phases completed:** 4 phases (31-34), 10 plans, 18 tasks
+**Timeline:** 1 day (2026-02-23)
+**Stats:** 90 files changed, 6,082 insertions, 1,855 deletions, 44 commits
+
+**Delivered:** Hardened secret handling, deleted deprecated code, isolated experimental crates, deduplicated verify handler, hardened CORS, and added comprehensive integration tests.
+
+**Key accomplishments:**
+- In-house Secret<T> wrapper type with zeroize, redacted Debug, no Display/Deref/Serialize — all sensitive fields wrapped
+- Builder pattern for config structs containing secrets (YubiKeyConfig, SoftwareHsmConfig) with CI regression check (Step 23)
+- Deleted deprecated facade crates (trustedge-receipts, trustedge-attestation) and isolated experimental pubky crates into standalone workspace at crates/experimental/
+- Deduplicated verify handler validation via validate_verify_request_full() and shared receipt construction via build_receipt_if_requested()
+- Hardened CORS: CorsLayer::new() for verify-only (same-origin), restricted headers for postgres build
+- CA module documented as library-only with Axum coupling removed; build_base_router() shared builder ensures test/production middleware parity
+- 16 new integration tests: platform-server wiring (5), HTTP verify round-trip with JWS/JWKS (4), CORS parity, and more
+
+**Tech debt carried forward:**
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+- RSA Marvin Attack advisory (RUSTSEC-2023-0071) accepted (carried from v1.3)
+
+**Git range:** v1.6..v1.7 (44 commits)
+
+**Archives:**
+- `.planning/milestones/v1.7-ROADMAP.md`
+- `.planning/milestones/v1.7-REQUIREMENTS.md`
+
+---
+

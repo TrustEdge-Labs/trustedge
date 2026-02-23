@@ -107,6 +107,8 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Active
 
+*See REQUIREMENTS.md for v1.8 KDF Architecture Fix requirements.*
+
 ### Deferred
 
 - Pubky adapter merged into core protocols/pubky/ (feature-gated)
@@ -130,6 +132,20 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - **v1.5 Platform Consolidation** — External repos merged into workspace (types, platform, verify), core owns all crypto, 5 scaffold repos archived
 - **v1.6 Final Consolidation** — Platform server binary, dashboard in monorepo with generated types, 11 orphaned repos deleted, 3-repo org
 - **v1.7 Security & Quality Hardening** — Secret<T> zeroize wrapper, facade crates deleted, experimental workspace isolated, verify handler deduplicated, CORS hardened, 16 new integration tests
+
+## Current Milestone: v1.8 KDF Architecture Fix
+
+**Goal:** Fix incorrect KDF usage across the codebase — replace PBKDF2-per-chunk with HKDF hierarchical key derivation in envelope.rs, and harden keyring backend parameters.
+
+**Target features:**
+- Replace PBKDF2 on ECDH output with HKDF in envelope.rs (critical security/performance fix)
+- Implement Tink-style streaming AEAD: ECDH → HKDF-Extract once → DerivedKey, counter nonces per chunk
+- Harden keyring backend PBKDF2 parameters (100k → 600k iterations, 16 → 32 byte salts)
+- Maintain backward compatibility for existing encrypted data where applicable
+
+**Research sources:**
+- Google Tink AES-GCM-HKDF Streaming AEAD specification
+- Trail of Bits "Best Practices for Key Derivation" (2025-01-28)
 
 ## Context
 
@@ -222,4 +238,4 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | OnceLock<Mutex> for env-var tests | Serializes tests manipulating PORT env var | ✓ Good — no parallel-thread races |
 
 ---
-*Last updated: 2026-02-23 after v1.7 milestone completion*
+*Last updated: 2026-02-22 after v1.8 milestone started*

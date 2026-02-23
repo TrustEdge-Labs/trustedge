@@ -10,18 +10,19 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-23)
+See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** v1.7 shipped. Ready for next milestone.
+**Current focus:** v1.8 KDF Architecture Fix — fixing KDF usage across envelope.rs and keyring backends.
 
 ## Current Position
 
-Phase: v1.7 complete (34 phases total across 7 milestones)
-Status: Milestone v1.7 Security & Quality Hardening shipped 2026-02-23
-Last activity: 2026-02-23 — archived v1.7 milestone
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-22 — Milestone v1.8 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -40,7 +41,10 @@ Progress: [██████████] 100%
 
 ### Decisions
 
-All v1.7 decisions archived to `.planning/milestones/v1.7-ROADMAP.md`.
+- Envelope.rs: Replace PBKDF2-per-chunk with HKDF hierarchical derivation (Tink AES-GCM-HKDF streaming model adapted to ECDH)
+- Keyring backends: Harden PBKDF2 iterations (100k → 600k) and salt length (16 → 32 bytes)
+- Experimental crates (pubky-advanced): Out of scope for this milestone
+- auth.rs BLAKE3::derive_key: Already correct, no changes needed
 
 ### Pending Todos
 
@@ -53,9 +57,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23
-Stopped at: Completed v1.7 milestone archival
-Resume at: /gsd:new-milestone for next version
+Last session: 2026-02-22
+Stopped at: Milestone v1.8 setup — defining requirements
+Resume at: Define REQUIREMENTS.md, then create ROADMAP.md
 
 ---
-*Last updated: 2026-02-23 after v1.7 milestone completion*
+*Last updated: 2026-02-22 after v1.8 milestone started*
