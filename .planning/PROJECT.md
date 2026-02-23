@@ -88,18 +88,24 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ Dashboard TypeScript types generated from `trustedge-types` JSON schemas — v1.6
 - ✓ 11 orphaned repos deleted from TrustEdge-Labs GitHub org — v1.6
 - ✓ CLAUDE.md and documentation updated for 3-repo org structure — v1.6
+- ✓ Secret<T> wrapper type with zeroize, redacted Debug, no Display/Deref/Serialize — v1.7
+- ✓ All sensitive fields (PIN, passphrase, JWT secret, password) wrapped in Secret<T> with ZeroizeOnDrop — v1.7
+- ✓ Serde derives removed from YubiKeyConfig, SoftwareHsmConfig, LoginRequest — v1.7
+- ✓ Builder pattern for config structs containing secrets — v1.7
+- ✓ CI Step 23 enforces no Serialize derive regression on secret-holding structs — v1.7
+- ✓ Deprecated facade crates (trustedge-receipts, trustedge-attestation) deleted from workspace — v1.7
+- ✓ Experimental pubky crates isolated in crates/experimental/ as standalone workspace — v1.7
+- ✓ CI simplified to --workspace (no tiered logic after experimental isolation) — v1.7
+- ✓ verify_handler validation deduplicated via validate_verify_request_full() — v1.7
+- ✓ Receipt construction shared via build_receipt_if_requested() — v1.7
+- ✓ Non-postgres build uses restrictive CORS (CorsLayer::new(), same-origin only) — v1.7
+- ✓ Postgres build restricts CORS headers to Content-Type, Authorization, Accept — v1.7
+- ✓ CA module documented as library-only, Axum coupling removed — v1.7
+- ✓ Shared build_base_router() ensures create_test_app mirrors create_router middleware — v1.7
+- ✓ Platform-server wiring integration tests (Config, AppState, router health) — v1.7
+- ✓ Full HTTP verify round-trip test with JWS receipt verified against JWKS endpoint — v1.7
 
 ### Active
-
-## Current Milestone: v1.7 Security & Quality Hardening
-
-**Goal:** Address reviewer-identified security gaps, remove dead code, harden platform quality.
-
-**Target features:**
-- Secret zeroization for all sensitive fields (PIN, passphrase, JWT secret, password)
-- Removal of deprecated facade crates (receipts, attestation) and Tier 2 workspace separation
-- Platform verify_handler deduplication and CORS hardening
-- Platform-server integration test coverage
 
 ### Deferred
 
@@ -123,17 +129,19 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - **v1.4 Placeholder Elimination** — Secure-by-default QUIC TLS, dead code removal, stub elimination, TODO hygiene with CI enforcement
 - **v1.5 Platform Consolidation** — External repos merged into workspace (types, platform, verify), core owns all crypto, 5 scaffold repos archived
 - **v1.6 Final Consolidation** — Platform server binary, dashboard in monorepo with generated types, 11 orphaned repos deleted, 3-repo org
+- **v1.7 Security & Quality Hardening** — Secret<T> zeroize wrapper, facade crates deleted, experimental workspace isolated, verify handler deduplicated, CORS hardened, 16 new integration tests
 
 ## Context
 
-Shipped v1.6 with 34,526 Rust LOC across 12 crates + SvelteKit dashboard at web/dashboard/.
+Shipped v1.7 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
 Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit (TypeScript).
 TrustEdge-Labs GitHub org has exactly 3 repos: trustedge (main workspace), trustedgelabs-website, shipsecure.
 trustedge-core owns all crypto — platform calls core::chain and core::crypto; re-exports SigningKey/VerifyingKey for downstream use.
 Platform server binary (`crates/platform-server/`) boots Axum via `trustedge_platform::create_router()` with deploy/ artifacts (Dockerfile, docker-compose.yml).
 Dashboard TypeScript types generated from trustedge-types JSON schemas — no hand-written type definitions for shared types.
-CI tiered: core crates blocking, experimental crates non-blocking. YubiKey feature validated unconditionally. cargo-audit + TODO hygiene enforced on every push/PR.
+CI uses `--workspace` for root workspace. Experimental crates (pubky) isolated in standalone workspace at crates/experimental/. YubiKey feature validated unconditionally. cargo-audit + TODO hygiene enforced on every push/PR. Secret struct regression check (CI Step 23) ensures no serde derives on secret-holding structs.
 Heavy optional deps (git2, keyring) feature-gated. Platform features: http, postgres, ca, openapi, yubikey. Dependency tree baseline: 70.
+All sensitive config fields wrapped in Secret<T> with ZeroizeOnDrop. CORS: same-origin for verify-only, restricted headers for postgres. CA module is library-only (no HTTP exposure).
 Key generation and attestation deferred to future (yubikey crate API limitations).
 
 ## Constraints
@@ -200,6 +208,18 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | TypeScript types generated from JSON schemas | json-schema-to-typescript as devDependency | ✓ Good — no hand-written type drift |
 | Delete repos (not archive) | All code consolidated, no external audience | ✓ Good — clean 3-repo org |
 | debian-slim over alpine for Dockerfile | glibc compatibility with sqlx native-tls | ✓ Good — stable runtime base |
+| In-house Secret<T> over secrecy crate | zeroize already in workspace, API surface is small | ✓ Good — zero new deps, compile-time safety |
+| Builder pattern for secret-holding configs | Prevents accidental bypass of Secret<T> wrapping | ✓ Good — clean construction API |
+| LoginRequest custom Deserialize | Password wrapped in Secret at JSON parsing boundary via private raw struct | ✓ Good — no exposure window |
+| CI Step 23 for secret regression | grep-based check catches Serialize derives on secret structs | ✓ Good — automated safety net |
+| Delete facade crates immediately | Not published to crates.io, git history preserves them | ✓ Good — clean workspace |
+| Standalone experimental workspace | crates/experimental/ with own Cargo.lock, no coupling to root | ✓ Good — clean dependency isolation |
+| validate_verify_request_full as public API | Single always-compiled function, first-error-wins ordering | ✓ Good — no duplicated validation |
+| build_receipt_if_requested with manifest_digest_fn | Avoids feature-flag coupling in shared code | ✓ Good — clean separation |
+| CorsLayer::new() for verify-only | Same-origin only, denies all cross-origin by default | ✓ Good — secure default |
+| CA module as library-only | Axum coupling removed, plain service functions, annotated sub-modules | ✓ Good — clear API boundary |
+| build_base_router shared builder | Both create_router and create_test_app call same route builder | ✓ Good — middleware parity guaranteed |
+| OnceLock<Mutex> for env-var tests | Serializes tests manipulating PORT env var | ✓ Good — no parallel-thread races |
 
 ---
-*Last updated: 2026-02-22 after v1.7 milestone started*
+*Last updated: 2026-02-23 after v1.7 milestone completion*
