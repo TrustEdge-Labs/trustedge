@@ -112,17 +112,11 @@ fn main() -> Result<()> {
 
             if let Some(verification_info) = &result.verification_info {
                 println!();
-                println!("● Verification Information (demo mode):");
+                println!("● Verification Information:");
                 println!(
                     "   • Public Key: {}...",
                     &verification_info.verification_key[..16]
                 );
-                if let Some(private_key) = &verification_info.private_key {
-                    println!(
-                        "   • Private Key: {}... (included for demo)",
-                        &private_key[..16]
-                    );
-                }
             }
         }
     }

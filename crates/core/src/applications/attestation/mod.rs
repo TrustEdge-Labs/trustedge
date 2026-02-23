@@ -77,8 +77,6 @@ pub struct AttestationResult {
 pub struct VerificationInfo {
     /// Public key for verification (hex encoded)
     pub verification_key: String,
-    /// Private key for unsealing (demo only - hex encoded)
-    pub private_key: Option<String>,
 }
 
 /// Create a cryptographically signed software attestation
@@ -181,12 +179,16 @@ pub fn create_signed_attestation(config: AttestationConfig) -> Result<Attestatio
     }
 }
 
-/// Create a cryptographically sealed attestation envelope
+/// Create a cryptographically signed attestation
+///
+/// The attestation payload is stored as plaintext JSON (attestations are public
+/// provenance records) with an Ed25519 signature for integrity verification.
+/// The private key is NEVER included in the output.
 fn create_sealed_attestation(
     attestation: Attestation,
     key_source: KeySource,
 ) -> Result<AttestationResult> {
-    use crate::Envelope;
+    use ed25519_dalek::Signer;
 
     // Get or generate signing key
     let signing_key = match key_source {
@@ -197,39 +199,34 @@ fn create_sealed_attestation(
         KeySource::Provided { signing_key } => *signing_key,
     };
 
-    // Serialize attestation to JSON for the envelope payload
-    let payload = serde_json::to_vec(&attestation).context("Failed to serialize attestation")?;
+    // Serialize attestation to canonical JSON (plaintext — attestations are public records)
+    let attestation_bytes =
+        serde_json::to_vec(&attestation).context("Failed to serialize attestation")?;
 
-    // For attestations, we use the same key as both sender and beneficiary
-    // This makes it a publicly verifiable signature rather than encrypted message
-    let beneficiary_key = signing_key.verifying_key();
+    // Sign the attestation payload
+    let signature = signing_key.sign(&attestation_bytes);
 
-    // Create the cryptographic envelope
-    let envelope = Envelope::seal(&payload, &signing_key, &beneficiary_key)
-        .context("Failed to create envelope")?;
-
-    // Create attestation file format
+    // Create attestation file: signed plaintext (no encryption, no private key)
     #[derive(serde::Serialize)]
-    struct AttestationFile {
-        envelope: Envelope,
+    struct SignedAttestationFile {
+        attestation: Vec<u8>, // JSON payload (plaintext)
+        #[serde(with = "serde_bytes")]
+        signature: Vec<u8>, // Ed25519 signature (64 bytes)
         verification_key: [u8; 32], // Public key for verification
-        private_key: [u8; 32],      // Private key for unsealing (demo only!)
     }
 
-    let attestation_file = AttestationFile {
-        envelope,
+    let signed_file = SignedAttestationFile {
+        attestation: attestation_bytes,
+        signature: signature.to_bytes().to_vec(),
         verification_key: signing_key.verifying_key().to_bytes(),
-        private_key: signing_key.to_bytes(),
     };
 
     // Serialize using bincode
     let serialized_output =
-        bincode::serialize(&attestation_file).context("Failed to serialize attestation file")?;
+        bincode::serialize(&signed_file).context("Failed to serialize attestation file")?;
 
-    // Create verification info
     let verification_info = Some(VerificationInfo {
         verification_key: hex::encode(signing_key.verifying_key().to_bytes()),
-        private_key: Some(hex::encode(signing_key.to_bytes())), // Demo only
     });
 
     Ok(AttestationResult {
@@ -324,43 +321,43 @@ pub fn verify_attestation(config: VerificationConfig) -> Result<VerificationResu
     })
 }
 
-/// Read attestation from envelope format
+/// Read attestation from signed file format
 fn read_envelope_attestation(path: &PathBuf) -> Result<Attestation> {
-    use crate::Envelope;
+    use ed25519_dalek::{Signature, Verifier, VerifyingKey};
     use std::fs::File;
     use std::io::BufReader;
 
     #[derive(serde::Deserialize)]
-    struct AttestationFile {
-        envelope: Envelope,
-        // Field required for correct bincode deserialization layout
-        #[allow(dead_code)]
+    struct SignedAttestationFile {
+        attestation: Vec<u8>,
+        #[serde(with = "serde_bytes")]
+        signature: Vec<u8>,
         verification_key: [u8; 32],
-        private_key: [u8; 32],
     }
 
     let file = File::open(path)
         .with_context(|| format!("Failed to open attestation file: {}", path.display()))?;
     let mut reader = BufReader::new(file);
 
-    let attestation_file: AttestationFile =
+    let signed_file: SignedAttestationFile =
         bincode::deserialize_from(&mut reader).context("Failed to read attestation file")?;
 
-    // Verify the envelope signature
-    if !attestation_file.envelope.verify() {
-        return Err(anyhow::anyhow!("Envelope signature verification failed"));
-    }
+    // Verify the Ed25519 signature over the attestation payload
+    let verifying_key = VerifyingKey::from_bytes(&signed_file.verification_key)
+        .context("Invalid verification key in attestation file")?;
 
-    // Reconstruct the private key for unsealing
-    let private_key = ed25519_dalek::SigningKey::from_bytes(&attestation_file.private_key);
+    let sig_bytes: [u8; 64] = signed_file
+        .signature
+        .try_into()
+        .map_err(|_| anyhow::anyhow!("Invalid signature length in attestation file"))?;
+    let signature = Signature::from_bytes(&sig_bytes);
 
-    let payload = attestation_file
-        .envelope
-        .unseal(&private_key)
-        .context("Failed to unseal envelope")?;
+    verifying_key
+        .verify(&signed_file.attestation, &signature)
+        .map_err(|_| anyhow::anyhow!("Attestation signature verification failed"))?;
 
-    let attestation: Attestation = serde_json::from_slice(&payload)
-        .context("Failed to parse attestation from envelope payload")?;
+    let attestation: Attestation = serde_json::from_slice(&signed_file.attestation)
+        .context("Failed to parse attestation from signed payload")?;
 
     Ok(attestation)
 }
@@ -436,7 +433,6 @@ mod tests {
 
         if let Some(verification_info) = &result.verification_info {
             assert!(!verification_info.verification_key.is_empty());
-            assert!(verification_info.private_key.is_some());
         }
 
         // Write the attestation to a temporary file
