@@ -46,6 +46,7 @@ blake3 = "1.5"
 x25519-dalek = { version = "2", features = ["static_secrets"] }
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 p256 = { version = "0.13", features = ["ecdsa", "pem", "ecdh"] }
+hkdf = "0.12"
 pbkdf2 = "0.12"
 rand = "0.8"
 rand_core = "0.6"

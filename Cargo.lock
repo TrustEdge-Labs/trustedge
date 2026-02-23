@@ -4904,6 +4904,7 @@ dependencies = [
  "futures-util",
  "git2",
  "hex",
+ "hkdf",
  "keyring",
  "num-traits",
  "p256 0.13.2",
