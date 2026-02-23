@@ -117,7 +117,7 @@ Hardened secret handling with in-house Secret<T> wrapper (zeroize, redacted Debu
   2. The ad-hoc CatKDF construction (concatenating shared_secret + salt + sequence + metadata as IKM) is gone from envelope.rs
   3. HKDF inputs use structured fields: ECDH shared secret as IKM, a TrustEdge-specific domain separation string as info
   4. `cargo test -p trustedge-core --lib` passes with no regressions
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [x] 35-01-PLAN.md -- Wire hkdf dependency and replace PBKDF2 CatKDF with HKDF-SHA256 in envelope.rs
 
@@ -151,7 +151,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 35. HKDF Infrastructure | 1/1 | Complete | 2026-02-23 |
+| 35. HKDF Infrastructure | 1/1 | Complete    | 2026-02-23 |
 | 36. Envelope Format Migration | 0/TBD | Not started | - |
 | 37. Keyring Hardening | 0/TBD | Not started | - |
 
