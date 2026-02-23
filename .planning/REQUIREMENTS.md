@@ -38,8 +38,8 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 ### Platform Testing
 
 - [x] **TST-01**: Platform-server binary crate has integration tests validating AppState wiring
-- [ ] **TST-02**: create_test_app faithfully mirrors create_router (CORS, trace, auth middleware)
-- [ ] **TST-03**: Full verify round-trip tested over HTTP (valid signature, receipt returned)
+- [x] **TST-02**: create_test_app faithfully mirrors create_router (CORS, trace, auth middleware)
+- [x] **TST-03**: Full verify round-trip tested over HTTP (valid signature, receipt returned)
 
 ## Future Requirements
 
@@ -78,8 +78,8 @@ Requirements for v1.7 Security & Quality Hardening. Each maps to roadmap phases.
 | PLT-02 | Phase 33 | Complete |
 | PLT-03 | Phase 33 | Complete |
 | TST-01 | Phase 34 | Complete |
-| TST-02 | Phase 34 | Pending |
-| TST-03 | Phase 34 | Pending |
+| TST-02 | Phase 34 | Complete |
+| TST-03 | Phase 34 | Complete |
 
 **Coverage:**
 - v1.7 requirements: 14 total

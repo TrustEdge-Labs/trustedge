@@ -18,11 +18,11 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 34 of 34 (Platform Testing) — IN PROGRESS
-Plan: 1 of ? in phase 34
-Status: Plan 34-01 complete (5-test wiring suite for platform-server: Config env loading, AppState construction, router health + verify rejection)
-Last activity: 2026-02-23 — executed 34-01 (platform-server wiring integration tests)
+Plan: 2 of ? in phase 34
+Status: Plan 34-02 complete (router parity refactor: build_base_router extracted, create_test_app delegates to create_router; 4 new HTTP integration tests: CORS parity, verify round-trip, JWKS receipt verification, wrong-key failure)
+Last activity: 2026-02-22 — executed 34-02 (router parity and verify round-trip tests)
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
@@ -34,13 +34,18 @@ Progress: [████████░░] 80%
 - v1.4: 5 phases, 5 plans, 10 tasks
 - v1.5: 4 phases, 8 plans, 16 tasks
 - v1.6: 3 phases, 6 plans, 11 tasks
-- **v1.7 so far: 5 phases, 10 plans, 16 tasks**
-- **Total: 35 phases, 61 plans, 108 tasks**
+- **v1.7 so far: 5 phases, 11 plans, 18 tasks**
+- **Total: 35 phases, 62 plans, 110 tasks**
 
 ## Accumulated Context
 
 ### Decisions
 
+- **34-02:** build_base_router returns Router<AppState> (unfinalized) so create_router can add postgres routes before with_state
+- **34-02:** create_test_app delegates entirely to create_router — no duplicated route definitions, middleware stack identical to production
+- **34-02:** CORS parity test uses two independent router instances from cloned AppState, not test/prod path comparison
+- **34-02:** JWS JWKS 'x' field uses standard base64 (not url-safe) — matches jwks.rs BASE64.encode convention
+- **34-02:** test_verify_wrong_key expects HTTP 200 with passed=false (server returns result, not error status)
 - **34-01:** Axum returns 422 Unprocessable Entity (not 400) for JSON extraction failures — test asserts UNPROCESSABLE_ENTITY
 - **34-01:** OnceLock<Mutex<()>> pattern serializes env-var tests to prevent parallel-thread races on PORT variable
 - **34-01:** serde_json added as explicit dev-dep in platform-server — integration test binaries don't inherit transitive deps
@@ -79,9 +84,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23
-Stopped at: Completed 34-01-PLAN.md (platform-server wiring integration tests — 5 tests covering Config env loading, AppState construction, router health, and verify endpoint rejection)
+Last session: 2026-02-22
+Stopped at: Completed 34-02-PLAN.md (router parity refactor and verify round-trip tests — build_base_router extracted, 11 integration tests total)
 Resume at: Continue phase 34
 
 ---
-*Last updated: 2026-02-23 after executing 34-01*
+*Last updated: 2026-02-22 after executing 34-02*
