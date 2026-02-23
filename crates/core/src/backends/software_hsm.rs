@@ -9,13 +9,14 @@
 //! Software HSM backend for cryptographic operations
 //!
 //! This backend implements a software-based Hardware Security Module that mimics
-//! the asymmetric capabilities of hardware devices like YubiKeys. It stores
-//! private keys securely on disk in PEM format, protected by passphrases.
+//! the asymmetric capabilities of hardware devices like YubiKeys. Private keys
+//! are encrypted at rest using AES-256-GCM with a key derived from the configured
+//! passphrase via PBKDF2-HMAC-SHA256 (600,000 iterations).
 //!
 //! Key features:
 //! - Asymmetric key generation (Ed25519, ECDSA P-256)
 //! - Digital signing and verification
-//! - Secure key storage with passphrase protection
+//! - Private key encryption at rest (AES-256-GCM with PBKDF2-derived key from passphrase)
 //! - Key enumeration and metadata management
 //! - Validates UniversalBackend architecture for hardware integration
 
@@ -26,6 +27,7 @@ use crate::backends::universal::{
 };
 use crate::error::BackendError;
 use crate::secret::Secret;
+use aes_gcm::{aead::Aead, Aes256Gcm, KeyInit, Nonce};
 use anyhow::{Context, Result};
 use ed25519_dalek::{Signature as Ed25519Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use p256::{
@@ -36,13 +38,23 @@ use p256::{
     elliptic_curve::sec1::{FromEncodedPoint, ToEncodedPoint},
     PublicKey as P256PublicKey, SecretKey as P256SecretKey,
 };
+use pbkdf2::pbkdf2_hmac;
 use rand::rngs::OsRng;
+use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256, Sha384, Sha512};
 use std::collections::HashMap;
 use std::fmt;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use zeroize::Zeroize;
+
+/// PBKDF2 iteration count (OWASP 2023 recommendation for PBKDF2-HMAC-SHA256)
+const PBKDF2_ITERATIONS: u32 = 600_000;
+/// Salt length in bytes
+const SALT_LEN: usize = 32;
+/// AES-256-GCM nonce length in bytes
+const AES_NONCE_LEN: usize = 12;
 
 /// Configuration for the Software HSM backend
 ///
@@ -212,6 +224,86 @@ impl SoftwareHsmBackend {
         Ok(())
     }
 
+    /// Encrypt a private key and write it to disk.
+    ///
+    /// Derives an AES-256-GCM key from the configured passphrase via PBKDF2-HMAC-SHA256,
+    /// then writes `salt(32) || nonce(12) || ciphertext` to the file.
+    fn encrypt_private_key(&self, path: &Path, key_bytes: &[u8]) -> Result<()> {
+        let mut salt = [0u8; SALT_LEN];
+        OsRng.fill_bytes(&mut salt);
+
+        let mut derived_key = [0u8; 32];
+        pbkdf2_hmac::<Sha256>(
+            self.config.default_passphrase().as_bytes(),
+            &salt,
+            PBKDF2_ITERATIONS,
+            &mut derived_key,
+        );
+
+        let cipher = Aes256Gcm::new_from_slice(&derived_key)
+            .map_err(|e| anyhow::anyhow!("Failed to create AES cipher: {}", e))?;
+
+        let mut nonce_bytes = [0u8; AES_NONCE_LEN];
+        OsRng.fill_bytes(&mut nonce_bytes);
+        let nonce = Nonce::from_slice(&nonce_bytes);
+
+        let ciphertext = cipher
+            .encrypt(nonce, key_bytes)
+            .map_err(|e| anyhow::anyhow!("Failed to encrypt private key: {}", e))?;
+
+        derived_key.zeroize();
+
+        // Write salt || nonce || ciphertext
+        let mut output = Vec::with_capacity(SALT_LEN + AES_NONCE_LEN + ciphertext.len());
+        output.extend_from_slice(&salt);
+        output.extend_from_slice(&nonce_bytes);
+        output.extend_from_slice(&ciphertext);
+
+        fs::write(path, &output).context("Failed to write encrypted private key")?;
+        Ok(())
+    }
+
+    /// Read an encrypted private key from disk and decrypt it.
+    ///
+    /// Expects file format: `salt(32) || nonce(12) || ciphertext`.
+    fn decrypt_private_key(&self, path: &Path) -> Result<Vec<u8>> {
+        let data = fs::read(path).context("Failed to read private key file")?;
+
+        let min_len = SALT_LEN + AES_NONCE_LEN + 16; // 16 = AES-GCM tag
+        if data.len() < min_len {
+            return Err(anyhow::anyhow!(
+                "Encrypted key file too short ({} bytes, minimum {})",
+                data.len(),
+                min_len
+            ));
+        }
+
+        let salt = &data[..SALT_LEN];
+        let nonce_bytes = &data[SALT_LEN..SALT_LEN + AES_NONCE_LEN];
+        let ciphertext = &data[SALT_LEN + AES_NONCE_LEN..];
+
+        let mut derived_key = [0u8; 32];
+        pbkdf2_hmac::<Sha256>(
+            self.config.default_passphrase().as_bytes(),
+            salt,
+            PBKDF2_ITERATIONS,
+            &mut derived_key,
+        );
+
+        let cipher = Aes256Gcm::new_from_slice(&derived_key)
+            .map_err(|e| anyhow::anyhow!("Failed to create AES cipher: {}", e))?;
+
+        let nonce = Nonce::from_slice(nonce_bytes);
+
+        let plaintext = cipher.decrypt(nonce, ciphertext).map_err(|e| {
+            anyhow::anyhow!("Failed to decrypt private key (wrong passphrase?): {}", e)
+        })?;
+
+        derived_key.zeroize();
+
+        Ok(plaintext)
+    }
+
     /// Generate a new key pair and store it
     pub fn generate_key_pair(
         &mut self,
@@ -233,11 +325,11 @@ impl SoftwareHsmBackend {
                 let signing_key = SigningKey::generate(&mut OsRng);
                 let verifying_key = signing_key.verifying_key();
 
-                // Store private key as bytes
-                fs::write(&private_key_path, signing_key.to_bytes())
+                // Store private key encrypted with passphrase
+                self.encrypt_private_key(&private_key_path, &signing_key.to_bytes())
                     .context("Failed to write Ed25519 private key")?;
 
-                // Store public key as bytes
+                // Store public key as plaintext bytes
                 fs::write(&public_key_path, verifying_key.to_bytes())
                     .context("Failed to write Ed25519 public key")?;
             }
@@ -245,11 +337,11 @@ impl SoftwareHsmBackend {
                 let secret_key = P256SecretKey::random(&mut OsRng);
                 let public_key = secret_key.public_key();
 
-                // Store private key as bytes
-                fs::write(&private_key_path, secret_key.to_bytes())
+                // Store private key encrypted with passphrase
+                self.encrypt_private_key(&private_key_path, &secret_key.to_bytes())
                     .context("Failed to write P256 private key")?;
 
-                // Store public key as bytes (uncompressed format)
+                // Store public key as plaintext bytes (uncompressed format)
                 fs::write(
                     &public_key_path,
                     public_key.to_encoded_point(false).as_bytes(),
@@ -284,14 +376,14 @@ impl SoftwareHsmBackend {
         Ok(())
     }
 
-    /// Load a private key from disk
+    /// Load and decrypt a private key from disk
     fn load_private_key(&self, key_id: &str) -> Result<Vec<u8>> {
         let metadata = self
             .key_metadata
             .get(key_id)
             .ok_or_else(|| anyhow::anyhow!("Key not found: {}", key_id))?;
 
-        fs::read(&metadata.private_key_path)
+        self.decrypt_private_key(&metadata.private_key_path)
             .with_context(|| format!("Failed to read private key: {}", key_id))
     }
 
@@ -850,8 +942,20 @@ mod tests {
         let private_key_size = fs::metadata(&private_key_path)?.len();
         let public_key_size = fs::metadata(&public_key_path)?.len();
 
-        assert_eq!(private_key_size, 32); // Ed25519 private key is 32 bytes
-        assert_eq!(public_key_size, 32); // Ed25519 public key is 32 bytes
+        // Encrypted: salt(32) + nonce(12) + key(32) + GCM tag(16) = 92 bytes
+        assert_eq!(private_key_size, 92);
+        assert_eq!(public_key_size, 32); // Ed25519 public key is 32 bytes (plaintext)
+
+        // Verify the raw file does NOT contain the plaintext private key
+        let raw_bytes = fs::read(&private_key_path)?;
+        let decrypted = backend.load_private_key("file_test")?;
+        // The encrypted file should not contain the plaintext key bytes as a subsequence
+        assert!(
+            !raw_bytes
+                .windows(decrypted.len())
+                .any(|w| w == decrypted.as_slice()),
+            "Encrypted file must not contain plaintext private key"
+        );
 
         Ok(())
     }
@@ -1333,17 +1437,19 @@ mod tests {
 
         backend.generate_key_pair("corrupt_test", AsymmetricAlgorithm::Ed25519, None)?;
 
-        // Corrupt the private key file
+        // Corrupt the private key file with data too short for encrypted format
         let private_key_path = temp_dir.path().join("corrupt_test_private.key");
-        fs::write(&private_key_path, [0; 16])?; // Wrong size
+        fs::write(&private_key_path, [0; 16])?; // Too short for salt+nonce+tag
 
-        // Signing should fail
+        // Signing should fail (file too short to decrypt)
         let result = backend.sign_data("corrupt_test", b"test", SignatureAlgorithm::Ed25519);
         assert!(result.is_err());
-        assert!(result
-            .unwrap_err()
-            .to_string()
-            .contains("Invalid Ed25519 private key length"));
+        let err = format!("{:#}", result.unwrap_err());
+        assert!(
+            err.contains("Encrypted key file too short"),
+            "Expected 'too short' error for truncated encrypted key file, got: {}",
+            err
+        );
 
         Ok(())
     }
@@ -1532,6 +1638,82 @@ mod tests {
 
         // What matters is that all signatures verify correctly
         assert_eq!(signatures.len(), 5);
+
+        Ok(())
+    }
+
+    // ===== Encryption-at-Rest Tests =====
+
+    #[test]
+    fn test_encrypted_keys_not_plaintext() -> Result<()> {
+        let (mut backend, temp_dir) = create_test_backend()?;
+
+        // Generate both Ed25519 and P256 keys
+        backend.generate_key_pair("enc_ed25519", AsymmetricAlgorithm::Ed25519, None)?;
+        backend.generate_key_pair("enc_p256", AsymmetricAlgorithm::EcdsaP256, None)?;
+
+        for key_id in &["enc_ed25519", "enc_p256"] {
+            let private_key_path = temp_dir.path().join(format!("{}_private.key", key_id));
+            let raw_bytes = fs::read(&private_key_path)?;
+            let decrypted = backend.load_private_key(key_id)?;
+
+            // File must be larger than the raw key (has salt + nonce + tag overhead)
+            assert!(
+                raw_bytes.len() > decrypted.len(),
+                "Encrypted file for {} must be larger than plaintext key",
+                key_id
+            );
+
+            // File must not contain the plaintext key bytes
+            assert!(
+                !raw_bytes
+                    .windows(decrypted.len())
+                    .any(|w| w == decrypted.as_slice()),
+                "Encrypted file for {} must not contain plaintext private key",
+                key_id
+            );
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_wrong_passphrase_fails_decryption() -> Result<()> {
+        let temp_dir = TempDir::new()?;
+
+        // Generate a key with passphrase A
+        {
+            let config = SoftwareHsmConfig::builder()
+                .key_store_path(temp_dir.path().to_path_buf())
+                .default_passphrase("correct-passphrase".to_string())
+                .metadata_file(temp_dir.path().join("metadata.json"))
+                .build();
+            let mut backend = SoftwareHsmBackend::with_config(config)?;
+            backend.generate_key_pair("wrong_pw_test", AsymmetricAlgorithm::Ed25519, None)?;
+
+            // Verify signing works with the correct passphrase
+            let sig = backend.sign_data("wrong_pw_test", b"hello", SignatureAlgorithm::Ed25519)?;
+            assert!(!sig.is_empty());
+        }
+
+        // Try to load the key with passphrase B — should fail
+        {
+            let config = SoftwareHsmConfig::builder()
+                .key_store_path(temp_dir.path().to_path_buf())
+                .default_passphrase("wrong-passphrase".to_string())
+                .metadata_file(temp_dir.path().join("metadata.json"))
+                .build();
+            let mut backend = SoftwareHsmBackend::with_config(config)?;
+
+            let result = backend.sign_data("wrong_pw_test", b"hello", SignatureAlgorithm::Ed25519);
+            assert!(result.is_err(), "Signing with wrong passphrase must fail");
+            let err = format!("{:#}", result.unwrap_err());
+            assert!(
+                err.contains("wrong passphrase"),
+                "Error should mention wrong passphrase, got: {}",
+                err
+            );
+        }
 
         Ok(())
     }
