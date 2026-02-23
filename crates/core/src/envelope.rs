@@ -58,13 +58,14 @@ pub struct EnvelopeMetadata {
 
 /// Derive a shared encryption key via X25519 ECDH key agreement
 ///
-/// Converts Ed25519 keys to their Curve25519 (Montgomery) equivalents and
-/// performs Diffie-Hellman to produce a shared secret that only the two
-/// parties can compute. The shared secret is then fed into PBKDF2 alongside
-/// public context to derive the per-chunk AES-256-GCM key.
+/// Converts Ed25519 keys to X25519 using the standard conversion path
+/// documented by `ed25519-dalek`: `SigningKey::to_scalar_bytes()` →
+/// `x25519_dalek::StaticSecret`, and `VerifyingKey::to_montgomery()` →
+/// `x25519_dalek::PublicKey`. The resulting shared secret is fed into
+/// PBKDF2 alongside public context to derive the per-chunk AES-256-GCM key.
 ///
 /// DH commutativity guarantees both sides derive the same key:
-///   sender_scalar * recipient_montgomery == recipient_scalar * sender_montgomery
+///   sender_secret.diffie_hellman(recipient_pub) == recipient_secret.diffie_hellman(sender_pub)
 fn derive_shared_encryption_key(
     my_private_key: &SigningKey,
     their_public_key: &VerifyingKey,
@@ -73,20 +74,21 @@ fn derive_shared_encryption_key(
     metadata_hash: &[u8],
     iterations: u32,
 ) -> Result<[u8; 32]> {
-    // X25519 ECDH: convert Ed25519 keys to Curve25519 and compute shared secret
-    let my_scalar = my_private_key.to_scalar();
-    let their_montgomery = their_public_key.to_montgomery();
-    let shared_point = their_montgomery * my_scalar;
-    let shared_secret = shared_point.to_bytes();
+    // Convert Ed25519 keys to X25519 using the standard conversion path
+    let x25519_secret = x25519_dalek::StaticSecret::from(my_private_key.to_scalar_bytes());
+    let x25519_public = x25519_dalek::PublicKey::from(their_public_key.to_montgomery().to_bytes());
+
+    // Standard X25519 Diffie-Hellman key agreement
+    let shared_secret = x25519_secret.diffie_hellman(&x25519_public);
 
     // Reject low-order points (all-zero shared secret = contributory behavior failure)
-    if shared_secret.iter().all(|&b| b == 0) {
+    if shared_secret.as_bytes().iter().all(|&b| b == 0) {
         return Err(anyhow::anyhow!("ECDH produced zero shared secret"));
     }
 
     // KDF input: ECDH shared secret (SECRET) + public context
     let mut key_material = Vec::new();
-    key_material.extend_from_slice(&shared_secret);
+    key_material.extend_from_slice(shared_secret.as_bytes());
     key_material.extend_from_slice(salt);
     key_material.extend_from_slice(&sequence.to_le_bytes());
     key_material.extend_from_slice(metadata_hash);
