@@ -5297,6 +5297,7 @@ dependencies = [
  "clap",
  "cpal",
  "criterion",
+ "curve25519-dalek",
  "der 0.7.10",
  "ed25519-dalek",
  "futures-util",

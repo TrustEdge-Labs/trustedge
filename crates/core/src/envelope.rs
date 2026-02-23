@@ -56,39 +56,47 @@ pub struct EnvelopeMetadata {
     pub hash_algorithm: u8,
 }
 
-/// Derive a shared encryption key using only public keys and context
+/// Derive a shared encryption key via X25519 ECDH key agreement
 ///
-/// This is a simplified approach that derives the same key for both parties
-/// using only public information plus chunk-specific context.
+/// Converts Ed25519 keys to their Curve25519 (Montgomery) equivalents and
+/// performs Diffie-Hellman to produce a shared secret that only the two
+/// parties can compute. The shared secret is then fed into PBKDF2 alongside
+/// public context to derive the per-chunk AES-256-GCM key.
 ///
-/// Security note: This is not as strong as proper ECDH, but provides reasonable
-/// security for this use case where we need deterministic key derivation.
+/// DH commutativity guarantees both sides derive the same key:
+///   sender_scalar * recipient_montgomery == recipient_scalar * sender_montgomery
 fn derive_shared_encryption_key(
-    sender_key: &VerifyingKey,
-    recipient_key: &VerifyingKey,
+    my_private_key: &SigningKey,
+    their_public_key: &VerifyingKey,
     salt: &[u8; 32],
     sequence: u64,
     metadata_hash: &[u8],
     iterations: u32,
 ) -> Result<[u8; 32]> {
-    // Create deterministic key material using only public keys
-    let mut key_material = Vec::new();
+    // X25519 ECDH: convert Ed25519 keys to Curve25519 and compute shared secret
+    let my_scalar = my_private_key.to_scalar();
+    let their_montgomery = their_public_key.to_montgomery();
+    let shared_point = their_montgomery * my_scalar;
+    let shared_secret = shared_point.to_bytes();
 
-    // Use consistent ordering: sender_public || recipient_public || context
-    key_material.extend_from_slice(&sender_key.to_bytes());
-    key_material.extend_from_slice(&recipient_key.to_bytes());
+    // Reject low-order points (all-zero shared secret = contributory behavior failure)
+    if shared_secret.iter().all(|&b| b == 0) {
+        return Err(anyhow::anyhow!("ECDH produced zero shared secret"));
+    }
+
+    // KDF input: ECDH shared secret (SECRET) + public context
+    let mut key_material = Vec::new();
+    key_material.extend_from_slice(&shared_secret);
     key_material.extend_from_slice(salt);
     key_material.extend_from_slice(&sequence.to_le_bytes());
     key_material.extend_from_slice(metadata_hash);
-
-    // Add a fixed context string to prevent key reuse in other contexts
     key_material.extend_from_slice(b"TRUSTEDGE_ENVELOPE_V1");
 
     // Derive the encryption key using PBKDF2
     let mut derived_key = [0u8; 32];
     pbkdf2_hmac::<Sha256>(&key_material, salt, iterations, &mut derived_key);
 
-    // Clear the key material from memory
+    // Clear sensitive material from memory
     key_material.zeroize();
 
     Ok(derived_key)
@@ -258,11 +266,11 @@ impl Envelope {
             pubkey: signing_key.verifying_key().to_bytes().to_vec(),
         };
 
-        // Derive encryption key from signing key, beneficiary key, and chunk-specific data
+        // Derive encryption key via ECDH between sender's private key and recipient's public key
         let metadata_hash = blake3::hash(&bincode::serialize(metadata).unwrap_or_default());
         let mut encryption_key = derive_shared_encryption_key(
-            &signing_key.verifying_key(), // sender's public key
-            beneficiary_key,              // recipient's public key
+            signing_key,     // sender's private key (ECDH scalar)
+            beneficiary_key, // recipient's public key (ECDH point)
             &key_derivation_salt,
             sequence,
             metadata_hash.as_bytes(),
@@ -376,11 +384,11 @@ impl Envelope {
         let sender_public_key = VerifyingKey::from_bytes(&self.verifying_key_bytes)
             .context("Invalid sender public key in envelope")?;
 
-        // Derive the same encryption key used during sealing
+        // Derive the same encryption key via ECDH (recipient's private key + sender's public key)
         let metadata_hash = blake3::hash(&bincode::serialize(&self.metadata).unwrap_or_default());
         let mut encryption_key = derive_shared_encryption_key(
-            &sender_public_key,              // sender's public key
-            &decryption_key.verifying_key(), // recipient's public key
+            decryption_key,     // recipient's private key (ECDH scalar)
+            &sender_public_key, // sender's public key (ECDH point)
             &manifest.key_derivation_salt,
             manifest.sequence,
             metadata_hash.as_bytes(),
@@ -575,6 +583,29 @@ mod tests {
 
         // Signing key should also fail (issuer != beneficiary)
         assert!(envelope.unseal(&signing_key).is_err());
+    }
+
+    #[test]
+    fn test_third_party_cannot_derive_key() {
+        let sender = SigningKey::generate(&mut OsRng);
+        let recipient = SigningKey::generate(&mut OsRng);
+        let payload = b"confidential data";
+
+        let envelope =
+            Envelope::seal(payload, &sender, &recipient.verifying_key()).expect("Failed to seal");
+
+        // A third party who knows both public keys cannot unseal
+        let attacker = SigningKey::generate(&mut OsRng);
+        assert!(
+            envelope.unseal(&attacker).is_err(),
+            "Third party should not be able to decrypt"
+        );
+
+        // Only the intended recipient can unseal
+        let recovered = envelope
+            .unseal(&recipient)
+            .expect("Recipient should unseal");
+        assert_eq!(recovered.as_slice(), payload);
     }
 
     #[test]

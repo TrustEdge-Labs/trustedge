@@ -43,6 +43,7 @@ resolver = "2"
 aead = "0.5"
 aes-gcm = "0.10.3"
 blake3 = "1.5"
+curve25519-dalek = "4"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 p256 = { version = "0.13", features = ["ecdsa", "pem", "ecdh"] }
 pbkdf2 = "0.12"
