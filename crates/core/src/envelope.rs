@@ -12,16 +12,13 @@ use crate::{NetworkChunk, NONCE_LEN};
 use anyhow::{Context, Result};
 use blake3;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
-use pbkdf2::pbkdf2_hmac;
+use hkdf::Hkdf;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use zeroize::Zeroize;
 
 /// The chunk size to use when breaking up large payloads
 const DEFAULT_CHUNK_SIZE: usize = 64 * 1024; // 64KB chunks
-
-/// Number of PBKDF2 iterations for key derivation (balanced security/performance)
-const PBKDF2_ITERATIONS: u32 = 100_000;
 
 /// A high-level envelope that wraps and secures arbitrary payloads
 ///
@@ -56,13 +53,13 @@ pub struct EnvelopeMetadata {
     pub hash_algorithm: u8,
 }
 
-/// Derive a shared encryption key via X25519 ECDH key agreement
+/// Derive a shared encryption key via X25519 ECDH key agreement and HKDF-SHA256
 ///
 /// Converts Ed25519 keys to X25519 using the standard conversion path
 /// documented by `ed25519-dalek`: `SigningKey::to_scalar_bytes()` →
 /// `x25519_dalek::StaticSecret`, and `VerifyingKey::to_montgomery()` →
-/// `x25519_dalek::PublicKey`. The resulting shared secret is fed into
-/// PBKDF2 alongside public context to derive the per-chunk AES-256-GCM key.
+/// `x25519_dalek::PublicKey`. The raw ECDH shared secret is fed as IKM into
+/// HKDF-Extract (RFC 5869), then HKDF-Expand derives the per-chunk AES-256-GCM key.
 ///
 /// DH commutativity guarantees both sides derive the same key:
 ///   sender_secret.diffie_hellman(recipient_pub) == recipient_secret.diffie_hellman(sender_pub)
@@ -70,9 +67,9 @@ fn derive_shared_encryption_key(
     my_private_key: &SigningKey,
     their_public_key: &VerifyingKey,
     salt: &[u8; 32],
-    sequence: u64,
-    metadata_hash: &[u8],
-    iterations: u32,
+    _sequence: u64,
+    _metadata_hash: &[u8],
+    _iterations: u32,
 ) -> Result<[u8; 32]> {
     // Convert Ed25519 keys to X25519 using the standard conversion path
     let x25519_secret = x25519_dalek::StaticSecret::from(my_private_key.to_scalar_bytes());
@@ -86,20 +83,16 @@ fn derive_shared_encryption_key(
         return Err(anyhow::anyhow!("ECDH produced zero shared secret"));
     }
 
-    // KDF input: ECDH shared secret (SECRET) + public context
-    let mut key_material = Vec::new();
-    key_material.extend_from_slice(shared_secret.as_bytes());
-    key_material.extend_from_slice(salt);
-    key_material.extend_from_slice(&sequence.to_le_bytes());
-    key_material.extend_from_slice(metadata_hash);
-    key_material.extend_from_slice(b"TRUSTEDGE_ENVELOPE_V1");
+    // HKDF-Extract: extract pseudorandom key from ECDH shared secret
+    // Salt provides randomness; IKM is the raw ECDH output (NOT concatenated with other data)
+    let hkdf = Hkdf::<Sha256>::new(Some(salt), shared_secret.as_bytes());
 
-    // Derive the encryption key using PBKDF2
+    // HKDF-Expand: derive output key material with domain separation
+    // The info parameter binds the derived key to the TrustEdge envelope context
+    let info = b"TRUSTEDGE_ENVELOPE_V1";
     let mut derived_key = [0u8; 32];
-    pbkdf2_hmac::<Sha256>(&key_material, salt, iterations, &mut derived_key);
-
-    // Clear sensitive material from memory
-    key_material.zeroize();
+    hkdf.expand(info, &mut derived_key)
+        .map_err(|_| anyhow::anyhow!("HKDF expand failed"))?;
 
     Ok(derived_key)
 }
@@ -252,7 +245,7 @@ impl Envelope {
             timestamp: metadata.created_at,
             format_hint: "application/octet-stream".to_string(),
             key_derivation_salt,
-            pbkdf2_iterations: PBKDF2_ITERATIONS,
+            pbkdf2_iterations: 100_000u32,
         };
 
         let manifest_bytes =
@@ -276,7 +269,7 @@ impl Envelope {
             &key_derivation_salt,
             sequence,
             metadata_hash.as_bytes(),
-            PBKDF2_ITERATIONS,
+            100_000u32,
         )?;
 
         // Create AAD for authenticated encryption
