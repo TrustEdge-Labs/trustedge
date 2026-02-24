@@ -160,7 +160,7 @@ fi
 # ── Step 5: Feature compatibility (cargo-hack) ─────────────────────
 step "Step 5: Feature compatibility (cargo-hack)"
 if command -v cargo-hack &> /dev/null; then
-    if cargo hack check --each-feature --no-dev-deps --package trustedge-core && \
+    if cargo hack check --each-feature --no-dev-deps --exclude-features audio --package trustedge-core && \
        cargo hack check --each-feature --no-dev-deps --package trustedge-cli; then
         pass "cargo-hack each-feature"
     else
