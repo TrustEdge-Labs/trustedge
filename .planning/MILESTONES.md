@@ -252,3 +252,30 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
+
+## v1.8 KDF Architecture Fix (Shipped: 2026-02-24)
+
+**Phases completed:** 3 phases (35-37), 4 plans, 8 tasks
+**Timeline:** 2 days (2026-02-22 → 2026-02-24)
+**Stats:** 23 files changed, 1,903 insertions, 153 deletions
+
+**Delivered:** Fixed incorrect KDF usage across the codebase — replaced PBKDF2-per-chunk with HKDF hierarchical key derivation in envelope.rs, added versioned envelope format with backward-compatible decryption, and hardened keyring PBKDF2 parameters to OWASP 2023 levels.
+
+**Key accomplishments:**
+- Replaced ad-hoc PBKDF2 CatKDF with HKDF-SHA256 (RFC 5869) Extract+Expand using "TRUSTEDGE_ENVELOPE_V1" domain separation
+- v2 envelope seal path: single HKDF derivation produces 40-byte OKM (32-byte AES-256-GCM key + 8-byte nonce prefix) with deterministic counter nonces
+- Backward-compatible unseal() with try-v2-first then v1-fallback — existing encrypted data decrypts without modification
+- Hardened both keyring backends to OWASP 2023 PBKDF2 parameters: 600,000 iterations and 32-byte salts
+
+**Tech debt carried forward:**
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+- RSA Marvin Attack advisory (RUSTSEC-2023-0071) accepted (carried from v1.3)
+
+**Git range:** v1.7..1c7ac82
+
+**Archives:**
+- `.planning/milestones/v1.8-ROADMAP.md`
+- `.planning/milestones/v1.8-REQUIREMENTS.md`
+
+---
+

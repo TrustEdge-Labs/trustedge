@@ -105,9 +105,18 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - ✓ Platform-server wiring integration tests (Config, AppState, router health) — v1.7
 - ✓ Full HTTP verify round-trip test with JWS receipt verified against JWKS endpoint — v1.7
 
+- ✓ HKDF-SHA256 replaces PBKDF2 for ECDH key derivation in envelope.rs — v1.8
+- ✓ Single HKDF derivation per envelope (DerivedKey + NoncePrefix), not per-chunk — v1.8
+- ✓ Deterministic counter nonces (NoncePrefix || chunk_index || last_flag) — v1.8
+- ✓ Domain separation via "TRUSTEDGE_ENVELOPE_V1" info parameter — v1.8
+- ✓ Versioned envelope format (v1 legacy PBKDF2, v2 HKDF-once) — v1.8
+- ✓ Backward-compatible decryption of v1 envelopes via try-v2-then-v1-fallback — v1.8
+- ✓ Keyring PBKDF2 hardened to 600,000 iterations per OWASP 2023 — v1.8
+- ✓ Keyring salt length increased to 32 bytes — v1.8
+
 ### Active
 
-*See REQUIREMENTS.md for v1.8 KDF Architecture Fix requirements.*
+(No active requirements — start next milestone to define.)
 
 ### Deferred
 
@@ -132,27 +141,16 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 - **v1.5 Platform Consolidation** — External repos merged into workspace (types, platform, verify), core owns all crypto, 5 scaffold repos archived
 - **v1.6 Final Consolidation** — Platform server binary, dashboard in monorepo with generated types, 11 orphaned repos deleted, 3-repo org
 - **v1.7 Security & Quality Hardening** — Secret<T> zeroize wrapper, facade crates deleted, experimental workspace isolated, verify handler deduplicated, CORS hardened, 16 new integration tests
-
-## Current Milestone: v1.8 KDF Architecture Fix
-
-**Goal:** Fix incorrect KDF usage across the codebase — replace PBKDF2-per-chunk with HKDF hierarchical key derivation in envelope.rs, and harden keyring backend parameters.
-
-**Target features:**
-- Replace PBKDF2 on ECDH output with HKDF in envelope.rs (critical security/performance fix)
-- Implement Tink-style streaming AEAD: ECDH → HKDF-Extract once → DerivedKey, counter nonces per chunk
-- Harden keyring backend PBKDF2 parameters (100k → 600k iterations, 16 → 32 byte salts)
-- Maintain backward compatibility for existing encrypted data where applicable
-
-**Research sources:**
-- Google Tink AES-GCM-HKDF Streaming AEAD specification
-- Trail of Bits "Best Practices for Key Derivation" (2025-01-28)
+- **v1.8 KDF Architecture Fix** — HKDF-SHA256 replaces PBKDF2 for envelope key derivation, versioned format with v1 backward compatibility, keyring PBKDF2 hardened to OWASP 2023
 
 ## Context
 
-Shipped v1.7 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
-Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit (TypeScript).
+Shipped v1.8 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
+Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit (TypeScript).
 TrustEdge-Labs GitHub org has exactly 3 repos: trustedge (main workspace), trustedgelabs-website, shipsecure.
 trustedge-core owns all crypto — platform calls core::chain and core::crypto; re-exports SigningKey/VerifyingKey for downstream use.
+Envelope encryption uses HKDF-SHA256 (v2 format) with deterministic counter nonces. Legacy v1 (PBKDF2-per-chunk) envelopes still decrypt via try-then-fallback.
+Keyring backends use OWASP 2023 PBKDF2 parameters (600k iterations, 32-byte salts).
 Platform server binary (`crates/platform-server/`) boots Axum via `trustedge_platform::create_router()` with deploy/ artifacts (Dockerfile, docker-compose.yml).
 Dashboard TypeScript types generated from trustedge-types JSON schemas — no hand-written type definitions for shared types.
 CI uses `--workspace` for root workspace. Experimental crates (pubky) isolated in standalone workspace at crates/experimental/. YubiKey feature validated unconditionally. cargo-audit + TODO hygiene enforced on every push/PR. Secret struct regression check (CI Step 23) ensures no serde derives on secret-holding structs.
@@ -236,6 +234,15 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | CA module as library-only | Axum coupling removed, plain service functions, annotated sub-modules | ✓ Good — clear API boundary |
 | build_base_router shared builder | Both create_router and create_test_app call same route builder | ✓ Good — middleware parity guaranteed |
 | OnceLock<Mutex> for env-var tests | Serializes tests manipulating PORT env var | ✓ Good — no parallel-thread races |
+| HKDF-SHA256 over PBKDF2 for ECDH key extraction | RFC 5869 Extract+Expand is correct KDF for high-entropy input (ECDH shared secret) | ✓ Good — correct per NIST SP 800-56C |
+| Single HKDF derivation per envelope (40-byte OKM) | 32-byte AES key + 8-byte nonce prefix from one Extract+Expand | ✓ Good — eliminates per-chunk re-derivation overhead |
+| Deterministic counter nonces | nonce_prefix[8] \|\| chunk_index[3] \|\| last_flag[1] = 12-byte nonce | ✓ Good — no random salt needed, no nonce reuse risk |
+| "TRUSTEDGE_ENVELOPE_V1" domain separation | Info parameter binds derived key to TrustEdge context | ✓ Good — prevents cross-protocol key reuse |
+| Envelope version field with serde default=1 | v1/v2 dispatch in decrypt path; existing data lacks field so defaults to v1 | ✓ Good — zero-cost backward compatibility |
+| Try-v2-then-v1-fallback for unseal | AES-GCM auth tag failure is definitive v2 vs v1 discriminator | ✓ Good — works even without version field |
+| PBKDF2 600k iterations for keyring | OWASP 2023 PBKDF2-HMAC-SHA256 recommendation | ✓ Good — modern brute-force resistance |
+| 32-byte keyring salts | Doubled from 16 bytes to match modern practice | ✓ Good — increased entropy |
+| derive_key key_id uses first 16 bytes of 32-byte salt | Preserves KeyBackend::derive_key(&[u8; 16]) signature | ✓ Good — no API break |
 
 ---
-*Last updated: 2026-02-22 after v1.8 milestone started*
+*Last updated: 2026-02-24 after v1.8 milestone complete*
