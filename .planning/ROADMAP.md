@@ -155,7 +155,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 35. HKDF Infrastructure | 1/1 | Complete    | 2026-02-23 |
-| 36. Envelope Format Migration | 2/2 | Complete   | 2026-02-24 |
+| 36. Envelope Format Migration | 2/2 | Complete    | 2026-02-24 |
 | 37. Keyring Hardening | 0/TBD | Not started | - |
 
 ---
