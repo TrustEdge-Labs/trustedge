@@ -31,16 +31,16 @@ Fix incorrect KDF usage across the codebase. Critical: replace PBKDF2-per-chunk 
 
 ### Keyring Hardening (Moderate)
 
-- [ ] **KEY-01**: Keyring backend (`keyring.rs`) PBKDF2 iterations increased from 100,000 to 600,000 per OWASP 2023 recommendation
-- [ ] **KEY-02**: Keyring backend (`keyring.rs`) salt length increased from 16 bytes to 32 bytes
-- [ ] **KEY-03**: Universal keyring backend (`universal_keyring.rs`) PBKDF2 iterations increased from 100,000 to 600,000
-- [ ] **KEY-04**: Universal keyring backend (`universal_keyring.rs`) salt length increased from 16 bytes to 32 bytes
+- [x] **KEY-01**: Keyring backend (`keyring.rs`) PBKDF2 iterations increased from 100,000 to 600,000 per OWASP 2023 recommendation
+- [x] **KEY-02**: Keyring backend (`keyring.rs`) salt length increased from 16 bytes to 32 bytes
+- [x] **KEY-03**: Universal keyring backend (`universal_keyring.rs`) PBKDF2 iterations increased from 100,000 to 600,000
+- [x] **KEY-04**: Universal keyring backend (`universal_keyring.rs`) salt length increased from 16 bytes to 32 bytes
 
 ### Verification
 
 - [x] **TST-01**: All existing envelope tests pass with updated KDF architecture (no regression)
 - [x] **TST-02**: Multi-chunk encryption/decryption verified end-to-end with new HKDF-based format
-- [ ] **TST-03**: Keyring encryption/decryption tests pass with updated PBKDF2 parameters
+- [x] **TST-03**: Keyring encryption/decryption tests pass with updated PBKDF2 parameters
 
 ## Future Requirements
 
@@ -73,13 +73,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENV-06 | Phase 35 | Complete |
 | VER-01 | Phase 36 | Complete |
 | VER-02 | Phase 36 | Complete |
-| KEY-01 | Phase 37 | Pending |
-| KEY-02 | Phase 37 | Pending |
-| KEY-03 | Phase 37 | Pending |
-| KEY-04 | Phase 37 | Pending |
+| KEY-01 | Phase 37 | Complete |
+| KEY-02 | Phase 37 | Complete |
+| KEY-03 | Phase 37 | Complete |
+| KEY-04 | Phase 37 | Complete |
 | TST-01 | Phase 36 | Complete |
 | TST-02 | Phase 36 | Complete |
-| TST-03 | Phase 37 | Pending |
+| TST-03 | Phase 37 | Complete |
 
 **Coverage:**
 - v1.8 requirements: 15 total
@@ -88,4 +88,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after roadmap created — traceability complete*
+*Last updated: 2026-02-24 after 37-01 completed — all v1.8 requirements complete*

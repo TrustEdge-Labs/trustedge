@@ -17,12 +17,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 36 of 37 (Envelope Format Migration) — COMPLETE
-Plan: 2 of 2 complete (Phase 36 done)
-Status: Phase 36 complete, ready for Phase 37 (Keyring Hardening)
-Last activity: 2026-02-24 — Completed 36-02: backward-compatible unseal() with v2-first + v1 fallback, 5 new tests
+Phase: 37 of 37 (Keyring Hardening) — IN PROGRESS
+Plan: 1 of 1 complete (Phase 37 Plan 01 done)
+Status: Phase 37 Plan 01 complete — PBKDF2 hardened to OWASP 2023 parameters
+Last activity: 2026-02-24 — Completed 37-01: PBKDF2 600k iterations, 32-byte salts in both keyring backends, all 162 tests pass
 
-Progress: [████░░░░░░] 40%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -43,7 +43,7 @@ Progress: [████░░░░░░] 40%
 |-------|-------|-------|----------|
 | 35. HKDF Infrastructure | 1 | 2 tasks | 2/plan |
 | 36. Envelope Format Migration | 2 | 4 tasks | 2/plan |
-| 37. Keyring Hardening | TBD | - | - |
+| 37. Keyring Hardening | 1 | 2 tasks | 2/plan |
 
 *Updated after each plan completion*
 
@@ -65,6 +65,9 @@ Progress: [████░░░░░░] 40%
 - 36-02: try-then-fallback over version-field dispatch: AES-GCM auth tag failure is the definitive v2 vs v1 discriminator
 - 36-02: decrypt_chunk_v2 takes no SigningKey param — pre-derived encryption_key passed in; avoids clippy unused-param warning
 - 36-02: V2 key zeroized before fallback decision; v1 path re-derives per-chunk with inline zeroize
+- 37-01: PBKDF2 iterations raised from 100k to 600k per OWASP 2023 PBKDF2-HMAC-SHA256 recommendation
+- 37-01: Salt length raised from 16 to 32 bytes in both keyring backends and CLI
+- 37-01: derive_key key_id ([u8; 16]) uses first 16 bytes of 32-byte salt as key isolator in CLI (signature preserved)
 
 ### Pending Todos
 
@@ -78,8 +81,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-24
-Stopped at: Completed 36-02-PLAN.md — backward-compatible unseal() with v2-first + v1 fallback; Phase 36 complete
+Stopped at: Completed 37-01-PLAN.md — PBKDF2 hardened to OWASP 2023 parameters (600k iterations, 32-byte salts); 162 tests pass
 Resume file: None
 
 ---
-*Last updated: 2026-02-24 after 36-02 completed*
+*Last updated: 2026-02-24 after 37-01 completed*

@@ -104,7 +104,7 @@ Hardened secret handling with in-house Secret<T> wrapper (zeroize, redacted Debu
 
 - [x] **Phase 35: HKDF Infrastructure** - Add hkdf workspace dependency and establish correct HKDF input structure in envelope.rs, eliminating the ad-hoc CatKDF construction
 - [x] **Phase 36: Envelope Format Migration** - Rewrite envelope encryption to HKDF-once with counter nonces and versioned format supporting both v1 (legacy) and v2 (HKDF) decryption paths (completed 2026-02-24)
-- [ ] **Phase 37: Keyring Hardening** - Increase PBKDF2 parameters in both keyring backends to OWASP 2023 recommended levels
+- [x] **Phase 37: Keyring Hardening** - Increase PBKDF2 parameters in both keyring backends to OWASP 2023 recommended levels (completed 2026-02-24)
 
 ## Phase Details
 
@@ -133,8 +133,8 @@ Plans:
   5. All existing envelope tests pass; a new multi-chunk round-trip test covering the v2 format passes
 **Plans:** 2/2 plans complete
 Plans:
-- [ ] 36-01-PLAN.md -- Restructure Envelope struct + v2 seal path with HKDF-once key derivation and deterministic nonces
-- [ ] 36-02-PLAN.md -- V1 backward-compatible decrypt + try-then-fallback unseal + test suite
+- [x] 36-01-PLAN.md -- Restructure Envelope struct + v2 seal path with HKDF-once key derivation and deterministic nonces
+- [x] 36-02-PLAN.md -- V1 backward-compatible decrypt + try-then-fallback unseal + test suite
 
 ### Phase 37: Keyring Hardening
 **Goal**: Both keyring backends use OWASP 2023-recommended PBKDF2 parameters — 600,000 iterations and 32-byte salts — so keyring-encrypted secrets resist modern brute-force attacks
@@ -148,7 +148,7 @@ Plans:
   5. Keyring encryption/decryption tests pass with updated parameters; `cargo test -p trustedge-core --lib` passes
 **Plans:** 1 plan
 Plans:
-- [ ] 37-01-PLAN.md -- Harden PBKDF2 parameters (600k iterations, 32-byte salts) in both keyring backends
+- [x] 37-01-PLAN.md -- Harden PBKDF2 parameters (600k iterations, 32-byte salts) in both keyring backends
 
 ## Progress
 
@@ -158,7 +158,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 35. HKDF Infrastructure | 1/1 | Complete    | 2026-02-23 |
 | 36. Envelope Format Migration | 2/2 | Complete    | 2026-02-24 |
-| 37. Keyring Hardening | 0/1 | Not started | - |
+| 37. Keyring Hardening | 1/1 | Complete    | 2026-02-24 |
 
 ---
-*Last updated: 2026-02-23 after 35-01 completed*
+*Last updated: 2026-02-24 after 37-01 completed*
