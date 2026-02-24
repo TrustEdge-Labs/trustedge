@@ -27,7 +27,7 @@ Fix incorrect KDF usage across the codebase. Critical: replace PBKDF2-per-chunk 
 ### Envelope Versioning
 
 - [x] **VER-01**: Envelope format includes version field to distinguish v1 (legacy PBKDF2-per-chunk) from v2 (HKDF-once) formats
-- [ ] **VER-02**: Decryption path supports both v1 and v2 envelope formats via version-based dispatch, preserving backward compatibility for existing encrypted data
+- [x] **VER-02**: Decryption path supports both v1 and v2 envelope formats via version-based dispatch, preserving backward compatibility for existing encrypted data
 
 ### Keyring Hardening (Moderate)
 
@@ -38,8 +38,8 @@ Fix incorrect KDF usage across the codebase. Critical: replace PBKDF2-per-chunk 
 
 ### Verification
 
-- [ ] **TST-01**: All existing envelope tests pass with updated KDF architecture (no regression)
-- [ ] **TST-02**: Multi-chunk encryption/decryption verified end-to-end with new HKDF-based format
+- [x] **TST-01**: All existing envelope tests pass with updated KDF architecture (no regression)
+- [x] **TST-02**: Multi-chunk encryption/decryption verified end-to-end with new HKDF-based format
 - [ ] **TST-03**: Keyring encryption/decryption tests pass with updated PBKDF2 parameters
 
 ## Future Requirements
@@ -72,13 +72,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENV-05 | Phase 35 | Complete |
 | ENV-06 | Phase 35 | Complete |
 | VER-01 | Phase 36 | Complete |
-| VER-02 | Phase 36 | Pending |
+| VER-02 | Phase 36 | Complete |
 | KEY-01 | Phase 37 | Pending |
 | KEY-02 | Phase 37 | Pending |
 | KEY-03 | Phase 37 | Pending |
 | KEY-04 | Phase 37 | Pending |
-| TST-01 | Phase 36 | Pending |
-| TST-02 | Phase 36 | Pending |
+| TST-01 | Phase 36 | Complete |
+| TST-02 | Phase 36 | Complete |
 | TST-03 | Phase 37 | Pending |
 
 **Coverage:**

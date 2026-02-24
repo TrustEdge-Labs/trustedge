@@ -13,16 +13,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Phase 36 — Envelope Format Migration
+**Current focus:** Phase 37 — Keyring Hardening
 
 ## Current Position
 
-Phase: 36 of 37 (Envelope Format Migration)
-Plan: 1 of TBD in current phase
-Status: In progress
-Last activity: 2026-02-23 — Completed 36-01: v2 envelope format with HKDF-once key derivation and deterministic nonces
+Phase: 36 of 37 (Envelope Format Migration) — COMPLETE
+Plan: 2 of 2 complete (Phase 36 done)
+Status: Phase 36 complete, ready for Phase 37 (Keyring Hardening)
+Last activity: 2026-02-24 — Completed 36-02: backward-compatible unseal() with v2-first + v1 fallback, 5 new tests
 
-Progress: [██░░░░░░░░] 20%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
@@ -42,7 +42,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 35. HKDF Infrastructure | 1 | 2 tasks | 2/plan |
-| 36. Envelope Format Migration | 1+ | 2 tasks | 2/plan |
+| 36. Envelope Format Migration | 2 | 4 tasks | 2/plan |
 | 37. Keyring Hardening | TBD | - | - |
 
 *Updated after each plan completion*
@@ -62,6 +62,9 @@ Progress: [██░░░░░░░░] 20%
 - 36-01: Deterministic nonce layout: nonce_prefix[0..8] || chunk_index[1..4] (BE u32 low 3 bytes) || last_flag (0xFF/0x00)
 - 36-01: Envelope.version field (serde default=1) enables v1/v2 dispatch in Plan 02 decrypt path
 - 36-01: ChunkManifest key_derivation_salt and pbkdf2_iterations zeroed for v2 envelopes (serde shape preserved)
+- 36-02: try-then-fallback over version-field dispatch: AES-GCM auth tag failure is the definitive v2 vs v1 discriminator
+- 36-02: decrypt_chunk_v2 takes no SigningKey param — pre-derived encryption_key passed in; avoids clippy unused-param warning
+- 36-02: V2 key zeroized before fallback decision; v1 path re-derives per-chunk with inline zeroize
 
 ### Pending Todos
 
@@ -74,9 +77,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-23
-Stopped at: Completed 36-01-PLAN.md — v2 envelope format with HKDF-once key derivation and deterministic counter nonces
+Last session: 2026-02-24
+Stopped at: Completed 36-02-PLAN.md — backward-compatible unseal() with v2-first + v1 fallback; Phase 36 complete
 Resume file: None
 
 ---
-*Last updated: 2026-02-23 after 36-01 completed*
+*Last updated: 2026-02-24 after 36-02 completed*
