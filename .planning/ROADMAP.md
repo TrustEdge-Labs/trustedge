@@ -146,7 +146,9 @@ Plans:
   3. `universal_keyring.rs` PBKDF2 iteration count reads 600,000 in source
   4. `universal_keyring.rs` salt length reads 32 bytes in source
   5. Keyring encryption/decryption tests pass with updated parameters; `cargo test -p trustedge-core --lib` passes
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 37-01-PLAN.md -- Harden PBKDF2 parameters (600k iterations, 32-byte salts) in both keyring backends
 
 ## Progress
 
@@ -156,7 +158,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 35. HKDF Infrastructure | 1/1 | Complete    | 2026-02-23 |
 | 36. Envelope Format Migration | 2/2 | Complete    | 2026-02-24 |
-| 37. Keyring Hardening | 0/TBD | Not started | - |
+| 37. Keyring Hardening | 0/1 | Not started | - |
 
 ---
 *Last updated: 2026-02-23 after 35-01 completed*
