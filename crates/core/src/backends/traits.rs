@@ -59,7 +59,7 @@ impl KeyContext {
         Self {
             salt,
             additional_data: Vec::new(),
-            iterations: Some(100_000), // Default PBKDF2 iterations
+            iterations: Some(600_000), // OWASP 2023 recommended PBKDF2 iterations
         }
     }
 

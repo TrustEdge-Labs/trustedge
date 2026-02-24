@@ -64,9 +64,9 @@ impl KeyBackend for KeyringBackend {
         context: &KeyContext,
     ) -> Result<[u8; 32], BackendError> {
         // Validate salt length first (before keyring access)
-        if context.salt.len() != 16 {
+        if context.salt.len() != 32 {
             return Err(BackendError::OperationFailed(
-                "Salt must be exactly 16 bytes for keyring backend".to_string(),
+                "Salt must be exactly 32 bytes for keyring backend".to_string(),
             ));
         }
 
@@ -76,11 +76,11 @@ impl KeyBackend for KeyringBackend {
         })?;
 
         // Convert salt to array
-        let mut salt_array = [0u8; 16];
+        let mut salt_array = [0u8; 32];
         salt_array.copy_from_slice(&context.salt);
 
-        // Use PBKDF2 with SHA256
-        let iterations = context.iterations.unwrap_or(100_000);
+        // Use PBKDF2 with SHA256 (OWASP 2023 recommended iterations)
+        let iterations = context.iterations.unwrap_or(600_000);
         let mut key = [0u8; 32];
 
         // Include key_id in the derivation for key isolation
@@ -168,7 +168,7 @@ mod tests {
     }
 
     #[test]
-    fn test_key_derivation_requires_16_byte_salt() {
+    fn test_key_derivation_requires_32_byte_salt() {
         let backend = KeyringBackend::new().unwrap();
         let key_id = [1u8; 16];
 
@@ -179,6 +179,6 @@ mod tests {
 
         // Check for the salt validation error
         let error_msg = result.unwrap_err().to_string();
-        assert!(error_msg.contains("Salt must be exactly 16 bytes"));
+        assert!(error_msg.contains("Salt must be exactly 32 bytes"));
     }
 }

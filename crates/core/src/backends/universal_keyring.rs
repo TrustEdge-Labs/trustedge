@@ -60,8 +60,8 @@ impl UniversalKeyringBackend {
         context: &KeyDerivationContext,
     ) -> Result<[u8; 32]> {
         // Validate salt length
-        if context.salt.len() != 16 {
-            return Err(anyhow!("Salt must be exactly 16 bytes for keyring backend"));
+        if context.salt.len() != 32 {
+            return Err(anyhow!("Salt must be exactly 32 bytes for keyring backend"));
         }
 
         // Get passphrase from keyring
@@ -70,11 +70,11 @@ impl UniversalKeyringBackend {
             .map_err(|e| anyhow!("Failed to get passphrase from keyring: {}", e))?;
 
         // Convert salt to array
-        let mut salt_array = [0u8; 16];
+        let mut salt_array = [0u8; 32];
         salt_array.copy_from_slice(&context.salt);
 
-        // Use PBKDF2 with the specified hash algorithm
-        let iterations = context.iterations.unwrap_or(100_000);
+        // Use PBKDF2 with the specified hash algorithm (OWASP 2023 recommended iterations)
+        let iterations = context.iterations.unwrap_or(600_000);
         let mut key = [0u8; 32];
 
         // Include key_id in the derivation for key isolation
@@ -254,7 +254,7 @@ mod tests {
 
         // Should support key derivation
         let derive_op = CryptoOperation::DeriveKey {
-            context: KeyDerivationContext::new(vec![1; 16]),
+            context: KeyDerivationContext::new(vec![1; 32]),
         };
         assert!(backend.supports_operation(&derive_op));
 
@@ -306,7 +306,7 @@ mod tests {
 
         // This test will fail if no passphrase is stored in keyring
         // but should show the operation structure works
-        let context = KeyDerivationContext::new(vec![1; 16])
+        let context = KeyDerivationContext::new(vec![1; 32])
             .with_additional_data(vec![2, 3, 4])
             .with_iterations(1000);
 

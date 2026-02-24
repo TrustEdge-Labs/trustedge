@@ -80,7 +80,7 @@ struct Args {
     #[arg(long)]
     set_passphrase: Option<String>,
 
-    /// Salt for key derivation (hex, 32 chars -> 16 bytes)
+    /// Salt for key derivation (hex, 64 chars -> 32 bytes)
     #[arg(long)]
     salt_hex: Option<String>,
 
@@ -279,16 +279,19 @@ async fn main() -> Result<()> {
                 .as_ref()
                 .ok_or_else(|| anyhow::anyhow!("--salt-hex required when using keyring"))?;
             let salt_bytes = hex::decode(salt_hex)?;
-            if salt_bytes.len() != 16 {
-                return Err(anyhow::anyhow!("Salt must be 16 bytes (32 hex chars)"));
+            if salt_bytes.len() != 32 {
+                return Err(anyhow::anyhow!("Salt must be 32 bytes (64 hex chars)"));
             }
-            let mut salt = [0u8; 16];
+            let mut salt = [0u8; 32];
             salt.copy_from_slice(&salt_bytes);
             println!("Using keyring passphrase with provided salt");
 
             let backend = KeyringBackend::new().context("Failed to create keyring backend")?;
             let context = KeyContext::new(salt.to_vec());
-            let derived_key = backend.derive_key(&salt, &context)?;
+            // derive_key key_id is [u8; 16] — use the first 16 bytes of the salt as the key isolator
+            let mut key_id = [0u8; 16];
+            key_id.copy_from_slice(&salt[..16]);
+            let derived_key = backend.derive_key(&key_id, &context)?;
             let mut key_bytes = [0u8; 32];
             key_bytes.copy_from_slice(&derived_key);
             key_bytes
