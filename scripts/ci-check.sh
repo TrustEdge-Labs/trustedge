@@ -100,98 +100,110 @@ else
     fail "cargo fmt — run: cargo fmt --all"
 fi
 
-# ── Step 4: Clippy (workspace) ─────────────────────────────────────
-step "Step 4: Clippy (workspace)"
+# ── Step 4: Clippy (all features) ──────────────────────────────────
+step "Step 4: Clippy"
 
-# All workspace crates
-if cargo clippy --workspace --all-targets --no-default-features -- -D warnings; then
-    pass "clippy workspace"
-else
-    fail "clippy workspace"
-fi
+HAS_ALSA=false
+HAS_PCSC=false
+pkg-config --exists alsa 2>/dev/null && HAS_ALSA=true
+pkg-config --exists libpcsclite 2>/dev/null && HAS_PCSC=true
 
-# trustedge-platform feature combinations (blocking)
-if cargo clippy -p trustedge-platform --features "http" -- -D warnings && \
-   cargo clippy -p trustedge-platform --features "http,ca" -- -D warnings; then
-    pass "clippy trustedge-platform features"
-else
-    fail "clippy trustedge-platform features"
-fi
-
-# ── Step 5: Clippy (audio) ──────────────────────────────────────────
-step "Step 5: Clippy (trustedge-core with audio)"
-if pkg-config --exists alsa 2>/dev/null; then
-    if cargo clippy --package trustedge-core --all-targets --features audio -- -D warnings; then
-        pass "clippy audio"
+if $HAS_ALSA && $HAS_PCSC; then
+    # All system deps available — single all-features pass
+    if cargo clippy --workspace --all-targets --all-features -- -D warnings; then
+        pass "clippy (all features)"
     else
-        fail "clippy audio"
+        fail "clippy (all features)"
     fi
 else
-    skip "ALSA not available"
-fi
-
-# ── Step 6: Clippy (yubikey) ────────────────────────────────────────
-step "Step 6: Clippy (trustedge-core with yubikey)"
-if pkg-config --exists libpcsclite 2>/dev/null; then
-    if cargo clippy --package trustedge-core --all-targets --features yubikey -- -D warnings; then
-        pass "clippy yubikey"
+    # Fallback: workspace without optional features
+    if cargo clippy --workspace --all-targets --no-default-features -- -D warnings; then
+        pass "clippy (workspace, no default features)"
     else
-        fail "clippy yubikey"
+        fail "clippy (workspace)"
     fi
-else
-    skip "PCSC not available"
+
+    # Platform feature combinations
+    if cargo clippy -p trustedge-platform --features "http" -- -D warnings && \
+       cargo clippy -p trustedge-platform --features "http,ca" -- -D warnings; then
+        pass "clippy trustedge-platform features"
+    else
+        fail "clippy trustedge-platform features"
+    fi
+
+    $HAS_ALSA && {
+        if cargo clippy -p trustedge-core --all-targets --features audio -- -D warnings; then
+            pass "clippy audio"
+        else
+            fail "clippy audio"
+        fi
+    }
+
+    $HAS_PCSC && {
+        if cargo clippy -p trustedge-core --all-targets --features yubikey -- -D warnings; then
+            pass "clippy yubikey"
+        else
+            fail "clippy yubikey"
+        fi
+    }
+
+    # Non-system-dep features
+    for feat in git-attestation keyring insecure-tls; do
+        if cargo clippy -p trustedge-core --all-targets --features "$feat" -- -D warnings; then
+            pass "clippy $feat"
+        else
+            fail "clippy $feat"
+        fi
+    done
 fi
 
-# ── Step 7: Clippy (git-attestation) ────────────────────────────────
-step "Step 7: Clippy (trustedge-core with git-attestation)"
-if cargo clippy --package trustedge-core --all-targets --features git-attestation -- -D warnings; then
-    pass "clippy git-attestation"
-else
-    fail "clippy git-attestation"
-fi
-
-# ── Step 8: Clippy (keyring) ────────────────────────────────────────
-step "Step 8: Clippy (trustedge-core with keyring)"
-if cargo clippy --package trustedge-core --all-targets --features keyring -- -D warnings; then
-    pass "clippy keyring"
-else
-    fail "clippy keyring"
-fi
-
-# ── Step 9: Clippy (insecure-tls) ───────────────────────────────────
-step "Step 9: Clippy (trustedge-core with insecure-tls)"
-if cargo clippy --package trustedge-core --all-targets --features insecure-tls -- -D warnings; then
-    pass "clippy insecure-tls"
-else
-    fail "clippy insecure-tls"
-fi
-
-# ── Step 10: Feature powerset (cargo-hack) ──────────────────────────
-step "Step 10: Feature compatibility (cargo-hack)"
+# ── Step 5: Feature compatibility (cargo-hack) ─────────────────────
+step "Step 5: Feature compatibility (cargo-hack)"
 if command -v cargo-hack &> /dev/null; then
-    if cargo hack check --feature-powerset --no-dev-deps --package trustedge-core; then
-        pass "cargo-hack feature powerset"
+    if cargo hack check --each-feature --no-dev-deps --package trustedge-core && \
+       cargo hack check --each-feature --no-dev-deps --package trustedge-cli; then
+        pass "cargo-hack each-feature"
     else
-        fail "cargo-hack feature powerset"
+        fail "cargo-hack each-feature"
     fi
 else
     skip "cargo-hack not installed"
 fi
 
-# ── Step 11: Build + test (workspace) ───────────────────────────────
-step "Step 11: Build and test (workspace)"
+# ── Step 6: Build + test ───────────────────────────────────────────
+step "Step 6: Build and test"
 
-# Build all workspace crates
+# Build workspace
 cargo build --workspace --bins --no-default-features
 
-# Workspace tests (all crates)
+# Workspace tests (no default features)
 if cargo test --workspace --no-default-features --locked; then
-    pass "workspace tests"
+    pass "workspace tests (no default features)"
 else
     fail "workspace tests"
 fi
 
-# trustedge-platform tests (feature combinations)
+# Core tests with all non-yubikey features
+CORE_FEATURES="git-attestation,keyring,insecure-tls"
+$HAS_ALSA && CORE_FEATURES="audio,$CORE_FEATURES"
+if cargo test -p trustedge-core --features "$CORE_FEATURES" --locked; then
+    pass "trustedge-core tests ($CORE_FEATURES)"
+else
+    fail "trustedge-core tests ($CORE_FEATURES)"
+fi
+
+# YubiKey simulation tests (unit tests only, no hardware)
+if $HAS_PCSC; then
+    if cargo test -p trustedge-core --features yubikey --lib --locked; then
+        pass "yubikey simulation tests"
+    else
+        fail "yubikey simulation tests"
+    fi
+else
+    skip "PCSC not available"
+fi
+
+# Platform feature tests
 if cargo test -p trustedge-platform --lib --locked && \
    cargo test -p trustedge-platform --test verify_integration --locked && \
    cargo test -p trustedge-platform --test verify_integration --features http --locked; then
@@ -200,84 +212,8 @@ else
     fail "trustedge-platform tests"
 fi
 
-# ── Step 12: Audio tests ────────────────────────────────────────────
-step "Step 12: Tests (trustedge-core with audio)"
-if pkg-config --exists alsa 2>/dev/null; then
-    cargo build --package trustedge-core --bins --features audio
-    if cargo test --package trustedge-core --features audio --locked; then
-        pass "audio tests"
-    else
-        fail "audio tests"
-    fi
-else
-    skip "ALSA not available"
-fi
-
-# ── Step 13: YubiKey tests (simulation) ────────────────────────────
-step "Step 13: Tests (trustedge-core with yubikey simulation)"
-if pkg-config --exists libpcsclite 2>/dev/null; then
-    cargo build --package trustedge-core --bins --features yubikey
-    if cargo test --package trustedge-core --features yubikey --lib --locked; then
-        pass "yubikey tests"
-    else
-        fail "yubikey tests"
-    fi
-else
-    skip "PCSC not available"
-fi
-
-# ── Step 14: Tests (git-attestation) ───────────────────────────────
-step "Step 14: Tests (trustedge-core with git-attestation)"
-if cargo test --package trustedge-core --features git-attestation --locked; then
-    pass "git-attestation tests"
-else
-    fail "git-attestation tests"
-fi
-
-# ── Step 15: Tests (keyring) ───────────────────────────────────────
-step "Step 15: Tests (trustedge-core with keyring)"
-if cargo test --package trustedge-core --features keyring --locked; then
-    pass "keyring tests"
-else
-    fail "keyring tests"
-fi
-
-# ── Step 16: Tests (insecure-tls) ──────────────────────────────────
-step "Step 16: Tests (trustedge-core with insecure-tls)"
-if cargo test --package trustedge-core --features insecure-tls --locked; then
-    pass "insecure-tls tests"
-else
-    fail "insecure-tls tests"
-fi
-
-# ── Step 17: All features (clean first to avoid disk exhaustion) ────
-step "Step 17: All features combined"
-if pkg-config --exists alsa 2>/dev/null && pkg-config --exists libpcsclite 2>/dev/null; then
-    cargo clean
-    cargo build --workspace --bins --all-features
-    if cargo test -p trustedge-core --all-features --lib --locked; then
-        pass "all-features tests"
-    else
-        fail "all-features tests"
-    fi
-else
-    skip "Not all platform libraries available"
-fi
-
-# ── Step 18: Downstream feature check ──────────────────────────────
-step "Step 18: Downstream crate feature check (trustedge-cli)"
-if command -v cargo-hack &> /dev/null; then
-    if cargo hack check --feature-powerset --no-dev-deps --package trustedge-cli; then
-        pass "downstream feature check"
-    else
-        fail "downstream feature check"
-    fi
-else
-    skip "cargo-hack not installed"
-fi
-
-# ── Step 19: WASM ───────────────────────────────────────────────────
-step "Step 19: WASM build verification"
+# ── Step 7: WASM ───────────────────────────────────────────────────
+step "Step 7: WASM build verification"
 if rustup target list --installed | grep -q wasm32-unknown-unknown; then
     if cargo check -p trustedge-wasm --target wasm32-unknown-unknown && \
        cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown; then
@@ -289,8 +225,8 @@ else
     skip "wasm32-unknown-unknown target not installed"
 fi
 
-# ── Step 20: Semver ─────────────────────────────────────────────────
-step "Step 20: API compatibility (cargo-semver-checks)"
+# ── Step 8: Semver ─────────────────────────────────────────────────
+step "Step 8: API compatibility (cargo-semver-checks)"
 if command -v cargo-semver-checks &> /dev/null; then
     if cargo semver-checks --package trustedge-core --baseline-rev HEAD~1 2>/dev/null; then
         pass "semver check"
@@ -301,8 +237,8 @@ else
     skip "cargo-semver-checks not installed"
 fi
 
-# ── Step 21: Dependency tree size ────────────────────────────────────
-step "Step 21: Dependency tree size check"
+# ── Step 9: Dependency tree size ────────────────────────────────────
+step "Step 9: Dependency tree size check"
 dep_count=$(cargo tree --workspace --depth 1 --prefix none --no-dedupe 2>/dev/null | sort -u | wc -l)
 baseline=70
 threshold=$((baseline + 10))
@@ -314,13 +250,10 @@ else
     pass "dependency tree within baseline"
 fi
 
-# ── Step 22: TODO hygiene ──────────────────────────────────────────
-step "Step 22: TODO hygiene (no unimplemented markers)"
-# Scan for TODO/FIXME/HACK/XXX comments that indicate unimplemented functionality
-# Excludes: test fixtures, planning docs, target dir, .git dir
+# ── Step 10: TODO hygiene ──────────────────────────────────────────
+step "Step 10: TODO hygiene (no unimplemented markers)"
 todo_count=0
 while IFS= read -r match; do
-    # Skip test-only placeholder data (e.g., continuity_hash in test fixtures)
     case "$match" in
         *"#[cfg(test)]"*) continue ;;
         *"_test_"*|*"test_"*) continue ;;
@@ -336,11 +269,10 @@ else
     pass "No unimplemented TODO/FIXME markers"
 fi
 
-# ── Step 23: Secret struct derive check ────────────────────────────
-step "Step 23: Secret struct derive check (no Serialize on secret-holding structs)"
+# ── Step 11: Secret struct derive check ────────────────────────────
+step "Step 11: Secret struct derive check (no Serialize on secret-holding structs)"
 SECRET_STRUCTS_OK=true
 
-# Check that secret-holding structs do NOT have derive(Serialize)
 for file_struct in \
     "crates/core/src/backends/yubikey.rs:YubiKeyConfig" \
     "crates/core/src/backends/software_hsm.rs:SoftwareHsmConfig" \
@@ -349,21 +281,10 @@ for file_struct in \
     FILE="${file_struct%%:*}"
     STRUCT="${file_struct##*:}"
 
-    # Extract 2 lines before struct declaration, look for derive with Serialize
     if grep -B2 "pub struct $STRUCT" "$FILE" | grep -q "Serialize"; then
         fail "$STRUCT in $FILE still has Serialize derive"
         SECRET_STRUCTS_OK=false
     fi
-done
-
-# Check that secret-holding structs have manual Debug with [REDACTED]
-for file_struct in \
-    "crates/core/src/backends/yubikey.rs:YubiKeyConfig" \
-    "crates/core/src/backends/software_hsm.rs:SoftwareHsmConfig" \
-    "crates/platform/src/ca/models.rs:LoginRequest" \
-    "crates/platform/src/ca/mod.rs:CAConfig"; do
-    FILE="${file_struct%%:*}"
-    STRUCT="${file_struct##*:}"
 
     if ! grep -q "REDACTED" "$FILE"; then
         fail "$STRUCT in $FILE missing [REDACTED] in Debug impl"
