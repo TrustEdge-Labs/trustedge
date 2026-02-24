@@ -64,7 +64,7 @@ schemars = { version = "0.8", features = ["chrono", "uuid1"] }
 uuid = { version = "1", features = ["serde", "v4"] }
 
 # Git operations
-git2 = "0.18"
+git2 = "0.20"
 
 # Async and utilities
 anyhow = "1.0"
