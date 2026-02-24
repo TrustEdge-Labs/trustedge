@@ -88,8 +88,17 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev libpcsclite-dev pkg-config pkgconf
 
-      - name: clippy (all features)
-        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: clippy (all buildable features)
+        run: |
+          cargo clippy -p trustedge-core --all-targets --all-features -- -D warnings
+          cargo clippy -p trustedge-platform --all-targets --features "http,ca,openapi,yubikey" -- -D warnings
+          cargo clippy -p trustedge-platform-server --all-targets -- -D warnings
+          cargo clippy -p trustedge-cli --all-targets --all-features -- -D warnings
+          cargo clippy -p trustedge-trst-cli --all-targets -- -D warnings
+          cargo clippy -p trustedge-trst-protocols --all-targets -- -D warnings
+          cargo clippy -p trustedge-types --all-targets -- -D warnings
+          cargo clippy -p trustedge-wasm --all-targets -- -D warnings
+          cargo clippy -p trustedge-trst-wasm --all-targets -- -D warnings
 
       - name: Feature compatibility (each feature individually)
         run: |
@@ -121,8 +130,14 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev libpcsclite-dev pkg-config pkgconf
 
-      - name: Build workspace (all features)
-        run: cargo build --workspace --bins --all-features
+      - name: Build workspace (all buildable features, excludes postgres — sqlx removed)
+        run: |
+          cargo build -p trustedge-core --bins --all-features
+          cargo build -p trustedge-platform --bins --features "http,ca,openapi,yubikey"
+          cargo build -p trustedge-platform-server --bins
+          cargo build -p trustedge-cli --bins --all-features
+          cargo build -p trustedge-trst-cli --bins
+          cargo build --workspace --bins --no-default-features
 
       - name: Test workspace (no default features)
         run: cargo test --workspace --no-default-features --locked

@@ -109,11 +109,13 @@ pkg-config --exists alsa 2>/dev/null && HAS_ALSA=true
 pkg-config --exists libpcsclite 2>/dev/null && HAS_PCSC=true
 
 if $HAS_ALSA && $HAS_PCSC; then
-    # All system deps available — single all-features pass
-    if cargo clippy --workspace --all-targets --all-features -- -D warnings; then
-        pass "clippy (all features)"
+    # All system deps available — per-crate clippy (postgres excluded: sqlx removed)
+    if cargo clippy -p trustedge-core --all-targets --all-features -- -D warnings && \
+       cargo clippy -p trustedge-platform --all-targets --features "http,ca,openapi,yubikey" -- -D warnings && \
+       cargo clippy --workspace --all-targets --no-default-features -- -D warnings; then
+        pass "clippy (all buildable features)"
     else
-        fail "clippy (all features)"
+        fail "clippy (all buildable features)"
     fi
 else
     # Fallback: workspace without optional features
