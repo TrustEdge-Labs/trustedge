@@ -234,8 +234,8 @@ async fn main() -> Result<()> {
             cert
         };
 
-        // Load server certificate
-        let _server_cert = if let Some(cert_path) = &args.server_cert {
+        // Load server certificate (pinned public key prevents MITM)
+        let server_cert = if let Some(cert_path) = &args.server_cert {
             load_server_cert(&cert_path.to_string_lossy())
                 .context("Failed to load server certificate")?
         } else {
@@ -244,12 +244,12 @@ async fn main() -> Result<()> {
             ));
         };
 
-        // Perform client authentication
+        // Perform client authentication with pinned server public key
         let auth_result = client_authenticate(
             &mut stream,
             client_cert.signing_key()?,
             Some(client_cert.identity.clone()),
-            None,
+            &server_cert.public_key,
         )
         .await
         .context("Authentication failed")?;

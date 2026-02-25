@@ -24,12 +24,14 @@ async fn test_mutual_authentication() -> Result<()> {
     // Create client certificate
     let client_cert = ClientCertificate::generate("test-client")?;
 
+    // Pin the server's public key (client must know this beforehand)
+    let server_pubkey = server_manager.server_certificate().public_key;
+
     // Set up a local server for testing
     let listener = TcpListener::bind("127.0.0.1:0").await?;
     let server_addr = listener.local_addr()?;
 
     // Spawn server task
-    let _server_cert = server_manager.server_certificate().clone();
     let server_handle = tokio::spawn(async move {
         let (mut stream, _) = listener.accept().await.unwrap();
         server_authenticate(&mut stream, &mut server_manager)
@@ -44,12 +46,12 @@ async fn test_mutual_authentication() -> Result<()> {
     let mut client_stream =
         timeout(Duration::from_secs(5), TcpStream::connect(server_addr)).await??;
 
-    // Perform client authentication
+    // Perform client authentication with pinned server public key
     let client_result = client_authenticate(
         &mut client_stream,
         client_cert.signing_key()?,
         Some(client_cert.identity.clone()),
-        Some("test-server"),
+        &server_pubkey,
     )
     .await?;
 
@@ -120,6 +122,9 @@ async fn test_session_management() -> Result<()> {
 
     let client_cert = ClientCertificate::generate("session-test-client")?;
 
+    // Pin the server's public key
+    let server_pubkey = session_manager.server_certificate().public_key;
+
     // Server task - capture manager after authentication
     let mut server_manager_copy = session_manager.clone();
     let server_handle = tokio::spawn(async move {
@@ -137,7 +142,7 @@ async fn test_session_management() -> Result<()> {
         &mut client_stream,
         client_cert.signing_key()?,
         Some(client_cert.identity.clone()),
-        None,
+        &server_pubkey,
     )
     .await?;
     let session_id = client_result.session_id;
@@ -170,6 +175,7 @@ async fn test_session_key_uniqueness() -> Result<()> {
 
     // First handshake
     let mut server_manager1 = SessionManager::new("test-server-unique".to_string())?;
+    let server_pubkey1 = server_manager1.server_certificate().public_key;
     let client_cert1 = ClientCertificate::generate("client-1")?;
 
     let listener1 = TcpListener::bind("127.0.0.1:0").await?;
@@ -189,7 +195,7 @@ async fn test_session_key_uniqueness() -> Result<()> {
         &mut stream1,
         client_cert1.signing_key()?,
         Some("client-1".to_string()),
-        None,
+        &server_pubkey1,
     )
     .await?;
 
@@ -197,6 +203,7 @@ async fn test_session_key_uniqueness() -> Result<()> {
 
     // Second handshake with a different client
     let mut server_manager2 = SessionManager::new("test-server-unique".to_string())?;
+    let server_pubkey2 = server_manager2.server_certificate().public_key;
     let client_cert2 = ClientCertificate::generate("client-2")?;
 
     let listener2 = TcpListener::bind("127.0.0.1:0").await?;
@@ -216,7 +223,7 @@ async fn test_session_key_uniqueness() -> Result<()> {
         &mut stream2,
         client_cert2.signing_key()?,
         Some("client-2".to_string()),
-        None,
+        &server_pubkey2,
     )
     .await?;
 
@@ -233,6 +240,66 @@ async fn test_session_key_uniqueness() -> Result<()> {
     );
 
     println!("✔ Session key uniqueness test passed!");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_mitm_rejected_wrong_pubkey() -> Result<()> {
+    // Simulate MITM: client expects one server's public key but connects to
+    // a different server (attacker). The pinning check must reject the handshake.
+
+    let mut attacker_manager = SessionManager::new("legitimate-server".to_string())?;
+
+    // Client pins the REAL server's public key (not the attacker's)
+    let real_server_manager = SessionManager::new("legitimate-server".to_string())?;
+    let real_server_pubkey = real_server_manager.server_certificate().public_key;
+
+    // Attacker's key is different (different SessionManager = different key pair)
+    assert_ne!(
+        attacker_manager.server_certificate().public_key,
+        real_server_pubkey,
+        "Test setup: attacker and real server must have different keys"
+    );
+
+    let client_cert = ClientCertificate::generate("victim-client")?;
+
+    let listener = TcpListener::bind("127.0.0.1:0").await?;
+    let addr = listener.local_addr()?;
+
+    // Attacker's server accepts the connection
+    let _attacker_handle = tokio::spawn(async move {
+        let (mut stream, _) = listener.accept().await.unwrap();
+        // Attacker tries to authenticate — will send their own cert
+        let _ = server_authenticate(&mut stream, &mut attacker_manager).await;
+    });
+
+    tokio::time::sleep(Duration::from_millis(100)).await;
+
+    let mut client_stream = timeout(Duration::from_secs(5), TcpStream::connect(addr)).await??;
+
+    // Client authenticates with the REAL server's pinned key
+    let result = client_authenticate(
+        &mut client_stream,
+        client_cert.signing_key()?,
+        Some("victim-client".to_string()),
+        &real_server_pubkey, // pinned to real server, not attacker
+    )
+    .await;
+
+    // Must fail — attacker's cert has a different public key
+    assert!(
+        result.is_err(),
+        "MITM must be rejected by public key pinning"
+    );
+    let err_msg = result.err().unwrap().to_string();
+    assert!(
+        err_msg.contains("pinning"),
+        "Error should mention pinning failure, got: {}",
+        err_msg
+    );
+
+    println!("✔ MITM rejection test passed!");
 
     Ok(())
 }

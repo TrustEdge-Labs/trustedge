@@ -161,7 +161,12 @@ impl ServerCertificate {
         })
     }
 
-    /// Verify the certificate signature and validity
+    /// Verify the certificate's self-signature and validity period.
+    ///
+    /// **WARNING:** This only checks internal consistency (the cert is self-signed
+    /// and not expired). It does NOT establish trust — any attacker can create a
+    /// valid self-signed certificate. Always use [`verify_pinned`](Self::verify_pinned)
+    /// to anchor trust to a pre-shared public key.
     pub fn verify(&self) -> Result<()> {
         // Check validity period
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
@@ -186,6 +191,22 @@ impl ServerCertificate {
             .verify(cert_data.as_bytes(), &signature)
             .map_err(|e| anyhow!("Certificate signature verification failed: {}", e))?;
 
+        Ok(())
+    }
+
+    /// Verify the certificate's public key matches a pinned (pre-shared) key.
+    ///
+    /// This is the trust anchor for the authentication protocol. Without pinning,
+    /// any attacker can present a valid self-signed certificate and execute a
+    /// Man-in-the-Middle attack. The pinned key is typically obtained by loading
+    /// the server's exported certificate file via [`load_server_cert`].
+    pub fn verify_pinned(&self, expected_pubkey: &[u8; 32]) -> Result<()> {
+        if self.public_key != *expected_pubkey {
+            return Err(anyhow!(
+                "Server public key mismatch: certificate key does not match pinned key. \
+                 Possible Man-in-the-Middle attack."
+            ));
+        }
         Ok(())
     }
 }
@@ -613,12 +634,17 @@ pub async fn server_authenticate(
     }
 }
 
-/// Perform client-side authentication handshake
+/// Perform client-side authentication handshake.
+///
+/// `server_pubkey` is the pinned Ed25519 public key of the expected server.
+/// The handshake will fail if the server presents a different key, preventing
+/// Man-in-the-Middle attacks. Obtain this by loading the server's exported
+/// certificate file via [`load_server_cert`].
 pub async fn client_authenticate(
     stream: &mut TcpStream,
     client_signing_key: &SigningKey,
     client_identity: Option<String>,
-    expected_server_identity: Option<&str>,
+    server_pubkey: &[u8; 32],
 ) -> Result<ClientAuthResult> {
     // Send client hello
     let hello_msg = AuthMessage::new(AuthMessageType::ClientHello, &"TrustEdge Client v1.0")?;
@@ -655,22 +681,17 @@ pub async fn client_authenticate(
 
     let challenge: AuthChallenge = challenge_msg.deserialize_payload()?;
 
-    // Verify server certificate
+    // Verify server certificate self-consistency (expiry + self-signature)
     challenge
         .server_cert
         .verify()
         .context("Server certificate verification failed")?;
 
-    // Check server identity if expected
-    if let Some(expected) = expected_server_identity {
-        if challenge.server_cert.identity != expected {
-            return Err(anyhow!(
-                "Server identity mismatch: expected '{}', got '{}'",
-                expected,
-                challenge.server_cert.identity
-            ));
-        }
-    }
+    // Verify server public key matches pinned key (MITM protection)
+    challenge
+        .server_cert
+        .verify_pinned(server_pubkey)
+        .context("Server public key pinning failed")?;
 
     // Sign challenge
     let challenge_signature = client_signing_key.sign(&challenge.challenge).to_bytes();
