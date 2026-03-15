@@ -138,11 +138,11 @@ Plans:
   2. Postgres schema tables exist after first startup without any manual SQL commands
   3. Dashboard loads in a browser and shows the platform UI without editing any .env files
   4. Hitting `/healthz` on the platform server returns an OK response, and the dashboard renders its home page
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 39-01: TBD
-- [ ] 39-02: TBD
+- [ ] 39-01-PLAN.md -- Containerize dashboard with static adapter, Dockerfile.dashboard, and nginx
+- [ ] 39-02-PLAN.md -- Update docker-compose.yml with three-service stack, auto-migration, and health checks
 
 ### Phase 40: Demo Script
 **Goal**: Users can see the complete TrustEdge lifecycle in action by running a single script
@@ -183,9 +183,9 @@ Phases execute in numeric order: 38 -> 39 -> 40 -> 41
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 38. Archive Profiles | 2/2 | Complete    | 2026-03-15 | - |
-| 39. Deployment Stack | v2.0 | 0/TBD | Not started | - |
+| 39. Deployment Stack | v2.0 | 0/2 | Not started | - |
 | 40. Demo Script | v2.0 | 0/TBD | Not started | - |
 | 41. Documentation | v2.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-03-15 after phase 38 planning*
+*Last updated: 2026-03-15 after phase 39 planning*
