@@ -1,0 +1,107 @@
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+
+
+# Requirements: TrustEdge v2.0
+
+**Defined:** 2026-03-15
+**Core Value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
+
+## v2.0 Requirements
+
+Requirements for the End-to-End Demo milestone. Each maps to roadmap phases.
+
+### Archive Profiles
+
+- [ ] **PROF-01**: User can wrap any data type with `trst wrap --profile generic` using flexible metadata fields
+- [ ] **PROF-02**: Generic profile manifest includes device type, data source, and capture context as optional fields
+- [ ] **PROF-03**: Generic profile is the default when no `--profile` is specified
+- [ ] **PROF-04**: Existing cam.video profile continues to work unchanged
+
+### Deployment
+
+- [ ] **DEPL-01**: User can start the full stack (platform + postgres + dashboard) with `docker-compose up`
+- [ ] **DEPL-02**: Postgres schema is automatically initialized on first startup
+- [ ] **DEPL-03**: Dashboard connects to platform API out of the box (no manual .env editing)
+- [ ] **DEPL-04**: Health checks confirm all services are running (`/healthz` returns OK, dashboard loads)
+
+### Demo
+
+- [ ] **DEMO-01**: User can run `./scripts/demo.sh` to see the full lifecycle: keygen → wrap → verify → receipt
+- [ ] **DEMO-02**: Demo script works against both docker-compose stack and local cargo builds
+- [ ] **DEMO-03**: Demo output clearly shows each step and the verification result (PASS/FAIL)
+- [ ] **DEMO-04**: Demo script generates or uses sample data (no manual file prep required)
+
+### Documentation
+
+- [ ] **DOCS-01**: Root README.md explains what TrustEdge does with a problem statement and use cases
+- [ ] **DOCS-02**: Root README.md includes a 3-command quick start (clone → docker-compose up → run demo)
+- [ ] **DOCS-03**: Architecture and internal details moved to docs/ directory or collapsed sections
+- [ ] **DOCS-04**: README structure is standard (single root README, not a redirect to scattered docs)
+- [ ] **DOCS-05**: Use case examples (drone, sensor, body cam, audio) described with copy-paste commands
+
+## Future Requirements
+
+Deferred to v2.1+. Tracked but not in current roadmap.
+
+### Named Profiles
+- **PROF-05**: Named profiles for specific use cases (sensor, audio, log) with tailored metadata schemas
+- **PROF-06**: Profile registry with validation rules per profile type
+
+### Multi-Scenario Demos
+- **DEMO-05**: Separate demo scripts per use case (drone, sensor, body cam, audio) with realistic sample data
+- **DEMO-06**: Browser-based verification demo using WASM bindings
+
+### Deployment Hardening
+- **DEPL-05**: Production deployment guide for DigitalOcean (droplet + managed postgres)
+- **DEPL-06**: TLS termination configuration (nginx/caddy reverse proxy)
+- **DEPL-07**: Backup and restore procedures for receipt database
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Device agent/daemon | Edge runtime is v3+ scope — demo uses CLI tools |
+| Device auto-registration | Requires agent; manual registration via dashboard is sufficient for demo |
+| mTLS/QUIC transport | Network transport works but demo uses HTTP POST for simplicity |
+| Multi-tenant isolation | Postgres backend supports it but demo is single-tenant |
+| CI/CD for deployment | Manual docker-compose is sufficient for demo |
+| Post-quantum crypto | Research phase only, no production use case |
+| Mobile app | Web dashboard is sufficient for demo |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| PROF-01 | — | Pending |
+| PROF-02 | — | Pending |
+| PROF-03 | — | Pending |
+| PROF-04 | — | Pending |
+| DEPL-01 | — | Pending |
+| DEPL-02 | — | Pending |
+| DEPL-03 | — | Pending |
+| DEPL-04 | — | Pending |
+| DEMO-01 | — | Pending |
+| DEMO-02 | — | Pending |
+| DEMO-03 | — | Pending |
+| DEMO-04 | — | Pending |
+| DOCS-01 | — | Pending |
+| DOCS-02 | — | Pending |
+| DOCS-03 | — | Pending |
+| DOCS-04 | — | Pending |
+| DOCS-05 | — | Pending |
+
+**Coverage:**
+- v2.0 requirements: 17 total
+- Mapped to phases: 0
+- Unmapped: 17
+
+---
+*Requirements defined: 2026-03-15*
+*Last updated: 2026-03-15 after initial definition*
