@@ -6,6 +6,7 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -21,8 +22,8 @@ use serde::Serialize;
 use std::time::Instant;
 use trustedge_core::{
     chain_next, encrypt_segment, generate_aad, genesis, read_archive, segment_hash, sign_manifest,
-    validate_archive, verify_manifest, write_archive, CamVideoManifest, CaptureInfo, ChunkInfo,
-    DeviceInfo, DeviceKeypair, SegmentInfo,
+    validate_archive, verify_manifest, write_archive, CamVideoMetadata, ChunkInfo, DeviceInfo,
+    DeviceKeypair, GenericMetadata, ProfileMetadata, SegmentInfo, TrstManifest,
 };
 // Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
 // SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
@@ -77,14 +78,17 @@ struct WrapCmd {
     input: PathBuf,
     #[arg(long = "out", value_name = "PATH", help = "Output .trst directory")]
     output: PathBuf,
-    #[arg(long, default_value = "cam.video")]
+    /// Archive profile. Defaults to "generic". Use "cam.video" for video capture archives.
+    #[arg(long, default_value = "generic")]
     profile: String,
     #[arg(long, default_value_t = 1_048_576)]
     chunk_size: usize,
-    #[arg(long, default_value_t = 2.0)]
-    chunk_seconds: f64,
-    #[arg(long, default_value_t = 30)]
-    fps: u32,
+    /// Chunk duration in seconds (cam.video profile only)
+    #[arg(long, help = "Chunk duration in seconds (cam.video profile only)")]
+    chunk_seconds: Option<f64>,
+    /// Frames per second (cam.video profile only)
+    #[arg(long, help = "Frames per second (cam.video profile only)")]
+    fps: Option<u32>,
     #[arg(
         long = "device-key",
         value_name = "PATH",
@@ -103,6 +107,21 @@ struct WrapCmd {
         help = "Seed RNG for deterministic output (for testing/CI, not cryptographically secure)"
     )]
     seed: Option<u64>,
+    /// Data type for generic profile (e.g. video, sensor, audio, log, binary)
+    #[arg(
+        long,
+        help = "Data type (generic profile: video, sensor, audio, log, binary)"
+    )]
+    data_type: Option<String>,
+    /// Source identifier for generic profile
+    #[arg(long, help = "Data source identifier (generic profile)")]
+    source: Option<String>,
+    /// Description for generic profile
+    #[arg(long, help = "Description (generic profile)")]
+    description: Option<String>,
+    /// MIME type for generic profile
+    #[arg(long, help = "MIME type (generic profile)")]
+    mime_type: Option<String>,
 }
 
 #[derive(Args, Debug)]
@@ -205,6 +224,12 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
         None => Box::new(rand::thread_rng()),
     };
 
+    // Resolve chunk_seconds: cam.video default 2.0, generic default 0.0
+    let chunk_seconds = match args.profile.as_str() {
+        "cam.video" => args.chunk_seconds.unwrap_or(2.0),
+        _ => args.chunk_seconds.unwrap_or(0.0),
+    };
+
     // Process chunks
     let chunks = input_data.chunks(args.chunk_size).collect::<Vec<_>>();
     let mut segments = Vec::new();
@@ -239,15 +264,19 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
         let hash = segment_hash(&encrypted_data);
         let next_state = chain_next(&chain_state, &hash);
 
-        // Create segment info
-        let start_time = format!("{:.3}s", i as f64 * args.chunk_seconds);
+        // Build start_time: time-based for cam.video, index-based for generic
+        let start_time = if args.profile == "cam.video" {
+            format!("{:.3}s", i as f64 * chunk_seconds)
+        } else {
+            format!("segment-{}", i)
+        };
         let chunk_filename = format!("{:05}.bin", chunk_id);
 
         let segment = SegmentInfo {
             chunk_file: chunk_filename,
             blake3_hash: hex::encode(hash),
             start_time,
-            duration_seconds: args.chunk_seconds,
+            duration_seconds: chunk_seconds,
             continuity_hash: hex::encode(next_state),
         };
 
@@ -255,40 +284,59 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
         chain_state = next_state;
     }
 
-    // Create manifest
-    let capture_end_time = if !chunks.is_empty() {
-        let last_chunk_start = (chunks.len() - 1) as f64 * args.chunk_seconds;
-        let end_timestamp = chrono::DateTime::parse_from_rfc3339(&started_at)?
-            + chrono::Duration::milliseconds((last_chunk_start * 1000.0) as i64)
-            + chrono::Duration::milliseconds((args.chunk_seconds * 1000.0) as i64);
-        end_timestamp.to_rfc3339_opts(SecondsFormat::Secs, true)
-    } else {
-        started_at.clone()
+    // Build profile metadata and compute end time
+    let metadata = match args.profile.as_str() {
+        "cam.video" => {
+            let fps = args.fps.unwrap_or(30);
+            let capture_end_time = if !chunks.is_empty() {
+                let last_chunk_start = (chunks.len() - 1) as f64 * chunk_seconds;
+                let end_timestamp = chrono::DateTime::parse_from_rfc3339(&started_at)?
+                    + chrono::Duration::milliseconds((last_chunk_start * 1000.0) as i64)
+                    + chrono::Duration::milliseconds((chunk_seconds * 1000.0) as i64);
+                end_timestamp.to_rfc3339_opts(SecondsFormat::Secs, true)
+            } else {
+                started_at.clone()
+            };
+            ProfileMetadata::CamVideo(CamVideoMetadata {
+                started_at: started_at.clone(),
+                ended_at: capture_end_time,
+                timezone: "UTC".to_string(),
+                fps: fps as f64,
+                resolution: "1920x1080".to_string(),
+                codec: "raw".to_string(),
+            })
+        }
+        _ => {
+            // generic profile (and any future unknown profiles default to generic)
+            ProfileMetadata::Generic(GenericMetadata {
+                started_at: started_at.clone(),
+                ended_at: started_at.clone(), // generic data is not time-based
+                data_type: args.data_type,
+                source: args.source,
+                description: args.description,
+                mime_type: args.mime_type,
+                labels: BTreeMap::new(),
+            })
+        }
     };
 
-    let manifest = CamVideoManifest {
+    // Build the TrstManifest
+    let manifest = TrstManifest {
         trst_version: "0.1.0".to_string(),
-        profile: args.profile,
+        profile: args.profile.clone(),
         device: DeviceInfo {
             id: device_id,
             model: "TrustEdgeRefCam".to_string(),
             firmware_version: "1.0.0".to_string(),
             public_key: device_keypair.public.clone(),
         },
-        capture: CaptureInfo {
-            started_at,
-            ended_at: capture_end_time,
-            timezone: "UTC".to_string(),
-            fps: args.fps as f64,
-            resolution: "1920x1080".to_string(),
-            codec: "raw".to_string(),
-        },
+        metadata,
         chunk: ChunkInfo {
             size_bytes: args.chunk_size as u64,
-            duration_seconds: args.chunk_seconds,
+            duration_seconds: chunk_seconds,
         },
         segments,
-        claims: vec!["location:unknown".to_string()], // Simple claims
+        claims: vec!["location:unknown".to_string()],
         prev_archive_hash: None,
         signature: None,
     };
@@ -296,7 +344,7 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     // Sign manifest
     let canonical_bytes = manifest.to_canonical_bytes()?;
     let signature = sign_manifest(&device_keypair, &canonical_bytes)?;
-    let signed_manifest = CamVideoManifest {
+    let signed_manifest = TrstManifest {
         signature: Some(signature.clone()),
         ..manifest
     };
@@ -602,7 +650,7 @@ async fn handle_emit_request(args: EmitRequestCmd) -> Result<()> {
     let device_pub = device_pub_content.trim().to_string();
 
     // Build VerifyRequest using shared trustedge_types::verification::VerifyRequest.
-    // CamVideoManifest is serialized to serde_json::Value for compatibility with the shared type.
+    // TrstManifest is serialized to serde_json::Value for compatibility with the shared type.
     let manifest_value = serde_json::to_value(&manifest)
         .with_context(|| "Failed to serialize manifest to JSON value")?;
     let verify_request = VerifyRequest {
