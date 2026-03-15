@@ -39,11 +39,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user for running the server
-RUN useradd -r -s /bin/false trustedge
+# Create non-root user with home directory for running the server
+RUN useradd -r -m -s /bin/false trustedge
 
 # Copy compiled binary from builder stage
 COPY --from=builder /usr/src/app/target/release/trustedge-platform-server /usr/local/bin/trustedge-platform-server
+
+# Set working directory (avoids permission issues with / as CWD)
+WORKDIR /home/trustedge
 
 # Drop to non-root user
 USER trustedge
