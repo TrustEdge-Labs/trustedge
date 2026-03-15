@@ -19,7 +19,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
-use trustedge_core::CamVideoManifest;
+use trustedge_core::TrstManifest;
 
 const PROFILE: &str = "cam.video";
 
@@ -57,6 +57,30 @@ fn wrap_archive(tempdir: &TempDir) -> (PathBuf, String) {
     (archive_dir, device_pub.trim().to_string())
 }
 
+/// Wrap a generic profile archive (no --profile flag = uses default "generic").
+fn wrap_generic_archive(tempdir: &TempDir) -> (PathBuf, String) {
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-generic.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+        ])
+        .assert()
+        .success();
+
+    let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
+    (archive_dir, device_pub.trim().to_string())
+}
+
 fn run_verify(tempdir: &TempDir, archive: &Path, device_pub: &str) -> assert_cmd::assert::Assert {
     Command::cargo_bin("trst")
         .unwrap()
@@ -80,7 +104,7 @@ fn decode_signing_key(path: &Path) -> SigningKey {
     SigningKey::from_bytes(&array)
 }
 
-fn resign_manifest_json(archive: &Path, signing_key: &SigningKey, manifest: &CamVideoManifest) {
+fn resign_manifest_json(archive: &Path, signing_key: &SigningKey, manifest: &TrstManifest) {
     // Use proper canonicalization from the core module
     let canonical_bytes = manifest.to_canonical_bytes().unwrap();
 
@@ -199,7 +223,7 @@ fn acceptance_a6_duration_sanity() {
     let (archive, device_pub) = wrap_archive(&tempdir);
     let manifest_path = archive.join("manifest.json");
     let manifest_json = fs::read_to_string(&manifest_path).unwrap();
-    let mut manifest: CamVideoManifest = serde_json::from_str(&manifest_json).unwrap();
+    let mut manifest: TrstManifest = serde_json::from_str(&manifest_json).unwrap();
 
     // Inflate the first segment duration to trip the sanity check while
     // keeping the signature valid by re-signing with the original key.
@@ -213,4 +237,144 @@ fn acceptance_a6_duration_sanity() {
     // This test verifies that the archive validates successfully even with unusual durations
     // The P0 implementation doesn't enforce strict duration sanity checks
     run_verify(&tempdir, &archive, &device_pub).success();
+}
+
+// ─── Generic profile acceptance tests ────────────────────────────────────────
+
+#[test]
+fn acceptance_generic_default_profile() {
+    // Wrap without --profile flag; default must be "generic"
+    let tempdir = TempDir::new().unwrap();
+    let (archive, device_pub) = wrap_generic_archive(&tempdir);
+
+    // Read manifest and verify profile is "generic"
+    let manifest_json = fs::read_to_string(archive.join("manifest.json")).unwrap();
+    let manifest_value: serde_json::Value = serde_json::from_str(&manifest_json).unwrap();
+    assert_eq!(
+        manifest_value["profile"], "generic",
+        "default profile must be 'generic'"
+    );
+
+    // Verify the archive passes signature + continuity
+    run_verify(&tempdir, &archive, &device_pub).success();
+}
+
+#[test]
+fn acceptance_generic_explicit_profile() {
+    // Wrap with --profile generic explicitly; must produce a valid archive
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-explicit.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            "generic",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+        ])
+        .assert()
+        .success();
+
+    let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
+
+    let manifest_json = fs::read_to_string(archive_dir.join("manifest.json")).unwrap();
+    let manifest_value: serde_json::Value = serde_json::from_str(&manifest_json).unwrap();
+    assert_eq!(manifest_value["profile"], "generic");
+
+    run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
+}
+
+#[test]
+fn acceptance_generic_with_metadata() {
+    // Wrap with --data-type and --source flags; verify they appear in the manifest
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-meta.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            "generic",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+            "--data-type",
+            "sensor",
+            "--source",
+            "drone-01",
+        ])
+        .assert()
+        .success();
+
+    let manifest_json = fs::read_to_string(archive_dir.join("manifest.json")).unwrap();
+    let manifest_value: serde_json::Value = serde_json::from_str(&manifest_json).unwrap();
+
+    assert_eq!(manifest_value["profile"], "generic");
+    assert_eq!(
+        manifest_value["metadata"]["data_type"], "sensor",
+        "data_type must be present in manifest metadata"
+    );
+    assert_eq!(
+        manifest_value["metadata"]["source"], "drone-01",
+        "source must be present in manifest metadata"
+    );
+
+    // Verify round-trip passes
+    let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
+    run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
+}
+
+#[test]
+fn acceptance_camvideo_still_works() {
+    // cam.video wrap + verify round-trip must pass (regression guard)
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-camvideo.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            "cam.video",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+            "--chunk-seconds",
+            "2.0",
+            "--fps",
+            "30",
+        ])
+        .assert()
+        .success();
+
+    let manifest_json = fs::read_to_string(archive_dir.join("manifest.json")).unwrap();
+    let manifest_value: serde_json::Value = serde_json::from_str(&manifest_json).unwrap();
+    assert_eq!(manifest_value["profile"], "cam.video");
+    // cam.video metadata must have fps field
+    assert!(
+        manifest_value["metadata"]["fps"].is_number(),
+        "cam.video manifest must include fps in metadata"
+    );
+
+    let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
+    run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
 }
