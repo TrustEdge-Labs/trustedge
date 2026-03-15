@@ -141,8 +141,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 39-01-PLAN.md -- Containerize dashboard with static adapter, Dockerfile.dashboard, and nginx
-- [ ] 39-02-PLAN.md -- Update docker-compose.yml with three-service stack, auto-migration, and health checks
+- [x] 39-01-PLAN.md -- Containerize dashboard with static adapter, Dockerfile.dashboard, and nginx
+- [x] 39-02-PLAN.md -- Update docker-compose.yml with three-service stack, auto-migration, and health checks
 
 ### Phase 40: Demo Script
 **Goal**: Users can see the complete TrustEdge lifecycle in action by running a single script

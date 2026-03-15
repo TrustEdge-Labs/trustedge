@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: End-to-End Demo
 status: planning
-stopped_at: "Checkpoint 39-02 task 2: awaiting human verification of docker-compose up --build"
-last_updated: "2026-03-15T21:02:42.123Z"
+stopped_at: Completed 39-02-PLAN.md (full stack verified)
+last_updated: "2026-03-15T21:54:41.023Z"
 last_activity: 2026-03-15 -- Roadmap created for v2.0
 progress:
   total_phases: 4
@@ -67,6 +67,9 @@ Cleared -- see PROJECT.md Key Decisions table for full history.
 - [Phase 39-deployment-stack]: Dockerfile.dashboard uses repo root as build context: matches platform Dockerfile convention, allows unified COPY for deploy/nginx.conf
 - [Phase 39-deployment-stack]: Inline DATABASE_URL and PORT in docker-compose.yml removes env_file dependency for zero-config demo startup
 - [Phase 39-deployment-stack]: VITE_API_BASE baked in as build arg at compose build time; no runtime env injection needed for static nginx serving
+- [Phase 39-deployment-stack]: /healthz excluded from auth middleware in postgres builds so unauthenticated docker healthchecks succeed
+- [Phase 39-deployment-stack]: Dockerfile Rust pinned to 1.88: time crate MSRV incompatibility with edition2024 on earlier versions
+- [Phase 39-deployment-stack]: wget must be explicitly installed in slim-bookworm runtime for healthcheck commands
 
 ### Pending Todos
 
@@ -79,8 +82,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T21:02:42.120Z
-Stopped at: Checkpoint 39-02 task 2: awaiting human verification of docker-compose up --build
+Last session: 2026-03-15T21:54:27.274Z
+Stopped at: Completed 39-02-PLAN.md (full stack verified)
 Resume file: None
 
 ---
