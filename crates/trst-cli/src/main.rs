@@ -70,6 +70,7 @@ enum Commands {
     Wrap(WrapCmd),
     Verify(VerifyCmd),
     EmitRequest(EmitRequestCmd),
+    Keygen(KeygenCmd),
 }
 
 #[derive(Args, Debug)]
@@ -145,6 +146,22 @@ struct VerifyCmd {
 }
 
 #[derive(Args, Debug)]
+struct KeygenCmd {
+    #[arg(
+        long = "out-key",
+        value_name = "PATH",
+        help = "Output path for secret key file"
+    )]
+    out_key: PathBuf,
+    #[arg(
+        long = "out-pub",
+        value_name = "PATH",
+        help = "Output path for public key file"
+    )]
+    out_pub: PathBuf,
+}
+
+#[derive(Args, Debug)]
 struct EmitRequestCmd {
     #[arg(
         long = "archive",
@@ -188,7 +205,37 @@ async fn run() -> Result<()> {
         Commands::Wrap(args) => handle_wrap(args),
         Commands::Verify(args) => handle_verify(args),
         Commands::EmitRequest(args) => handle_emit_request(args).await,
+        Commands::Keygen(args) => handle_keygen(args),
     }
+}
+
+fn handle_keygen(args: KeygenCmd) -> Result<()> {
+    // Refuse to overwrite existing files
+    if args.out_key.exists() {
+        anyhow::bail!(
+            "Refusing to overwrite existing file: {}",
+            args.out_key.display()
+        );
+    }
+    if args.out_pub.exists() {
+        anyhow::bail!(
+            "Refusing to overwrite existing file: {}",
+            args.out_pub.display()
+        );
+    }
+
+    let device_keypair = DeviceKeypair::generate()?;
+    fs::write(
+        &args.out_key,
+        format!("{}\n", device_keypair.export_secret()),
+    )
+    .with_context(|| format!("Failed to write secret key: {}", args.out_key.display()))?;
+    fs::write(&args.out_pub, format!("{}\n", device_keypair.public))
+        .with_context(|| format!("Failed to write public key: {}", args.out_pub.display()))?;
+
+    println!("Generated device key: {}", args.out_key.display());
+    println!("Generated device pub: {}", args.out_pub.display());
+    Ok(())
 }
 
 fn handle_wrap(args: WrapCmd) -> Result<()> {
