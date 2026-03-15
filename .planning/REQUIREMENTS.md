@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 # Requirements: TrustEdge v2.0
 
 **Defined:** 2026-03-15
-**Core Value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
+**Core Value:** Prove that data from an edge device has not been tampered with -- from capture to verification -- using cryptographic signatures, continuity chains, and verifiable receipts.
 
 ## v2.0 Requirements
 
@@ -31,7 +31,7 @@ Requirements for the End-to-End Demo milestone. Each maps to roadmap phases.
 
 ### Demo
 
-- [ ] **DEMO-01**: User can run `./scripts/demo.sh` to see the full lifecycle: keygen → wrap → verify → receipt
+- [ ] **DEMO-01**: User can run `./scripts/demo.sh` to see the full lifecycle: keygen -> wrap -> verify -> receipt
 - [ ] **DEMO-02**: Demo script works against both docker-compose stack and local cargo builds
 - [ ] **DEMO-03**: Demo output clearly shows each step and the verification result (PASS/FAIL)
 - [ ] **DEMO-04**: Demo script generates or uses sample data (no manual file prep required)
@@ -39,7 +39,7 @@ Requirements for the End-to-End Demo milestone. Each maps to roadmap phases.
 ### Documentation
 
 - [ ] **DOCS-01**: Root README.md explains what TrustEdge does with a problem statement and use cases
-- [ ] **DOCS-02**: Root README.md includes a 3-command quick start (clone → docker-compose up → run demo)
+- [ ] **DOCS-02**: Root README.md includes a 3-command quick start (clone -> docker-compose up -> run demo)
 - [ ] **DOCS-03**: Architecture and internal details moved to docs/ directory or collapsed sections
 - [ ] **DOCS-04**: README structure is standard (single root README, not a redirect to scattered docs)
 - [ ] **DOCS-05**: Use case examples (drone, sensor, body cam, audio) described with copy-paste commands
@@ -65,7 +65,7 @@ Deferred to v2.1+. Tracked but not in current roadmap.
 
 | Feature | Reason |
 |---------|--------|
-| Device agent/daemon | Edge runtime is v3+ scope — demo uses CLI tools |
+| Device agent/daemon | Edge runtime is v3+ scope -- demo uses CLI tools |
 | Device auto-registration | Requires agent; manual registration via dashboard is sufficient for demo |
 | mTLS/QUIC transport | Network transport works but demo uses HTTP POST for simplicity |
 | Multi-tenant isolation | Postgres backend supports it but demo is single-tenant |
@@ -79,29 +79,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROF-01 | — | Pending |
-| PROF-02 | — | Pending |
-| PROF-03 | — | Pending |
-| PROF-04 | — | Pending |
-| DEPL-01 | — | Pending |
-| DEPL-02 | — | Pending |
-| DEPL-03 | — | Pending |
-| DEPL-04 | — | Pending |
-| DEMO-01 | — | Pending |
-| DEMO-02 | — | Pending |
-| DEMO-03 | — | Pending |
-| DEMO-04 | — | Pending |
-| DOCS-01 | — | Pending |
-| DOCS-02 | — | Pending |
-| DOCS-03 | — | Pending |
-| DOCS-04 | — | Pending |
-| DOCS-05 | — | Pending |
+| PROF-01 | Phase 38 | Pending |
+| PROF-02 | Phase 38 | Pending |
+| PROF-03 | Phase 38 | Pending |
+| PROF-04 | Phase 38 | Pending |
+| DEPL-01 | Phase 39 | Pending |
+| DEPL-02 | Phase 39 | Pending |
+| DEPL-03 | Phase 39 | Pending |
+| DEPL-04 | Phase 39 | Pending |
+| DEMO-01 | Phase 40 | Pending |
+| DEMO-02 | Phase 40 | Pending |
+| DEMO-03 | Phase 40 | Pending |
+| DEMO-04 | Phase 40 | Pending |
+| DOCS-01 | Phase 41 | Pending |
+| DOCS-02 | Phase 41 | Pending |
+| DOCS-03 | Phase 41 | Pending |
+| DOCS-04 | Phase 41 | Pending |
+| DOCS-05 | Phase 41 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-15 after initial definition*
+*Last updated: 2026-03-15 after roadmap creation (traceability populated)*

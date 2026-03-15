@@ -12,15 +12,17 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 See: .planning/PROJECT.md (updated 2026-03-15)
 
-**Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Defining requirements for v2.0 End-to-End Demo
+**Core value:** Prove that data from an edge device has not been tampered with -- from capture to verification -- using cryptographic signatures, continuity chains, and verifiable receipts.
+**Current focus:** v2.0 End-to-End Demo -- Phase 38: Archive Profiles
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-15 — Milestone v2.0 started
+Phase: 38 of 41 (Archive Profiles)
+Plan: Ready to plan
+Status: Ready to plan
+Last activity: 2026-03-15 -- Roadmap created for v2.0
+
+Progress: [..........] 0%
 
 ## Performance Metrics
 
@@ -40,7 +42,7 @@ Last activity: 2026-03-15 — Milestone v2.0 started
 
 ### Decisions
 
-Cleared — see PROJECT.md Key Decisions table for full history.
+Cleared -- see PROJECT.md Key Decisions table for full history.
 
 ### Pending Todos
 
@@ -54,8 +56,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-15
-Stopped at: Defining v2.0 requirements
+Stopped at: Roadmap created for v2.0 -- ready to plan Phase 38
 Resume file: None
 
 ---
-*Last updated: 2026-03-15 after v2.0 milestone started*
+*Last updated: 2026-03-15 after v2.0 roadmap created*
