@@ -1,0 +1,47 @@
+# TrustEdge Dashboard -- Multi-stage Docker build
+#
+# Stage 1 (builder): Installs deps and builds SvelteKit static output
+# Stage 2 (runtime): Serves static files via nginx:alpine
+#
+# Build (from repo root):
+#   docker build -f deploy/Dockerfile.dashboard -t trustedge-dashboard .
+# Run:
+#   docker run -p 8080:80 trustedge-dashboard
+
+# -- Stage 1: Builder ----------------------------------------------------------
+
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Accept API base URL as build arg (baked into static JS at build time)
+ARG VITE_API_BASE=http://localhost:3001
+
+# Copy package files first for layer caching
+COPY web/dashboard/package.json web/dashboard/package-lock.json* ./
+
+RUN npm install
+
+# Copy dashboard source
+COPY web/dashboard/ .
+
+# Build static output
+RUN VITE_API_BASE=${VITE_API_BASE} npm run build
+
+# -- Stage 2: Runtime ----------------------------------------------------------
+
+FROM nginx:alpine AS runtime
+
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy custom nginx config
+COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy static build output from builder
+COPY --from=builder /app/build /usr/share/nginx/html
+
+EXPOSE 80
+
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
+    CMD wget -qO- http://localhost/healthz || exit 1
