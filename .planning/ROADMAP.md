@@ -107,7 +107,7 @@ Fixed incorrect KDF usage across the codebase. Replaced PBKDF2-per-chunk with HK
 
 **Milestone Goal:** Deliver a working end-to-end demonstration that shows TrustEdge's full value proposition -- device captures data, signs/encrypts it, wraps into a tamper-evident archive, submits to a verification service, and receives a cryptographic receipt proving provenance.
 
-- [ ] **Phase 38: Archive Profiles** - Data-agnostic archive wrapping with generic profile as default
+- [x] **Phase 38: Archive Profiles** - Data-agnostic archive wrapping with generic profile as default (completed 2026-03-15)
 - [ ] **Phase 39: Deployment Stack** - One-command docker-compose stack with platform, postgres, and dashboard
 - [ ] **Phase 40: Demo Script** - End-to-end lifecycle script showing keygen, wrap, verify, and receipt
 - [ ] **Phase 41: Documentation** - README rewrite focused on use cases, quick start, and copy-paste commands
@@ -182,7 +182,7 @@ Phases execute in numeric order: 38 -> 39 -> 40 -> 41
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 38. Archive Profiles | 1/2 | In Progress|  | - |
+| 38. Archive Profiles | 2/2 | Complete   | 2026-03-15 | - |
 | 39. Deployment Stack | v2.0 | 0/TBD | Not started | - |
 | 40. Demo Script | v2.0 | 0/TBD | Not started | - |
 | 41. Documentation | v2.0 | 0/TBD | Not started | - |

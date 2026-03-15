@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: End-to-End Demo
 status: planning
-stopped_at: Completed 38-01-PLAN.md
-last_updated: "2026-03-15T19:47:17.685Z"
+stopped_at: Completed 38-02-PLAN.md
+last_updated: "2026-03-15T20:11:57.562Z"
 last_activity: 2026-03-15 -- Roadmap created for v2.0
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -61,6 +61,8 @@ Progress: [..........] 0%
 Cleared -- see PROJECT.md Key Decisions table for full history.
 - [Phase 38-archive-profiles]: TrstManifest with ProfileMetadata enum (CamVideo + Generic) is the profile-agnostic contract type; CamVideoManifest kept as alias
 - [Phase 38-archive-profiles]: Untagged serde with CamVideo first enables reliable deserialization disambiguation based on required fields
+- [Phase 38]: Generic profile uses index-based segment start_time (segment-N) since generic data has no inherent temporal axis
+- [Phase 38]: Unknown profiles fall through to generic path in CLI match, providing forward compatibility
 
 ### Pending Todos
 
@@ -73,8 +75,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T19:47:17.683Z
-Stopped at: Completed 38-01-PLAN.md
+Last session: 2026-03-15T20:11:57.559Z
+Stopped at: Completed 38-02-PLAN.md
 Resume file: None
 
 ---
