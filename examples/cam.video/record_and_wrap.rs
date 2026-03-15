@@ -12,8 +12,8 @@ use std::error::Error;
 use std::fs;
 use trustedge_core::{
     chain_next, encrypt_segment, generate_aad, generate_nonce24, genesis, segment_hash,
-    sign_manifest, write_archive, CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo,
-    DeviceKeypair, SegmentInfo,
+    sign_manifest, write_archive, CamVideoManifest, CamVideoMetadata, ChunkInfo, DeviceInfo,
+    DeviceKeypair, ProfileMetadata, SegmentInfo,
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -118,14 +118,14 @@ fn main() -> Result<(), Box<dyn Error>> {
             firmware_version: "1.0.0".to_string(),
             public_key: device_keypair.public.clone(),
         },
-        capture: CaptureInfo {
+        metadata: ProfileMetadata::CamVideo(CamVideoMetadata {
             started_at,
             ended_at: capture_end_time,
             timezone: "UTC".to_string(),
             fps: fps as f64,
             resolution: "1920x1080".to_string(),
             codec: "raw".to_string(),
-        },
+        }),
         chunk: ChunkInfo {
             size_bytes: chunk_size as u64,
             duration_seconds: chunk_seconds,

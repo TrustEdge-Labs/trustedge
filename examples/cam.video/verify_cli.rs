@@ -10,7 +10,7 @@ use std::env;
 use std::error::Error;
 use std::fs;
 
-use trustedge_core::{read_archive, validate_archive, verify_manifest};
+use trustedge_core::{read_archive, validate_archive, verify_manifest, ProfileMetadata};
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("TrustEdge P0 cam.video Example: Verify CLI");
@@ -96,12 +96,20 @@ fn main() -> Result<(), Box<dyn Error>> {
                         "   Device: {} ({})",
                         manifest.device.id, manifest.device.model
                     );
-                    println!(
-                        "   Resolution: {} @ {} fps",
-                        manifest.capture.resolution, manifest.capture.fps
-                    );
-                    println!("   Started: {}", manifest.capture.started_at);
-                    println!("   Ended: {}", manifest.capture.ended_at);
+                    match &manifest.metadata {
+                        ProfileMetadata::CamVideo(m) => {
+                            println!("   Resolution: {} @ {} fps", m.resolution, m.fps);
+                            println!("   Started: {}", m.started_at);
+                            println!("   Ended: {}", m.ended_at);
+                        }
+                        ProfileMetadata::Generic(m) => {
+                            println!("   Started: {}", m.started_at);
+                            println!("   Ended: {}", m.ended_at);
+                            if let Some(ref dt) = m.data_type {
+                                println!("   Data type: {}", dt);
+                            }
+                        }
+                    }
 
                     println!();
                     println!("🎉 Archive verification successful!");

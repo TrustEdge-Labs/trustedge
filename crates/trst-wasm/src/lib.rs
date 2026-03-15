@@ -21,7 +21,7 @@ use base64::{engine::general_purpose, Engine as _};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 
 // Import canonical manifest types from trst-protocols
-use trustedge_trst_protocols::CamVideoManifest;
+use trustedge_trst_protocols::TrstManifest;
 
 // Initialize panic hook for better error messages in debug
 #[wasm_bindgen(start)]
@@ -40,7 +40,7 @@ struct VerificationResult {
 #[wasm_bindgen]
 pub fn verify_manifest(manifest_bytes: Vec<u8>, device_pub: String) -> Result<JsValue, JsValue> {
     // Parse the manifest using canonical types from trst-protocols
-    let manifest: CamVideoManifest = serde_json::from_slice(&manifest_bytes)
+    let manifest: TrstManifest = serde_json::from_slice(&manifest_bytes)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
 
     // Get signature
@@ -96,7 +96,7 @@ pub async fn verify_archive(
     let manifest_content = read_file_from_directory(&dir_handle, "manifest.json").await?;
 
     // Parse the manifest using canonical types from trst-protocols
-    let manifest: CamVideoManifest = serde_json::from_slice(&manifest_content)
+    let manifest: TrstManifest = serde_json::from_slice(&manifest_content)
         .map_err(|e| JsValue::from_str(&format!("Failed to parse manifest: {}", e)))?;
 
     // Get signature
@@ -231,7 +231,7 @@ async fn read_file_from_directory(
 /// Verify archive continuity by checking that chunks exist and match the manifest
 async fn verify_archive_continuity(
     dir_handle: &FileSystemDirectoryHandle,
-    manifest: &CamVideoManifest,
+    manifest: &TrstManifest,
 ) -> Result<(), JsValue> {
     // Get the chunks directory handle
     let chunks_handle = JsFuture::from(dir_handle.get_directory_handle("chunks"))
