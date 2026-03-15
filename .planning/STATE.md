@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: End-to-End Demo
 status: planning
-stopped_at: Phase 38 context gathered
-last_updated: "2026-03-15T17:05:27.906Z"
+stopped_at: Completed 38-01-PLAN.md
+last_updated: "2026-03-15T19:47:17.685Z"
 last_activity: 2026-03-15 -- Roadmap created for v2.0
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -59,6 +59,8 @@ Progress: [..........] 0%
 ### Decisions
 
 Cleared -- see PROJECT.md Key Decisions table for full history.
+- [Phase 38-archive-profiles]: TrstManifest with ProfileMetadata enum (CamVideo + Generic) is the profile-agnostic contract type; CamVideoManifest kept as alias
+- [Phase 38-archive-profiles]: Untagged serde with CamVideo first enables reliable deserialization disambiguation based on required fields
 
 ### Pending Todos
 
@@ -71,9 +73,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T17:05:27.903Z
-Stopped at: Phase 38 context gathered
-Resume file: .planning/phases/38-archive-profiles/38-CONTEXT.md
+Last session: 2026-03-15T19:47:17.683Z
+Stopped at: Completed 38-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-15 after v2.0 roadmap created*

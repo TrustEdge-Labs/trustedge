@@ -17,10 +17,10 @@ Requirements for the End-to-End Demo milestone. Each maps to roadmap phases.
 
 ### Archive Profiles
 
-- [ ] **PROF-01**: User can wrap any data type with `trst wrap --profile generic` using flexible metadata fields
-- [ ] **PROF-02**: Generic profile manifest includes device type, data source, and capture context as optional fields
+- [x] **PROF-01**: User can wrap any data type with `trst wrap --profile generic` using flexible metadata fields
+- [x] **PROF-02**: Generic profile manifest includes device type, data source, and capture context as optional fields
 - [ ] **PROF-03**: Generic profile is the default when no `--profile` is specified
-- [ ] **PROF-04**: Existing cam.video profile continues to work unchanged
+- [x] **PROF-04**: Existing cam.video profile continues to work unchanged
 
 ### Deployment
 
@@ -79,10 +79,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROF-01 | Phase 38 | Pending |
-| PROF-02 | Phase 38 | Pending |
+| PROF-01 | Phase 38 | Complete |
+| PROF-02 | Phase 38 | Complete |
 | PROF-03 | Phase 38 | Pending |
-| PROF-04 | Phase 38 | Pending |
+| PROF-04 | Phase 38 | Complete |
 | DEPL-01 | Phase 39 | Pending |
 | DEPL-02 | Phase 39 | Pending |
 | DEPL-03 | Phase 39 | Pending |

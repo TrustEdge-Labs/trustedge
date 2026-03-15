@@ -182,7 +182,7 @@ Phases execute in numeric order: 38 -> 39 -> 40 -> 41
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 38. Archive Profiles | v2.0 | 0/2 | Planning complete | - |
+| 38. Archive Profiles | 1/2 | In Progress|  | - |
 | 39. Deployment Stack | v2.0 | 0/TBD | Not started | - |
 | 40. Demo Script | v2.0 | 0/TBD | Not started | - |
 | 41. Documentation | v2.0 | 0/TBD | Not started | - |
