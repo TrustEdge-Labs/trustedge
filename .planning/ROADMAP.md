@@ -184,7 +184,7 @@ Phases execute in numeric order: 38 -> 39 -> 40 -> 41
 |-------|-----------|----------------|--------|-----------|
 | 38. Archive Profiles | 2/2 | Complete    | 2026-03-15 | - |
 | 39. Deployment Stack | 2/2 | Complete    | 2026-03-15 | - |
-| 40. Demo Script | v2.0 | 0/2 | Planned | - |
+| 40. Demo Script | 1/2 | In Progress|  | - |
 | 41. Documentation | v2.0 | 0/TBD | Not started | - |
 
 ---

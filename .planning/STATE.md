@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: End-to-End Demo
 status: planning
-stopped_at: Phase 40 context gathered
-last_updated: "2026-03-15T23:21:32.883Z"
+stopped_at: Completed 40-01-PLAN.md
+last_updated: "2026-03-15T23:49:18.299Z"
 last_activity: 2026-03-15 -- Roadmap created for v2.0
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 0
 ---
 
@@ -70,6 +70,8 @@ Cleared -- see PROJECT.md Key Decisions table for full history.
 - [Phase 39-deployment-stack]: /healthz excluded from auth middleware in postgres builds so unauthenticated docker healthchecks succeed
 - [Phase 39-deployment-stack]: Dockerfile Rust pinned to 1.88: time crate MSRV incompatibility with edition2024 on earlier versions
 - [Phase 39-deployment-stack]: wget must be explicitly installed in slim-bookworm runtime for healthcheck commands
+- [Phase 40-demo-script]: trst keygen checks both output paths before generating keypair (fail fast, no partial writes)
+- [Phase 40-demo-script]: trst keygen is synchronous consistent with handle_wrap/handle_verify; only EmitRequest uses async
 
 ### Pending Todos
 
@@ -82,9 +84,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T23:21:32.880Z
-Stopped at: Phase 40 context gathered
-Resume file: .planning/phases/40-demo-script/40-CONTEXT.md
+Last session: 2026-03-15T23:49:18.296Z
+Stopped at: Completed 40-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-15 after v2.0 roadmap created*
