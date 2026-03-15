@@ -10,11 +10,22 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## What This Is
 
-TrustEdge is a Rust workspace providing hardware-backed cryptographic operations for edge devices and IoT. A consolidated monolithic core (`trustedge-core`) owns all cryptographic operations — envelope encryption, signing, digital receipts, software attestation, and .trst archives — with thin CLI and WASM shells as frontends. The workspace includes 12 crates (including `trustedge-types` for shared wire types and `trustedge-platform` for the consolidated verification/CA service), with `trustedge-core` as the single source of truth for all crypto.
+TrustEdge provides encryption, attestation, verification, and provenance for data captured by edge devices. Any data — video, audio, sensor readings, logs — can be signed at the source, encrypted, wrapped into tamper-evident archives, and verified by a platform service that issues cryptographic receipts proving the data hasn't been altered. The system supports hardware-backed keys (YubiKey), software HSMs, and OS keyrings. A Rust workspace with 9 crates, CLI tools, a verification API, a web dashboard, and WASM browser bindings.
 
 ## Core Value
 
-A single, reliable `trustedge-core` library that owns all cryptographic operations (envelope encryption, signing, receipts, attestation, archives) with production-quality YubiKey hardware integration — thin CLIs and WASM bindings are just frontends.
+Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
+
+## Current Milestone: v2.0 End-to-End Demo
+
+**Goal:** Deliver a working end-to-end demonstration that shows TrustEdge's full value proposition — device captures data, signs/encrypts it, wraps into a tamper-evident archive, submits to a verification service, and receives a cryptographic receipt proving provenance.
+
+**Target features:**
+- Data-agnostic archive profiles (generic, sensor, audio — not just cam.video)
+- Docker-compose stack (platform + postgres + dashboard) that starts with one command
+- End-to-end demo script showing the full lifecycle
+- Multi-scenario examples (drone inspection, sensor logs, body cam, audio)
+- README rewrite focused on the demo and use cases, not internal architecture
 
 ## Requirements
 
@@ -116,7 +127,11 @@ A single, reliable `trustedge-core` library that owns all cryptographic operatio
 
 ### Active
 
-(No active requirements — start next milestone to define.)
+- [ ] Data-agnostic archive profiles (generic, sensor, audio)
+- [ ] Docker-compose full stack deployment
+- [ ] End-to-end demo script (device → wrap → verify → receipt)
+- [ ] Multi-scenario demo examples (drone, sensor, body cam, audio)
+- [ ] README rewrite focused on use cases and demo
 
 ### Deferred
 
@@ -245,4 +260,4 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | derive_key key_id uses first 16 bytes of 32-byte salt | Preserves KeyBackend::derive_key(&[u8; 16]) signature | ✓ Good — no API break |
 
 ---
-*Last updated: 2026-02-24 after v1.8 milestone complete*
+*Last updated: 2026-03-15 after v2.0 milestone started*

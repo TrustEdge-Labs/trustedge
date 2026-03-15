@@ -10,17 +10,17 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-24)
+See: .planning/PROJECT.md (updated 2026-03-15)
 
-**Core value:** A single, reliable trustedge-core library that owns all cryptographic operations — thin CLIs and WASM bindings are just frontends.
-**Current focus:** Planning next milestone
+**Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
+**Current focus:** Defining requirements for v2.0 End-to-End Demo
 
 ## Current Position
 
-Phase: v1.8 complete — all 37 phases shipped
-Plan: N/A — between milestones
-Status: v1.8 KDF Architecture Fix shipped 2026-02-24
-Last activity: 2026-02-24 — Milestone v1.8 archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-15 — Milestone v2.0 started
 
 ## Performance Metrics
 
@@ -53,9 +53,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-24
-Stopped at: v1.8 milestone archived
+Last session: 2026-03-15
+Stopped at: Defining v2.0 requirements
 Resume file: None
 
 ---
-*Last updated: 2026-02-24 after v1.8 milestone complete*
+*Last updated: 2026-03-15 after v2.0 milestone started*
