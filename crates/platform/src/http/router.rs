@@ -63,12 +63,17 @@ pub fn create_router(state: AppState) -> Router {
                 axum::http::header::ACCEPT,
             ]);
 
-        base.route("/v1/devices", post(register_device_handler))
+        // Auth-protected routes (devices, receipts)
+        let protected = Router::new()
+            .route("/v1/devices", post(register_device_handler))
             .route("/v1/receipts/:id", get(get_receipt_handler))
             .layer(middleware::from_fn_with_state(
                 state.db_pool.clone(),
                 auth_middleware,
-            ))
+            ));
+
+        // Merge: base routes (healthz, verify, jwks) are public, protected routes need auth
+        base.merge(protected)
             .with_state(state)
             .layer(cors)
             .layer(TraceLayer::new_for_http())
