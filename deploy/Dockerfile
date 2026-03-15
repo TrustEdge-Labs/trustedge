@@ -13,7 +13,7 @@
 
 # ── Stage 1: Builder ──────────────────────────────────────────────────────────
 
-FROM rust:1.82-slim AS builder
+FROM rust:1.85-slim AS builder
 
 WORKDIR /usr/src/app
 
