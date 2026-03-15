@@ -2,12 +2,13 @@
 # MPL-2.0: https://mozilla.org/MPL/2.0/
 # Project: trustedge — Privacy and trust at the edge.
 
-# TrustEdge Platform — Docker Compose (backend only)
-# Dashboard runs natively: cd web/dashboard && npm run dev
+# TrustEdge Platform — Full Stack
+#
+# Starts postgres, platform-server, and dashboard with a single command.
+# No .env file needed — all defaults are inline for demo use.
 #
 # Usage:
-#   cp deploy/.env.example deploy/.env
-#   docker compose -f deploy/docker-compose.yml up
+#   docker compose -f deploy/docker-compose.yml up --build
 
 services:
   postgres:
@@ -30,13 +31,39 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
-    env_file:
-      - .env
+    environment:
+      DATABASE_URL: postgres://trustedge:trustedge_dev@postgres:5432/trustedge
+      PORT: "3001"
     ports:
-      - "${PORT:-3001}:3001"
+      - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    command: ["sh", "-c", "trustedge-platform-server migrate && trustedge-platform-server serve"]
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.dashboard
+      args:
+        VITE_API_BASE: http://localhost:3001
+    ports:
+      - "8080:80"
+    depends_on:
+      platform-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
     restart: unless-stopped
 
 volumes:
