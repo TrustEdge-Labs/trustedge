@@ -338,6 +338,118 @@ fn acceptance_generic_with_metadata() {
     run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
 }
 
+// ─── Keygen acceptance tests ──────────────────────────────────────────────────
+
+#[test]
+fn acceptance_keygen_creates_files() {
+    let tempdir = TempDir::new().unwrap();
+    let key_path = tempdir.path().join("device.key");
+    let pub_path = tempdir.path().join("device.pub");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "keygen",
+            "--out-key",
+            key_path.to_str().unwrap(),
+            "--out-pub",
+            pub_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    // Both files must exist
+    assert!(key_path.exists(), "secret key file must be created");
+    assert!(pub_path.exists(), "public key file must be created");
+
+    // Both must start with "ed25519:"
+    let key_content = fs::read_to_string(&key_path).unwrap();
+    let pub_content = fs::read_to_string(&pub_path).unwrap();
+    assert!(
+        key_content.trim().starts_with("ed25519:"),
+        "secret key must start with ed25519: prefix, got: {key_content}"
+    );
+    assert!(
+        pub_content.trim().starts_with("ed25519:"),
+        "public key must start with ed25519: prefix, got: {pub_content}"
+    );
+}
+
+#[test]
+fn acceptance_keygen_roundtrip() {
+    let tempdir = TempDir::new().unwrap();
+    let key_path = tempdir.path().join("mydevice.key");
+    let pub_path = tempdir.path().join("mydevice.pub");
+
+    // Step 1: generate keys
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "keygen",
+            "--out-key",
+            key_path.to_str().unwrap(),
+            "--out-pub",
+            pub_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    // Step 2: wrap an archive using the generated key
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-keygen.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            "cam.video",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+            "--chunk-seconds",
+            "2.0",
+            "--device-key",
+            key_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    // Step 3: verify using the public key string from the generated file
+    let device_pub = fs::read_to_string(&pub_path).unwrap();
+    run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
+}
+
+#[test]
+fn acceptance_keygen_no_overwrite() {
+    let tempdir = TempDir::new().unwrap();
+    let key_path = tempdir.path().join("existing.key");
+    let pub_path = tempdir.path().join("existing.pub");
+
+    // Pre-create the key file to trigger the overwrite guard
+    fs::write(&key_path, "existing content\n").unwrap();
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "keygen",
+            "--out-key",
+            key_path.to_str().unwrap(),
+            "--out-pub",
+            pub_path.to_str().unwrap(),
+        ])
+        .assert()
+        .failure()
+        .stderr(contains("overwrite"));
+}
+
 #[test]
 fn acceptance_camvideo_still_works() {
     // cam.video wrap + verify round-trip must pass (regression guard)
