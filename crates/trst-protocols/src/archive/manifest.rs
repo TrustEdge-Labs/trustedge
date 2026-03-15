@@ -6,13 +6,14 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! Canonical cam.video manifest types for .trst archives.
+//! Profile-agnostic manifest types for .trst archives.
 //!
-//! These types match the cam.video profile specification and are used for
-//! both signing and verification. The field names and ordering are significant
-//! for signature verification.
+//! `TrstManifest` is the unified manifest type supporting both `generic` and
+//! `cam.video` profiles via the `ProfileMetadata` enum.  The `CamVideoManifest`
+//! and `CaptureInfo` names remain as type aliases for backward compatibility.
 
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -23,21 +24,52 @@ pub enum ManifestFormatError {
     InvalidField(String),
 }
 
-/// Main manifest structure for cam.video profile archives.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CamVideoManifest {
-    pub trst_version: String,
-    pub profile: String,
-    pub device: DeviceInfo,
-    pub capture: CaptureInfo,
-    pub chunk: ChunkInfo,
-    pub segments: Vec<SegmentInfo>,
-    pub claims: Vec<String>,
+// ─── Profile metadata variants ───────────────────────────────────────────────
+
+/// Metadata for the `generic` profile.  All content-specific fields are
+/// optional; `started_at` and `ended_at` are the only required timestamps.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct GenericMetadata {
+    pub started_at: String,
+    pub ended_at: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub prev_archive_hash: Option<String>,
+    pub data_type: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub signature: Option<String>,
+    pub source: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+    /// Free-form key/value labels.  BTreeMap ensures sorted keys in canonical output.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub labels: BTreeMap<String, String>,
 }
+
+/// Metadata for the `cam.video` profile.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CamVideoMetadata {
+    pub started_at: String,
+    pub ended_at: String,
+    pub timezone: String,
+    pub fps: f64,
+    pub resolution: String,
+    pub codec: String,
+}
+
+/// Union of all profile-specific metadata.
+///
+/// `#[serde(untagged)]` means serde tries each variant in declaration order.
+/// `CamVideo` is listed first because it has required fields (`timezone`,
+/// `fps`, `resolution`, `codec`) that unambiguously distinguish it from
+/// `Generic`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProfileMetadata {
+    CamVideo(CamVideoMetadata),
+    Generic(GenericMetadata),
+}
+
+// ─── Supporting structs (unchanged) ──────────────────────────────────────────
 
 /// Device information embedded in the manifest.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,17 +78,6 @@ pub struct DeviceInfo {
     pub model: String,
     pub firmware_version: String,
     pub public_key: String,
-}
-
-/// Capture session information.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CaptureInfo {
-    pub started_at: String,
-    pub ended_at: String,
-    pub timezone: String,
-    pub fps: f64,
-    pub resolution: String,
-    pub codec: String,
 }
 
 /// Chunk configuration for the archive.
@@ -76,9 +97,62 @@ pub struct SegmentInfo {
     pub continuity_hash: String,
 }
 
-impl CamVideoManifest {
-    /// Create a new manifest with default values.
+// ─── Main manifest type ───────────────────────────────────────────────────────
+
+/// Profile-agnostic manifest for a `.trst` archive.
+///
+/// Supports `"generic"` and `"cam.video"` profiles via the `metadata` field.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TrstManifest {
+    pub trst_version: String,
+    pub profile: String,
+    pub device: DeviceInfo,
+    pub metadata: ProfileMetadata,
+    pub chunk: ChunkInfo,
+    pub segments: Vec<SegmentInfo>,
+    pub claims: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prev_archive_hash: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub signature: Option<String>,
+}
+
+// ─── Backward-compatibility aliases ──────────────────────────────────────────
+
+/// Backward-compatible alias for `TrstManifest`.
+pub type CamVideoManifest = TrstManifest;
+
+/// Backward-compatible alias for `CamVideoMetadata` (the old `CaptureInfo` struct).
+pub type CaptureInfo = CamVideoMetadata;
+
+// ─── TrstManifest implementation ──────────────────────────────────────────────
+
+impl TrstManifest {
+    /// Create a new manifest with the `generic` profile and empty metadata.
     pub fn new() -> Self {
+        Self {
+            trst_version: "0.1.0".to_string(),
+            profile: "generic".to_string(),
+            device: DeviceInfo {
+                id: String::new(),
+                model: "TrustEdgeRefCam".to_string(),
+                firmware_version: "1.0.0".to_string(),
+                public_key: String::new(),
+            },
+            metadata: ProfileMetadata::Generic(GenericMetadata::default()),
+            chunk: ChunkInfo {
+                size_bytes: 1_048_576, // 1 MB default
+                duration_seconds: 2.0,
+            },
+            segments: Vec::new(),
+            claims: Vec::new(),
+            prev_archive_hash: None,
+            signature: None,
+        }
+    }
+
+    /// Create a new manifest pre-configured for the `cam.video` profile.
+    pub fn new_cam_video() -> Self {
         Self {
             trst_version: "0.1.0".to_string(),
             profile: "cam.video".to_string(),
@@ -88,16 +162,16 @@ impl CamVideoManifest {
                 firmware_version: "1.0.0".to_string(),
                 public_key: String::new(),
             },
-            capture: CaptureInfo {
+            metadata: ProfileMetadata::CamVideo(CamVideoMetadata {
                 started_at: String::new(),
                 ended_at: String::new(),
                 timezone: "UTC".to_string(),
                 fps: 30.0,
                 resolution: "1920x1080".to_string(),
                 codec: "raw".to_string(),
-            },
+            }),
             chunk: ChunkInfo {
-                size_bytes: 1048576, // 1MB default
+                size_bytes: 1_048_576,
                 duration_seconds: 2.0,
             },
             segments: Vec::new(),
@@ -108,27 +182,18 @@ impl CamVideoManifest {
     }
 
     /// Convert manifest to canonical bytes for signing/verification.
-    /// Signature field is excluded from canonicalization.
+    /// The `signature` field is excluded from canonicalization.
     pub fn to_canonical_bytes(&self) -> Result<Vec<u8>, ManifestFormatError> {
-        // Create a copy without the signature field
-        let mut canonical_manifest = self.clone();
-        canonical_manifest.signature = None;
-
-        // Serialize to JSON with explicitly ordered keys
-        let json_string = self.serialize_with_ordered_keys(&canonical_manifest)?;
-
+        let mut canonical = self.clone();
+        canonical.signature = None;
+        let json_string = Self::serialize_canonical(&canonical)?;
         Ok(json_string.into_bytes())
     }
 
-    /// Serialize the manifest with explicitly ordered keys for canonical representation.
-    fn serialize_with_ordered_keys(
-        &self,
-        manifest: &CamVideoManifest,
-    ) -> Result<String, ManifestFormatError> {
-        // Build the JSON object with explicit key ordering
+    /// Build a deterministically-ordered JSON string for a manifest.
+    fn serialize_canonical(manifest: &TrstManifest) -> Result<String, ManifestFormatError> {
         let mut result = String::from("{");
 
-        // Add fields in the specified order
         result.push_str(&format!(
             "\"trst_version\":{}",
             serde_json::to_string(&manifest.trst_version)?
@@ -138,7 +203,7 @@ impl CamVideoManifest {
             serde_json::to_string(&manifest.profile)?
         ));
 
-        // Device object with ordered keys
+        // Device — ordered fields
         result.push_str(",\"device\":{");
         result.push_str(&format!(
             "\"id\":{}",
@@ -158,32 +223,74 @@ impl CamVideoManifest {
         ));
         result.push('}');
 
-        // Capture object with ordered keys
-        result.push_str(",\"capture\":{");
-        result.push_str(&format!(
-            "\"started_at\":{}",
-            serde_json::to_string(&manifest.capture.started_at)?
-        ));
-        result.push_str(&format!(
-            ",\"ended_at\":{}",
-            serde_json::to_string(&manifest.capture.ended_at)?
-        ));
-        result.push_str(&format!(
-            ",\"timezone\":{}",
-            serde_json::to_string(&manifest.capture.timezone)?
-        ));
-        result.push_str(&format!(",\"fps\":{}", manifest.capture.fps));
-        result.push_str(&format!(
-            ",\"resolution\":{}",
-            serde_json::to_string(&manifest.capture.resolution)?
-        ));
-        result.push_str(&format!(
-            ",\"codec\":{}",
-            serde_json::to_string(&manifest.capture.codec)?
-        ));
-        result.push('}');
+        // Metadata — dispatch on variant
+        match &manifest.metadata {
+            ProfileMetadata::CamVideo(m) => {
+                result.push_str(",\"metadata\":{");
+                result.push_str(&format!(
+                    "\"started_at\":{}",
+                    serde_json::to_string(&m.started_at)?
+                ));
+                result.push_str(&format!(
+                    ",\"ended_at\":{}",
+                    serde_json::to_string(&m.ended_at)?
+                ));
+                result.push_str(&format!(
+                    ",\"timezone\":{}",
+                    serde_json::to_string(&m.timezone)?
+                ));
+                result.push_str(&format!(",\"fps\":{}", m.fps));
+                result.push_str(&format!(
+                    ",\"resolution\":{}",
+                    serde_json::to_string(&m.resolution)?
+                ));
+                result.push_str(&format!(",\"codec\":{}", serde_json::to_string(&m.codec)?));
+                result.push('}');
+            }
+            ProfileMetadata::Generic(m) => {
+                result.push_str(",\"metadata\":{");
+                result.push_str(&format!(
+                    "\"started_at\":{}",
+                    serde_json::to_string(&m.started_at)?
+                ));
+                result.push_str(&format!(
+                    ",\"ended_at\":{}",
+                    serde_json::to_string(&m.ended_at)?
+                ));
+                if let Some(ref v) = m.data_type {
+                    result.push_str(&format!(",\"data_type\":{}", serde_json::to_string(v)?));
+                }
+                if let Some(ref v) = m.source {
+                    result.push_str(&format!(",\"source\":{}", serde_json::to_string(v)?));
+                }
+                if let Some(ref v) = m.description {
+                    result.push_str(&format!(",\"description\":{}", serde_json::to_string(v)?));
+                }
+                if let Some(ref v) = m.mime_type {
+                    result.push_str(&format!(",\"mime_type\":{}", serde_json::to_string(v)?));
+                }
+                if !m.labels.is_empty() {
+                    // BTreeMap guarantees sorted keys
+                    result.push_str(",\"labels\":{");
+                    let mut first = true;
+                    for (k, v) in &m.labels {
+                        if !first {
+                            result.push(',');
+                        }
+                        first = false;
+                        result.push_str(&format!(
+                            "{}:{}",
+                            serde_json::to_string(k)?,
+                            serde_json::to_string(v)?
+                        ));
+                    }
+                    result.push('}');
+                }
+                result.push('}');
+            }
+        }
 
-        // Chunk object with ordered keys
+        // Chunk
         result.push_str(",\"chunk\":{");
         result.push_str(&format!("\"size_bytes\":{}", manifest.chunk.size_bytes));
         result.push_str(&format!(
@@ -192,7 +299,7 @@ impl CamVideoManifest {
         ));
         result.push('}');
 
-        // Segments array
+        // Segments
         result.push_str(",\"segments\":[");
         for (i, segment) in manifest.segments.iter().enumerate() {
             if i > 0 {
@@ -223,7 +330,7 @@ impl CamVideoManifest {
         }
         result.push(']');
 
-        // Claims array
+        // Claims
         result.push_str(&format!(
             ",\"claims\":{}",
             serde_json::to_string(&manifest.claims)?
@@ -240,11 +347,10 @@ impl CamVideoManifest {
         // Note: signature is explicitly excluded from canonicalization
 
         result.push('}');
-
         Ok(result)
     }
 
-    /// Set signature on the manifest.
+    /// Set the detached signature on this manifest.
     pub fn set_signature(&mut self, signature: String) {
         self.signature = Some(signature);
     }
@@ -257,10 +363,12 @@ impl CamVideoManifest {
             ));
         }
 
-        if self.profile != "cam.video" {
-            return Err(ManifestFormatError::InvalidField(
-                "profile must be 'cam.video'".to_string(),
-            ));
+        // Accept both "generic" and "cam.video" — no longer restricted to cam.video
+        if self.profile != "generic" && self.profile != "cam.video" {
+            return Err(ManifestFormatError::InvalidField(format!(
+                "profile must be 'generic' or 'cam.video', got '{}'",
+                self.profile
+            )));
         }
 
         if self.device.id.is_empty() {
@@ -275,16 +383,32 @@ impl CamVideoManifest {
             ));
         }
 
-        if self.capture.started_at.is_empty() {
-            return Err(ManifestFormatError::InvalidField(
-                "capture.started_at cannot be empty".to_string(),
-            ));
-        }
-
-        if self.capture.ended_at.is_empty() {
-            return Err(ManifestFormatError::InvalidField(
-                "capture.ended_at cannot be empty".to_string(),
-            ));
+        // Validate metadata timestamps based on variant
+        match &self.metadata {
+            ProfileMetadata::CamVideo(m) => {
+                if m.started_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.started_at cannot be empty".to_string(),
+                    ));
+                }
+                if m.ended_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.ended_at cannot be empty".to_string(),
+                    ));
+                }
+            }
+            ProfileMetadata::Generic(m) => {
+                if m.started_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.started_at cannot be empty".to_string(),
+                    ));
+                }
+                if m.ended_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.ended_at cannot be empty".to_string(),
+                    ));
+                }
+            }
         }
 
         if self.segments.is_empty() {
@@ -318,46 +442,269 @@ impl CamVideoManifest {
     }
 }
 
-impl Default for CamVideoManifest {
+impl Default for TrstManifest {
     fn default() -> Self {
         Self::new()
     }
 }
 
+// ─── Tests ────────────────────────────────────────────────────────────────────
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_manifest_creation() {
-        let manifest = CamVideoManifest::new();
-        assert_eq!(manifest.trst_version, "0.1.0");
-        assert_eq!(manifest.profile, "cam.video");
-        assert_eq!(manifest.device.model, "TrustEdgeRefCam");
-        assert_eq!(manifest.capture.fps, 30.0);
-    }
-
-    #[test]
-    fn test_canonical_bytes_excludes_signature() {
-        let mut manifest = CamVideoManifest::new();
-        manifest.device.id = "TEST001".to_string();
-        manifest.device.public_key = "ed25519:test_key".to_string();
-        manifest.capture.started_at = "2025-01-15T10:30:00Z".to_string();
-        manifest.capture.ended_at = "2025-01-15T10:30:02Z".to_string();
-        manifest.segments.push(SegmentInfo {
+    fn cam_video_manifest() -> TrstManifest {
+        let mut m = TrstManifest::new_cam_video();
+        m.device.id = "TEST001".to_string();
+        m.device.public_key = "ed25519:test_key".to_string();
+        if let ProfileMetadata::CamVideo(ref mut meta) = m.metadata {
+            meta.started_at = "2025-01-15T10:30:00Z".to_string();
+            meta.ended_at = "2025-01-15T10:30:02Z".to_string();
+        }
+        m.segments.push(SegmentInfo {
             chunk_file: "00000.bin".to_string(),
             blake3_hash: "abc123".to_string(),
             start_time: "2025-01-15T10:30:00Z".to_string(),
             duration_seconds: 2.0,
             continuity_hash: "def456".to_string(),
         });
+        m
+    }
 
-        // Test without signature
+    fn generic_manifest() -> TrstManifest {
+        let mut m = TrstManifest::new();
+        m.device.id = "GENERIC001".to_string();
+        m.device.public_key = "ed25519:generic_key".to_string();
+        if let ProfileMetadata::Generic(ref mut meta) = m.metadata {
+            meta.started_at = "2025-01-15T10:30:00Z".to_string();
+            meta.ended_at = "2025-01-15T10:30:02Z".to_string();
+        }
+        m.segments.push(SegmentInfo {
+            chunk_file: "00000.bin".to_string(),
+            blake3_hash: "abc123".to_string(),
+            start_time: "2025-01-15T10:30:00Z".to_string(),
+            duration_seconds: 2.0,
+            continuity_hash: "def456".to_string(),
+        });
+        m
+    }
+
+    // ── New profile-agnostic tests ──
+
+    #[test]
+    fn test_generic_metadata_canonical_serialization() {
+        let mut m = TrstManifest::new();
+        m.device.id = "G001".to_string();
+        m.device.public_key = "ed25519:k".to_string();
+        if let ProfileMetadata::Generic(ref mut meta) = m.metadata {
+            meta.started_at = "2025-01-15T10:00:00Z".to_string();
+            meta.ended_at = "2025-01-15T10:00:10Z".to_string();
+            meta.data_type = Some("sensor".to_string());
+            meta.source = Some("drone-cam-01".to_string());
+            meta.description = Some("Test capture".to_string());
+            meta.mime_type = Some("application/octet-stream".to_string());
+            meta.labels.insert("env".to_string(), "prod".to_string());
+            meta.labels
+                .insert("camera".to_string(), "front".to_string());
+        }
+        m.segments.push(SegmentInfo {
+            chunk_file: "00000.bin".to_string(),
+            blake3_hash: "abc".to_string(),
+            start_time: "2025-01-15T10:00:00Z".to_string(),
+            duration_seconds: 10.0,
+            continuity_hash: "def".to_string(),
+        });
+
+        let bytes = m.to_canonical_bytes().unwrap();
+        let json = String::from_utf8(bytes).unwrap();
+
+        // Must contain metadata section
+        assert!(json.contains("\"metadata\""));
+        assert!(json.contains("\"data_type\""));
+        assert!(json.contains("\"source\""));
+        // Labels must be sorted: "camera" before "env"
+        let camera_pos = json.find("\"camera\"").unwrap();
+        let env_pos = json.find("\"env\"").unwrap();
+        assert!(camera_pos < env_pos, "labels must have sorted keys");
+    }
+
+    #[test]
+    fn test_cam_video_metadata_canonical_serialization() {
+        let m = cam_video_manifest();
+        let bytes = m.to_canonical_bytes().unwrap();
+        let json = String::from_utf8(bytes).unwrap();
+
+        assert!(json.contains("\"metadata\""));
+        assert!(json.contains("\"fps\""));
+        assert!(json.contains("\"resolution\""));
+        assert!(json.contains("\"codec\""));
+        assert!(json.contains("\"timezone\""));
+    }
+
+    #[test]
+    fn test_generic_metadata_round_trip() {
+        let mut m = TrstManifest::new();
+        if let ProfileMetadata::Generic(ref mut meta) = m.metadata {
+            meta.started_at = "2025-01-15T10:00:00Z".to_string();
+            meta.ended_at = "2025-01-15T10:00:10Z".to_string();
+            meta.data_type = Some("video".to_string());
+            meta.source = Some("cam-01".to_string());
+            meta.labels
+                .insert("region".to_string(), "us-east".to_string());
+        }
+
+        let json = serde_json::to_string(&m).unwrap();
+        let decoded: TrstManifest = serde_json::from_str(&json).unwrap();
+
+        if let ProfileMetadata::Generic(meta) = decoded.metadata {
+            assert_eq!(meta.data_type, Some("video".to_string()));
+            assert_eq!(meta.source, Some("cam-01".to_string()));
+            assert_eq!(meta.labels.get("region"), Some(&"us-east".to_string()));
+        } else {
+            panic!("Expected Generic variant");
+        }
+    }
+
+    #[test]
+    fn test_generic_metadata_minimal_round_trip() {
+        // All optional fields absent
+        let mut m = TrstManifest::new();
+        if let ProfileMetadata::Generic(ref mut meta) = m.metadata {
+            meta.started_at = "2025-01-15T10:00:00Z".to_string();
+            meta.ended_at = "2025-01-15T10:00:10Z".to_string();
+        }
+
+        let json = serde_json::to_string(&m).unwrap();
+        let decoded: TrstManifest = serde_json::from_str(&json).unwrap();
+
+        if let ProfileMetadata::Generic(meta) = decoded.metadata {
+            assert!(meta.data_type.is_none());
+            assert!(meta.source.is_none());
+            assert!(meta.labels.is_empty());
+        } else {
+            panic!("Expected Generic variant");
+        }
+    }
+
+    #[test]
+    fn test_validation_accepts_generic_profile() {
+        let m = generic_manifest();
+        assert!(
+            m.validate().is_ok(),
+            "validate() must accept profile='generic'"
+        );
+    }
+
+    #[test]
+    fn test_validation_accepts_cam_video_profile() {
+        let m = cam_video_manifest();
+        assert!(
+            m.validate().is_ok(),
+            "validate() must accept profile='cam.video'"
+        );
+    }
+
+    #[test]
+    fn test_validation_rejects_unknown_profile() {
+        let mut m = TrstManifest::new();
+        m.profile = "unknown".to_string();
+        m.device.id = "X".to_string();
+        m.device.public_key = "ed25519:k".to_string();
+        if let ProfileMetadata::Generic(ref mut meta) = m.metadata {
+            meta.started_at = "2025-01-15T10:00:00Z".to_string();
+            meta.ended_at = "2025-01-15T10:00:01Z".to_string();
+        }
+        m.segments.push(SegmentInfo {
+            chunk_file: "00000.bin".to_string(),
+            blake3_hash: "h".to_string(),
+            start_time: "t".to_string(),
+            duration_seconds: 1.0,
+            continuity_hash: "c".to_string(),
+        });
+        assert!(m.validate().is_err());
+    }
+
+    #[test]
+    fn test_validation_rejects_empty_trst_version() {
+        let mut m = generic_manifest();
+        m.trst_version = String::new();
+        assert!(m.validate().is_err());
+    }
+
+    #[test]
+    fn test_validation_rejects_empty_device_id() {
+        let mut m = generic_manifest();
+        m.device.id = String::new();
+        assert!(m.validate().is_err());
+    }
+
+    #[test]
+    fn test_validation_rejects_empty_public_key() {
+        let mut m = generic_manifest();
+        m.device.public_key = String::new();
+        assert!(m.validate().is_err());
+    }
+
+    #[test]
+    fn test_cam_video_manifest_alias_compiles() {
+        // CamVideoManifest is a type alias for TrstManifest — this must compile
+        let m: CamVideoManifest = TrstManifest::new_cam_video();
+        assert_eq!(m.profile, "cam.video");
+    }
+
+    #[test]
+    fn test_labels_sorted_in_canonical_output() {
+        let mut m = TrstManifest::new();
+        m.device.id = "X".to_string();
+        m.device.public_key = "ed25519:k".to_string();
+        if let ProfileMetadata::Generic(ref mut meta) = m.metadata {
+            meta.started_at = "t".to_string();
+            meta.ended_at = "t".to_string();
+            meta.labels.insert("z-key".to_string(), "1".to_string());
+            meta.labels.insert("a-key".to_string(), "2".to_string());
+            meta.labels.insert("m-key".to_string(), "3".to_string());
+        }
+        m.segments.push(SegmentInfo {
+            chunk_file: "00000.bin".to_string(),
+            blake3_hash: "h".to_string(),
+            start_time: "t".to_string(),
+            duration_seconds: 1.0,
+            continuity_hash: "c".to_string(),
+        });
+
+        let bytes = m.to_canonical_bytes().unwrap();
+        let json = String::from_utf8(bytes).unwrap();
+
+        let a_pos = json.find("\"a-key\"").unwrap();
+        let m_pos = json.find("\"m-key\"").unwrap();
+        let z_pos = json.find("\"z-key\"").unwrap();
+        assert!(a_pos < m_pos && m_pos < z_pos, "labels must be sorted");
+    }
+
+    // ── Retained tests (updated for new API) ──
+
+    #[test]
+    fn test_manifest_creation() {
+        let manifest = TrstManifest::new_cam_video();
+        assert_eq!(manifest.trst_version, "0.1.0");
+        assert_eq!(manifest.profile, "cam.video");
+        assert_eq!(manifest.device.model, "TrustEdgeRefCam");
+        if let ProfileMetadata::CamVideo(m) = &manifest.metadata {
+            assert_eq!(m.fps, 30.0);
+        } else {
+            panic!("Expected CamVideo variant");
+        }
+    }
+
+    #[test]
+    fn test_canonical_bytes_excludes_signature() {
+        let mut manifest = cam_video_manifest();
+
         let bytes_without_sig = manifest.to_canonical_bytes().unwrap();
-        let json_str_without_sig = String::from_utf8(bytes_without_sig.clone()).unwrap();
-        assert!(!json_str_without_sig.contains("signature"));
+        let json_str = String::from_utf8(bytes_without_sig.clone()).unwrap();
+        assert!(!json_str.contains("signature"));
 
-        // Test with signature - should produce same canonical bytes
         manifest.set_signature("test_signature".to_string());
         let bytes_with_sig = manifest.to_canonical_bytes().unwrap();
 
@@ -366,79 +713,36 @@ mod tests {
 
     #[test]
     fn test_key_ordering() {
-        let mut manifest = CamVideoManifest::new();
-        manifest.device.id = "TEST001".to_string();
-        manifest.device.public_key = "ed25519:test_key".to_string();
-        manifest.capture.started_at = "2025-01-15T10:30:00Z".to_string();
-        manifest.capture.ended_at = "2025-01-15T10:30:02Z".to_string();
-        manifest.segments.push(SegmentInfo {
-            chunk_file: "00000.bin".to_string(),
-            blake3_hash: "abc123".to_string(),
-            start_time: "2025-01-15T10:30:00Z".to_string(),
-            duration_seconds: 2.0,
-            continuity_hash: "def456".to_string(),
-        });
-
+        let manifest = cam_video_manifest();
         let canonical_bytes = manifest.to_canonical_bytes().unwrap();
         let json_str = String::from_utf8(canonical_bytes).unwrap();
 
-        // Verify root-level key ordering
         let trst_pos = json_str.find("\"trst_version\"").unwrap();
         let profile_pos = json_str.find("\"profile\"").unwrap();
         let device_pos = json_str.find("\"device\"").unwrap();
-        let capture_pos = json_str.find("\"capture\"").unwrap();
+        let metadata_pos = json_str.find("\"metadata\"").unwrap();
         let chunk_pos = json_str.find("\"chunk\"").unwrap();
         let segments_pos = json_str.find("\"segments\"").unwrap();
         let claims_pos = json_str.find("\"claims\"").unwrap();
 
         assert!(trst_pos < profile_pos);
         assert!(profile_pos < device_pos);
-        assert!(device_pos < capture_pos);
-        assert!(capture_pos < chunk_pos);
+        assert!(device_pos < metadata_pos);
+        assert!(metadata_pos < chunk_pos);
         assert!(chunk_pos < segments_pos);
         assert!(segments_pos < claims_pos);
     }
 
     #[test]
     fn test_validation() {
-        let mut manifest = CamVideoManifest::new();
-
-        // Should fail validation initially (missing required fields)
-        assert!(manifest.validate().is_err());
-
-        // Fill in required fields
-        manifest.device.id = "TEST001".to_string();
-        manifest.device.public_key = "ed25519:test_key".to_string();
-        manifest.capture.started_at = "2025-01-15T10:30:00Z".to_string();
-        manifest.capture.ended_at = "2025-01-15T10:30:02Z".to_string();
-        manifest.segments.push(SegmentInfo {
-            chunk_file: "00000.bin".to_string(),
-            blake3_hash: "abc123".to_string(),
-            start_time: "2025-01-15T10:30:00Z".to_string(),
-            duration_seconds: 2.0,
-            continuity_hash: "def456".to_string(),
-        });
-
-        // Should pass validation now
+        let manifest = cam_video_manifest();
         assert!(manifest.validate().is_ok());
     }
 
     #[test]
     fn test_stable_canonicalization() {
-        let mut manifest = CamVideoManifest::new();
-        manifest.device.id = "TEST001".to_string();
-        manifest.device.public_key = "ed25519:test_key".to_string();
-        manifest.capture.started_at = "2025-01-15T10:30:00Z".to_string();
-        manifest.capture.ended_at = "2025-01-15T10:30:02Z".to_string();
-        manifest.segments.push(SegmentInfo {
-            chunk_file: "00000.bin".to_string(),
-            blake3_hash: "abc123".to_string(),
-            start_time: "2025-01-15T10:30:00Z".to_string(),
-            duration_seconds: 2.0,
-            continuity_hash: "def456".to_string(),
-        });
+        let manifest = cam_video_manifest();
 
-        // Multiple calls should produce identical results
         let bytes1 = manifest.to_canonical_bytes().unwrap();
         let bytes2 = manifest.to_canonical_bytes().unwrap();
         let bytes3 = manifest.to_canonical_bytes().unwrap();
@@ -449,12 +753,14 @@ mod tests {
 
     #[test]
     fn test_decimal_precision() {
-        let mut manifest = CamVideoManifest::new();
-        manifest.capture.fps = 29.97;
-        manifest.capture.started_at = "2025-01-15T10:30:00Z".to_string();
-        manifest.capture.ended_at = "2025-01-15T10:30:02Z".to_string();
+        let mut manifest = TrstManifest::new_cam_video();
         manifest.device.id = "TEST001".to_string();
         manifest.device.public_key = "ed25519:test_key".to_string();
+        if let ProfileMetadata::CamVideo(ref mut m) = manifest.metadata {
+            m.fps = 29.97;
+            m.started_at = "2025-01-15T10:30:00Z".to_string();
+            m.ended_at = "2025-01-15T10:30:02Z".to_string();
+        }
         manifest.segments.push(SegmentInfo {
             chunk_file: "00000.bin".to_string(),
             blake3_hash: "abc123".to_string(),

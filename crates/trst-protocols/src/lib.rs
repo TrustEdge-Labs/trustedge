@@ -22,17 +22,25 @@
 //! ## Usage
 //!
 //! ```rust
-//! use trustedge_trst_protocols::{CamVideoManifest, DeviceInfo, CaptureInfo, ChunkInfo, SegmentInfo};
+//! use trustedge_trst_protocols::{TrstManifest, CamVideoManifest, DeviceInfo, ChunkInfo, SegmentInfo};
 //!
-//! let manifest = CamVideoManifest::new();
+//! // Generic profile (default)
+//! let manifest = TrstManifest::new();
+//!
+//! // cam.video profile
+//! let cam_manifest = TrstManifest::new_cam_video();
+//!
+//! // Backward-compatible alias
+//! let _: CamVideoManifest = TrstManifest::new_cam_video();
 //! ```
 
 pub mod archive;
 pub mod capture;
 
-// Re-export commonly used items at crate root for convenience
+// Re-export all manifest types at crate root for convenience
 pub use archive::manifest::{
-    CamVideoManifest, CaptureInfo, ChunkInfo, DeviceInfo, ManifestFormatError, SegmentInfo,
+    CamVideoManifest, CamVideoMetadata, CaptureInfo, ChunkInfo, DeviceInfo, GenericMetadata,
+    ManifestFormatError, ProfileMetadata, SegmentInfo, TrstManifest,
 };
 
 // Backward compatibility alias for trst-wasm (temporary)
