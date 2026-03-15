@@ -6,7 +6,7 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-use crate::CamVideoManifest;
+use crate::TrstManifest;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::Path;
@@ -19,7 +19,7 @@ type ChunkData = Vec<(usize, Vec<u8>)>;
 /// Write a complete .trst archive with manifest, signature, and chunk files
 pub fn write_archive<P: AsRef<Path>>(
     base_dir: P,
-    manifest: &CamVideoManifest,
+    manifest: &TrstManifest,
     chunk_ciphertexts: Vec<Vec<u8>>,
     detached_sig: &[u8],
 ) -> Result<(), ArchiveError> {
@@ -62,7 +62,7 @@ pub fn write_archive<P: AsRef<Path>>(
 /// Read a complete .trst archive and return manifest and chunk data
 pub fn read_archive<P: AsRef<Path>>(
     base_dir: P,
-) -> Result<(CamVideoManifest, ChunkData), ArchiveError> {
+) -> Result<(TrstManifest, ChunkData), ArchiveError> {
     let base_path = base_dir.as_ref();
 
     // Read and parse manifest.json
@@ -70,7 +70,7 @@ pub fn read_archive<P: AsRef<Path>>(
     let mut manifest_file = File::open(manifest_path)?;
     let mut manifest_content = String::new();
     manifest_file.read_to_string(&mut manifest_content)?;
-    let manifest: CamVideoManifest = serde_json::from_str(&manifest_content)?;
+    let manifest: TrstManifest = serde_json::from_str(&manifest_content)?;
 
     // Read detached signature
     let sig_path = base_path.join("signatures/manifest.sig");
@@ -197,15 +197,17 @@ pub fn archive_dir_name(id: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{CamVideoManifest, SegmentInfo};
+    use crate::{ProfileMetadata, SegmentInfo, TrstManifest};
     use tempfile::TempDir;
 
-    fn create_test_manifest() -> CamVideoManifest {
-        let mut manifest = CamVideoManifest::new();
+    fn create_test_manifest() -> TrstManifest {
+        let mut manifest = TrstManifest::new_cam_video();
         manifest.device.id = "TEST001".to_string();
         manifest.device.public_key = "ed25519:test_key".to_string();
-        manifest.capture.started_at = "2025-01-15T10:30:00Z".to_string();
-        manifest.capture.ended_at = "2025-01-15T10:30:06Z".to_string();
+        if let ProfileMetadata::CamVideo(ref mut m) = manifest.metadata {
+            m.started_at = "2025-01-15T10:30:00Z".to_string();
+            m.ended_at = "2025-01-15T10:30:06Z".to_string();
+        }
 
         // Compute continuity chain up front
         let genesis = crate::chain::genesis();

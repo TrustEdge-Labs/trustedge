@@ -47,9 +47,11 @@
 //!   - `ChainSegment` - chain segment structure
 //!
 //! - `manifest.rs` (from `crates/core/src/manifest.rs`)
-//!   - `CamVideoManifest` - canonical cam.video manifest type
+//!   - `TrstManifest` - profile-agnostic manifest type (replaces `CamVideoManifest`)
+//!   - `CamVideoManifest` - backward-compat type alias for `TrstManifest`
+//!   - `ProfileMetadata`, `GenericMetadata`, `CamVideoMetadata` - profile variants
 //!   - `CaptureInfo`, `DeviceInfo`, `ChunkInfo`, `SegmentInfo` - manifest components
-//!   - Canonical JSON serialization
+//!   - Canonical JSON serialization for both generic and cam.video profiles
 //!
 //! - `format.rs` (from `crates/core/src/format.rs`)
 //!   - `SignedManifest` - signed manifest wrapper
@@ -63,7 +65,7 @@
 //! ## Usage Example
 //!
 //! ```rust,ignore
-//! use trustedge_core::protocols::{Envelope, ChainSegment, CamVideoManifest};
+//! use trustedge_core::protocols::{Envelope, ChainSegment, TrstManifest};
 //! use ed25519_dalek::SigningKey;
 //! use rand::rngs::OsRng;
 //!
