@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: End-to-End Demo
 status: planning
-stopped_at: Phase 39 context gathered
-last_updated: "2026-03-15T20:43:32.198Z"
+stopped_at: Completed 39-01-PLAN.md
+last_updated: "2026-03-15T20:58:04.022Z"
 last_activity: 2026-03-15 -- Roadmap created for v2.0
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 0
 ---
 
@@ -63,6 +63,8 @@ Cleared -- see PROJECT.md Key Decisions table for full history.
 - [Phase 38-archive-profiles]: Untagged serde with CamVideo first enables reliable deserialization disambiguation based on required fields
 - [Phase 38]: Generic profile uses index-based segment start_time (segment-N) since generic data has no inherent temporal axis
 - [Phase 38]: Unknown profiles fall through to generic path in CLI match, providing forward compatibility
+- [Phase 39-deployment-stack]: prerender=false in layout.ts: dynamic /receipts/[id] route cannot prerender; SPA fallback via nginx try_files handles routing
+- [Phase 39-deployment-stack]: Dockerfile.dashboard uses repo root as build context: matches platform Dockerfile convention, allows unified COPY for deploy/nginx.conf
 
 ### Pending Todos
 
@@ -75,9 +77,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T20:43:32.195Z
-Stopped at: Phase 39 context gathered
-Resume file: .planning/phases/39-deployment-stack/39-CONTEXT.md
+Last session: 2026-03-15T20:58:04.019Z
+Stopped at: Completed 39-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-15 after v2.0 roadmap created*

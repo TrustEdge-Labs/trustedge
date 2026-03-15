@@ -24,9 +24,9 @@ Requirements for the End-to-End Demo milestone. Each maps to roadmap phases.
 
 ### Deployment
 
-- [ ] **DEPL-01**: User can start the full stack (platform + postgres + dashboard) with `docker-compose up`
+- [x] **DEPL-01**: User can start the full stack (platform + postgres + dashboard) with `docker-compose up`
 - [ ] **DEPL-02**: Postgres schema is automatically initialized on first startup
-- [ ] **DEPL-03**: Dashboard connects to platform API out of the box (no manual .env editing)
+- [x] **DEPL-03**: Dashboard connects to platform API out of the box (no manual .env editing)
 - [ ] **DEPL-04**: Health checks confirm all services are running (`/healthz` returns OK, dashboard loads)
 
 ### Demo
@@ -83,9 +83,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROF-02 | Phase 38 | Complete |
 | PROF-03 | Phase 38 | Complete |
 | PROF-04 | Phase 38 | Complete |
-| DEPL-01 | Phase 39 | Pending |
+| DEPL-01 | Phase 39 | Complete |
 | DEPL-02 | Phase 39 | Pending |
-| DEPL-03 | Phase 39 | Pending |
+| DEPL-03 | Phase 39 | Complete |
 | DEPL-04 | Phase 39 | Pending |
 | DEMO-01 | Phase 40 | Pending |
 | DEMO-02 | Phase 40 | Pending |
