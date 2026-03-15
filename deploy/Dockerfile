@@ -33,10 +33,11 @@ RUN cargo build -p trustedge-platform-server --features postgres --release
 
 FROM debian:bookworm-slim AS runtime
 
-# Install runtime dependencies: CA certificates and libssl3 for TLS postgres connections
+# Install runtime dependencies: CA certs, libssl3 for TLS, wget for healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libssl3 \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user with home directory for running the server
