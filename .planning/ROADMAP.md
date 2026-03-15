@@ -123,11 +123,11 @@ Fixed incorrect KDF usage across the codebase. Replaced PBKDF2-per-chunk with HK
   2. Generic profile manifest includes optional metadata fields (device type, data source, capture context) that the user can populate
   3. Running `trst wrap --in data.bin --out archive.trst` without specifying `--profile` uses the generic profile by default
   4. Running `trst wrap --profile cam.video --in sample.bin --out archive.trst` still works exactly as before
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 38-01: TBD
-- [ ] 38-02: TBD
+- [ ] 38-01-PLAN.md -- Define TrstManifest type with ProfileMetadata enum and update core re-exports
+- [ ] 38-02-PLAN.md -- Update CLI (generic default), WASM, acceptance tests, and examples
 
 ### Phase 39: Deployment Stack
 **Goal**: Users can start the entire TrustEdge platform with a single docker-compose command and have all services running and connected
@@ -182,10 +182,10 @@ Phases execute in numeric order: 38 -> 39 -> 40 -> 41
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 38. Archive Profiles | v2.0 | 0/TBD | Not started | - |
+| 38. Archive Profiles | v2.0 | 0/2 | Planning complete | - |
 | 39. Deployment Stack | v2.0 | 0/TBD | Not started | - |
 | 40. Demo Script | v2.0 | 0/TBD | Not started | - |
 | 41. Documentation | v2.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-03-15 after v2.0 roadmap created*
+*Last updated: 2026-03-15 after phase 38 planning*
