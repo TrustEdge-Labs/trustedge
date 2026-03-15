@@ -153,11 +153,11 @@ Plans:
   2. Demo script works when run against the docker-compose stack and also when run against locally built cargo binaries
   3. Each step of the demo prints clear output showing what is happening and ends with a visible PASS or FAIL verification result
   4. Demo script runs without any manual file preparation -- it generates or includes its own sample data
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 40-01: TBD
-- [ ] 40-02: TBD
+- [ ] 40-01-PLAN.md -- Add trst keygen subcommand with acceptance tests
+- [ ] 40-02-PLAN.md -- Create demo.sh script with full lifecycle and docker/local mode detection
 
 ### Phase 41: Documentation
 **Goal**: A new user understands what TrustEdge does and can run the demo within 5 minutes of reading the README
@@ -184,8 +184,8 @@ Phases execute in numeric order: 38 -> 39 -> 40 -> 41
 |-------|-----------|----------------|--------|-----------|
 | 38. Archive Profiles | 2/2 | Complete    | 2026-03-15 | - |
 | 39. Deployment Stack | 2/2 | Complete    | 2026-03-15 | - |
-| 40. Demo Script | v2.0 | 0/TBD | Not started | - |
+| 40. Demo Script | v2.0 | 0/2 | Planned | - |
 | 41. Documentation | v2.0 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-03-15 after phase 39 planning*
+*Last updated: 2026-03-15 after phase 40 planning*
