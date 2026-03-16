@@ -9,457 +9,120 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-1.7-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v1.7)
+[![Version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v2.0)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
-# TrustEdge: Hardware-Backed Security for IoT Devices
+# TrustEdge
 
-Open-source cryptographic engine with YubiKey/TPM integration for edge devices and IoT.
+Cryptographic provenance for edge device data.
 
-**[▶️ Watch YubiKey Hardware Signing Demo (2 min)](https://asciinema.org/a/aMaUEmOfw42TNYdXwAgtefcsy)**
+## Problem
 
-## Why TrustEdge?
-
-Most IoT devices use software-only encryption with keys in memory. TrustEdge provides hardware-backed security via YubiKey PIV and pluggable backends.
-
-✅ **Hardware-backed signing** (YubiKey PIV, Software HSM, Keyring)
-✅ **YubiKey PIV** with ECDSA P-256 and RSA-2048
-✅ **X.509 certificates** with hardware signing
-✅ **Cross-platform** (Linux, macOS, Windows, WASM)
-✅ **Open source** and fully auditable  
-
-## Golden Path: YubiKey Hardware Signing Demo
-
-TrustEdge's flagship capability: real cryptographic operations backed by YubiKey hardware.
-This showcases hardware-backed signing, key extraction from PIV slots, X.509 certificate
-generation, and certificate validation — all using your physical security key.
-
-**Prerequisites:** YubiKey 5 series with PIV applet enabled, [ykman](https://developers.yubico.com/yubikey-manager/) CLI, PCSC daemon (pcscd)
-
-### Step 1: Generate a key on YubiKey
-
-```bash
-ykman piv keys generate 9a /tmp/pubkey.pem --algorithm ECCP256
-ykman piv certificates generate 9a /tmp/pubkey.pem --subject "CN=Test"
-```
-
-### Step 2: Run the hardware integration tests
-
-```bash
-git clone https://github.com/trustedge-labs/trustedge.git
-cd trustedge
-cargo test --features yubikey --test yubikey_integration
-```
-
-**What happens:** TrustEdge connects to your YubiKey via PCSC, extracts the public key
-from PIV slot 9a, performs a hardware-backed ECDSA P-256 signature, generates a complete
-X.509 certificate signed by the YubiKey via rcgen, and validates the certificate chain.
-
-**No YubiKey?** See the [Software-Only Archive Demo](#software-only-archive-demo) below.
-
-
-## Commercial Support
-
-📧 **Pilot program:** pilot@trustedgelabs.com
-
-Building IoT devices that need hardware-backed security? We offer:
-- Commercial SDK with priority support
-- Custom hardware integration (TPM, HSM, secure elements)
-- Fleet management and key rotation
-- Compliance consulting
-
-## License
-
-Open Core Model:
-- Core engine: Mozilla Public License 2.0
-- Commercial features: Proprietary license available
-
-🌐 [trustedgelabs.com](https://trustedgelabs.com)
-
----
-
-## Overview
-
-**TrustEdge** is a privacy-preserving edge computing platform that provides **trustable edge AI** with secure, data-agnostic encryption. Built in Rust for safety and performance, TrustEdge enables secure processing of sensitive data at the edge while maintaining cryptographic guarantees.
-
-### Key Features
-
-- **🔐 Data-Agnostic Encryption**: Works with files, live audio, sensor data, or any binary stream
-- **🧾 Digital Receipt System**: Cryptographically secure transferable receipts with ownership chains
-- **🏗️ Universal Backend System**: Pluggable crypto operations (Software HSM, Keyring, YubiKey)
-- **🎵 Live Audio Capture**: Real-time microphone input with configurable quality
-- **🌐 Network Operations**: Secure client-server communication with mutual authentication and automated ECDH key exchange
-- **🔑 Hardware Integration**: YubiKey PIV support with ECDSA P-256 and RSA-2048 signing
-- **⚡ Algorithm Agility**: Configurable cryptographic algorithms with forward compatibility
-- **🛡️ Memory Safety**: Proper key material cleanup with zeroization
-
-### Technology Stack
-
-- **Language**: Rust (stable) for memory safety and performance
-- **Cryptography**: AES-256-GCM, Ed25519, X25519 ECDH, PBKDF2, BLAKE3 with algorithm agility
-- **Audio**: Cross-platform support (Linux/ALSA, Windows/WASAPI, macOS/CoreAudio)
-- **Hardware**: YubiKey PIV operations via `yubikey` crate and PCSC
-- **Network**: Ed25519-based mutual authentication with X25519 ECDH session key derivation
-
----
-
-## What's New in v1.7
-
-**v1.7 Security & Quality Hardening** — comprehensive security hardening with `Secret<T>` wrapper type and automated ECDH key exchange:
-
-- 🔑 **Automated Key Exchange** - X25519 ECDH session key derivation during auth handshake; no out-of-band `--key-hex` needed when auth is enabled
-- 🛡️ **Secret<T> Wrapper** - Zeroize-on-drop wrapper with redacted Debug, no Display/Deref/Serialize for all sensitive fields (PINs, passphrases, JWT secrets)
-- 🔐 **Envelope ECDH Fix** - Replaced broken scalar math with standard X25519 ECDH via `x25519-dalek`
-- 🧹 **Deprecated Crates Deleted** - Removed `trustedge-receipts` and `trustedge-attestation` facade crates
-- 🔒 **CORS Hardened** - Restrictive CORS policies for verify-only and postgres platform builds
-- ✅ **16 New Integration Tests** - Wiring, HTTP round-trip, CORS parity, router consistency
-
-### Previous Releases
-
-**v1.6 Final Consolidation** — `trustedge-platform-server` binary crate with Axum/clap, Docker deployment (Dockerfile + docker-compose), dashboard moved to `web/dashboard/`, 11 orphaned repos deleted from GitHub org
-
-**v1.5 Platform Consolidation** — `trustedge-types` shared wire types, `trustedge-platform` merged from platform-api + verify-core with feature-gated http/postgres/ca/yubikey, crypto deduplication via `trustedge_core::chain`
-
-**v1.4 Placeholder Elimination** — QUIC TLS secure-by-default, dead code removal, stub elimination, TODO hygiene with CI enforcement
-
-**v1.3 Dependency Audit** — Feature-gated git2 and keyring, cargo-machete/cargo-audit CI, DEPENDENCIES.md
-
-**v1.2 Scope Reduction** — Dependency tree tracking, tokio feature trimming, tiered CI
-
-**v1.1 YubiKey Overhaul** — Rewrote YubiKey backend: fail-closed design, `yubikey` crate stable API, rcgen X.509, 18 simulation + 9 hardware tests
-
-**v1.0 Consolidation** — Monolithic core + thin shells, 21 unused deps removed, ~2,500 LOC duplication eliminated, WASM verified
-
-**v0.3.0 (P0 Release):** .trst archive system with cam.video profile, Ed25519 signatures, BLAKE3 chains, browser verification
-
----
-
-## Project Architecture
-
-TrustEdge is organized as a Cargo workspace with specialized crates:
-
-```
-trustedge/
-├── crates/
-│   ├── core/                     # Core cryptographic library (trustedge-core)
-│   ├── types/                    # Shared wire types (trustedge-types)
-│   ├── platform/                 # Verification and CA service (trustedge-platform)
-│   ├── platform-server/          # Standalone HTTP server binary
-│   ├── trustedge-cli/            # Main envelope encryption CLI (binary: trustedge)
-│   ├── trst-cli/                 # .trst archive CLI tool (trustedge-trst-cli, binary: trst)
-│   ├── trst-protocols/           # Canonical cam.video manifest types (WASM-compatible)
-│   ├── trst-wasm/                # .trst verification WebAssembly bindings
-│   ├── wasm/                     # Core WebAssembly bindings
-│   └── experimental/             # Separate workspace for community/experimental crates
-│       ├── pubky/                # Pubky network adapter
-│       └── pubky-advanced/       # Advanced Pubky integration
-├── examples/                     # Example implementations and demos
-└── docs/                         # Documentation and guides
-```
-
-> **Experimental crates** (`trustedge-pubky`, `trustedge-pubky-advanced`) live in `crates/experimental/` as a separate Cargo workspace. They are not part of the root workspace build or CI pipeline.
-
-### Crate Overview
-
-| Crate | Purpose | Documentation |
-|-------|---------|---------------|
-| **trustedge-types** | Shared wire types for platform services (verification, receipts, policies) | [Types Documentation](crates/types/) |
-| **trustedge-core** | Core cryptographic library with envelope encryption | [Core Documentation](crates/core/) |
-| **trustedge-platform** | Consolidated verification and CA service (feature-gated: http, postgres, ca, yubikey) | [Platform Documentation](crates/platform/) |
-| **trustedge-platform-server** | Standalone HTTP server binary | [Server Documentation](crates/platform-server/) |
-| **trustedge-cli** | Main CLI for envelope encryption (binary: `trustedge`) | [CLI Documentation](crates/trustedge-cli/) |
-| **trustedge-trst-cli** | CLI for .trst archive creation and verification (binary: `trst`) | [Archive CLI Documentation](crates/trst-cli/) |
-| **trustedge-trst-protocols** | Canonical cam.video manifest types (WASM-compatible) | [Archive Format Documentation](crates/trst-protocols/) |
-| **trustedge-trst-wasm** | .trst archive verification in the browser | [Archive WASM Documentation](crates/trst-wasm/) |
-| **trustedge-wasm** | WebAssembly bindings for browser/Node.js integration | [WASM Documentation](crates/wasm/) |
-
----
+Edge devices generate data -- video, sensor readings, audio, logs -- but there is no way to
+prove that data has not been tampered with between capture and consumption. TrustEdge provides
+a cryptographic chain of custody: sign at the source, encrypt, wrap into a tamper-evident
+archive, verify with an independent service, and receive a cryptographic receipt as proof.
 
 ## Quick Start
 
-### Installation
-
 ```bash
-# Install Rust (if needed)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Clone and build
-git clone https://github.com/TrustEdge-Labs/trustedge.git
-cd trustedge
-cargo build --workspace --release
+git clone https://github.com/TrustEdge-Labs/trustedge.git && cd trustedge
+docker compose -f deploy/docker-compose.yml up -d --build
+./scripts/demo.sh
 ```
 
-**Optional Features:**
-- **Audio Support**: Add `--features audio` for live audio capture
-- **YubiKey Support**: Add `--features yubikey` for hardware security keys
-- **All Features**: Use `--features audio,yubikey` for complete functionality
+This starts the full TrustEdge stack (platform server, PostgreSQL, dashboard) and runs an
+end-to-end demo: key generation, archive wrapping, server-side verification, and receipt
+retrieval.
 
-**📖 Documentation:**
-- **[FEATURES.md](FEATURES.md)** - Complete feature flag reference with dependencies and examples
-- **[WASM.md](WASM.md)** - WebAssembly build, test, and deployment guide
-- **[docs/user/examples/installation.md](docs/user/examples/installation.md)** - Detailed installation with system dependencies
+No Docker? Run `./scripts/demo.sh --local` with just Rust installed for local-only
+verification.
 
-### Basic Usage
+## Use Cases
 
-**Core Envelope Encryption:**
-```bash
-# Encrypt a file
-./target/release/trustedge --input document.txt --envelope document.trst --key-out mykey.hex
+### Drone Inspection
 
-# Decrypt a file
-./target/release/trustedge --decrypt --input document.trst --out recovered.txt --key-hex $(cat mykey.hex)
-
-# Network mode (server)
-./target/release/trustedge-server --listen 127.0.0.1:8080 --require-auth
-
-# Network mode (client)
-./target/release/trustedge-client --server 127.0.0.1:8080 --input file.txt --require-auth
-```
-
-**Archive Creation (.trst format):**
-```bash
-# Create a .trst archive
-./target/release/trst wrap --profile cam.video --in sample.bin --out archive.trst
-
-# Verify a .trst archive
-./target/release/trst verify archive.trst --device-pub "ed25519:GAUpGXoor5gP..."
-```
-
-### Next Steps
-
-- **📖 [CLI Reference](docs/user/cli.md)** - Complete command-line options and usage
-- **💡 [Examples](docs/user/examples/README.md)** - Real-world workflows and use cases
-- **🔐 [Authentication Guide](docs/user/authentication.md)** - Secure network setup
-- **🏗️ [Architecture Guide](docs/technical/universal-backend.md)** - System design and backends
-
----
-
-## Software-Only Archive Demo
-
-No hardware required. This demo walks through the `.trst` archive format using the `cam.video` profile with software-generated keys:
-
-### Step 1: Wrap - Create a .trst Archive
-```bash
-# Navigate to cam.video examples
-cd examples/cam.video
-
-# Generate sample data and create archive
-cargo run --bin record_and_wrap
-
-# Output: clip.trst archive with encrypted segments and signed manifest
-```
-
-### Step 2: Verify - Validate Archive Integrity
-```bash
-# Verify the created archive
-cargo run --bin verify_cli clip.trst device.pub
-
-# ✔ Signature verification
-# ✔ Continuity chain validation
-# ● Archive summary with segment count and duration
-```
-
-### Step 3: Acceptance Tests - Full CLI Integration
-```bash
-# Run comprehensive A1-A6 acceptance test suite
-cargo test --test integration_tests
-
-# Tests cover:
-# A1: Basic wrap and verify workflow
-# A2: Chain continuity validation
-# A3: Signature verification
-# A4: Malformed archive rejection
-# A5: Crypto validation (end-to-end encryption/decryption)
-# A6: Cross-platform compatibility
-```
-
-### Step 4: WASM Demo - Browser Verification
-```bash
-# Build and serve the WASM demo
-./scripts/build-wasm-demo.sh
-
-# Open http://localhost:8000 in your browser
-# Upload clip.trst directory for in-browser verification
-```
-
-**📖 For detailed walkthrough and expected outputs, see [examples/cam.video/README.md](examples/cam.video/README.md).**
-
-### P0 Implementation Details
-
-The P0 `.trst` specification includes:
-
-- **Manifest Canonicalization**: Ordered JSON fields with signature exclusion
-- **BLAKE3 Continuity Chain**: Genesis seed `blake3("trustedge:genesis")` with segment linking
-- **XChaCha20-Poly1305 Encryption**: Per-segment encryption with unique nonces
-- **Ed25519 Signatures**: Device key signing with "ed25519:BASE64" format
-- **Archive Layout**: `clip-<id>.trst/` directory with manifest, signatures, and chunks
-
-For hardware-backed signing, see the [Golden Path: YubiKey Hardware Signing Demo](#golden-path-yubikey-hardware-signing-demo) above.
-
----
-
-## Core Systems
-
-### Universal Backend System
-
-TrustEdge features a **capability-based Universal Backend system** that provides pluggable cryptographic operations across different hardware and software backends.
-
-**Supported Backends:**
-- **Keyring Backend**: OS keyring integration for key derivation and storage
-- **YubiKey Backend**: Hardware PIV operations (ECDSA P-256, RSA-2048) via `yubikey` crate
-- **Software HSM**: In-memory cryptographic operations for development
-- **TPM Backend**: Planned for future milestone
-
-**📖 For detailed backend documentation, see [docs/technical/universal-backend.md](docs/technical/universal-backend.md).**
-
-### Digital Receipt System
-
-TrustEdge includes a **production-ready digital receipt system** that enables cryptographically secure ownership transfer of digital assets with comprehensive security testing.
-
-**Key Properties:**
-- Cryptographic ownership chains with hash binding
-- Ed25519 signatures for authenticity and non-repudiation
-- Attack resistance against tampering, replay, and forgery
-- 23 comprehensive security tests covering all attack scenarios
-
-**📖 For complete receipt system documentation, see [crates/core/](crates/core/).**
-
-### Network Operations
-
-TrustEdge supports secure client-server communication with **mutual authentication** using Ed25519 digital signatures and **automated X25519 ECDH key exchange** for session encryption.
-
-**Security Features:**
-- Mutual authentication between clients and servers
-- Automated session encryption key derivation via X25519 ECDH (no out-of-band key sharing needed)
-- Session isolation with time-limited cryptographic sessions
-- Replay protection through challenge-response protocols with BLAKE3 domain-separated KDF
-- Forward security with automatic session expiration
-
-**📖 For authentication setup and network security, see [docs/user/authentication.md](docs/user/authentication.md).**
-
----
-
-## Testing & Quality Assurance
-
-TrustEdge includes a comprehensive test suite with **270+ automated tests** covering all aspects of the system:
-
-- **155 Core Unit Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer (includes 18 YubiKey simulation tests)
-- **4 Auth Integration Tests**: Mutual authentication, session management, ECDH session key derivation, key uniqueness
-- **9 Hardware Integration Tests**: YubiKey PIV operations (require physical device, run manually)
-- **22 Archive Tests**: .trst format wrap/verify, cryptographic validation, CLI integration
-- **30+ Platform Tests**: Verification engine, HTTP round-trip, CORS, router parity
-- **18 Type Tests**: Shared wire type validation
+A drone captures inspection footage of infrastructure. The operator needs to prove the video
+has not been edited between capture and submission to the client.
 
 ```bash
-# Run complete test suite
-./scripts/ci-check.sh
-
-# Run tests by category
-cargo test -p trustedge-core --lib                # Core cryptography tests (155)
-cargo test -p trustedge-core --test auth_integration # Auth + ECDH tests (4)
-cargo test -p trustedge-trst-cli --test acceptance # Archive validation tests (7)
-cargo test --features yubikey --test yubikey_integration  # Hardware tests (need YubiKey)
+trst keygen --out-key drone.key --out-pub drone.pub
+trst wrap --in flight-recording.bin --out inspection.trst \
+  --data-type video --source "DJI-Mavic-3E" --description "Bridge inspection flight 2024-03-15" \
+  --device-key drone.key --device-pub drone.pub
+trst verify inspection.trst --device-pub "$(cat drone.pub)"
 ```
 
-**📖 For detailed testing procedures, see [docs/developer/testing.md](docs/developer/testing.md).**
+### Sensor Logs
 
----
-
-## Documentation
-
-### User Guides
-- **[CLI Reference](docs/user/cli.md)** - Complete command-line interface documentation
-- **[Examples](docs/user/examples/README.md)** - Real-world usage examples and workflows
-- **[Authentication Guide](docs/user/authentication.md)** - Network security setup
-- **[Troubleshooting](docs/user/troubleshooting.md)** - Common issues and solutions
-
-### Technical Reference
-- **[Universal Backend](docs/technical/universal-backend.md)** - Backend system architecture
-- **[Binary Format](docs/technical/format.md)** - File format specification
-- **[Network Protocol](docs/technical/protocol.md)** - Communication protocol details
-- **[Security Model](SECURITY.md)** - Security architecture and threat model
-
-### Development
-- **[Contributing](CONTRIBUTING.md)** - How to contribute to TrustEdge
-- **[Development Guide](docs/developer/development.md)** - Development setup and workflows
-- **[Testing Guide](docs/developer/testing.md)** - Test procedures and validation
-- **[Coding Standards](docs/developer/coding-standards.md)** - Code style and conventions
-
-**📖 For complete documentation index, see [docs/README.md](docs/README.md).**
-
----
-
-## Commercial Licensing
-
-TrustEdge is available under MPL-2.0 for open source use. Commercial licenses are available for enterprise customers requiring:
-
-- **Proprietary modifications** without source disclosure requirements
-- **Enterprise support** with SLAs and priority response
-- **Custom integrations** and professional services
-- **Legal indemnification** and warranty protection
-- **Advanced enterprise features** (TPM integration, enhanced monitoring, compliance reporting)
-
-**Contact:** [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com) for commercial licensing inquiries.
-
----
-
-## Security
-
-For security issues, please follow our [responsible disclosure policy](SECURITY.md).
-
-**Security Contact:** [security@trustedgelabs.com](mailto:security@trustedgelabs.com)
-
-### Security Properties
-
-- **Cryptographic Isolation**: Only intended recipients can decrypt data
-- **Automated Key Exchange**: X25519 ECDH derives session keys during auth handshake with BLAKE3 KDF
-- **Forward Secrecy**: Past communications remain secure even if keys are compromised
-- **Replay Protection**: Unique cryptographic fingerprints prevent message reuse
-- **Memory Safety**: Secure key material handling with `Secret<T>` wrapper and automatic zeroization
-- **Hardware Security**: Optional YubiKey PIV integration for hardware-backed operations
-
-**📖 For detailed security analysis, see [SECURITY.md](SECURITY.md) and [docs/technical/threat-model.md](docs/technical/threat-model.md).**
-
----
-
-## Contributing
-
-We welcome contributions to TrustEdge! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
-
-- Code of conduct and community guidelines
-- Development setup and workflow
-- Testing requirements and procedures
-- Documentation standards
-- Security review process
-
-### Quick Start for Contributors
+Industrial sensors produce continuous readings. Regulators need assurance that the submitted
+logs match what was actually recorded.
 
 ```bash
-# Clone and setup development environment
-git clone https://github.com/TrustEdge-Labs/trustedge.git
-cd trustedge
-
-# Run full test suite
-./scripts/ci-check.sh
-
-# Run specific component tests
-cargo test -p trustedge-core                      # Core cryptography (155+ tests)
-cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
+trst wrap --in sensor-readings.csv --out telemetry.trst \
+  --data-type sensor --source "Modbus-RTU-Unit-7" --description "Temperature readings Q1 2024" \
+  --device-key sensor.key --device-pub sensor.pub
 ```
 
----
+### Body Camera
+
+Law enforcement body cameras record interactions. The footage must be verifiably unaltered
+for evidentiary use.
+
+```bash
+trst wrap --in bodycam-clip.mp4 --out evidence.trst \
+  --data-type video --source "Axon-Body-4" --description "Incident report 2024-0847" \
+  --device-key officer.key --device-pub officer.pub
+```
+
+### Audio Capture
+
+A journalist records an interview. The publication needs to prove the audio is the original
+unedited recording.
+
+```bash
+trst wrap --in interview.wav --out recording.trst \
+  --data-type audio --source "Zoom-H6" --description "Interview with source, 2024-03-15" \
+  --device-key recorder.key --device-pub recorder.pub
+```
+
+All examples use the generic profile (default). For cam.video-specific archives with frame
+rate and segment duration, see [examples/cam.video](examples/cam.video/).
+
+## How It Works
+
+1. **Sign** -- Device generates an Ed25519 keypair and signs data at the point of capture
+2. **Encrypt** -- Data is chunked and each chunk is encrypted with AES-256-GCM
+3. **Wrap** -- Chunks, manifest, and signature are packaged into a `.trst` archive with a BLAKE3 continuity chain
+4. **Verify** -- An independent verification service checks the signature, chain integrity, and manifest
+5. **Receipt** -- A cryptographic receipt is issued proving the data was verified at a specific time
+
+## Architecture
+
+TrustEdge is a Rust workspace with 9 crates organized as a monolithic core library with thin
+CLI and WASM shells, plus a platform verification service with PostgreSQL backend and
+SvelteKit dashboard.
+
+For crate breakdown, module hierarchy, data flow, and testing details, see
+[docs/architecture.md](docs/architecture.md).
+
+For hardware-backed signing with YubiKey PIV, see [docs/yubikey-guide.md](docs/yubikey-guide.md).
+
+## Commercial Support
+
+Building edge devices that need cryptographic provenance? We offer commercial SDK, custom
+hardware integration, fleet management, and compliance consulting.
+
+Contact: pilot@trustedgelabs.com
 
 ## License
 
-This project is licensed under the Mozilla Public License 2.0 (MPL-2.0). See [LICENSE](LICENSE) for details.
+Mozilla Public License 2.0. See [LICENSE](LICENSE) for details.
 
-### Legal & Attribution
+Commercial licenses available for enterprise use. Contact: enterprise@trustedgelabs.com
 
-- **Copyright**: © 2025 TrustEdge Labs LLC
-- **License**: Mozilla Public License 2.0
-- **Commercial Licensing**: Available for enterprise use
-- **Contributor Agreement**: [Developer Certificate of Origin](docs/legal/dco.md)
+(c) 2025 TrustEdge Labs LLC
 
 ---
 
-*TrustEdge — Privacy and trust at the edge.*
+*TrustEdge -- Privacy and trust at the edge.*
