@@ -20,6 +20,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.7 Security & Quality Hardening** - Phases 31-34 (shipped 2026-02-23)
 - ✅ **v1.8 KDF Architecture Fix** - Phases 35-37 (shipped 2026-02-24)
 - ✅ **v2.0 End-to-End Demo** - Phases 38-41 (shipped 2026-03-16)
+- 🚧 **v2.1 Data Lifecycle & Hardware Integration** - Phases 42-44 (in progress)
 
 ## Phases
 
@@ -114,4 +115,59 @@ Delivered working end-to-end demonstration of TrustEdge's full value proposition
 </details>
 
 ---
-*Last updated: 2026-03-16 after v2.0 milestone shipped*
+
+### 🚧 v2.1 Data Lifecycle & Hardware Integration (In Progress)
+
+**Milestone Goal:** Complete the data lifecycle by adding decryption/unwrap capability, expose YubiKey hardware signing in the CLI, and add named archive profiles for specific use cases.
+
+## Phase Details
+
+### Phase 42: Named Archive Profiles
+**Goal**: Users can wrap data with use-case-specific metadata schemas (sensor, audio, log) that produce valid, verifiable archives
+**Depends on**: Nothing (pure type additions to trustedge-trst-protocols, no upstream workspace deps)
+**Requirements**: PROF-05, PROF-06, PROF-07, PROF-08
+**Success Criteria** (what must be TRUE):
+  1. User can run `trst wrap --profile sensor` with sensor-specific fields (sample_rate, unit, sensor_model) and receive a valid .trst archive
+  2. User can run `trst wrap --profile audio` with audio-specific fields (sample_rate, bit_depth, channels, codec) and receive a valid .trst archive
+  3. User can run `trst wrap --profile log` with log-specific fields (application, host, log_level) and receive a valid .trst archive
+  4. All three profile archives pass `trst verify` with exit code 0
+  5. `trst verify` on a sensor/audio/log archive produces the same human-readable output format as a generic archive
+**Plans**: TBD
+
+### Phase 43: Archive Decryption (trst unwrap)
+**Goal**: Users can recover original data from a .trst archive, completing the wrap/unwrap data lifecycle
+**Depends on**: Phase 42 (profile validation must not reject new profile names before unwrap is tested)
+**Requirements**: UNWRAP-01, UNWRAP-02, UNWRAP-03, UNWRAP-04
+**Success Criteria** (what must be TRUE):
+  1. User can run `trst unwrap <archive.trst> --device-key <key> --out <file>` and recover the exact original data
+  2. `trst wrap` derives the encryption key from the device signing key via HKDF (no hardcoded demo key in the codebase)
+  3. `trst unwrap` verifies the archive signature and continuity chain before producing any plaintext output
+  4. A wrap-then-unwrap round-trip on arbitrary binary data produces byte-identical output
+  5. `trst unwrap` on a tampered or incorrectly-keyed archive exits with a non-zero exit code and no plaintext output
+**Plans**: TBD
+
+### Phase 44: YubiKey CLI Integration
+**Goal**: Users can sign archives with a hardware YubiKey from the CLI, and verify those hardware-signed archives
+**Depends on**: Phase 43 (signature dispatch in trst verify must not be in-flight during unwrap development)
+**Requirements**: YUBI-01, YUBI-02, YUBI-03, YUBI-04
+**Success Criteria** (what must be TRUE):
+  1. User can run `trst wrap --backend yubikey` and produce an archive signed with ECDSA P-256 from the connected YubiKey
+  2. `trst verify` accepts and validates both Ed25519 (`"ed25519:..."`) and ECDSA P-256 (`"ecdsa-p256:..."`) archive signatures
+  3. When the YubiKey requires a PIN, the CLI prompts interactively without echoing the PIN to the terminal
+  4. `scripts/demo.sh --local` runs without error on a machine with no YubiKey (YubiKey steps are gracefully skipped)
+**Plans**: TBD
+
+---
+
+## Progress
+
+**Execution Order:** 42 → 43 → 44
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 42. Named Archive Profiles | v2.1 | 0/? | Not started | - |
+| 43. Archive Decryption (trst unwrap) | v2.1 | 0/? | Not started | - |
+| 44. YubiKey CLI Integration | v2.1 | 0/? | Not started | - |
+
+---
+*Last updated: 2026-03-16 after v2.1 roadmap created*

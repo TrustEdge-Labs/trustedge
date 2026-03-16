@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: End-to-End Demo
+milestone: v2.1
+milestone_name: Data Lifecycle & Hardware Integration
 status: planning
-stopped_at: Completed 41-02-PLAN.md
-last_updated: "2026-03-16T01:15:20.178Z"
-last_activity: 2026-03-15 -- Roadmap created for v2.0
+stopped_at: Roadmap created for v2.1
+last_updated: "2026-03-16T00:00:00.000Z"
+last_activity: 2026-03-16 -- Roadmap created for v2.1
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -26,17 +26,17 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-15)
+See: .planning/PROJECT.md (updated 2026-03-16)
 
 **Core value:** Prove that data from an edge device has not been tampered with -- from capture to verification -- using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** v2.0 End-to-End Demo -- Phase 38: Archive Profiles
+**Current focus:** v2.1 Data Lifecycle & Hardware Integration -- Phase 42: Named Archive Profiles
 
 ## Current Position
 
-Phase: 38 of 41 (Archive Profiles)
+Phase: 42 of 44 (Named Archive Profiles)
 Plan: Ready to plan
 Status: Ready to plan
-Last activity: 2026-03-15 -- Roadmap created for v2.0
+Last activity: 2026-03-16 -- Roadmap created for v2.1
 
 Progress: [..........] 0%
 
@@ -52,31 +52,19 @@ Progress: [..........] 0%
 - v1.6: 3 phases, 6 plans, 11 tasks
 - v1.7: 4 phases, 10 plans, 18 tasks
 - v1.8: 3 phases, 4 plans, 8 tasks
-- **Total: 37 phases, 65 plans, 118 tasks**
+- v2.0: 4 phases, 8 plans, ~17 tasks
+- **Total: 41 phases, 69 plans, ~135 tasks**
 
 ## Accumulated Context
 
 ### Decisions
 
 Cleared -- see PROJECT.md Key Decisions table for full history.
-- [Phase 38-archive-profiles]: TrstManifest with ProfileMetadata enum (CamVideo + Generic) is the profile-agnostic contract type; CamVideoManifest kept as alias
-- [Phase 38-archive-profiles]: Untagged serde with CamVideo first enables reliable deserialization disambiguation based on required fields
-- [Phase 38]: Generic profile uses index-based segment start_time (segment-N) since generic data has no inherent temporal axis
-- [Phase 38]: Unknown profiles fall through to generic path in CLI match, providing forward compatibility
-- [Phase 39-deployment-stack]: prerender=false in layout.ts: dynamic /receipts/[id] route cannot prerender; SPA fallback via nginx try_files handles routing
-- [Phase 39-deployment-stack]: Dockerfile.dashboard uses repo root as build context: matches platform Dockerfile convention, allows unified COPY for deploy/nginx.conf
-- [Phase 39-deployment-stack]: Inline DATABASE_URL and PORT in docker-compose.yml removes env_file dependency for zero-config demo startup
-- [Phase 39-deployment-stack]: VITE_API_BASE baked in as build arg at compose build time; no runtime env injection needed for static nginx serving
-- [Phase 39-deployment-stack]: /healthz excluded from auth middleware in postgres builds so unauthenticated docker healthchecks succeed
-- [Phase 39-deployment-stack]: Dockerfile Rust pinned to 1.88: time crate MSRV incompatibility with edition2024 on earlier versions
-- [Phase 39-deployment-stack]: wget must be explicitly installed in slim-bookworm runtime for healthcheck commands
-- [Phase 40-demo-script]: trst keygen checks both output paths before generating keypair (fail fast, no partial writes)
-- [Phase 40-demo-script]: trst keygen is synchronous consistent with handle_wrap/handle_verify; only EmitRequest uses async
-- [Phase 40-demo-script]: Demo uses cargo run directly (not installed binary) so it works from repo without installation
-- [Phase 40-demo-script]: TOTAL_STEPS computed dynamically (5 local, 6 with server) before rendering any banner
-- [Phase 41-documentation]: Architecture and YubiKey content extracted from README to dedicated docs/ files; README content preserved verbatim, not deleted
-- [Phase 41-documentation]: README leads with problem statement then 3-command quick start (clone, docker-compose, demo.sh) — eliminates YubiKey-first barrier to evaluation
-- [Phase 41-documentation]: README architecture detail delegated to docs/architecture.md and docs/yubikey-guide.md; README stays under 200 lines with 4 use case copy-paste commands
+
+Key design decisions to lock before coding each phase:
+- [Phase 42 — before code]: Typed enum variants (Sensor, Audio, Log) each need at least one required field not present in Generic for unambiguous serde deserialization; write canonical JSON fixture tests before adding any new variant
+- [Phase 43 — before code]: HKDF-SHA256 derives XChaCha20Poly1305 chunk key from Ed25519 signing key (domain tag "TRUSTEDGE_TRST_CHUNK_KEY"); wrap + unwrap updated atomically; v2.0 demo archives (hardcoded key) will not decrypt with new unwrap — document in CHANGELOG
+- [Phase 44 — before code]: Signature format for ECDSA P-256 must be decided before implementation: "ecdsa-p256:<base64_der>" alongside existing "ed25519:..." format; confirm p256 crate version and workspace compatibility
 
 ### Pending Todos
 
@@ -84,14 +72,15 @@ None.
 
 ### Blockers/Concerns
 
-- Hardware tests require physical YubiKey 5 series (carried from prior milestones)
+- Hardware tests require physical YubiKey 5 series (carried from v1.1) — Phase 44 acceptance tests need hardware
 - RSA Marvin Attack advisory (RUSTSEC-2023-0071) risk-accepted (carried from v1.3)
+- Phase 44: Confirm p256 crate workspace version compatibility before coding (low risk, well-maintained crate family)
 
 ## Session Continuity
 
-Last session: 2026-03-16T01:09:29.507Z
-Stopped at: Completed 41-02-PLAN.md
+Last session: 2026-03-16
+Stopped at: v2.1 roadmap and STATE.md created — ready to plan Phase 42
 Resume file: None
 
 ---
-*Last updated: 2026-03-15 after v2.0 roadmap created*
+*Last updated: 2026-03-16 after v2.1 roadmap created*

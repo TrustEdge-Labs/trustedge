@@ -70,24 +70,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UNWRAP-01 | TBD | Pending |
-| UNWRAP-02 | TBD | Pending |
-| UNWRAP-03 | TBD | Pending |
-| UNWRAP-04 | TBD | Pending |
-| YUBI-01 | TBD | Pending |
-| YUBI-02 | TBD | Pending |
-| YUBI-03 | TBD | Pending |
-| YUBI-04 | TBD | Pending |
-| PROF-05 | TBD | Pending |
-| PROF-06 | TBD | Pending |
-| PROF-07 | TBD | Pending |
-| PROF-08 | TBD | Pending |
+| UNWRAP-01 | Phase 43 | Pending |
+| UNWRAP-02 | Phase 43 | Pending |
+| UNWRAP-03 | Phase 43 | Pending |
+| UNWRAP-04 | Phase 43 | Pending |
+| YUBI-01 | Phase 44 | Pending |
+| YUBI-02 | Phase 44 | Pending |
+| YUBI-03 | Phase 44 | Pending |
+| YUBI-04 | Phase 44 | Pending |
+| PROF-05 | Phase 42 | Pending |
+| PROF-06 | Phase 42 | Pending |
+| PROF-07 | Phase 42 | Pending |
+| PROF-08 | Phase 42 | Pending |
 
 **Coverage:**
 - v2.1 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-16*
-*Last updated: 2026-03-16 after initial definition*
+*Last updated: 2026-03-16 after roadmap creation — traceability complete*
