@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: End-to-End Demo
 status: planning
-stopped_at: Completed 41-01-PLAN.md
-last_updated: "2026-03-16T01:06:43.855Z"
+stopped_at: Completed 41-02-PLAN.md
+last_updated: "2026-03-16T01:09:29.510Z"
 last_activity: 2026-03-15 -- Roadmap created for v2.0
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -75,6 +75,8 @@ Cleared -- see PROJECT.md Key Decisions table for full history.
 - [Phase 40-demo-script]: Demo uses cargo run directly (not installed binary) so it works from repo without installation
 - [Phase 40-demo-script]: TOTAL_STEPS computed dynamically (5 local, 6 with server) before rendering any banner
 - [Phase 41-documentation]: Architecture and YubiKey content extracted from README to dedicated docs/ files; README content preserved verbatim, not deleted
+- [Phase 41-documentation]: README leads with problem statement then 3-command quick start (clone, docker-compose, demo.sh) — eliminates YubiKey-first barrier to evaluation
+- [Phase 41-documentation]: README architecture detail delegated to docs/architecture.md and docs/yubikey-guide.md; README stays under 200 lines with 4 use case copy-paste commands
 
 ### Pending Todos
 
@@ -87,8 +89,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-16T01:06:43.852Z
-Stopped at: Completed 41-01-PLAN.md
+Last session: 2026-03-16T01:09:29.507Z
+Stopped at: Completed 41-02-PLAN.md
 Resume file: None
 
 ---

@@ -38,11 +38,11 @@ Requirements for the End-to-End Demo milestone. Each maps to roadmap phases.
 
 ### Documentation
 
-- [ ] **DOCS-01**: Root README.md explains what TrustEdge does with a problem statement and use cases
-- [ ] **DOCS-02**: Root README.md includes a 3-command quick start (clone -> docker-compose up -> run demo)
+- [x] **DOCS-01**: Root README.md explains what TrustEdge does with a problem statement and use cases
+- [x] **DOCS-02**: Root README.md includes a 3-command quick start (clone -> docker-compose up -> run demo)
 - [x] **DOCS-03**: Architecture and internal details moved to docs/ directory or collapsed sections
-- [ ] **DOCS-04**: README structure is standard (single root README, not a redirect to scattered docs)
-- [ ] **DOCS-05**: Use case examples (drone, sensor, body cam, audio) described with copy-paste commands
+- [x] **DOCS-04**: README structure is standard (single root README, not a redirect to scattered docs)
+- [x] **DOCS-05**: Use case examples (drone, sensor, body cam, audio) described with copy-paste commands
 
 ## Future Requirements
 
@@ -91,11 +91,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEMO-02 | Phase 40 | Complete |
 | DEMO-03 | Phase 40 | Complete |
 | DEMO-04 | Phase 40 | Complete |
-| DOCS-01 | Phase 41 | Pending |
-| DOCS-02 | Phase 41 | Pending |
+| DOCS-01 | Phase 41 | Complete |
+| DOCS-02 | Phase 41 | Complete |
 | DOCS-03 | Phase 41 | Complete |
-| DOCS-04 | Phase 41 | Pending |
-| DOCS-05 | Phase 41 | Pending |
+| DOCS-04 | Phase 41 | Complete |
+| DOCS-05 | Phase 41 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 17 total
