@@ -1,8 +1,11 @@
 <script lang="ts">
 	import '../app.css';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
+	import type { Snippet } from 'svelte';
 
-	$: currentPath = $page.url.pathname;
+	let { children }: { children: Snippet } = $props();
+
+	let currentPath = $derived(page.url.pathname);
 </script>
 
 <nav class="nav">
@@ -20,5 +23,5 @@
 </nav>
 
 <main class="container">
-	<slot />
+	{@render children()}
 </main>

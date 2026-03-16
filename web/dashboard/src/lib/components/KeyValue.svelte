@@ -1,7 +1,5 @@
 <script lang="ts">
-	export let label: string;
-	export let value: string | number | boolean;
-	export let copyable: boolean = false;
+	let { label, value, copyable = false }: { label: string; value: string | number | boolean; copyable?: boolean } = $props();
 
 	async function copyToClipboard() {
 		if (copyable && navigator.clipboard) {
@@ -15,7 +13,7 @@
 	<div class="value">
 		<span>{value}</span>
 		{#if copyable}
-			<button class="copy-btn" on:click={copyToClipboard} title="Copy to clipboard">
+			<button class="copy-btn" onclick={copyToClipboard} title="Copy to clipboard">
 				[copy]
 			</button>
 		{/if}

@@ -1,13 +1,12 @@
 <script lang="ts">
-	export let status: boolean;
-	export let label: string = '';
+	let { status, label = '' }: { status: boolean; label?: string } = $props();
 </script>
 
 <span class="status-pill" class:pass={status} class:fail={!status}>
 	{#if status}
-		<span class="icon">✓</span>
+		<span class="icon">&#10003;</span>
 	{:else}
-		<span class="icon">✗</span>
+		<span class="icon">&#10007;</span>
 	{/if}
 	{#if label}
 		<span class="label">{label}</span>

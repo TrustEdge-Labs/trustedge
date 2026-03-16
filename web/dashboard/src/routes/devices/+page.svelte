@@ -6,18 +6,18 @@
 	import KeyValue from '$lib/components/KeyValue.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 
-	let devices: Device[] = [];
-	let loading = true;
-	let error: string | null = null;
-	let submitError: string | null = null;
-	let submitting = false;
-	let showRegistrationForm = false;
+	let devices: Device[] = $state([]);
+	let loading = $state(true);
+	let error: string | null = $state(null);
+	let submitError: string | null = $state(null);
+	let submitting = $state(false);
+	let showRegistrationForm = $state(false);
 
-	let newDevice: CreateDeviceRequest = {
+	let newDevice: CreateDeviceRequest = $state({
 		device_id: '',
 		public_key: '',
 		label: ''
-	};
+	});
 
 	async function loadDevices() {
 		loading = true;
@@ -89,7 +89,7 @@
 		</div>
 		<button
 			class="btn btn-primary"
-			on:click={() => showRegistrationForm = !showRegistrationForm}
+			onclick={() => showRegistrationForm = !showRegistrationForm}
 		>
 			{showRegistrationForm ? 'Cancel' : 'Register Device'}
 		</button>
@@ -104,7 +104,7 @@
 
 		<ErrorBanner error={submitError} />
 
-		<form on:submit|preventDefault={registerDevice}>
+		<form onsubmit={(e: Event) => { e.preventDefault(); registerDevice(); }}>
 			<div class="form-group">
 				<label class="form-label" for="device_id">Device ID</label>
 				<input
@@ -153,7 +153,7 @@
 				<button
 					type="button"
 					class="btn btn-secondary"
-					on:click={cancelRegistration}
+					onclick={cancelRegistration}
 				>
 					Cancel
 				</button>
@@ -173,7 +173,7 @@
 			<p>Register your first TrustEdge device to start generating verification receipts.</p>
 			<button
 				class="btn btn-primary"
-				on:click={() => showRegistrationForm = true}
+				onclick={() => showRegistrationForm = true}
 			>
 				Register Device
 			</button>

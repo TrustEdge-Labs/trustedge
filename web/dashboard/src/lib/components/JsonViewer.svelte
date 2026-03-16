@@ -1,17 +1,17 @@
 <script lang="ts">
-	export let data: any;
-	export let title: string = 'JSON Data';
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- JSON.stringify accepts any serializable value
+	let { data, title = 'JSON Data' }: { data: any; title?: string } = $props();
 
-	let jsonString: string;
-	let copied = false;
+	let copied = $state(false);
 
-	$: {
+	let jsonString = $derived.by(() => {
 		try {
-			jsonString = JSON.stringify(data, null, 2);
-		} catch (e) {
-			jsonString = 'Invalid JSON data';
+			return JSON.stringify(data, null, 2);
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		} catch (_) {
+			return 'Invalid JSON data';
 		}
-	}
+	});
 
 	async function copyJson() {
 		if (navigator.clipboard) {
@@ -27,7 +27,7 @@
 <div class="json-viewer">
 	<div class="header">
 		<h3>{title}</h3>
-		<button class="btn btn-secondary" on:click={copyJson}>
+		<button class="btn btn-secondary" onclick={copyJson}>
 			{copied ? 'Copied!' : 'Copy JSON'}
 		</button>
 	</div>

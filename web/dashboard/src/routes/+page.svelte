@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { config } from '$lib/config';
 
-	let apiConfigured = false;
+	let apiConfigured = $state(false);
 
 	onMount(() => {
 		apiConfigured = !!config.apiKey;

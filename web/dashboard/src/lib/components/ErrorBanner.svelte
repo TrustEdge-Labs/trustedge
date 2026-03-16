@@ -1,6 +1,5 @@
 <script lang="ts">
-	export let error: string | null = null;
-	export let dismissible: boolean = true;
+	let { error = null, dismissible = true }: { error: string | null; dismissible?: boolean } = $props();
 
 	function dismiss() {
 		if (dismissible) {
@@ -13,7 +12,7 @@
 	<div class="error-banner">
 		<span>{error}</span>
 		{#if dismissible}
-			<button class="dismiss-btn" on:click={dismiss}>×</button>
+			<button class="dismiss-btn" onclick={dismiss}>&#215;</button>
 		{/if}
 	</div>
 {/if}

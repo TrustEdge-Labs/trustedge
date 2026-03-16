@@ -7,18 +7,18 @@
 	import StatusPill from '$lib/components/StatusPill.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 
-	let receipts: DashboardReceipt[] = [];
-	let loading = true;
-	let error: string | null = null;
-	let total = 0;
-	let page = 1;
-	let limit = 50;
+	let receipts: DashboardReceipt[] = $state([]);
+	let loading = $state(true);
+	let error: string | null = $state(null);
+	let total = $state(0);
+	let currentPage = $state(1);
+	let limit = $state(50);
 
-	let filters = {
+	let filters = $state({
 		device_id: '',
 		start_date: '',
 		end_date: ''
-	};
+	});
 
 	async function loadReceipts() {
 		loading = true;
@@ -27,7 +27,7 @@
 		try {
 			const params = new URLSearchParams({
 				limit: limit.toString(),
-				page: page.toString()
+				page: currentPage.toString()
 			});
 
 			if (filters.device_id) {
@@ -57,13 +57,13 @@
 	}
 
 	function applyFilters() {
-		page = 1;
+		currentPage = 1;
 		loadReceipts();
 	}
 
 	function clearFilters() {
 		filters = { device_id: '', start_date: '', end_date: '' };
-		page = 1;
+		currentPage = 1;
 		loadReceipts();
 	}
 
@@ -117,8 +117,8 @@
 			</div>
 		</div>
 		<div class="filter-actions">
-			<button class="btn btn-primary" on:click={applyFilters}>Apply Filters</button>
-			<button class="btn btn-secondary" on:click={clearFilters}>Clear</button>
+			<button class="btn btn-primary" onclick={applyFilters}>Apply Filters</button>
+			<button class="btn btn-secondary" onclick={clearFilters}>Clear</button>
 		</div>
 	</div>
 </div>
@@ -184,20 +184,20 @@
 			<div class="pagination">
 				<button
 					class="btn btn-secondary"
-					disabled={page <= 1}
-					on:click={() => {
-						page--;
+					disabled={currentPage <= 1}
+					onclick={() => {
+						currentPage--;
 						loadReceipts();
 					}}
 				>
 					Previous
 				</button>
-				<span>Page {page} of {Math.ceil(total / limit)}</span>
+				<span>Page {currentPage} of {Math.ceil(total / limit)}</span>
 				<button
 					class="btn btn-secondary"
-					disabled={page >= Math.ceil(total / limit)}
-					on:click={() => {
-						page++;
+					disabled={currentPage >= Math.ceil(total / limit)}
+					onclick={() => {
+						currentPage++;
 						loadReceipts();
 					}}
 				>

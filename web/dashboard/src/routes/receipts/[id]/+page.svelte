@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { api } from '$lib/api';
 	import type { ApiError } from '$lib/api';
 	import type { DashboardReceipt } from '$lib/types-local';
@@ -9,12 +9,11 @@
 	import JsonViewer from '$lib/components/JsonViewer.svelte';
 	import ErrorBanner from '$lib/components/ErrorBanner.svelte';
 
-	let receipt: DashboardReceipt | null = null;
-	let loading = true;
-	let error: string | null = null;
-	let receiptId: string;
+	let receipt: DashboardReceipt | null = $state(null);
+	let loading = $state(true);
+	let error: string | null = $state(null);
 
-	$: receiptId = $page.params.id;
+	let receiptId = $derived(page.params.id);
 
 	async function loadReceipt() {
 		if (!receiptId) return;
@@ -67,7 +66,7 @@
 
 <div class="header">
 	<div class="breadcrumb">
-		<a href="/receipts">← Back to Receipts</a>
+		<a href="/receipts">&#8592; Back to Receipts</a>
 	</div>
 	<h1>Receipt Details</h1>
 </div>
@@ -90,7 +89,7 @@
 		<div class="receipt-header">
 			<h2>Receipt {receipt.id}</h2>
 			<div class="actions">
-				<button class="btn btn-primary" on:click={downloadReceipt}>
+				<button class="btn btn-primary" onclick={downloadReceipt}>
 					Download receipt.json
 				</button>
 				<a href={generateShareUrl()} class="btn btn-secondary" target="_blank">
