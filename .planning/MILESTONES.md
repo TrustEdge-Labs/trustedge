@@ -1,3 +1,38 @@
+## v2.0 End-to-End Demo (Shipped: 2026-03-16)
+
+**Phases completed:** 4 phases (38-41), 8 plans
+**Timeline:** 2 days (2026-03-15 → 2026-03-16)
+**Stats:** 50 files changed, 4,867 insertions, 574 deletions, 42 commits
+
+**Delivered:** Working end-to-end demonstration of TrustEdge's full value proposition — data-agnostic archive wrapping, one-command Docker deployment, automated demo script, and developer-focused documentation.
+
+**Key accomplishments:**
+- TrstManifest with ProfileMetadata enum (generic + cam.video) — generic profile as default, backward-compatible
+- Three-service Docker Compose stack (platform + postgres + dashboard) with auto-migration and health checks
+- `trst keygen` subcommand for Ed25519 device key pair generation
+- `scripts/demo.sh` showing full lifecycle (keygen, wrap, verify, receipt) with docker/local auto-detect
+- README rewritten from 465 to 128 lines — problem statement, 3-command quick start, 4 use cases with copy-paste commands
+- Architecture and YubiKey content reorganized into docs/
+
+**Issues fixed during deployment:**
+- `.dockerignore` added (132GB target/ excluded from Docker context)
+- Dockerfile Rust version bumped to 1.88 (base64ct edition2024 + time crate MSRV)
+- sqlx re-added to platform postgres feature (was removed but code still used it)
+- /healthz excluded from auth middleware in postgres builds
+- Non-root container user given home directory and WORKDIR
+
+**Tech debt carried forward:**
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+- RSA Marvin Attack advisory (RUSTSEC-2023-0071) accepted (carried from v1.3)
+
+**Git range:** v1.8..v2.0
+
+**Archives:**
+- `.planning/milestones/v2.0-ROADMAP.md`
+- `.planning/milestones/v2.0-REQUIREMENTS.md`
+
+---
+
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/

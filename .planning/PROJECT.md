@@ -16,16 +16,9 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## Current Milestone: v2.0 End-to-End Demo
+## Current State
 
-**Goal:** Deliver a working end-to-end demonstration that shows TrustEdge's full value proposition — device captures data, signs/encrypts it, wraps into a tamper-evident archive, submits to a verification service, and receives a cryptographic receipt proving provenance.
-
-**Target features:**
-- Data-agnostic archive profiles (generic, sensor, audio — not just cam.video)
-- Docker-compose stack (platform + postgres + dashboard) that starts with one command
-- End-to-end demo script showing the full lifecycle
-- Multi-scenario examples (drone inspection, sensor logs, body cam, audio)
-- README rewrite focused on the demo and use cases, not internal architecture
+Shipped v2.0 End-to-End Demo. The project now has a working demo: `docker compose up` starts the full platform, `scripts/demo.sh` shows the complete lifecycle (keygen, wrap, verify, receipt), and the README explains TrustEdge to a new developer in under 5 minutes.
 
 ## Requirements
 
@@ -125,13 +118,14 @@ Prove that data from an edge device has not been tampered with — from capture 
 - ✓ Keyring PBKDF2 hardened to 600,000 iterations per OWASP 2023 — v1.8
 - ✓ Keyring salt length increased to 32 bytes — v1.8
 
+- ✓ Data-agnostic archive profiles (generic profile as default, cam.video preserved) — v2.0
+- ✓ Docker-compose full stack deployment (platform + postgres + dashboard, auto-migration) — v2.0
+- ✓ End-to-end demo script (keygen → wrap → verify → receipt, docker/local auto-detect) — v2.0
+- ✓ README rewrite focused on use cases and demo (128 lines, 4 use cases, 3-command quick start) — v2.0
+
 ### Active
 
-- [ ] Data-agnostic archive profiles (generic, sensor, audio)
-- [ ] Docker-compose full stack deployment
-- [ ] End-to-end demo script (device → wrap → verify → receipt)
-- [ ] Multi-scenario demo examples (drone, sensor, body cam, audio)
-- [ ] README rewrite focused on use cases and demo
+(None — define next milestone with /gsd:new-milestone)
 
 ### Deferred
 
@@ -157,20 +151,21 @@ Prove that data from an edge device has not been tampered with — from capture 
 - **v1.6 Final Consolidation** — Platform server binary, dashboard in monorepo with generated types, 11 orphaned repos deleted, 3-repo org
 - **v1.7 Security & Quality Hardening** — Secret<T> zeroize wrapper, facade crates deleted, experimental workspace isolated, verify handler deduplicated, CORS hardened, 16 new integration tests
 - **v1.8 KDF Architecture Fix** — HKDF-SHA256 replaces PBKDF2 for envelope key derivation, versioned format with v1 backward compatibility, keyring PBKDF2 hardened to OWASP 2023
+- **v2.0 End-to-End Demo** — Generic archive profiles, Docker stack, demo script, README rewrite with use cases
 
 ## Context
 
-Shipped v1.8 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
-Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit (TypeScript).
+Shipped v2.0 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
+Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit (TypeScript), Docker.
 TrustEdge-Labs GitHub org has exactly 3 repos: trustedge (main workspace), trustedgelabs-website, shipsecure.
 trustedge-core owns all crypto — platform calls core::chain and core::crypto; re-exports SigningKey/VerifyingKey for downstream use.
+TrstManifest supports generic and cam.video profiles via ProfileMetadata enum. Generic profile is the default for `trst wrap`.
+Docker Compose stack (`deploy/docker-compose.yml`) starts platform-server (Rust 1.88, auto-migration), postgres, and dashboard (nginx static). Zero-config with inline defaults.
+Demo script (`scripts/demo.sh`) shows full lifecycle: keygen, sample data, wrap, server verify, local verify. Auto-detects docker vs local mode.
+Platform server healthz excluded from auth middleware. CORS allows localhost:3000 and localhost:8080.
 Envelope encryption uses HKDF-SHA256 (v2 format) with deterministic counter nonces. Legacy v1 (PBKDF2-per-chunk) envelopes still decrypt via try-then-fallback.
 Keyring backends use OWASP 2023 PBKDF2 parameters (600k iterations, 32-byte salts).
-Platform server binary (`crates/platform-server/`) boots Axum via `trustedge_platform::create_router()` with deploy/ artifacts (Dockerfile, docker-compose.yml).
-Dashboard TypeScript types generated from trustedge-types JSON schemas — no hand-written type definitions for shared types.
-CI uses `--workspace` for root workspace. Experimental crates (pubky) isolated in standalone workspace at crates/experimental/. YubiKey feature validated unconditionally. cargo-audit + TODO hygiene enforced on every push/PR. Secret struct regression check (CI Step 23) ensures no serde derives on secret-holding structs.
-Heavy optional deps (git2, keyring) feature-gated. Platform features: http, postgres, ca, openapi, yubikey. Dependency tree baseline: 70.
-All sensitive config fields wrapped in Secret<T> with ZeroizeOnDrop. CORS: same-origin for verify-only, restricted headers for postgres. CA module is library-only (no HTTP exposure).
+CI uses `--workspace` for root workspace. Experimental crates (pubky) isolated in standalone workspace at crates/experimental/. YubiKey feature validated unconditionally. cargo-audit + TODO hygiene enforced on every push/PR.
 Key generation and attestation deferred to future (yubikey crate API limitations).
 
 ## Constraints
@@ -258,6 +253,14 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | PBKDF2 600k iterations for keyring | OWASP 2023 PBKDF2-HMAC-SHA256 recommendation | ✓ Good — modern brute-force resistance |
 | 32-byte keyring salts | Doubled from 16 bytes to match modern practice | ✓ Good — increased entropy |
 | derive_key key_id uses first 16 bytes of 32-byte salt | Preserves KeyBackend::derive_key(&[u8; 16]) signature | ✓ Good — no API break |
+| ProfileMetadata enum (Generic + CamVideo) | Data-agnostic archives without losing cam.video specialization | ✓ Good — generic default, backward compat |
+| Generic profile as CLI default | Most users don't need cam.video; generic is universal | ✓ Good — simpler onboarding |
+| Static adapter + nginx for dashboard | SvelteKit dashboard is read-only UI, no SSR needed | ✓ Good — fast, no Node runtime |
+| Auto-migrate on every container start | Idempotent migrations, no manual setup step | ✓ Good — zero-config deployment |
+| /healthz excluded from auth middleware | Health checks must be unauthenticated for docker-compose | ✓ Good — fixed production bug |
+| trst keygen as explicit subcommand | Demo needs visible key generation step | ✓ Good — reusable beyond demo |
+| Demo auto-detects docker vs local | Single script works everywhere, --local/--docker overrides | ✓ Good — no user confusion |
+| README leads with problem + quick start | Developer audience wants to try it fast, not read architecture | ✓ Good — 465 → 128 lines |
 
 ---
-*Last updated: 2026-03-15 after v2.0 milestone started*
+*Last updated: 2026-03-16 after v2.0 milestone shipped*
