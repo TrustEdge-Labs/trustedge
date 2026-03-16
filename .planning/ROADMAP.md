@@ -169,11 +169,11 @@ Plans:
   3. Architecture details, crate descriptions, and internal module documentation are in docs/ or collapsed sections -- not cluttering the main README flow
   4. README is a single self-contained file (no redirects to scattered docs for essential information)
   5. Each use case example (drone, sensor, body cam, audio) includes copy-paste commands that a user can run
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 41-01: TBD
-- [ ] 41-02: TBD
+- [ ] 41-01-PLAN.md -- Extract architecture and YubiKey content from README into docs/
+- [ ] 41-02-PLAN.md -- Rewrite README with problem statement, quick start, and use case examples
 
 ## Progress
 
@@ -185,7 +185,7 @@ Phases execute in numeric order: 38 -> 39 -> 40 -> 41
 | 38. Archive Profiles | 2/2 | Complete    | 2026-03-15 | - |
 | 39. Deployment Stack | 2/2 | Complete    | 2026-03-15 | - |
 | 40. Demo Script | 2/2 | Complete    | 2026-03-16 | - |
-| 41. Documentation | v2.0 | 0/TBD | Not started | - |
+| 41. Documentation | v2.0 | 0/2 | Not started | - |
 
 ---
-*Last updated: 2026-03-15 after phase 40 planning*
+*Last updated: 2026-03-16 after phase 41 planning*
