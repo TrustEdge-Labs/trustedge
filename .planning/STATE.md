@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: End-to-End Demo
 status: planning
-stopped_at: Phase 41 context gathered
-last_updated: "2026-03-16T00:37:19.491Z"
+stopped_at: Completed 41-01-PLAN.md
+last_updated: "2026-03-16T01:06:43.855Z"
 last_activity: 2026-03-15 -- Roadmap created for v2.0
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 0
 ---
 
@@ -74,6 +74,7 @@ Cleared -- see PROJECT.md Key Decisions table for full history.
 - [Phase 40-demo-script]: trst keygen is synchronous consistent with handle_wrap/handle_verify; only EmitRequest uses async
 - [Phase 40-demo-script]: Demo uses cargo run directly (not installed binary) so it works from repo without installation
 - [Phase 40-demo-script]: TOTAL_STEPS computed dynamically (5 local, 6 with server) before rendering any banner
+- [Phase 41-documentation]: Architecture and YubiKey content extracted from README to dedicated docs/ files; README content preserved verbatim, not deleted
 
 ### Pending Todos
 
@@ -86,9 +87,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-16T00:37:19.488Z
-Stopped at: Phase 41 context gathered
-Resume file: .planning/phases/41-documentation/41-CONTEXT.md
+Last session: 2026-03-16T01:06:43.852Z
+Stopped at: Completed 41-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-15 after v2.0 roadmap created*
