@@ -1,458 +1,334 @@
-# Technology Stack: YubiKey Backend Rewrite
+# Stack Research
 
-**Project:** TrustEdge YubiKey backend rewrite
-**Researched:** 2026-02-11
-**Overall Confidence:** MEDIUM (training data + codebase analysis, external docs verification restricted)
-
-## Executive Summary
-
-The YubiKey backend rewrite requires specific stable dependencies for hardware security module integration. Current implementation uses `yubikey` 0.7 with the `untested` feature flag, which must be eliminated. The rewrite will use stable PIV operations, rcgen for X.509 certificate generation, and maintain PKCS#11 integration for hardware operations.
-
-**Key constraint:** NO manual cryptographic operations. Only battle-tested libraries following NIST standards.
+**Domain:** Rust crypto workspace — archive decryption CLI, YubiKey CLI signing, named archive profiles
+**Researched:** 2026-03-15
+**Confidence:** HIGH (codebase analysis is primary source; all three features work entirely within existing dependency set)
 
 ---
 
-## Recommended Stack Changes
+## Scope
 
-### Dependencies to REPLACE
+This document covers stack additions and changes needed for v2.1 only:
 
-| Current | Version | Issue | Replacement Strategy |
-|---------|---------|-------|---------------------|
-| `yubikey = { version = "0.7", features = ["untested"] }` | 0.7 | Using unstable API surface | Use stable API only (remove `untested` feature) |
-| Manual DER encoding (lines 95-150 in yubikey.rs) | N/A | Handwritten ASN.1 encoder | Replace with `rcgen` for X.509 generation |
-| `x509-cert = "0.2"` (with manual builder) | 0.2 | Low-level certificate construction | Migrate to `rcgen` high-level API |
+1. `trst unwrap` — decrypt and reassemble original data from .trst archives
+2. YubiKey hardware signing in `trst wrap` and `trst verify` CLI (`--backend yubikey`)
+3. Named archive profiles: `sensor`, `audio`, `log` beyond generic and cam.video
 
-### Dependencies to ADD
-
-| Library | Version | Purpose | Rationale |
-|---------|---------|---------|-----------|
-| `rcgen` | ~0.13 | X.509 certificate generation | HIGH: Industry-standard cert builder, eliminates manual DER encoding, NIST-compliant |
-
-**Confidence:** MEDIUM - rcgen version based on training data (January 2025). Actual latest version should be verified with external sources.
-
-### Dependencies to KEEP (Version-Locked)
-
-| Library | Current Version | Purpose | Why Keep | Lock Strategy |
-|---------|----------------|---------|----------|---------------|
-| `pkcs11` | 0.5 | PKCS#11 interface for HSM | Core hardware integration | Exact pin `=0.5.0` |
-| `yubikey` | 0.7 | YubiKey PIV operations | Stable API surface (without `untested`) | Exact pin `=0.7.0` |
-| `der` | 0.7 | DER encoding utilities | Required for PKCS#11 key material | Compatible range `0.7` |
-| `spki` | 0.7 | Subject Public Key Info | Public key serialization | Compatible range `0.7` |
-| `signature` | 2.2 | Signature trait abstractions | Standard crypto traits | Compatible range `2` |
-
-**Rationale for Version Locking:** Hardware integration is fragile. Pitfall #11 from PITFALLS.md warns that dependency version conflicts break YubiKey backends. Using exact versions for critical hardware deps prevents transitive dependency conflicts.
+Existing validated capabilities (AES-256-GCM, Ed25519, BLAKE3, HKDF, Universal Backend, XChaCha20Poly1305) are not re-researched.
 
 ---
 
-## YubiKey Crate: Stable API Surface
+## Key Finding: No New Dependencies Required
 
-### What's Available WITHOUT `untested` Feature
+All three features are implementable with dependencies already in the workspace. The only question is which existing capabilities to wire up and what format changes are needed.
 
-**Confidence:** LOW - Based on training data and codebase patterns. Official docs verification blocked.
+---
 
-The `yubikey` crate stable API (0.7) provides:
+## Feature 1: Archive Decryption (`trst unwrap`)
 
-| Operation | Stable API | Notes |
-|-----------|-----------|-------|
-| **YubiKey Detection** | `YubiKey::open()` | Enumerate and open connected devices |
-| **PIV Operations** | `piv` module | Card authentication, slot management |
-| **Certificate Access** | `Certificate::read()` | Read existing certificates from slots |
-| **Attestation** | Attestation APIs | Hardware attestation certificates |
+### Critical Design Gap to Resolve First
 
-### What Requires `untested` Feature (AVOID)
+The current `trst wrap` implementation generates a random XChaCha20Poly1305 nonce per chunk and a hardcoded demo encryption key. Neither the per-chunk nonce nor the key is stored in the archive. This means:
 
-Based on codebase analysis (current implementation uses `untested`), the following are likely gated:
+- **Nonces are lost at wrap time** — the archive cannot be decrypted without them
+- **The key is a hardcoded demo constant** (`0123456789abcdef...`) — not a real key management scheme
 
-- Low-level PIV command construction
-- Direct APDU commands to card
-- Experimental key generation algorithms
-- Internal PIV state manipulation
+Before `trst unwrap` can work, `trst wrap` must be fixed to store recoverable decryption material. Two design options:
 
-**Rewrite Strategy:** Use ONLY stable PIV operations. If functionality requires `untested`, re-evaluate if it's actually necessary for the Universal Backend contract.
+**Option A — Nonce prepended to chunk file (recommended)**
+- Prepend the 24-byte XChaCha20 nonce to each chunk `.bin` file
+- No manifest format change needed
+- `unwrap` reads nonce from first 24 bytes of each chunk, decrypts remaining bytes
+- Backward-incompatible with existing archives (but current archives use demo key so they are not production data)
 
-### Integration with Universal Backend Trait
+**Option B — Nonces in manifest**
+- Add `nonce: String` field to `SegmentInfo` in `trst-protocols`
+- Requires serialized nonce (base64 or hex) per segment
+- Changes canonical JSON for signing — existing archives would fail verification
+- More explicit but heavier manifest
 
-The Universal Backend defines these operations (from `universal.rs` lines 88-135):
+**Recommendation: Option A.** Prepending to the chunk file is the standard pattern for XChaCha20 streams (the nonce is self-describing with the ciphertext). No manifest schema change, no canonical signing impact.
+
+### Key Management for `trst unwrap`
+
+The demo key (`0123456789abcdef...`) must be replaced with a real approach. The workspace already has `hkdf`, `aes-gcm`, `chacha20poly1305`, and `DeviceKeypair` with Ed25519 signing. The simplest correct approach for a symmetric archive key:
+
+- Generate a random 256-bit archive encryption key at wrap time
+- Write it to a sidecar file (e.g., `archive.key`) or accept it via `--key` CLI flag
+- `trst unwrap --key <path>` reads the key file, decrypts chunk by chunk, concatenates plaintext to output file
+
+This is explicit and auditable. The key file approach matches how `device.key` is currently handled.
+
+### What Already Exists in Core
+
+| Capability | Location | Status |
+|-----------|----------|--------|
+| `decrypt_segment()` (XChaCha20Poly1305) | `crates/core/src/crypto.rs` | Ready to call |
+| `generate_aad()` | `crates/core/src/crypto.rs` | Ready to call |
+| `read_archive()` returns `(manifest, Vec<(index, ciphertext)>)` | `crates/core/src/archive.rs` | Ready to call |
+| `verify_manifest()` | `crates/core/src/crypto.rs` | Should run before decrypting |
+
+### Stack Changes for `trst unwrap`
+
+**No new dependencies.** Changes are:
+
+1. `trst-cli/src/main.rs` — add `Unwrap(UnwrapCmd)` subcommand, implement `handle_unwrap()`
+2. `crates/core/src/archive.rs` — add `decrypt_archive()` or inline in CLI (thin-shell pattern means CLI can call `read_archive` + `decrypt_segment` directly)
+3. `trst-cli/Cargo.toml` — no changes (all needed crypto is via `trustedge-core`)
+
+**Wrap fix required**: Modify `handle_wrap()` to generate a real random key (`OsRng.fill_bytes`), write it to `<output>.key`, and prepend nonce to each chunk file.
+
+---
+
+## Feature 2: YubiKey Hardware Signing in CLI
+
+### The Ed25519 / ECDSA P-256 Constraint
+
+This is the most significant architectural constraint for this feature.
+
+The YubiKey PIV hardware **does not support Ed25519**. The `yubikey.rs` doc comment says explicitly: "Ed25519 is NOT supported by YubiKey PIV hardware. Use ECDSA P-256 instead."
+
+The current `trst wrap` and `trst verify` use Ed25519 manifest signatures exclusively. The manifest format stores public keys as `"ed25519:BASE64"` strings, and `verify_manifest()` parses this prefix.
+
+**Two options:**
+
+**Option A — ECDSA P-256 manifest signatures when `--backend yubikey`**
+- The manifest `device.public_key` field stores `"p256:BASE64"` for YubiKey-signed archives
+- `sign_manifest()` and `verify_manifest()` need to support both algorithms
+- `trst verify` must detect which algorithm to use from the public key prefix
+- Requires changes to `crypto.rs` and the manifest signing path
+
+**Option B — Ed25519 key in software for manifest, YubiKey for a separate attestation**
+- Software Ed25519 key signs the manifest (unchanged)
+- YubiKey ECDSA P-256 key signs a separate attestation blob that binds the YubiKey to the archive
+- Manifest format unchanged; attestation is an additional file in the archive (`signatures/yubikey.att`)
+- Simpler, doesn't require algorithm agility in manifest signing
+
+**Recommendation: Option B for v2.1.** Option A requires algorithm agility across the manifest format, changing `trst-protocols` types, and updating `validate()`. Option B delivers the hardware integration value (YubiKey-backed proof of device identity) without breaking the existing manifest signature scheme. The YubiKey attestation becomes an additional trust anchor, not a replacement.
+
+### Existing YubiKey Backend Capabilities
+
+The `YubiKeyBackend` (in `crates/core/src/backends/yubikey.rs`) already implements:
+
+| Operation | Method | Status |
+|-----------|--------|--------|
+| ECDSA P-256 signing | `sign_data()` via PIV slot | Implemented, tested |
+| Public key extraction | `get_public_key()` | Implemented |
+| Hardware attestation | `attest()` | Implemented |
+| PIV slot management | Multiple slots (9a, 9c, 9d, 9e) | Implemented |
+| Fail-closed hardware access | `ensure_connected()` | Implemented |
+
+The `UniversalBackend` trait and `BackendRegistry` are in core. The CLI needs to instantiate a `YubiKeyBackend` and call it.
+
+### Stack Changes for YubiKey CLI Integration
+
+**No new dependencies.** The `yubikey` feature already exists in `trustedge-core`. Changes are:
+
+1. `trst-cli/Cargo.toml` — add `features = ["yubikey"]` to `trustedge-core` dependency (feature-gated, not default)
+2. `trst-cli/Cargo.toml` — add a `[features]` section: `yubikey = ["trustedge-core/yubikey"]`
+3. `trst-cli/src/main.rs` — add `--backend` flag to `WrapCmd` (`software` default, `yubikey` option)
+4. `trst-cli/src/main.rs` — when `--backend yubikey`, instantiate `YubiKeyBackend`, produce a YubiKey attestation signature, write to `signatures/yubikey.att`
+5. `trst-cli/src/main.rs` — add `--verify-yubikey` flag to `VerifyCmd` to check the `yubikey.att` file
+
+**Feature gate pattern** (consistent with existing codebase):
+
+```toml
+# trst-cli/Cargo.toml
+[features]
+default = []
+yubikey = ["trustedge-core/yubikey"]
+```
 
 ```rust
-pub enum CryptoOperation {
-    Sign { data: Vec<u8>, algorithm: SignatureAlgorithm },
-    Verify { data: Vec<u8>, signature: Vec<u8>, algorithm: SignatureAlgorithm },
-    GenerateKeyPair { algorithm: AsymmetricAlgorithm },
-    GetPublicKey,
-    Attest { challenge: Vec<u8> },
-    // ... (symmetric ops delegated to software)
+// trst-cli/src/main.rs
+#[cfg(feature = "yubikey")]
+fn handle_wrap_yubikey(...) -> Result<()> { ... }
+```
+
+### PIN/Config for CLI
+
+The `YubiKeyConfig` uses `Secret<String>` for the PIN. In CLI context, PIN should be read from environment variable `TRUSTEDGE_YUBIKEY_PIN` or prompted interactively via `rpassword`. The `rpassword` crate is the standard for this in Rust CLIs.
+
+**One new dependency for interactive PIN prompt:**
+
+| Library | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| `rpassword` | `7.3` | Read PIN from terminal without echo | Standard Rust crate for secret CLI input; no transitive dependencies beyond `rustix`/`windows-sys` |
+
+This is only needed if interactive PIN prompt is in scope. If ENV variable only, no new dep is needed.
+
+---
+
+## Feature 3: Named Archive Profiles (sensor, audio, log)
+
+### What Exists
+
+`ProfileMetadata` in `crates/trst-protocols/src/archive/manifest.rs` is an `#[serde(untagged)]` enum:
+
+```rust
+pub enum ProfileMetadata {
+    CamVideo(CamVideoMetadata),  // cam.video profile
+    Generic(GenericMetadata),    // generic profile (default)
 }
 ```
 
-**YubiKey Stable API Mapping:**
+The `TrstManifest.validate()` explicitly rejects profiles other than `"generic"` and `"cam.video"`.
 
-| Backend Operation | YubiKey Stable Implementation |
-|------------------|-------------------------------|
-| `Sign` | PIV slot signing with `piv::sign_data()` |
-| `GenerateKeyPair` | PIV key generation in slot 9a (Authentication) |
-| `GetPublicKey` | Certificate read + public key extraction |
-| `Attest` | Read attestation certificate chain |
-| `Verify` | Software verification (not hardware) |
+### Design Decision: Typed Variants vs. Labels
 
-**Confidence:** MEDIUM - Based on PIV standard patterns and existing codebase structure.
+There are two approaches:
 
----
+**Option A — New enum variants per profile (SensorMetadata, AudioMetadata, LogMetadata)**
+- Each profile gets a dedicated struct with typed fields
+- Type-safe at compile time
+- Changes to `ProfileMetadata` enum + `serialize_canonical()` + `validate()` + manifest tests
+- WASM compatibility: `trst-protocols` is WASM-compatible (minimal deps) — new structs using only serde types are safe
 
-## rcgen: X.509 Certificate Generation
+**Option B — Generic metadata with `data_type` labels**
+- `sensor`, `audio`, `log` are just `data_type` strings in `GenericMetadata`
+- No code changes — already works today with `--data-type sensor`
+- No type-safe schema enforcement
 
-### Why rcgen Over Manual DER Encoding
+**Recommendation: Option A for v2.1** — the milestone explicitly says "tailored metadata schemas." Typed variants deliver the schema enforcement and make the profiles first-class citizens. The implementation cost is low (struct definitions + pattern match arms).
 
-**Current Problem (lines 95-200 in yubikey.rs):**
-- 150+ lines of hand-written ASN.1 INTEGER encoding
-- Manual SEQUENCE construction for ECDSA signatures
-- Risk of encoding errors breaking certificate validation
-
-**rcgen Solution:**
-- High-level API: `Certificate::from_params()`
-- Automatic DER encoding following X.509 standards
-- NIST-compliant certificate generation
-- Used by rustls, trust-dns, other production systems
-
-### rcgen API Surface
-
-**Confidence:** MEDIUM - Based on training data (rcgen 0.10-0.13 range).
+### Proposed New Metadata Structs
 
 ```rust
-use rcgen::{Certificate, CertificateParams, KeyPair};
+// sensor profile
+pub struct SensorMetadata {
+    pub started_at: String,
+    pub ended_at: String,
+    pub sensor_type: String,       // "temperature", "pressure", "imu", etc.
+    pub unit: Option<String>,      // "celsius", "hpa", "m/s2"
+    pub sample_rate_hz: Option<f64>,
+    pub device_model: Option<String>,
+    pub labels: BTreeMap<String, String>,
+}
 
-// 1. External signing (for hardware keys)
-let params = CertificateParams::new(vec!["device.example.com".to_string()]);
-let cert = Certificate::from_params(params)?;
+// audio profile
+pub struct AudioMetadata {
+    pub started_at: String,
+    pub ended_at: String,
+    pub sample_rate_hz: u32,       // 44100, 48000, etc.
+    pub channels: u8,              // 1 = mono, 2 = stereo
+    pub bit_depth: u8,             // 16, 24, 32
+    pub codec: String,             // "pcm", "opus", "aac"
+    pub labels: BTreeMap<String, String>,
+}
 
-// 2. External key pair (YubiKey holds private key)
-// Use SignatureAlgorithm trait to integrate hardware signing
-
-// 3. Self-signed certificates
-let cert = Certificate::from_params(params)?;
-let pem = cert.serialize_pem()?;
+// log profile
+pub struct LogMetadata {
+    pub started_at: String,
+    pub ended_at: String,
+    pub log_level: Option<String>, // "debug", "info", "warn", "error"
+    pub source: Option<String>,    // service or process name
+    pub format: Option<String>,    // "json", "syslog", "plaintext"
+    pub labels: BTreeMap<String, String>,
+}
 ```
 
-### Integration with YubiKey
+### Stack Changes for Named Profiles
 
-**Pattern for Hardware-Backed Certificates:**
+**No new dependencies.** Changes are:
 
-```rust
-// 1. Generate key pair IN YubiKey (PIV slot 9a)
-let public_key = yubikey_backend.generate_key_pair(AsymmetricAlgorithm::EcdsaP256)?;
+1. `crates/trst-protocols/src/archive/manifest.rs` — add `SensorMetadata`, `AudioMetadata`, `LogMetadata` structs; add variants to `ProfileMetadata` enum; extend `serialize_canonical()` with new match arms; update `validate()` to accept new profile strings
+2. `crates/core/src/archive.rs` — no changes (uses `TrstManifest` which automatically picks up new variants)
+3. `trst-cli/src/main.rs` — add CLI args for each profile's typed fields; extend `match args.profile.as_str()` to build the new metadata variants
 
-// 2. Build certificate params
-let mut params = CertificateParams::new(vec!["yubikey-device".to_string()]);
-params.key_pair = Some(/* Convert YubiKey public key to rcgen KeyPair */);
-
-// 3. Sign certificate using YubiKey
-// rcgen supports external signers via custom KeyPair implementations
-let cert = Certificate::from_params(params)?;
-```
-
-**Open Question:** Exact rcgen API for external hardware signing. May require implementing `rcgen::KeyPair` trait or using `serialize_der_with_signer()` if available.
-
-**Confidence:** LOW - API details need verification with current rcgen documentation.
+**WASM compatibility**: All new structs use `serde`, `BTreeMap`, `String`, `Option<f64>`, `u32`, `u8` — all WASM-safe. No changes to `trst-wasm` required unless it has profile-specific code.
 
 ---
 
-## PKCS#11 Integration
+## Recommended Stack (Complete)
 
-### Current State
+### Core Technologies (Unchanged)
 
-- `pkcs11 = "0.5"` - PKCS#11 bindings for Rust
-- Used for YubiKey PIV operations via smart card interface
-- Requires PCSC daemon (pcscd) on Linux/macOS
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Rust | 1.88 (Dockerfile) | Language |
+| `trustedge-core` | workspace | All crypto: XChaCha20, Ed25519, BLAKE3, YubiKey backend |
+| `trustedge-trst-protocols` | workspace | Archive format types |
+| `chacha20poly1305` | `0.10` | Already in workspace — XChaCha20Poly1305 |
+| `aes-gcm` | `0.10.3` | Already in workspace |
+| `yubikey` | `0.7` | Already in core (feature-gated) — no version change |
 
-### Keep vs Replace
+### Supporting Libraries (trst-cli additions)
 
-**Decision: KEEP `pkcs11` 0.5**
+| Library | Version | Purpose | When to Use |
+|---------|---------|---------|-------------|
+| `rpassword` | `7.3` | Interactive PIN prompt without echo | Only when `--backend yubikey` and PIN not in env |
 
-**Rationale:**
-1. Stable API for YubiKey PIV access
-2. Industry-standard smart card interface
-3. No breaking changes anticipated
-4. Hardware integration already working (90+ simulation tests passing)
+### Feature Flags
 
-### PKCS#11 Usage Patterns
-
-**From YUBIKEY-MANUAL-PROTOCOL.md (lines 15-22):**
-
-```
-YubiKey Integration Layers:
-1. PCSC daemon (pcscd) - Smart card interface
-2. PKCS#11 library - Cryptographic token interface
-3. YubiKey PIV - Personal Identity Verification applet
-4. Universal Backend trait - TrustEdge abstraction
-```
-
-### Critical PKCS#11 Initialization Sequence
-
-**From PITFALLS.md (#11, lines 786-795):**
-
-```rust
-/// CRITICAL: Must be called before any PKCS#11 operations.
-///
-/// 1. Load PKCS#11 library (OpenSC or YubiKey Manager)
-/// 2. Initialize PKCS#11 context
-/// 3. Open session to slot 0
-/// 4. Login with PIN
-```
-
-**Rewrite Must Preserve:**
-- Initialization order (documented in code comments)
-- Error handling for hardware-not-present
-- PIN retry limit handling (3 attempts before block)
-- Session management (open/close patterns)
+| Flag | Crate | Controls |
+|------|-------|---------|
+| `yubikey` | `trustedge-trst-cli` | Enables YubiKey backend in CLI; gates on `trustedge-core/yubikey` |
 
 ---
 
-## Additional Dependencies Analysis
+## Cargo.toml Changes
 
-### Keep Current Versions
-
-| Dependency | Version | Purpose | Notes |
-|------------|---------|---------|-------|
-| `der` | 0.7 | DER encoding/decoding | Low-level, stable API |
-| `spki` | 0.7 | SubjectPublicKeyInfo structures | PKCS#8 public key format |
-| `signature` | 2.2 | Signature trait | RustCrypto ecosystem standard |
-
-**Rationale:** These are low-level primitives with stable APIs. No changes needed unless rcgen brings in conflicting versions.
-
-### Dependencies to REMOVE
-
-| Dependency | Why Remove |
-|------------|------------|
-| Manual ASN.1 encoding functions (lines 95-150) | Replaced by rcgen |
-| `x509-cert` builder usage | Migrating to rcgen high-level API |
-
-**Exception:** May keep `x509-cert` if rcgen requires it as transitive dependency, but stop using it directly.
-
----
-
-## Installation
-
-### Workspace Cargo.toml Changes
-
-**NO CHANGES** - Workspace already has shared dependencies defined.
-
-### Core Crate Cargo.toml Changes
+### `crates/trst-cli/Cargo.toml`
 
 ```toml
-[dependencies]
-# ... existing deps ...
-
-# YubiKey hardware backend (feature-gated)
-pkcs11 = { version = "=0.5.0", optional = true }  # Exact version lock
-yubikey = { version = "=0.7.0", optional = true }  # NO untested feature
-rcgen = { version = "0.13", optional = true }     # NEW: X.509 generation
-
-# Certificate/key utilities (keep current versions)
-der = { version = "0.7", optional = true }
-spki = { version = "0.7", optional = true }
-signature = { version = "2.2", optional = true }
-
-# REMOVE x509-cert direct usage (if rcgen doesn't need it)
-# x509-cert = { version = "0.2", features = ["builder"], optional = true }
-
 [features]
-yubikey = [
-    "pkcs11",
-    "dep:yubikey",
-    "rcgen",      # NEW: Replace x509-cert with rcgen
-    "der",
-    "spki",
-    "signature",
-]
+default = []
+yubikey = ["trustedge-core/yubikey"]
+
+[dependencies]
+# existing deps unchanged
+trustedge-core = { path = "../core" }  # unchanged
+
+# Add only if interactive PIN prompt required:
+rpassword = { version = "7.3", optional = true }
 ```
 
-**Confidence:** HIGH - Based on codebase analysis and standard Cargo patterns.
+### `crates/trst-protocols/src/archive/manifest.rs`
+
+No `Cargo.toml` changes — pure Rust struct additions. The `trst-protocols` crate has no new dependencies.
 
 ---
 
 ## Alternatives Considered
 
-### Alternative 1: Keep `untested` Feature
+| Area | Recommended | Alternative | Why Not |
+|------|-------------|-------------|---------|
+| Nonce storage | Prepend 24 bytes to chunk file | Add `nonce` field to `SegmentInfo` in manifest | Manifest field changes canonical JSON, breaks existing archive signatures |
+| YubiKey signature scheme | YubiKey produces separate attestation file | YubiKey signs manifest directly with ECDSA P-256 | Requires algorithm agility in manifest format + `verify_manifest()` refactor; larger scope |
+| PIN prompt | `rpassword` crate | `dialoguer` crate | `rpassword` is single-purpose, minimal deps; `dialoguer` is heavier |
+| Profile metadata | Typed enum variants per profile | `data_type` label in GenericMetadata | Labels already exist; typed variants deliver the schema enforcement the milestone requires |
+| Key management for unwrap | Explicit `--key <path>` file | Derive from device key + HKDF | Explicit file is simpler, auditable, matches how device keys are handled today |
 
-| Pro | Con |
-|-----|-----|
-| No API changes needed | Violates "stable API only" requirement |
-| Already working | Unstable features may break in future |
+## What NOT to Use
 
-**Decision: REJECT** - Milestone constraint explicitly forbids `untested` flag.
-
-### Alternative 2: Use `x509-cert` Instead of rcgen
-
-| Pro | Con |
-|-----|-----|
-| Lower-level control | Requires manual DER encoding (more error-prone) |
-| Already in dependencies | Verbose API, higher complexity |
-
-**Decision: REJECT** - rcgen eliminates manual crypto (DER encoding), follows milestone constraint.
-
-### Alternative 3: yubico-piv-tool Bindings
-
-| Pro | Con |
-|-----|-----|
-| Official Yubico library | C FFI complexity |
-| Comprehensive PIV support | Less Rust-idiomatic |
-
-**Decision: REJECT** - `yubikey` crate already provides Rust-native PIV operations.
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| `age` encryption crate | Would add 10+ new deps; XChaCha20 already in workspace | `chacha20poly1305 = "0.10"` already in trst-cli |
+| OpenPGP / Sequoia | Heavyweight, different threat model | Existing XChaCha20 + nonce-prepend pattern |
+| Post-quantum algorithms | Out of scope per PROJECT.md | Ed25519/XChaCha20 |
+| Algorithm agility in manifest | Scope explosion; breaks stable archive format | Fixed Ed25519 + separate YubiKey attestation |
+| `keyring` crate for key storage | Overkill for CLI unwrap key; platform-specific | Explicit key file (`--key archive.key`) |
 
 ---
 
-## Build Requirements
+## Version Compatibility
 
-### Platform Dependencies (No Changes)
-
-**Linux:**
-```bash
-sudo apt install libpcsclite-dev pkgconf  # Debian/Ubuntu
-sudo dnf install pcsc-lite-devel          # Fedora/RHEL
-```
-
-**macOS:**
-- PCSC framework (built-in, no installation needed)
-
-**Windows:**
-- Smart card service (built-in)
-
-### Runtime Requirements (No Changes)
-
-- PCSC daemon (`pcscd`) must be running before YubiKey operations
-- YubiKey 5 series with PIV applet enabled
-- Default PIN: 123456 (production deployments should change)
-
----
-
-## Version Compatibility Matrix
-
-### Rust Ecosystem Compatibility
-
-| Crate | Version | RustCrypto Ecosystem | NIST Standards |
-|-------|---------|---------------------|----------------|
-| `pkcs11` | 0.5 | Compatible | PKCS#11 v2.40 |
-| `yubikey` | 0.7 (stable) | Uses `signature` 2.x | PIV SP 800-73-4 |
-| `rcgen` | ~0.13 | Uses `signature`, `der`, `spki` | X.509 RFC 5280 |
-| `der` | 0.7 | RustCrypto | ITU-T X.690 |
-| `spki` | 0.7 | RustCrypto | RFC 5280 |
-| `signature` | 2.2 | RustCrypto | Multiple (trait) |
-
-**Confidence:** MEDIUM - Versions based on current codebase + training data. Compatibility should be verified during implementation.
-
-### Expected Transitive Dependencies
-
-rcgen likely brings in:
-- `yasna` or `pem` for encoding
-- `time` for certificate validity periods
-- `ring` or `*-dalek` for signature verification (during cert generation)
-
-**Action Item:** Run `cargo tree -p trustedge-core --features yubikey` after adding rcgen to check for conflicts.
-
----
-
-## Risk Assessment
-
-### High Risk
-
-1. **rcgen version mismatch** - Training data may be outdated, actual latest version unknown
-   - **Mitigation:** Verify rcgen version immediately during implementation
-
-2. **YubiKey stable API insufficient** - Operations needed may require `untested`
-   - **Mitigation:** Audit current `yubikey.rs` usage, verify all ops available in stable API
-
-### Medium Risk
-
-1. **rcgen external signer API** - May not support hardware-backed keys directly
-   - **Mitigation:** Check rcgen docs for `KeyPair` trait implementation or `serialize_der_with_signer()`
-
-2. **PKCS#11 version incompatibility** - Locking to 0.5.0 may conflict with other deps
-   - **Mitigation:** Test with `cargo tree`, resolve conflicts before committing
-
-### Low Risk
-
-1. **Build time increase** - rcgen adds dependency tree
-   - **Mitigation:** Acceptable tradeoff for eliminating manual crypto
-
----
-
-## Integration with Existing Universal Backend
-
-### No Changes Required to Trait
-
-The `UniversalBackend` trait (from `universal.rs`) is stable and doesn't need modification.
-
-### YubiKey Backend Implementation Changes
-
-| Component | Current | After Rewrite |
-|-----------|---------|---------------|
-| Key generation | PIV + manual cert building | PIV + rcgen cert generation |
-| Public key export | Manual DER encoding | rcgen DER serialization |
-| Signing | PKCS#11 CKM_ECDSA | SAME (no change) |
-| Attestation | X.509 parsing | rcgen parsing (if needed) |
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| `chacha20poly1305 = "0.10"` | `aead = "0.5"` | Already pinned in workspace and trst-cli |
+| `yubikey = "0.7"` | `rcgen = "0.13"`, `der = "0.7"`, `spki = "0.7"` | Already in core feature; no version change |
+| `rpassword = "7.3"` | No workspace conflicts | No transitive crypto deps; OS-level terminal I/O only |
 
 ---
 
 ## Sources
 
-### Codebase Analysis (HIGH Confidence)
-
-- `/home/john/vault/projects/github.com/trustedge/crates/core/Cargo.toml` - Current dependencies
-- `/home/john/vault/projects/github.com/trustedge/crates/core/src/backends/yubikey.rs` - Implementation patterns
-- `/home/john/vault/projects/github.com/trustedge/.planning/phases/08-validation/YUBIKEY-MANUAL-PROTOCOL.md` - Hardware integration requirements
-- `/home/john/vault/projects/github.com/trustedge/.planning/research/PITFALLS.md` - Dependency locking rationale
-
-### Training Data (MEDIUM-LOW Confidence)
-
-- rcgen version (~0.13) - Training data from January 2025, should be verified
-- YubiKey crate stable API surface - Based on typical Rust crate patterns
-- PKCS#11 integration patterns - Industry-standard practices
-
-### Standards Referenced (HIGH Confidence)
-
-- NIST SP 800-73-4 (PIV Card Application)
-- PKCS#11 v2.40 Specification
-- RFC 5280 (X.509 Certificate Profile)
-- ITU-T X.690 (DER Encoding)
+- Codebase analysis (HIGH confidence): `crates/trst-cli/src/main.rs`, `crates/core/src/crypto.rs`, `crates/core/src/archive.rs`, `crates/trst-protocols/src/archive/manifest.rs`, `crates/core/src/backends/yubikey.rs`, `Cargo.toml` (workspace)
+- `.planning/PROJECT.md` — confirmed Active requirements and Out of Scope constraints (HIGH confidence)
+- XChaCha20 nonce-prepend pattern: standard practice per libsodium and NaCl documentation (HIGH confidence, well-established)
+- `rpassword` v7 — current version confirmed by crates.io search (MEDIUM confidence — training data; validate with `cargo add rpassword` to confirm latest)
 
 ---
 
-## Open Questions for Implementation Phase
-
-1. **rcgen exact version:** What is the actual latest stable version as of 2026-02-11?
-2. **rcgen external signer API:** How to integrate hardware-backed key signing with rcgen?
-3. **YubiKey stable API coverage:** Does stable API provide ALL operations needed for Universal Backend?
-4. **Certificate validation:** Should we add `webpki` or similar for certificate chain validation?
-
-**Recommendation:** Dedicate first implementation task to dependency verification and API compatibility testing.
-
----
-
-## Success Criteria
-
-Stack is validated when:
-
-- [ ] rcgen version confirmed current and compatible
-- [ ] YubiKey backend compiles WITHOUT `untested` feature
-- [ ] All manual DER encoding removed
-- [ ] X.509 certificate generation works with rcgen
-- [ ] `cargo tree` shows no dependency conflicts
-- [ ] 90+ simulation tests still pass
-- [ ] Hardware signing operations work (manual protocol validation)
-- [ ] Build time increase < 20% (acceptable for safety improvement)
-
-**Final Confidence Assessment:**
-
-| Area | Confidence | Reason |
-|------|------------|--------|
-| PKCS#11/YubiKey deps | HIGH | Existing codebase, stable usage |
-| rcgen version | LOW | Training data may be outdated |
-| rcgen API | MEDIUM | Standard patterns, but external signer needs verification |
-| Integration approach | HIGH | Universal Backend trait is stable |
-| Overall Stack | MEDIUM | Core deps solid, rcgen details need verification |
-
----
-
-*Research completed: 2026-02-11*
-*Researcher: GSD Project Research Agent*
-*Next step: Implementation phase should verify rcgen version and API compatibility FIRST*
+*Stack research for: TrustEdge v2.1 Data Lifecycle & Hardware Integration*
+*Researched: 2026-03-15*

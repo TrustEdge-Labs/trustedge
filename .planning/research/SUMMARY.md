@@ -1,288 +1,201 @@
-<!--
-Copyright (c) 2025 TRUSTEDGE LABS LLC
-MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
--->
-
 # Project Research Summary
 
-**Project:** TrustEdge v1.1 YubiKey Integration Overhaul
-**Domain:** Hardware cryptographic backend (YubiKey PIV)
-**Researched:** 2026-02-11
-**Confidence:** MEDIUM-HIGH
+**Project:** TrustEdge v2.1 — Data Lifecycle & Hardware Integration
+**Domain:** Rust crypto workspace — archive decryption CLI, YubiKey CLI signing, named archive profiles
+**Researched:** 2026-03-15
+**Confidence:** HIGH
 
 ## Executive Summary
 
-The YubiKey backend rewrite involves replacing a broken 3,263-line implementation that uses manual cryptography, software fallbacks, and placeholder keys with a clean, fail-closed architecture. Research reveals the current implementation has critical security vulnerabilities: 93 occurrences of "placeholder" code, 41 instances of software fallback logic, and extensive manual ASN.1/DER encoding (lines 95-200). The recommended approach eliminates the `yubikey` crate's `untested` feature flag, migrates from manual DER encoding to `rcgen` for certificate generation, and maintains strict PKCS#11-based hardware integration with fail-closed error handling.
+TrustEdge v2.1 completes the data lifecycle for the `.trst` archive format by adding three tightly-scoped features: `trst unwrap` (archive decryption and reassembly), YubiKey hardware signing in `trst wrap`/`trst verify`, and three named archive profiles (sensor, audio, log). All three features are implementable entirely within the existing dependency set — the workspace already contains XChaCha20Poly1305, Ed25519, BLAKE3, HKDF, the YubiKey PIV backend, and the `ProfileMetadata` enum extensibility point. The only candidate new dependency is `rpassword` (interactive PIN prompt for YubiKey), and only if ENV-variable PIN supply is insufficient. No breaking changes to the manifest format are required; the signature format extension (`"ecdsa-p256:<base64>"`) is additive alongside the existing `"ed25519:..."` path.
 
-The rewrite targets 500-800 lines (75% reduction) by using battle-tested libraries exclusively: `rcgen` for X.509 certificate generation, `pkcs11` for hardware operations, and `der`/`spki` from RustCrypto for encoding. Architecture follows the existing Universal Backend pattern, requiring no trait changes. The key constraint is absolute: hardware unavailable must return errors, never silently fallback to software crypto. All tests must exercise actual functionality with hardware or be properly separated as simulation tests.
+The recommended approach is to resolve key management first, then build profiles, then wire YubiKey. The hardcoded demo encryption key in `trst wrap` (`0123456789abcdef...`) is the single most dangerous open issue: `trst unwrap` cannot ship until wrap is fixed to use a real key. The recommended fix is HKDF-SHA256 derivation of the XChaCha20Poly1305 chunk key from the Ed25519 signing key (domain tag `"TRUSTEDGE_TRST_CHUNK_KEY"`), allowing a single `--device-key` file to serve both wrap and unwrap with no additional key management burden. This directly mirrors the v1.8 envelope KDF design and eliminates dual key management entirely. The YubiKey feature brings a distinct constraint: PIV hardware only supports ECDSA P-256, not Ed25519, so hardware-signed archives need a separate signature format alongside the existing Ed25519 path.
 
-Critical risks center on three areas: (1) rcgen's custom signing API for hardware-backed keys may require complex callback integration, (2) PKCS#11 session management leaks if not using RAII patterns, and (3) test infrastructure must distinguish simulation (always-run) from strict hardware tests (gated with `#[ignore]`). The recommended phase structure starts with core backend rewrite (remove fallbacks, eliminate manual crypto), followed by test infrastructure (strict hardware tests + proper simulation), and concludes with documentation and integration testing.
+The primary risks are not cryptographic — the primitives are proven and already in the codebase. The risks are architectural: silently keeping the demo key, adding profile names without updating `validate()`, adding YubiKey backend depth before the CLI wire-up exists, and confusing the Envelope system's deterministic HKDF nonces with the `.trst` system's random per-chunk nonces (which are stored with the ciphertext). All six critical pitfalls are preventable with specific ordering of design decisions before code is written.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack overhaul eliminates unstable dependencies and manual cryptography in favor of battle-tested libraries. Current implementation uses the `yubikey` crate with the `untested` feature flag (forbidden by milestone constraints) and manual ASN.1/DER encoding for certificates (150+ lines of fragile code in yubikey.rs lines 95-200).
+All three features are implementable with no new crate dependencies beyond a possible `rpassword` addition for interactive YubiKey PIN prompts. The stack is stable and does not require any version changes. The only `Cargo.toml` change needed is adding a `yubikey` feature flag to `trustedge-trst-cli` that gates on `trustedge-core/yubikey`, following the identical pattern used by `trustedge-platform`.
 
-**Core technologies:**
-- `rcgen ~0.13` — X.509 certificate generation with hardware signing support. Eliminates manual DER encoding, provides NIST-compliant certificate builder. HIGH confidence for approach, LOW confidence for exact version (training data from January 2025).
-- `pkcs11 =0.5.0` — PKCS#11 interface for hardware operations. Exact version lock prevents transitive dependency conflicts (Pitfall #11). Already working with 90+ simulation tests.
-- `yubikey =0.7.0` (NO `untested` feature) — YubiKey PIV operations via stable API only. Remove `untested` feature flag to meet milestone requirements.
-- `der 0.7`, `spki 0.7`, `signature 2.2` — RustCrypto ecosystem for encoding and signature traits. Keep current versions (stable, compatible).
+**Core technologies (unchanged):**
+- `trustedge-core` — All crypto: XChaCha20Poly1305, Ed25519, BLAKE3, HKDF, YubiKey backend; everything needed is already here
+- `trustedge-trst-protocols` — Archive format types, canonical serialization, profile metadata; extensibility point for new profiles
+- `chacha20poly1305 = "0.10"` — Already in workspace; used for `.trst` chunk encryption (not AES-GCM — that is the Envelope system)
+- `yubikey = "0.7"` — Already in core (feature-gated, no `untested` flag); ECDSA P-256 / RSA-2048 PIV signing fully implemented
 
-**Dependencies to REMOVE:**
-- Manual ASN.1/DER encoding functions (lines 95-150 in yubikey.rs)
-- `x509-cert` direct usage (migrate to rcgen high-level API)
-- `yubikey` crate with `untested` feature (use stable API only)
+**Possible addition (Phase 3 only):**
+- `rpassword = "7.3"` — Interactive terminal PIN prompt without echo; single-purpose, minimal transitive deps; only needed if interactive PIN is in scope for YubiKey CLI
 
-**Build requirements unchanged:** PCSC daemon (pcscd) on Linux/macOS, smart card service on Windows. Runtime requires YubiKey 5 series with PIV applet enabled.
+**Feature flag addition required:**
+- `yubikey` feature in `trustedge-trst-cli/Cargo.toml` gating on `trustedge-core/yubikey` — follows the identical pattern already used by `trustedge-platform`
 
 ### Expected Features
 
-Research identifies clear table stakes (must-have), differentiators (competitive advantage), and anti-features (commonly requested but problematic).
+All six v2.1 features are P1 priority. There are no ambiguous prioritization decisions.
 
 **Must have (table stakes):**
-- Ed25519, ECDSA P-256, RSA-2048 signing via PIV slots
-- Public key extraction from hardware
-- PIV slot enumeration (9a/9c/9d/9e)
-- Fail-closed hardware check — MUST error if hardware unavailable, never silent fallback
-- PKCS#11 session management with proper cleanup
-- Certificate management (read existing certs from PIV slots)
-- Hardware-specific error handling — distinguish "no hardware", "wrong PIN", "slot empty", "operation failed"
+- `trst unwrap` — decrypt and reassemble archive to output file; if wrap exists, unwrap must exist; asymmetric tools feel broken to operators
+- `trst unwrap` verify-before-decrypt — validate signature and continuity chain before handing back any plaintext; never decrypt unauthenticated ciphertext
+- `trst verify` accepts ECDSA P-256 public keys — required for YubiKey-signed archives to be usable at all
+- `trst wrap --backend yubikey` — hardware-backed signing is the core value of YubiKey integration
+- Named profile: `sensor` — typed `SensorMetadata` with sample_rate_hz, unit, sensor_type, labels; distinct from generic
+- Named profile: `audio` — typed `AudioMetadata` with sample_rate_hz, bit_depth, channels, codec; aligned with existing `audio.rs` capture module
+- Named profile: `log` — typed `LogMetadata` with log_level, source, format; lowest complexity of the three
 
-**Should have (competitive):**
-- Hardware attestation — cryptographic proof operation happened in hardware (HIGH complexity, defer to v1.x)
-- Certificate generation (self-signed) — use rcgen with hardware signing (HIGH complexity, needed for TLS integration)
-- PIN caching (secure) — cache PIN in memory with zeroize for session duration (MEDIUM complexity, UX enhancement)
-- Multi-slot operations — use different PIV slots for different purposes (LOW complexity, already supported by PIV)
-- Verbose diagnostics mode — config flag for debugging hardware issues (LOW complexity, include in v1)
+**Should have (v2.1 if capacity):**
+- HKDF key derived from signing key — eliminates dual key management; `trst wrap --device-key` and `trst unwrap --device-key` use the same file
+- Distinct exit codes for unwrap failure modes (10 = wrong key/signature, 11 = corrupt chunk, 12 = invalid structure)
+- `--yubikey-slot` flag — thin wrapper over existing `YubiKeyConfig.default_slot`; operators with multiple slots need this
 
-**Defer (v2+):**
-- Key generation on-device — requires PIV management key handling, initialization flows
-- RSA-4096 support — slower, less common, defer unless compatibility requirement emerges
-- Certificate revocation checking — complex OCSP/CRL integration
-- Smart card reader auto-detection — handle multiple readers, auto-select YubiKey
+**Defer (v2.x+):**
+- `trst unwrap --key-hex` escape hatch — add after HKDF derivation proves sufficient
+- Profile-specific post-decrypt validation — add when profiles are stable and consumers report gaps
+- WASM unwrap — requires key delivery mechanism not yet designed
+- Streaming unwrap — current archive sizes make full-load acceptable
 
-**Anti-features (FORBIDDEN):**
-- Software fallback — silently downgrades security, user thinks they have hardware protection but don't
-- Placeholder keys — insecure test vectors that ship to production (current implementation has 93 occurrences)
-- Manual crypto (DER encoding) — bug-prone, unaudited, violates "battle-tested only" rule
-- Auto-generated PINs — defeats YubiKey security model
-- Tests that don't test anything — auto-pass stubs, always `Ok(())` without assertions
+**Anti-features (do not build):**
+- Decrypt without verification — defeats the value proposition entirely
+- Ed25519 on YubiKey — PIV hardware does not support it; the crate's `untested` feature flag is explicitly off-limits
+- YubiKey as encryption backend — PIV does not expose symmetric crypto operations
+- Separate per-chunk encryption keys — massive storage overhead, no practical security benefit given BLAKE3 continuity chain
 
 ### Architecture Approach
 
-The rewrite integrates into existing Universal Backend architecture at `crates/core/src/backends/`. No changes to the `UniversalBackend` trait required. Architecture separates three layers: hardware operations (yubikey crate wrapper), certificate generation (rcgen integration), and Universal Backend integration (trait implementation + error handling).
+The codebase follows a monolith-core / thin-shell architecture: all crypto and archive logic lives in `trustedge-core`, and `trustedge-trst-cli` is pure argument parsing, file I/O, and output formatting. New code must respect this boundary. `decrypt_archive()` belongs in `trustedge-core::archive`, not in `handle_unwrap()`. `sign_manifest_ecdsa()` belongs in `trustedge-core::crypto`. The CLI handlers call core functions and format output. The YubiKey backend (`YubiKeyBackend` in `crates/core/src/backends/yubikey.rs`) is already fully implemented and tested — no changes needed there. The workspace build order flows from lowest-level types to CLI:
 
-**Major components:**
-1. **YubiKeyBackend struct** (~150 lines) — Configuration (PIN, default slot, verbose flag), YubiKey connection lifecycle, optional key cache for performance
-2. **Hardware operations layer** (~200 lines) — PIV signing, public key extraction, attestation. Thin wrapper around `yubikey` crate with fail-closed error conversion
-3. **Certificate generation layer** (~150 lines) — rcgen integration with custom `KeyPair` implementation that delegates signing to YubiKey hardware
-4. **UniversalBackend implementation** (~150 lines) — Maps `CryptoOperation` enum to hardware ops (Sign, GetPublicKey, GenerateKeyPair, Attest), explicit unsupported operation handling
-5. **Error conversion** (~50 lines) — Convert `yubikey::Error` to `BackendError` variants with user-actionable messages
-6. **Helper functions and tests** (~100 lines) — Slot parsing, capability reporting, inline unit tests
-
-**Target:** 500-800 lines total (vs 3,263 current), single file `backends/yubikey.rs` following `software_hsm.rs` pattern (1,419 lines, works well).
-
-**Data flow (signing operation):**
 ```
-perform_operation(key_id="9c", Sign{data, algorithm})
-  → Parse slot "9c" → PivSlot::Signature
-  → Validate algorithm supported
-  → Hash data with SHA256
-  → Authenticate with PIN
-  → yubikey.sign_data(slot, digest, algorithm)
-  → Return CryptoResult::Signed(signature)
-  → ALL errors → BackendError::HardwareError (fail-closed)
+trustedge-trst-protocols (types) -> trustedge-core (crypto/archive) -> trustedge-trst-cli (CLI)
 ```
 
-**Certificate generation flow:**
-```
-generate_certificate(slot, subject)
-  → Extract public key from YubiKey
-  → Create rcgen CertificateParams
-  → Wrap as CustomKeyPair (delegates signing to YubiKey)
-  → rcgen generates TBS cert → calls CustomKeyPair::sign()
-  → YubiKey signs TBS data
-  → rcgen assembles certificate DER
-  → Return certificate_der
-```
+**Major components and v2.1 changes:**
+1. `trustedge-trst-protocols` — Add `SensorMetadata`, `AudioMetadata`, `LogMetadata` structs; add three variants to `ProfileMetadata` enum; update `validate()` and `serialize_canonical()`
+2. `trustedge-core::archive` — Add `decrypt_archive()` that calls `decrypt_segment` per chunk; keeps decryption logic in core, reusable by future WASM consumers
+3. `trustedge-core::crypto` — Add `sign_manifest_ecdsa()` and `verify_manifest_ecdsa()` for ECDSA P-256 path alongside existing Ed25519 functions
+4. `trustedge-trst-cli` — Add `Unwrap` subcommand; add `--backend [software|yubikey]` flag to `WrapCmd`/`VerifyCmd`; add profile-specific metadata flags; add `yubikey` feature gate
+
+**Components unchanged:** `YubiKeyBackend`, `read_archive()`, `write_archive()`, `validate_archive()`, `TrstManifest` struct, `trustedge-platform` verify handler (operates on `serde_json::Value`, profile-agnostic), `trustedge-trst-wasm` (may need rebuild but no logic change)
 
 ### Critical Pitfalls
 
-Research identified 8 critical and 3 moderate pitfalls from codebase analysis (93 "placeholder" occurrences, 41 "fallback" instances, 1000+ lines manual DER encoding).
+1. **Hardcoded demo key vs. real unwrap** — `trst wrap` uses `b"0123456789abcdef0123456789abcdef"` (line 287 of trst-cli/main.rs). Fix wrap's key derivation and implement unwrap in the same atomic phase. Resolve key management strategy as the first design decision before writing a single line of unwrap logic.
 
-1. **Silent fallback to software crypto** — Current implementation has 41 fallback instances. Hardware unavailable silently uses software keys, user believes they have hardware security but don't. Prevention: Fail-closed architecture, zero placeholder implementations in production, capability checks verify actual hardware state. Phase 1 must eliminate all fallback logic.
+2. **Profile validation hard-rejects new profile names** — `TrstManifest::validate()` (line 367 of manifest.rs) hard-errors on anything other than `"generic"` or `"cam.video"`. Update `validate()` as the first code change in the named profiles phase. Run `cargo test -p trustedge-trst-protocols` before any CLI work.
 
-2. **Manual ASN.1/DER encoding** — Lines 95-200 in yubikey.rs contain handwritten ASN.1 INTEGER/SEQUENCE encoding. Subtle encoding bugs, security vulnerabilities (integer overflow), incompatibility with parsers. Prevention: NEVER implement ASN.1/DER manually, use `rcgen` for certificates, `der`/`spki` for low-level encoding. Phase 1 migrates to rcgen entirely.
+3. **Canonical serialization breaks silently on new enum variants** — `serialize_canonical()` manually controls JSON field ordering. A new `ProfileMetadata` variant with wrong field order compiles and signs but fails verification. Write a fixture test pinning canonical JSON before adding any new enum variant.
 
-3. **Hardcoded test vectors as placeholder keys** — Current implementation has 93 "placeholder" occurrences, using NIST test vectors in backend code. Catastrophic if private key found, reproducible certificates, false security theater. Prevention: Zero tolerance for hardcoded keys in `src/backends/`, test vectors in `tests/` only, fail with `BackendError::HardwareUnavailable` when hardware missing. Phase 1 removes all placeholder keys.
+4. **ECDSA P-256 vs Ed25519 signature format incompatibility** — YubiKey returns DER-encoded ECDSA bytes; `trst verify` accepts only `"ed25519:<base64>"` prefixed strings. Decide the manifest signature format (`"ecdsa-p256:<base64>"`) before writing any YubiKey CLI code. The acceptance criterion: `trst verify` exits 0 on a YubiKey-signed archive.
 
-4. **Tests that don't test anything** — Auto-pass tests (always `Ok(())` without assertions), mocked success stubs, "does it panic?" tests. Prevention: Every test must have assertions about actual output, hardware tests use `#[ignore]` + strict failure if hardware absent, simulation tests check API contracts not hardware ops. Phase 2 implements strict test infrastructure.
+5. **Backend depth before CLI breadth** — Project history (v1.1 scorched-earth rewrite) shows a repeating pattern of building backend depth before any CLI exposes it to users. For YubiKey CLI, start from the CLI contract and work backward; do not add new `UniversalBackend` methods or `CryptoOperation` variants that are not called by the CLI in the same phase.
 
-5. **PKCS#11 session management leaks** — Resource exhaustion (max 16-32 sessions per slot), stale sessions after hardware removal, login state confusion. Prevention: RAII pattern (session guard with Drop), open → operate → close (never cache long-term), logout before close_session. Phase 1 implements session guard pattern.
+6. **YubiKey PIN not prompted** — `YubiKeyBackend::verify_pin()` requires PIN in config; if absent it returns a library-internal error. Implement PIN acquisition (stdin prompt via `rpassword` or `TRUSTEDGE_YUBIKEY_PIN` env variable) as part of the initial YubiKey CLI implementation, not as a follow-up.
 
 ## Implications for Roadmap
 
-Based on research, recommended 3-phase structure with clear dependencies and pitfall avoidance:
+Based on combined research, three phases are recommended. They follow the codebase build order (protocols -> core -> CLI), address design decisions before code in each phase, and map directly to the pitfall checklist in PITFALLS.md.
 
-### Phase 1: Core Backend Rewrite
-**Rationale:** Foundation phase eliminates security vulnerabilities before any feature work. Addresses pitfalls #1-3, #5 (silent fallbacks, manual crypto, placeholder keys, session leaks). Dependencies: rcgen, pkcs11 (both already in workspace or well-documented). Architecture is well-defined (500-800 line target, follows software_hsm.rs pattern).
+### Phase 1: Named Archive Profiles
 
-**Delivers:**
-- New YubiKeyBackend struct with config (PIN, slot, verbose)
-- PIV hardware operations (sign, get_public_key, attest) with fail-closed error handling
-- rcgen certificate generation with custom hardware signer
-- UniversalBackend trait implementation
-- PKCS#11 session guard with proper Drop cleanup
-- Zero placeholder keys, zero software fallbacks, zero manual DER encoding
+**Rationale:** `trustedge-trst-protocols` has no upstream workspace dependencies, making it the natural starting point. Profile types are pure data definitions — no runtime risk, no hardware dependency, no key management complexity. Completing this phase unblocks the profile-specific CLI argument work that overlaps with unwrap and YubiKey. Most critically, updating `validate()` here eliminates Pitfall 2 before any other work can accidentally create archives that hard-fail on verification.
 
-**Addresses features:**
-- Ed25519/ECDSA P-256/RSA-2048 signing (table stakes)
-- Public key extraction (table stakes)
-- PIV slot enumeration (table stakes)
-- Fail-closed hardware check (table stakes)
-- PKCS#11 session management (table stakes)
-- Verbose diagnostics mode (should-have, LOW complexity)
+**Delivers:** Three new typed `ProfileMetadata` variants (`Sensor`, `Audio`, `Log`) with validated structs, extended `validate()`, updated `serialize_canonical()`, canonical JSON fixture tests (pinned output), and CLI flags for profile-specific metadata fields in `trst wrap`.
 
-**Avoids pitfalls:**
-- Silent fallback (#1) — architecture enforces fail-closed
-- Manual crypto (#2) — rcgen for all certificate operations
-- Placeholder keys (#3) — errors on hardware unavailable
-- Session leaks (#5) — RAII guard pattern
+**Addresses:** Named profile features (sensor, audio, log) from FEATURES.md
 
-**Research needed:** Medium. rcgen custom signer API (callback-based, complex control flow) needs investigation. PKCS#11 key attribute extraction may vary by YubiKey firmware version.
+**Avoids:** Pitfall 2 (profile name rejection) and Pitfall 3 (canonical serializer divergence) — both resolved before CLI or cryptographic work begins
 
-### Phase 2: Test Infrastructure
-**Rationale:** Cannot validate Phase 1 without proper test infrastructure. Current tests have auto-pass stubs, no hardware validation. Must separate simulation tests (always-run, no hardware) from strict hardware tests (require YubiKey, gated with `#[ignore]`). Addresses pitfall #4 (tests that don't test) and #8 (feature flag testing gaps in CI).
+**Key design decision to lock first:** Whether to use typed enum variants (recommended for schema enforcement) or labeled strings in `GenericMetadata` (lower risk if `#[serde(untagged)]` disambiguation becomes complex). Each new variant must have at least one required field not present in `Generic` for unambiguous serde deserialization.
 
-**Delivers:**
-- Simulation tests (unit) — capability reporting, slot parsing, error mapping, config validation (no hardware required)
-- Strict hardware tests (integration) — real signing with YubiKey, certificate generation, PIN authentication, slot enumeration (requires `#[ignore]`)
-- Anti-pattern tests — verify no software fallback, no placeholder keys, hardware tests fail without YubiKey
-- CI configuration — unit tests always run, integration tests run with `--ignored` on hardware-equipped runners
-- Test documentation — which tests require hardware, expected YubiKey state (e.g., "slot 9a must have Ed25519 key")
+**Research flag:** Standard patterns — struct additions to an existing enum, serde serialization, well-documented. Does not need `/gsd:research-phase`. The `CamVideoMetadata` struct is a working template for the three new structs.
 
-**Uses stack:**
-- YubiKey backend from Phase 1
-- Test harness patterns from existing yubikey_strict_hardware.rs
-- CI setup already has cargo-hack for feature powerset testing
+---
 
-**Implements architecture:**
-- Test file structure: `tests/yubikey_backend_unit.rs` (always-run), `tests/yubikey_backend_integration.rs` (hardware-required)
-- Test gating: `#[ignore]` for hardware tests, `YUBIKEY_HARDWARE_TEST_MUTEX` for sequential execution
-- Hardware detection: `YubikeyTestEnvironment::detect()`, skip gracefully if no hardware in unit tests, fail in integration tests
+### Phase 2: Archive Decryption (`trst unwrap`)
 
-**Avoids pitfalls:**
-- Tests that don't test (#4) — every test has >=1 assertion validating actual behavior
-- Feature flag testing gaps (#8) — CI fails if feature enabled but deps missing, strict test tier enforced
+**Rationale:** `trst unwrap` is self-contained (no hardware dependency, no manifest format change) and delivers the highest immediate user value — completing the data lifecycle symmetry. It depends on Phase 1 (so profile validation does not reject archives) but has no dependency on YubiKey. This ordering allows hardware-independent testing and a clean decryption implementation before the more complex format-change decisions required by YubiKey signing.
 
-**Research needed:** Low. Testing patterns well-established in codebase (existing yubikey test files), standard Rust testing practices.
+**Delivers:** Fixed `trst wrap` key derivation (HKDF-SHA256 from device signing key, domain tag `"TRUSTEDGE_TRST_CHUNK_KEY"`); `decrypt_archive()` in `trustedge-core::archive`; `trst unwrap` subcommand with verify-before-decrypt, plaintext output file, BLAKE3 hash re-verification after decryption, overwrite guard (`--force`), and distinct exit codes. Both wrap and unwrap updated atomically in the same phase.
 
-### Phase 3: Documentation and Integration Testing
-**Rationale:** Phase 1+2 deliver working backend + validated tests. Phase 3 ensures usability (docs) and validates integration with existing TrustEdge systems (network transport, envelope encryption). Deferred features (attestation, certificate generation for TLS) not included in v1.1 scope.
+**Addresses:** `trst unwrap` table stakes from FEATURES.md; key derivation design
 
-**Delivers:**
-- Updated CLAUDE.md with YubiKey backend patterns, build instructions
-- README.md section on hardware backend usage
-- Example code for YubiKey backend initialization, signing operations
-- Integration tests with network transport (client/server with YubiKey backend)
-- Error message improvements based on usability testing
-- Performance baseline (operation latency with YubiKey vs software_hsm)
+**Avoids:** Pitfall 1 (hardcoded demo key) — must be resolved atomically; wrap and unwrap updated together
 
-**Uses stack:**
-- YubiKey backend from Phase 1
-- Test infrastructure from Phase 2
-- Existing network transport (TCP/QUIC) for integration validation
+**Key design decision to lock first:** HKDF-derived key vs. explicit `--key` file. HKDF is recommended (matches Envelope v1.8 design, eliminates dual key management, uses domain separation). Note: XChaCha20Poly1305 nonces are random per-chunk at wrap time and stored alongside the ciphertext — they are not reconstructible and do NOT use the deterministic counter-nonce approach of the Envelope v2 system.
 
-**Implements architecture:**
-- No new components, validates existing integration points
-- Error message mapping (PKCS#11 codes → user-actionable messages)
-- Performance profiling (identify slow operations, document expected latency)
+**Research flag:** Does not need `/gsd:research-phase`. HKDF derivation pattern is modeled on `envelope.rs` v1.8, already in the workspace. The key decision (HKDF vs. explicit file) should be confirmed in requirements since it affects backward compatibility with any v2.0 demo archives.
 
-**Avoids pitfalls:**
-- UX pitfalls from PITFALLS.md — cryptic error codes → human messages, no blocking ops in async, feedback during slow operations
+---
 
-**Research needed:** None. Documentation patterns established, integration testing uses existing network stack.
+### Phase 3: YubiKey CLI Integration
+
+**Rationale:** YubiKey integration is the most complex feature due to the Ed25519/ECDSA P-256 algorithm mismatch, signature format design decision, and hardware-dependent testing. Placed last because: (1) the YubiKey backend is already complete — only the CLI wire-up is missing; (2) the signature format extension to `trst verify` should not be in-flight during unwrap development; (3) hardware-dependent acceptance tests require a physical YubiKey device. Phases 1 and 2 can be fully validated before hardware testing begins.
+
+**Delivers:** `--backend [software|yubikey]` flag on `trst wrap` and `trst verify`; `sign_manifest_ecdsa()` and `verify_manifest_ecdsa()` in `trustedge-core::crypto`; `"ecdsa-p256:<base64>"` signature format (additive alongside Ed25519); `yubikey` feature flag in `trustedge-trst-cli`; PIN acquisition via stdin prompt or `TRUSTEDGE_YUBIKEY_PIN`; fail-closed hardware-absent error (preserving existing `ensure_connected()` message); optional `--yubikey-slot` flag.
+
+**Addresses:** YubiKey CLI signing and verify features from FEATURES.md
+
+**Avoids:** Pitfall 4 (ECDSA/Ed25519 incompatibility — format decided before code), Pitfall 5 (PIN not prompted), Pitfall 6 (backend depth before CLI breadth)
+
+**Key design decision to lock first:** Precise manifest signature format for ECDSA P-256. Recommendation: store as `"ecdsa-p256:<base64_der>"` in the existing `signature` field alongside a `signature_algorithm` discriminant, OR as a separate `ecdsa_signature` manifest field. Either approach must be locked in the plan before any implementation begins.
+
+**Research flag:** Needs attention during planning. Confirm whether the `p256` crate (RustCrypto ecosystem) is needed for the verification-side ECDSA P-256 path, and check for version conflicts with existing workspace deps (`elliptic-curve`, `k256`). Low risk — well-maintained crate family — but verify before coding.
+
+---
 
 ### Phase Ordering Rationale
 
-- **Phase 1 first:** Cannot build features on broken foundation. Security vulnerabilities (fallbacks, placeholder keys, manual crypto) must be eliminated before any feature work. Dependencies are clear (rcgen, pkcs11), architecture is well-defined (500-800 lines, follows existing patterns).
-
-- **Phase 2 before Phase 3:** Cannot document or integrate without validated implementation. Tests verify Phase 1 correctness before exposing to users or integrating with other systems. Strict hardware tests catch bugs that simulation tests miss.
-
-- **Phase 3 last:** Documentation and integration assume working, tested backend. Usability improvements (error messages, examples) build on stable API from Phase 1. Deferred features (attestation, TLS cert generation) explicitly out of scope for v1.1.
-
-- **Dependencies discovered:** rcgen custom signer API is only unknown (Phase 1 research flag). PKCS#11 session management, PIV operations, test patterns all well-documented in existing codebase or RustCrypto ecosystem.
-
-- **Grouping based on architecture:** Hardware layer (Phase 1), validation layer (Phase 2), integration layer (Phase 3). Clean separation of concerns matches Universal Backend design.
-
-- **Pitfall avoidance:** Phase 1 eliminates critical security pitfalls (#1-3, #5), Phase 2 addresses testing pitfalls (#4, #8), Phase 3 addresses UX pitfalls. Sequential phases prevent cascading failures (e.g., can't fix tests before fixing implementation).
+- Protocols-first follows the workspace build order dependency graph (`trst-protocols` has no workspace deps; `trustedge-core` depends on it; `trst-cli` depends on core)
+- Unwrap before YubiKey keeps hardware-independent features deployable early and avoids touching `trst verify`'s signature dispatch code twice (once for profiles, once for ECDSA)
+- Each phase locks its critical design decision as the first task: profile variant strategy, key management strategy, signature format strategy — preventing the "looks done but isn't" failure modes in PITFALLS.md
+- The ordering maps cleanly to the pitfall-to-phase table in PITFALLS.md: Phase 1 resolves pitfalls 2-3, Phase 2 resolves pitfall 1, Phase 3 resolves pitfalls 4-6
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
+Phases needing attention during planning (design decisions before code):
+- **Phase 2 (unwrap):** Key management decision (HKDF vs. explicit file) must be confirmed in requirements; backward compatibility note for v2.0 demo archives that used the hardcoded key
+- **Phase 3 (YubiKey):** Signature format for ECDSA P-256 in manifest must be specified precisely before implementation; confirm `p256` crate availability and workspace version compatibility
 
-- **Phase 1:** rcgen custom signer callback — Complex control flow, need to understand TBS certificate signing exactly. Callback-based API requires understanding how rcgen invokes hardware signing during certificate generation. MEDIUM priority, well-documented in rcgen examples but complex integration pattern.
-
-- **Phase 1:** PKCS#11 key attribute extraction — Different YubiKey firmware versions may return different formats (raw vs DER for public keys). Need to normalize at extraction point. LOW priority, can be addressed during implementation with hardware testing.
-
-Phases with standard patterns (skip research-phase):
-
-- **Phase 2:** Testing patterns well-established in codebase (existing yubikey test files), standard Rust testing with `#[ignore]` and `cargo test --features yubikey`. No additional research needed.
-
-- **Phase 3:** Documentation follows existing CLAUDE.md patterns, integration testing uses established network transport (TCP/QUIC). No additional research needed.
+Phases with standard patterns (research-phase not needed):
+- **Phase 1 (named profiles):** Struct additions and serde enum extension are well-documented Rust patterns; `CamVideoMetadata` is a working template; no external research needed
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | MEDIUM | PKCS#11/YubiKey deps HIGH (existing codebase, stable), rcgen version LOW (training data may be outdated), rcgen API MEDIUM (standard patterns but external signer needs verification) |
-| Features | HIGH | Based on codebase analysis (Universal Backend trait, existing implementations), PIV standard operations (NIST SP 800-73-4), clear table stakes vs differentiators |
-| Architecture | HIGH | Existing Universal Backend pattern is stable, codebase analysis shows 500-800 line target feasible, integration points well-defined, no trait changes needed |
-| Pitfalls | HIGH | Direct observation in codebase (93 "placeholder", 41 "fallback", 1000+ lines manual DER), improvement-plan.md security findings, PKCS#11 specification session limits |
+| Stack | HIGH | All conclusions from direct codebase inspection; zero new dependencies for two of three features; no external library version research needed |
+| Features | HIGH | Feature list derived from codebase state and PROJECT.md requirements; anti-features clearly documented from v1.1 YubiKey constraints already established |
+| Architecture | HIGH | Build order and component boundaries confirmed by reading actual source files; no inference required; existing YubiKey backend eliminates hardware uncertainty |
+| Pitfalls | HIGH | All six critical pitfalls traceable to specific line numbers in the live codebase (line 287 demo key, line 367 profile allowlist, lines 227-291 canonical serializer) |
 
-**Overall confidence:** MEDIUM-HIGH
-
-Core approach is sound (eliminate fallbacks, use rcgen, fail-closed architecture), but rcgen exact version and custom signer API need verification. Architecture is well-understood (Universal Backend stable), pitfalls are concrete (observed in codebase), features are clearly categorized (table stakes vs deferred).
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-Research areas that need validation during implementation:
+- **`p256` crate for ECDSA verification:** The YubiKey backend signs with ECDSA P-256 but the workspace may not have a crate for verifying ECDSA P-256 signatures on the non-hardware side. During Phase 3 planning, confirm whether `p256` (RustCrypto ecosystem) is needed and check for version conflicts with existing `k256`/`elliptic-curve` workspace deps. Low risk, well-maintained crate family.
 
-- **rcgen exact version:** Training data suggests 0.13, but version as of 2026-02-11 unknown. Action: Verify rcgen version immediately in Phase 1, check compatibility with `signature`, `der`, `spki` crates.
+- **`rpassword` version validation:** Research notes v7.3 with medium confidence (training data). Validate with `cargo add rpassword --dry-run` during Phase 3 plan to confirm current version before committing it to `Cargo.toml`.
 
-- **rcgen custom signer API:** How to integrate hardware-backed key signing with rcgen? May require implementing `rcgen::KeyPair` trait or using `serialize_der_with_signer()`. Action: Dedicate first Phase 1 task to dependency verification and API compatibility testing, consult rcgen documentation/examples.
+- **Backward compatibility of wrap key change:** When Phase 2 replaces the hardcoded demo key with HKDF derivation, any v2.0 demo archives become undecryptable with the new unwrap. Research treats this as acceptable given their demo status, but the requirements and CHANGELOG should explicitly document this breakage.
 
-- **YubiKey stable API coverage:** Does stable API (without `untested` feature) provide ALL operations needed for Universal Backend? Action: Audit current yubikey.rs usage in Phase 1 kickoff, verify sign_data, fetch_pubkey, generate available in stable API.
-
-- **Certificate validation approach:** Should we add `webpki` or similar for certificate chain validation? Not strictly needed for v1.1 (just generation), but may be required for attestation in v1.x. Action: Defer to v1.x milestone planning, document as future consideration.
-
-- **PKCS#11 version conflicts:** Locking to 0.5.0 may conflict with transitive dependencies from rcgen or other crates. Action: Run `cargo tree -p trustedge-core --features yubikey` after adding rcgen, resolve conflicts before committing.
+- **`#[serde(untagged)]` disambiguation:** If new profile variants have optional fields that overlap with `GenericMetadata`'s optional fields, serde will silently deserialize them as `Generic`. Phase 1 planning must lock the required field set for each new variant to ensure unambiguous disambiguation before any serialization code is written.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Codebase analysis: `/home/john/vault/projects/github.com/trustedge/crates/core/src/backends/yubikey.rs` (3,263 lines, 93 "placeholder", 41 "fallback", manual DER lines 95-200)
-- Codebase analysis: `/home/john/vault/projects/github.com/trustedge/crates/core/src/backends/universal.rs` (UniversalBackend trait, CryptoOperation enum)
-- Codebase analysis: `/home/john/vault/projects/github.com/trustedge/crates/core/src/backends/software_hsm.rs` (1,419 lines, reference implementation)
-- Codebase analysis: `/home/john/vault/projects/github.com/trustedge/improvement-plan.md` (security audit findings)
-- Codebase analysis: `/home/john/vault/projects/github.com/trustedge/Cargo.toml` (dependencies: pkcs11 0.5, yubikey 0.7 with untested)
-- Codebase analysis: `/home/john/vault/projects/github.com/trustedge/crates/core/tests/yubikey_*_tests.rs` (test patterns)
+- `crates/trst-cli/src/main.rs` — current command structure; hardcoded demo key at line 287; existing wrap/verify flow
+- `crates/trst-protocols/src/archive/manifest.rs` — `ProfileMetadata` enum, `TrstManifest`, profile allowlist at line 367, canonical serializer dispatch at lines 227-291
+- `crates/core/src/crypto.rs` — `decrypt_segment()`, `generate_aad()`, `DeviceKeypair`, `sign_manifest()`
+- `crates/core/src/archive.rs` — `read_archive()`, `write_archive()`, `validate_archive()` signatures confirmed
+- `crates/core/src/backends/yubikey.rs` — ECDSA P-256 confirmed, Ed25519 rejection documented at lines 291-298
+- `crates/core/src/envelope.rs` — HKDF-SHA256 KDF pattern (v1.8) as model for chunk key derivation
+- `crates/core/src/backends/universal.rs` — `SignatureAlgorithm` variants, `UniversalBackend` trait
+- `.planning/PROJECT.md` — v2.1 goals, active requirements, out-of-scope constraints
 
 ### Secondary (MEDIUM confidence)
-- NIST SP 800-73-4 (PIV specification) — mandatory algorithms (P-256, RSA-2048), slot purposes
-- PKCS#11 v2.40 specification — session management, error codes, max session limits
-- RFC 5280 (X.509 Certificate Profile) — extension requirements, critical flags
-- RustCrypto ecosystem documentation — `der`, `spki`, `signature`, `x509-cert` crates
-- rcgen documentation (training data from January 2025) — certificate generation patterns
-
-### Tertiary (LOW confidence)
-- rcgen version 0.13 (training data) — needs verification for 2026-02-11
-- YubiKey stable API surface (inferred from codebase patterns) — needs verification in official yubikey crate docs
-- Custom signer API details — needs verification with current rcgen documentation
+- `rpassword = "7.3"` — version from training data; confirm with `cargo add --dry-run` before use
+- XChaCha20 nonce-prepend pattern — standard practice per libsodium/NaCl documentation; well-established
 
 ---
-*Research completed: 2026-02-11*
+*Research completed: 2026-03-15*
 *Ready for roadmap: yes*
