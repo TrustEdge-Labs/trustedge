@@ -16,6 +16,15 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
+## Current Milestone: v2.1 Data Lifecycle & Hardware Integration
+
+**Goal:** Complete the data lifecycle by adding decryption/unwrap capability, expose YubiKey hardware signing in the CLI, and add named archive profiles for specific use cases.
+
+**Target features:**
+- `trst unwrap` command to decrypt and reassemble original data from .trst archives
+- YubiKey hardware signing exposed in `trst wrap` and `trst verify` CLI
+- Named profiles (sensor, audio, log) with tailored metadata schemas beyond generic + cam.video
+
 ## Current State
 
 Shipped v2.0 End-to-End Demo. The project now has a working demo: `docker compose up` starts the full platform, `scripts/demo.sh` shows the complete lifecycle (keygen, wrap, verify, receipt), and the README explains TrustEdge to a new developer in under 5 minutes.
@@ -125,7 +134,9 @@ Shipped v2.0 End-to-End Demo. The project now has a working demo: `docker compos
 
 ### Active
 
-(None — define next milestone with /gsd:new-milestone)
+- [ ] Archive decryption and data reassembly (`trst unwrap`)
+- [ ] YubiKey hardware signing exposed in CLI (`trst wrap --backend yubikey`)
+- [ ] Named archive profiles (sensor, audio, log) with tailored metadata
 
 ### Deferred
 
@@ -263,4 +274,4 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | README leads with problem + quick start | Developer audience wants to try it fast, not read architecture | ✓ Good — 465 → 128 lines |
 
 ---
-*Last updated: 2026-03-16 after v2.0 milestone shipped*
+*Last updated: 2026-03-16 after v2.1 milestone started*
