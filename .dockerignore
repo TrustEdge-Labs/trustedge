@@ -6,3 +6,4 @@ web/dashboard/node_modules/
 web/dashboard/.svelte-kit/
 web/dashboard/build/
 *.trst
+demo-output/

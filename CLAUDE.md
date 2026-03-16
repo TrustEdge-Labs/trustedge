@@ -158,11 +158,30 @@ clip-<id>.trst/
 ### Working with Archives
 
 ```bash
-# Create archive
-cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in sample.bin --out archive.trst
+# Generate device keys
+cargo run -p trustedge-trst-cli -- keygen --out-key device.key --out-pub device.pub
 
-# Verify archive
+# Create archive (generic profile, default)
+cargo run -p trustedge-trst-cli -- wrap --in sample.bin --out archive.trst --device-key device.key --device-pub device.pub
+
+# Create archive (cam.video profile)
+cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in sample.bin --out archive.trst --device-key device.key --device-pub device.pub
+
+# Verify archive locally
 cargo run -p trustedge-trst-cli -- verify archive.trst --device-pub "ed25519:..."
+
+# Submit to platform server for verification
+cargo run -p trustedge-trst-cli -- emit-request --archive archive.trst --device-pub device.pub --out request.json --post http://localhost:3001/v1/verify
+```
+
+### Running the Demo
+
+```bash
+# Full demo (requires docker-compose stack running)
+./scripts/demo.sh
+
+# Local-only demo (no docker needed)
+./scripts/demo.sh --local
 ```
 
 ## Feature Flags
@@ -194,7 +213,7 @@ Default build has no features enabled for fast CI and maximum portability.
 | `trustedge` | `crates/trustedge-cli/src/main.rs` | Main envelope encryption CLI |
 | `trustedge-server` | `crates/core/src/bin/trustedge-server.rs` | Network server |
 | `trustedge-client` | `crates/core/src/bin/trustedge-client.rs` | Network client |
-| `trst` | `crates/trst-cli/src/main.rs` | Archive wrap/verify CLI |
+| `trst` | `crates/trst-cli/src/main.rs` | Archive keygen/wrap/verify/emit-request CLI |
 
 ## Common Tasks
 
