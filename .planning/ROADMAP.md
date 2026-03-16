@@ -109,7 +109,7 @@ Fixed incorrect KDF usage across the codebase. Replaced PBKDF2-per-chunk with HK
 
 - [x] **Phase 38: Archive Profiles** - Data-agnostic archive wrapping with generic profile as default (completed 2026-03-15)
 - [x] **Phase 39: Deployment Stack** - One-command docker-compose stack with platform, postgres, and dashboard (completed 2026-03-15)
-- [ ] **Phase 40: Demo Script** - End-to-end lifecycle script showing keygen, wrap, verify, and receipt
+- [x] **Phase 40: Demo Script** - End-to-end lifecycle script showing keygen, wrap, verify, and receipt (completed 2026-03-16)
 - [ ] **Phase 41: Documentation** - README rewrite focused on use cases, quick start, and copy-paste commands
 
 ## Phase Details
@@ -184,7 +184,7 @@ Phases execute in numeric order: 38 -> 39 -> 40 -> 41
 |-------|-----------|----------------|--------|-----------|
 | 38. Archive Profiles | 2/2 | Complete    | 2026-03-15 | - |
 | 39. Deployment Stack | 2/2 | Complete    | 2026-03-15 | - |
-| 40. Demo Script | 1/2 | In Progress|  | - |
+| 40. Demo Script | 2/2 | Complete   | 2026-03-16 | - |
 | 41. Documentation | v2.0 | 0/TBD | Not started | - |
 
 ---

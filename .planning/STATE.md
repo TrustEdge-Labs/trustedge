@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: End-to-End Demo
 status: planning
-stopped_at: Completed 40-01-PLAN.md
-last_updated: "2026-03-15T23:49:18.299Z"
+stopped_at: Completed 40-02-PLAN.md
+last_updated: "2026-03-16T00:07:02.353Z"
 last_activity: 2026-03-15 -- Roadmap created for v2.0
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -72,6 +72,8 @@ Cleared -- see PROJECT.md Key Decisions table for full history.
 - [Phase 39-deployment-stack]: wget must be explicitly installed in slim-bookworm runtime for healthcheck commands
 - [Phase 40-demo-script]: trst keygen checks both output paths before generating keypair (fail fast, no partial writes)
 - [Phase 40-demo-script]: trst keygen is synchronous consistent with handle_wrap/handle_verify; only EmitRequest uses async
+- [Phase 40-demo-script]: Demo uses cargo run directly (not installed binary) so it works from repo without installation
+- [Phase 40-demo-script]: TOTAL_STEPS computed dynamically (5 local, 6 with server) before rendering any banner
 
 ### Pending Todos
 
@@ -84,8 +86,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-15T23:49:18.296Z
-Stopped at: Completed 40-01-PLAN.md
+Last session: 2026-03-16T00:07:02.350Z
+Stopped at: Completed 40-02-PLAN.md
 Resume file: None
 
 ---

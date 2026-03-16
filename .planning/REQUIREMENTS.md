@@ -31,9 +31,9 @@ Requirements for the End-to-End Demo milestone. Each maps to roadmap phases.
 
 ### Demo
 
-- [ ] **DEMO-01**: User can run `./scripts/demo.sh` to see the full lifecycle: keygen -> wrap -> verify -> receipt
-- [ ] **DEMO-02**: Demo script works against both docker-compose stack and local cargo builds
-- [ ] **DEMO-03**: Demo output clearly shows each step and the verification result (PASS/FAIL)
+- [x] **DEMO-01**: User can run `./scripts/demo.sh` to see the full lifecycle: keygen -> wrap -> verify -> receipt
+- [x] **DEMO-02**: Demo script works against both docker-compose stack and local cargo builds
+- [x] **DEMO-03**: Demo output clearly shows each step and the verification result (PASS/FAIL)
 - [x] **DEMO-04**: Demo script generates or uses sample data (no manual file prep required)
 
 ### Documentation
@@ -87,9 +87,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEPL-02 | Phase 39 | Complete |
 | DEPL-03 | Phase 39 | Complete |
 | DEPL-04 | Phase 39 | Complete |
-| DEMO-01 | Phase 40 | Pending |
-| DEMO-02 | Phase 40 | Pending |
-| DEMO-03 | Phase 40 | Pending |
+| DEMO-01 | Phase 40 | Complete |
+| DEMO-02 | Phase 40 | Complete |
+| DEMO-03 | Phase 40 | Complete |
 | DEMO-04 | Phase 40 | Complete |
 | DOCS-01 | Phase 41 | Pending |
 | DOCS-02 | Phase 41 | Pending |
