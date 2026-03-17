@@ -163,7 +163,11 @@ Plans:
   2. `trst verify` accepts and validates both Ed25519 (`"ed25519:..."`) and ECDSA P-256 (`"ecdsa-p256:..."`) archive signatures
   3. When the YubiKey requires a PIN, the CLI prompts interactively without echoing the PIN to the terminal
   4. `scripts/demo.sh --local` runs without error on a machine with no YubiKey (YubiKey steps are gracefully skipped)
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 44-01-PLAN.md -- Multi-algorithm verify dispatch (ECDSA P-256 support in verify_manifest)
+- [ ] 44-02-PLAN.md -- YubiKey wrap CLI, PIN prompt, demo script integration
 
 ---
 
@@ -175,7 +179,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 42. Named Archive Profiles | 2/2 | Complete    | 2026-03-17 | - |
 | 43. Archive Decryption (trst unwrap) | 2/2 | Complete    | 2026-03-17 | - |
-| 44. YubiKey CLI Integration | v2.1 | 0/? | Not started | - |
+| 44. YubiKey CLI Integration | v2.1 | 0/2 | Planning complete | - |
 
 ---
-*Last updated: 2026-03-17 after phase 43 planning*
+*Last updated: 2026-03-17 after phase 44 planning*
