@@ -706,6 +706,187 @@ fn acceptance_sensor_with_geo() {
     run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
 }
 
+// ─── Unwrap acceptance tests ──────────────────────────────────────────────────
+
+fn run_unwrap(
+    tempdir: &TempDir,
+    archive: &Path,
+    device_key: &Path,
+    output: &Path,
+) -> assert_cmd::assert::Assert {
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "unwrap",
+            archive.to_str().unwrap(),
+            "--device-key",
+            device_key.to_str().unwrap(),
+            "--out",
+            output.to_str().unwrap(),
+        ])
+        .assert()
+}
+
+fn wrap_with_key(tempdir: &TempDir, input: &Path, profile: &str) -> (PathBuf, PathBuf, PathBuf) {
+    let key_path = tempdir.path().join("test.key");
+    let pub_path = tempdir.path().join("test.pub");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "keygen",
+            "--out-key",
+            key_path.to_str().unwrap(),
+            "--out-pub",
+            pub_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let archive_dir = tempdir.path().join("clip-unwrap.trst");
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            profile,
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+            "--device-key",
+            key_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    (archive_dir, key_path, pub_path)
+}
+
+#[test]
+fn acceptance_unwrap_round_trip() {
+    let tempdir = TempDir::new().unwrap();
+    let original_data: Vec<u8> = (0..(64 * 1024)).map(|i| (i % 251) as u8).collect();
+    let input_path = tempdir.path().join("input.bin");
+    fs::write(&input_path, &original_data).unwrap();
+
+    let (archive_dir, key_path, _pub_path) = wrap_with_key(&tempdir, &input_path, "cam.video");
+
+    let output_path = tempdir.path().join("recovered.bin");
+    run_unwrap(&tempdir, &archive_dir, &key_path, &output_path).success();
+
+    let recovered_data = fs::read(&output_path).unwrap();
+    assert_eq!(
+        original_data, recovered_data,
+        "recovered data must be byte-identical to original"
+    );
+}
+
+#[test]
+fn acceptance_unwrap_wrong_key() {
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let (archive_dir, _key_path, _pub_path) = wrap_with_key(&tempdir, &input, "cam.video");
+
+    // Generate a second key
+    let wrong_key_path = tempdir.path().join("wrong.key");
+    let wrong_pub_path = tempdir.path().join("wrong.pub");
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "keygen",
+            "--out-key",
+            wrong_key_path.to_str().unwrap(),
+            "--out-pub",
+            wrong_pub_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let output_path = tempdir.path().join("should-not-exist.bin");
+    run_unwrap(&tempdir, &archive_dir, &wrong_key_path, &output_path).failure();
+
+    assert!(
+        !output_path.exists(),
+        "output file must not be written when wrong key is used"
+    );
+}
+
+#[test]
+fn acceptance_unwrap_tampered_manifest() {
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let (archive_dir, key_path, _pub_path) = wrap_with_key(&tempdir, &input, "cam.video");
+
+    // Tamper with the manifest
+    let manifest_path = archive_dir.join("manifest.json");
+    let original_manifest = fs::read_to_string(&manifest_path).unwrap();
+    let tampered = original_manifest.replacen("cam.video", "cam.video-tampered", 1);
+    fs::write(&manifest_path, tampered).unwrap();
+
+    let output_path = tempdir.path().join("tampered-output.bin");
+    run_unwrap(&tempdir, &archive_dir, &key_path, &output_path)
+        .failure()
+        .stderr(contains("Signature: FAIL"));
+
+    assert!(
+        !output_path.exists(),
+        "output file must not be written when signature fails"
+    );
+}
+
+#[test]
+fn acceptance_unwrap_generic_profile() {
+    let tempdir = TempDir::new().unwrap();
+    let original_data: Vec<u8> = (0..(64 * 1024)).map(|i| (i % 251) as u8).collect();
+    let input_path = tempdir.path().join("input.bin");
+    fs::write(&input_path, &original_data).unwrap();
+
+    let (archive_dir, key_path, _pub_path) = wrap_with_key(&tempdir, &input_path, "generic");
+
+    let output_path = tempdir.path().join("recovered-generic.bin");
+    run_unwrap(&tempdir, &archive_dir, &key_path, &output_path).success();
+
+    let recovered_data = fs::read(&output_path).unwrap();
+    assert_eq!(
+        original_data, recovered_data,
+        "recovered data must be byte-identical to original (generic profile)"
+    );
+}
+
+#[test]
+fn acceptance_unwrap_missing_chunk() {
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let (archive_dir, key_path, _pub_path) = wrap_with_key(&tempdir, &input, "cam.video");
+
+    // Delete the last chunk file
+    let last_index = fs::read_dir(archive_dir.join("chunks"))
+        .unwrap()
+        .filter_map(|entry| entry.ok())
+        .filter_map(|entry| entry.file_name().to_str().map(|s| s.to_string()))
+        .filter_map(|name| name.strip_suffix(".bin").map(|s| s.to_string()))
+        .filter_map(|stem| stem.parse::<u32>().ok())
+        .max()
+        .unwrap();
+    let last_chunk = archive_dir.join(format!("chunks/{last_index:05}.bin"));
+    fs::remove_file(&last_chunk).unwrap();
+
+    let output_path = tempdir.path().join("missing-chunk-output.bin");
+    run_unwrap(&tempdir, &archive_dir, &key_path, &output_path).failure();
+
+    assert!(
+        !output_path.exists(),
+        "output file must not be written when archive is missing a chunk"
+    );
+}
+
 #[test]
 fn acceptance_sensor_missing_required_flag() {
     // Missing --unit and --sensor-model; should fail with a clear error message
