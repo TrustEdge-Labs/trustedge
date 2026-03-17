@@ -148,7 +148,11 @@ Plans:
   3. `trst unwrap` verifies the archive signature and continuity chain before producing any plaintext output
   4. A wrap-then-unwrap round-trip on arbitrary binary data produces byte-identical output
   5. `trst unwrap` on a tampered or incorrectly-keyed archive exits with a non-zero exit code and no plaintext output
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 43-01-PLAN.md -- HKDF key derivation in crypto.rs, update wrap to use derived key + nonce-prepended chunks
+- [ ] 43-02-PLAN.md -- Add unwrap CLI command with verify-before-decrypt, acceptance tests
 
 ### Phase 44: YubiKey CLI Integration
 **Goal**: Users can sign archives with a hardware YubiKey from the CLI, and verify those hardware-signed archives
@@ -170,8 +174,8 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 42. Named Archive Profiles | 2/2 | Complete    | 2026-03-17 | - |
-| 43. Archive Decryption (trst unwrap) | v2.1 | 0/? | Not started | - |
+| 43. Archive Decryption (trst unwrap) | v2.1 | 0/2 | Planning complete | - |
 | 44. YubiKey CLI Integration | v2.1 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-03-16 after phase 42 planning*
+*Last updated: 2026-03-17 after phase 43 planning*
