@@ -13,7 +13,6 @@ use std::process;
 
 use anyhow::{Context, Result};
 use blake3::Hasher;
-use chacha20poly1305::Key;
 use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Args, Parser, Subcommand};
 use rand::prelude::*;
@@ -21,10 +20,10 @@ use rand_chacha::ChaCha20Rng;
 use serde::Serialize;
 use std::time::Instant;
 use trustedge_core::{
-    chain_next, encrypt_segment, generate_aad, genesis, read_archive, segment_hash, sign_manifest,
-    validate_archive, verify_manifest, write_archive, AudioMetadata, CamVideoMetadata, ChunkInfo,
-    DeviceInfo, DeviceKeypair, GenericMetadata, LogMetadata, ProfileMetadata, SegmentInfo,
-    SensorMetadata, TrstManifest,
+    chain_next, derive_chunk_key, encrypt_segment, generate_aad, genesis, read_archive,
+    segment_hash, sign_manifest, validate_archive, verify_manifest, write_archive, AudioMetadata,
+    CamVideoMetadata, ChunkInfo, DeviceInfo, DeviceKeypair, GenericMetadata, LogMetadata,
+    ProfileMetadata, SegmentInfo, SensorMetadata, TrstManifest,
 };
 // Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
 // SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
@@ -323,8 +322,8 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     let mut chain_state = genesis();
     let mut encrypted_chunks = Vec::new();
 
-    // Generate a symmetric key for encryption (simplified for P0)
-    let encryption_key = &Key::from(*b"0123456789abcdef0123456789abcdef"); // 32 bytes for demo
+    // Derive encryption key from device signing key via HKDF-SHA256
+    let encryption_key = derive_chunk_key(device_keypair.secret_bytes());
 
     // Create timestamp for all operations - deterministic if seeded
     let started_at = if args.seed.is_some() {
@@ -344,11 +343,17 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
         // Generate nonce - seeded if provided
         let nonce = generate_seeded_nonce24(&mut *rng);
         let aad = generate_aad("0.1.0", &args.profile, &device_id, &started_at);
-        let encrypted_data = encrypt_segment(encryption_key, &nonce, chunk_data, &aad)?;
-        encrypted_chunks.push(encrypted_data.clone());
+        let encrypted_data = encrypt_segment(&encryption_key, &nonce, chunk_data, &aad)?;
 
-        // Calculate hash and update chain (hash the encrypted data)
-        let hash = segment_hash(&encrypted_data);
+        // Prepend the 24-byte nonce to the ciphertext so unwrap can decrypt:
+        // on-disk format is [nonce:24][ciphertext:N]
+        let mut chunk_with_nonce = Vec::with_capacity(24 + encrypted_data.len());
+        chunk_with_nonce.extend_from_slice(&nonce);
+        chunk_with_nonce.extend_from_slice(&encrypted_data);
+
+        // Hash nonce+ciphertext to match what validate_archive reads from disk
+        let hash = segment_hash(&chunk_with_nonce);
+        encrypted_chunks.push(chunk_with_nonce);
         let next_state = chain_next(&chain_state, &hash);
 
         // Build start_time: time-based for cam.video, index-based for generic
