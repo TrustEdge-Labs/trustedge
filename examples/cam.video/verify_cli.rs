@@ -102,6 +102,26 @@ fn main() -> Result<(), Box<dyn Error>> {
                             println!("   Started: {}", m.started_at);
                             println!("   Ended: {}", m.ended_at);
                         }
+                        ProfileMetadata::Sensor(m) => {
+                            println!("   Started: {}", m.started_at);
+                            println!("   Ended: {}", m.ended_at);
+                            println!("   Sensor: {} ({})", m.sensor_model, m.unit);
+                            println!("   Sample rate: {} Hz", m.sample_rate_hz);
+                        }
+                        ProfileMetadata::Audio(m) => {
+                            println!("   Started: {}", m.started_at);
+                            println!("   Ended: {}", m.ended_at);
+                            println!(
+                                "   Codec: {}, {}ch, {}Hz, {}bit",
+                                m.codec, m.channels, m.sample_rate_hz, m.bit_depth
+                            );
+                        }
+                        ProfileMetadata::Log(m) => {
+                            println!("   Started: {}", m.started_at);
+                            println!("   Ended: {}", m.ended_at);
+                            println!("   Application: {} on {}", m.application, m.host);
+                            println!("   Level: {}, Format: {}", m.log_level, m.log_format);
+                        }
                         ProfileMetadata::Generic(m) => {
                             println!("   Started: {}", m.started_at);
                             println!("   Ended: {}", m.ended_at);

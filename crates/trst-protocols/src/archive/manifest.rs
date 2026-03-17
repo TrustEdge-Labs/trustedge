@@ -56,16 +56,72 @@ pub struct CamVideoMetadata {
     pub codec: String,
 }
 
+/// Metadata for the `sensor` profile.
+///
+/// The `unit` and `sensor_model` fields are required and unambiguously
+/// distinguish this variant from `Generic` during untagged deserialization.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SensorMetadata {
+    pub started_at: String,
+    pub ended_at: String,
+    pub sample_rate_hz: f64,
+    pub unit: String,
+    pub sensor_model: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub longitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub altitude: Option<f64>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub labels: BTreeMap<String, String>,
+}
+
+/// Metadata for the `audio` profile.
+///
+/// The `bit_depth` and `channels` fields are required and unambiguously
+/// distinguish this variant from `Generic` during untagged deserialization.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AudioMetadata {
+    pub started_at: String,
+    pub ended_at: String,
+    pub sample_rate_hz: u32,
+    pub bit_depth: u16,
+    pub channels: u8,
+    pub codec: String,
+}
+
+/// Metadata for the `log` profile.
+///
+/// The `application` and `host` fields are required and unambiguously
+/// distinguish this variant from `Generic` during untagged deserialization.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LogMetadata {
+    pub started_at: String,
+    pub ended_at: String,
+    pub application: String,
+    pub host: String,
+    pub log_level: String,
+    pub log_format: String,
+}
+
 /// Union of all profile-specific metadata.
 ///
 /// `#[serde(untagged)]` means serde tries each variant in declaration order.
-/// `CamVideo` is listed first because it has required fields (`timezone`,
-/// `fps`, `resolution`, `codec`) that unambiguously distinguish it from
-/// `Generic`.
+/// Variant order matters: each variant must have at least one required field
+/// not present in `Generic` for unambiguous deserialization.
+/// - `CamVideo`: `timezone`, `fps`, `resolution`
+/// - `Sensor`: `unit`, `sensor_model`
+/// - `Audio`: `bit_depth`, `channels`
+/// - `Log`: `application`, `host`
+/// - `Generic`: catch-all with all optional fields
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProfileMetadata {
     CamVideo(CamVideoMetadata),
+    Sensor(SensorMetadata),
+    Audio(AudioMetadata),
+    Log(LogMetadata),
     Generic(GenericMetadata),
 }
 
@@ -247,6 +303,91 @@ impl TrstManifest {
                 result.push_str(&format!(",\"codec\":{}", serde_json::to_string(&m.codec)?));
                 result.push('}');
             }
+            ProfileMetadata::Sensor(m) => {
+                result.push_str(",\"metadata\":{");
+                result.push_str(&format!(
+                    "\"started_at\":{}",
+                    serde_json::to_string(&m.started_at)?
+                ));
+                result.push_str(&format!(
+                    ",\"ended_at\":{}",
+                    serde_json::to_string(&m.ended_at)?
+                ));
+                result.push_str(&format!(",\"sample_rate_hz\":{}", m.sample_rate_hz));
+                result.push_str(&format!(",\"unit\":{}", serde_json::to_string(&m.unit)?));
+                result.push_str(&format!(
+                    ",\"sensor_model\":{}",
+                    serde_json::to_string(&m.sensor_model)?
+                ));
+                if let Some(lat) = m.latitude {
+                    result.push_str(&format!(",\"latitude\":{lat}"));
+                }
+                if let Some(lon) = m.longitude {
+                    result.push_str(&format!(",\"longitude\":{lon}"));
+                }
+                if let Some(alt) = m.altitude {
+                    result.push_str(&format!(",\"altitude\":{alt}"));
+                }
+                if !m.labels.is_empty() {
+                    // BTreeMap guarantees sorted keys
+                    result.push_str(",\"labels\":{");
+                    let mut first = true;
+                    for (k, v) in &m.labels {
+                        if !first {
+                            result.push(',');
+                        }
+                        first = false;
+                        result.push_str(&format!(
+                            "{}:{}",
+                            serde_json::to_string(k)?,
+                            serde_json::to_string(v)?
+                        ));
+                    }
+                    result.push('}');
+                }
+                result.push('}');
+            }
+            ProfileMetadata::Audio(m) => {
+                result.push_str(",\"metadata\":{");
+                result.push_str(&format!(
+                    "\"started_at\":{}",
+                    serde_json::to_string(&m.started_at)?
+                ));
+                result.push_str(&format!(
+                    ",\"ended_at\":{}",
+                    serde_json::to_string(&m.ended_at)?
+                ));
+                result.push_str(&format!(",\"sample_rate_hz\":{}", m.sample_rate_hz));
+                result.push_str(&format!(",\"bit_depth\":{}", m.bit_depth));
+                result.push_str(&format!(",\"channels\":{}", m.channels));
+                result.push_str(&format!(",\"codec\":{}", serde_json::to_string(&m.codec)?));
+                result.push('}');
+            }
+            ProfileMetadata::Log(m) => {
+                result.push_str(",\"metadata\":{");
+                result.push_str(&format!(
+                    "\"started_at\":{}",
+                    serde_json::to_string(&m.started_at)?
+                ));
+                result.push_str(&format!(
+                    ",\"ended_at\":{}",
+                    serde_json::to_string(&m.ended_at)?
+                ));
+                result.push_str(&format!(
+                    ",\"application\":{}",
+                    serde_json::to_string(&m.application)?
+                ));
+                result.push_str(&format!(",\"host\":{}", serde_json::to_string(&m.host)?));
+                result.push_str(&format!(
+                    ",\"log_level\":{}",
+                    serde_json::to_string(&m.log_level)?
+                ));
+                result.push_str(&format!(
+                    ",\"log_format\":{}",
+                    serde_json::to_string(&m.log_format)?
+                ));
+                result.push('}');
+            }
             ProfileMetadata::Generic(m) => {
                 result.push_str(",\"metadata\":{");
                 result.push_str(&format!(
@@ -350,6 +491,99 @@ impl TrstManifest {
         Ok(result)
     }
 
+    /// Create a new manifest pre-configured for the `sensor` profile.
+    pub fn new_sensor() -> Self {
+        Self {
+            trst_version: "0.1.0".to_string(),
+            profile: "sensor".to_string(),
+            device: DeviceInfo {
+                id: String::new(),
+                model: "TrustEdgeRefSensor".to_string(),
+                firmware_version: "1.0.0".to_string(),
+                public_key: String::new(),
+            },
+            metadata: ProfileMetadata::Sensor(SensorMetadata {
+                started_at: String::new(),
+                ended_at: String::new(),
+                sample_rate_hz: 100.0,
+                unit: String::new(),
+                sensor_model: String::new(),
+                latitude: None,
+                longitude: None,
+                altitude: None,
+                labels: BTreeMap::new(),
+            }),
+            chunk: ChunkInfo {
+                size_bytes: 1_048_576,
+                duration_seconds: 2.0,
+            },
+            segments: Vec::new(),
+            claims: Vec::new(),
+            prev_archive_hash: None,
+            signature: None,
+        }
+    }
+
+    /// Create a new manifest pre-configured for the `audio` profile.
+    pub fn new_audio() -> Self {
+        Self {
+            trst_version: "0.1.0".to_string(),
+            profile: "audio".to_string(),
+            device: DeviceInfo {
+                id: String::new(),
+                model: "TrustEdgeRefAudio".to_string(),
+                firmware_version: "1.0.0".to_string(),
+                public_key: String::new(),
+            },
+            metadata: ProfileMetadata::Audio(AudioMetadata {
+                started_at: String::new(),
+                ended_at: String::new(),
+                sample_rate_hz: 44100,
+                bit_depth: 16,
+                channels: 2,
+                codec: "pcm".to_string(),
+            }),
+            chunk: ChunkInfo {
+                size_bytes: 1_048_576,
+                duration_seconds: 2.0,
+            },
+            segments: Vec::new(),
+            claims: Vec::new(),
+            prev_archive_hash: None,
+            signature: None,
+        }
+    }
+
+    /// Create a new manifest pre-configured for the `log` profile.
+    pub fn new_log() -> Self {
+        Self {
+            trst_version: "0.1.0".to_string(),
+            profile: "log".to_string(),
+            device: DeviceInfo {
+                id: String::new(),
+                model: "TrustEdgeRefLog".to_string(),
+                firmware_version: "1.0.0".to_string(),
+                public_key: String::new(),
+            },
+            metadata: ProfileMetadata::Log(LogMetadata {
+                started_at: String::new(),
+                ended_at: String::new(),
+                application: String::new(),
+                host: String::new(),
+                log_level: "info".to_string(),
+                log_format: "json".to_string(),
+            }),
+            chunk: ChunkInfo {
+                size_bytes: 1_048_576,
+                duration_seconds: 2.0,
+            },
+            segments: Vec::new(),
+            claims: Vec::new(),
+            prev_archive_hash: None,
+            signature: None,
+        }
+    }
+
     /// Set the detached signature on this manifest.
     pub fn set_signature(&mut self, signature: String) {
         self.signature = Some(signature);
@@ -363,10 +597,10 @@ impl TrstManifest {
             ));
         }
 
-        // Accept both "generic" and "cam.video" — no longer restricted to cam.video
-        if self.profile != "generic" && self.profile != "cam.video" {
+        // Accept "generic", "cam.video", "sensor", "audio", "log"
+        if !["generic", "cam.video", "sensor", "audio", "log"].contains(&self.profile.as_str()) {
             return Err(ManifestFormatError::InvalidField(format!(
-                "profile must be 'generic' or 'cam.video', got '{}'",
+                "profile must be 'generic', 'cam.video', 'sensor', 'audio', or 'log', got '{}'",
                 self.profile
             )));
         }
@@ -383,7 +617,7 @@ impl TrstManifest {
             ));
         }
 
-        // Validate metadata timestamps based on variant
+        // Validate metadata timestamps and required fields based on variant
         match &self.metadata {
             ProfileMetadata::CamVideo(m) => {
                 if m.started_at.is_empty() {
@@ -394,6 +628,97 @@ impl TrstManifest {
                 if m.ended_at.is_empty() {
                     return Err(ManifestFormatError::InvalidField(
                         "metadata.ended_at cannot be empty".to_string(),
+                    ));
+                }
+            }
+            ProfileMetadata::Sensor(m) => {
+                if m.started_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.started_at cannot be empty".to_string(),
+                    ));
+                }
+                if m.ended_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.ended_at cannot be empty".to_string(),
+                    ));
+                }
+                if m.sample_rate_hz <= 0.0 {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.sample_rate_hz must be > 0".to_string(),
+                    ));
+                }
+                if m.unit.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.unit cannot be empty".to_string(),
+                    ));
+                }
+                if m.sensor_model.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.sensor_model cannot be empty".to_string(),
+                    ));
+                }
+            }
+            ProfileMetadata::Audio(m) => {
+                if m.started_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.started_at cannot be empty".to_string(),
+                    ));
+                }
+                if m.ended_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.ended_at cannot be empty".to_string(),
+                    ));
+                }
+                if m.sample_rate_hz == 0 {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.sample_rate_hz must be > 0".to_string(),
+                    ));
+                }
+                if m.bit_depth == 0 {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.bit_depth must be > 0".to_string(),
+                    ));
+                }
+                if m.channels == 0 {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.channels must be > 0".to_string(),
+                    ));
+                }
+                if m.codec.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.codec cannot be empty".to_string(),
+                    ));
+                }
+            }
+            ProfileMetadata::Log(m) => {
+                if m.started_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.started_at cannot be empty".to_string(),
+                    ));
+                }
+                if m.ended_at.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.ended_at cannot be empty".to_string(),
+                    ));
+                }
+                if m.application.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.application cannot be empty".to_string(),
+                    ));
+                }
+                if m.host.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.host cannot be empty".to_string(),
+                    ));
+                }
+                if m.log_level.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.log_level cannot be empty".to_string(),
+                    ));
+                }
+                if m.log_format.is_empty() {
+                    return Err(ManifestFormatError::InvalidField(
+                        "metadata.log_format cannot be empty".to_string(),
                     ));
                 }
             }
@@ -749,6 +1074,321 @@ mod tests {
 
         assert_eq!(bytes1, bytes2);
         assert_eq!(bytes2, bytes3);
+    }
+
+    // ── New sensor/audio/log profile tests ──
+
+    fn make_segment() -> SegmentInfo {
+        SegmentInfo {
+            chunk_file: "00000.bin".to_string(),
+            blake3_hash: "abc123".to_string(),
+            start_time: "2025-06-01T00:00:00Z".to_string(),
+            duration_seconds: 1.0,
+            continuity_hash: "def456".to_string(),
+        }
+    }
+
+    #[test]
+    fn test_sensor_metadata_round_trip() {
+        let mut m = TrstManifest::new_sensor();
+        m.device.id = "SENSOR001".to_string();
+        m.device.public_key = "ed25519:sensor_key".to_string();
+        if let ProfileMetadata::Sensor(ref mut meta) = m.metadata {
+            meta.started_at = "2025-06-01T00:00:00Z".to_string();
+            meta.ended_at = "2025-06-01T00:01:00Z".to_string();
+            meta.sample_rate_hz = 1000.0;
+            meta.unit = "celsius".to_string();
+            meta.sensor_model = "BME280".to_string();
+            meta.latitude = Some(37.7749);
+            meta.longitude = Some(-122.4194);
+            meta.altitude = Some(16.0);
+            meta.labels
+                .insert("zone".to_string(), "outdoor".to_string());
+        }
+        m.segments.push(make_segment());
+
+        let json = serde_json::to_string(&m).unwrap();
+        let decoded: TrstManifest = serde_json::from_str(&json).unwrap();
+
+        if let ProfileMetadata::Sensor(meta) = decoded.metadata {
+            assert_eq!(meta.unit, "celsius");
+            assert_eq!(meta.sensor_model, "BME280");
+            assert_eq!(meta.sample_rate_hz, 1000.0);
+            assert_eq!(meta.latitude, Some(37.7749));
+            assert_eq!(meta.longitude, Some(-122.4194));
+            assert_eq!(meta.altitude, Some(16.0));
+            assert_eq!(meta.labels.get("zone"), Some(&"outdoor".to_string()));
+        } else {
+            panic!("Expected Sensor variant, got something else");
+        }
+    }
+
+    #[test]
+    fn test_audio_metadata_round_trip() {
+        let mut m = TrstManifest::new_audio();
+        m.device.id = "AUDIO001".to_string();
+        m.device.public_key = "ed25519:audio_key".to_string();
+        if let ProfileMetadata::Audio(ref mut meta) = m.metadata {
+            meta.started_at = "2025-06-01T00:00:00Z".to_string();
+            meta.ended_at = "2025-06-01T00:01:00Z".to_string();
+            meta.sample_rate_hz = 48000;
+            meta.bit_depth = 24;
+            meta.channels = 1;
+            meta.codec = "flac".to_string();
+        }
+        m.segments.push(make_segment());
+
+        let json = serde_json::to_string(&m).unwrap();
+        let decoded: TrstManifest = serde_json::from_str(&json).unwrap();
+
+        if let ProfileMetadata::Audio(meta) = decoded.metadata {
+            assert_eq!(meta.sample_rate_hz, 48000);
+            assert_eq!(meta.bit_depth, 24);
+            assert_eq!(meta.channels, 1);
+            assert_eq!(meta.codec, "flac");
+        } else {
+            panic!("Expected Audio variant, got something else");
+        }
+    }
+
+    #[test]
+    fn test_log_metadata_round_trip() {
+        let mut m = TrstManifest::new_log();
+        m.device.id = "LOG001".to_string();
+        m.device.public_key = "ed25519:log_key".to_string();
+        if let ProfileMetadata::Log(ref mut meta) = m.metadata {
+            meta.started_at = "2025-06-01T00:00:00Z".to_string();
+            meta.ended_at = "2025-06-01T00:01:00Z".to_string();
+            meta.application = "trustedge-agent".to_string();
+            meta.host = "edge-node-01".to_string();
+            meta.log_level = "warn".to_string();
+            meta.log_format = "json".to_string();
+        }
+        m.segments.push(make_segment());
+
+        let json = serde_json::to_string(&m).unwrap();
+        let decoded: TrstManifest = serde_json::from_str(&json).unwrap();
+
+        if let ProfileMetadata::Log(meta) = decoded.metadata {
+            assert_eq!(meta.application, "trustedge-agent");
+            assert_eq!(meta.host, "edge-node-01");
+            assert_eq!(meta.log_level, "warn");
+            assert_eq!(meta.log_format, "json");
+        } else {
+            panic!("Expected Log variant, got something else");
+        }
+    }
+
+    #[test]
+    fn test_sensor_canonical_serialization() {
+        let mut m = TrstManifest::new_sensor();
+        m.device.id = "S001".to_string();
+        m.device.public_key = "ed25519:k".to_string();
+        if let ProfileMetadata::Sensor(ref mut meta) = m.metadata {
+            meta.started_at = "2025-06-01T00:00:00Z".to_string();
+            meta.ended_at = "2025-06-01T00:01:00Z".to_string();
+            meta.sample_rate_hz = 100.0;
+            meta.unit = "celsius".to_string();
+            meta.sensor_model = "BME280".to_string();
+            meta.latitude = Some(37.7749);
+            meta.longitude = Some(-122.4194);
+            meta.altitude = Some(16.0);
+            meta.labels.insert("z-key".to_string(), "1".to_string());
+            meta.labels.insert("a-key".to_string(), "2".to_string());
+        }
+        m.segments.push(make_segment());
+
+        let bytes = m.to_canonical_bytes().unwrap();
+        let json = String::from_utf8(bytes).unwrap();
+
+        // Key ordering
+        let started_pos = json.find("\"started_at\"").unwrap();
+        let ended_pos = json.find("\"ended_at\"").unwrap();
+        let rate_pos = json.find("\"sample_rate_hz\"").unwrap();
+        let unit_pos = json.find("\"unit\"").unwrap();
+        let model_pos = json.find("\"sensor_model\"").unwrap();
+        let lat_pos = json.find("\"latitude\"").unwrap();
+        let lon_pos = json.find("\"longitude\"").unwrap();
+        let alt_pos = json.find("\"altitude\"").unwrap();
+
+        assert!(started_pos < ended_pos);
+        assert!(ended_pos < rate_pos);
+        assert!(rate_pos < unit_pos);
+        assert!(unit_pos < model_pos);
+        assert!(model_pos < lat_pos);
+        assert!(lat_pos < lon_pos);
+        assert!(lon_pos < alt_pos);
+
+        // Labels sorted
+        let a_pos = json.find("\"a-key\"").unwrap();
+        let z_pos = json.find("\"z-key\"").unwrap();
+        assert!(a_pos < z_pos, "labels must be sorted");
+    }
+
+    #[test]
+    fn test_audio_canonical_serialization() {
+        let mut m = TrstManifest::new_audio();
+        m.device.id = "A001".to_string();
+        m.device.public_key = "ed25519:k".to_string();
+        if let ProfileMetadata::Audio(ref mut meta) = m.metadata {
+            meta.started_at = "2025-06-01T00:00:00Z".to_string();
+            meta.ended_at = "2025-06-01T00:01:00Z".to_string();
+            meta.sample_rate_hz = 44100;
+            meta.bit_depth = 16;
+            meta.channels = 2;
+            meta.codec = "pcm".to_string();
+        }
+        m.segments.push(make_segment());
+
+        let bytes = m.to_canonical_bytes().unwrap();
+        let json = String::from_utf8(bytes).unwrap();
+
+        let started_pos = json.find("\"started_at\"").unwrap();
+        let ended_pos = json.find("\"ended_at\"").unwrap();
+        let rate_pos = json.find("\"sample_rate_hz\"").unwrap();
+        let depth_pos = json.find("\"bit_depth\"").unwrap();
+        let chan_pos = json.find("\"channels\"").unwrap();
+        let codec_pos = json.find("\"codec\"").unwrap();
+
+        assert!(started_pos < ended_pos);
+        assert!(ended_pos < rate_pos);
+        assert!(rate_pos < depth_pos);
+        assert!(depth_pos < chan_pos);
+        assert!(chan_pos < codec_pos);
+    }
+
+    #[test]
+    fn test_log_canonical_serialization() {
+        let mut m = TrstManifest::new_log();
+        m.device.id = "L001".to_string();
+        m.device.public_key = "ed25519:k".to_string();
+        if let ProfileMetadata::Log(ref mut meta) = m.metadata {
+            meta.started_at = "2025-06-01T00:00:00Z".to_string();
+            meta.ended_at = "2025-06-01T00:01:00Z".to_string();
+            meta.application = "agent".to_string();
+            meta.host = "node-01".to_string();
+            meta.log_level = "info".to_string();
+            meta.log_format = "json".to_string();
+        }
+        m.segments.push(make_segment());
+
+        let bytes = m.to_canonical_bytes().unwrap();
+        let json = String::from_utf8(bytes).unwrap();
+
+        let started_pos = json.find("\"started_at\"").unwrap();
+        let ended_pos = json.find("\"ended_at\"").unwrap();
+        let app_pos = json.find("\"application\"").unwrap();
+        let host_pos = json.find("\"host\"").unwrap();
+        let level_pos = json.find("\"log_level\"").unwrap();
+        let format_pos = json.find("\"log_format\"").unwrap();
+
+        assert!(started_pos < ended_pos);
+        assert!(ended_pos < app_pos);
+        assert!(app_pos < host_pos);
+        assert!(host_pos < level_pos);
+        assert!(level_pos < format_pos);
+    }
+
+    #[test]
+    fn test_validation_accepts_sensor_profile() {
+        let mut m = TrstManifest::new_sensor();
+        m.device.id = "S001".to_string();
+        m.device.public_key = "ed25519:k".to_string();
+        if let ProfileMetadata::Sensor(ref mut meta) = m.metadata {
+            meta.started_at = "2025-06-01T00:00:00Z".to_string();
+            meta.ended_at = "2025-06-01T00:01:00Z".to_string();
+            meta.unit = "celsius".to_string();
+            meta.sensor_model = "BME280".to_string();
+        }
+        m.segments.push(make_segment());
+        assert!(
+            m.validate().is_ok(),
+            "validate() must accept profile='sensor'"
+        );
+    }
+
+    #[test]
+    fn test_validation_accepts_audio_profile() {
+        let mut m = TrstManifest::new_audio();
+        m.device.id = "A001".to_string();
+        m.device.public_key = "ed25519:k".to_string();
+        if let ProfileMetadata::Audio(ref mut meta) = m.metadata {
+            meta.started_at = "2025-06-01T00:00:00Z".to_string();
+            meta.ended_at = "2025-06-01T00:01:00Z".to_string();
+        }
+        m.segments.push(make_segment());
+        assert!(
+            m.validate().is_ok(),
+            "validate() must accept profile='audio'"
+        );
+    }
+
+    #[test]
+    fn test_validation_accepts_log_profile() {
+        let mut m = TrstManifest::new_log();
+        m.device.id = "L001".to_string();
+        m.device.public_key = "ed25519:k".to_string();
+        if let ProfileMetadata::Log(ref mut meta) = m.metadata {
+            meta.started_at = "2025-06-01T00:00:00Z".to_string();
+            meta.ended_at = "2025-06-01T00:01:00Z".to_string();
+            meta.application = "agent".to_string();
+            meta.host = "node-01".to_string();
+        }
+        m.segments.push(make_segment());
+        assert!(m.validate().is_ok(), "validate() must accept profile='log'");
+    }
+
+    #[test]
+    fn test_untagged_sensor_discrimination() {
+        // JSON with unit+sensor_model should deserialize as Sensor, not Generic
+        let json = r#"{
+            "started_at": "2025-06-01T00:00:00Z",
+            "ended_at": "2025-06-01T00:01:00Z",
+            "sample_rate_hz": 100.0,
+            "unit": "celsius",
+            "sensor_model": "BME280"
+        }"#;
+        let meta: ProfileMetadata = serde_json::from_str(json).unwrap();
+        assert!(
+            matches!(meta, ProfileMetadata::Sensor(_)),
+            "Expected Sensor variant but got a different variant"
+        );
+    }
+
+    #[test]
+    fn test_untagged_audio_discrimination() {
+        // JSON with bit_depth+channels should deserialize as Audio, not Generic
+        let json = r#"{
+            "started_at": "2025-06-01T00:00:00Z",
+            "ended_at": "2025-06-01T00:01:00Z",
+            "sample_rate_hz": 44100,
+            "bit_depth": 16,
+            "channels": 2,
+            "codec": "pcm"
+        }"#;
+        let meta: ProfileMetadata = serde_json::from_str(json).unwrap();
+        assert!(
+            matches!(meta, ProfileMetadata::Audio(_)),
+            "Expected Audio variant but got a different variant"
+        );
+    }
+
+    #[test]
+    fn test_untagged_log_discrimination() {
+        // JSON with application+host should deserialize as Log, not Generic
+        let json = r#"{
+            "started_at": "2025-06-01T00:00:00Z",
+            "ended_at": "2025-06-01T00:01:00Z",
+            "application": "trustedge-agent",
+            "host": "edge-node-01",
+            "log_level": "info",
+            "log_format": "json"
+        }"#;
+        let meta: ProfileMetadata = serde_json::from_str(json).unwrap();
+        assert!(
+            matches!(meta, ProfileMetadata::Log(_)),
+            "Expected Log variant but got a different variant"
+        );
     }
 
     #[test]
