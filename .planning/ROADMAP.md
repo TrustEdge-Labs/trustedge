@@ -148,7 +148,7 @@ Plans:
   3. `trst unwrap` verifies the archive signature and continuity chain before producing any plaintext output
   4. A wrap-then-unwrap round-trip on arbitrary binary data produces byte-identical output
   5. `trst unwrap` on a tampered or incorrectly-keyed archive exits with a non-zero exit code and no plaintext output
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 43-01-PLAN.md -- HKDF key derivation in crypto.rs, update wrap to use derived key + nonce-prepended chunks
@@ -174,7 +174,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 42. Named Archive Profiles | 2/2 | Complete    | 2026-03-17 | - |
-| 43. Archive Decryption (trst unwrap) | v2.1 | 0/2 | Planning complete | - |
+| 43. Archive Decryption (trst unwrap) | 1/2 | In Progress|  | - |
 | 44. YubiKey CLI Integration | v2.1 | 0/? | Not started | - |
 
 ---

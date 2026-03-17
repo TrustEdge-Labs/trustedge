@@ -18,7 +18,7 @@ Requirements for the Data Lifecycle & Hardware Integration milestone. Each maps 
 ### Archive Decryption
 
 - [ ] **UNWRAP-01**: User can run `trst unwrap` to decrypt and reassemble the original data from a .trst archive
-- [ ] **UNWRAP-02**: `trst wrap` derives encryption key from device signing key via HKDF (replaces hardcoded demo key)
+- [x] **UNWRAP-02**: `trst wrap` derives encryption key from device signing key via HKDF (replaces hardcoded demo key)
 - [ ] **UNWRAP-03**: `trst unwrap` verifies archive integrity (signature + continuity chain) before decrypting
 - [ ] **UNWRAP-04**: Existing `trst wrap` archives created with the new key derivation can be round-tripped (wrap -> unwrap -> identical data)
 
@@ -71,7 +71,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | UNWRAP-01 | Phase 43 | Pending |
-| UNWRAP-02 | Phase 43 | Pending |
+| UNWRAP-02 | Phase 43 | Complete |
 | UNWRAP-03 | Phase 43 | Pending |
 | UNWRAP-04 | Phase 43 | Pending |
 | YUBI-01 | Phase 44 | Pending |
