@@ -152,8 +152,8 @@ pub use chain::{
     blake3_hex_or_b64, chain_next, genesis, segment_hash, validate_chain, ChainError, ChainSegment,
 };
 pub use crypto::{
-    decrypt_segment, encrypt_segment, format_nonce, generate_aad, generate_nonce24, parse_nonce,
-    sign_manifest, verify_manifest, CryptoError, DeviceKeypair,
+    decrypt_segment, derive_chunk_key, encrypt_segment, format_nonce, generate_aad,
+    generate_nonce24, parse_nonce, sign_manifest, verify_manifest, CryptoError, DeviceKeypair,
 };
 pub use secret::Secret;
 // Ed25519 types re-exported for downstream crates (JWKS, key management)

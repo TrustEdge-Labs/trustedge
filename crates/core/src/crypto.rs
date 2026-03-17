@@ -9,8 +9,10 @@
 use aead::{Aead, KeyInit};
 use chacha20poly1305::XChaCha20Poly1305;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
+use hkdf::Hkdf;
 use rand_core::{OsRng, RngCore};
 use serde_json::json;
+use sha2::Sha256;
 use zeroize::Zeroize;
 
 pub use crate::error::CryptoError;
@@ -108,6 +110,27 @@ impl DeviceKeypair {
     fn signing_key(&self) -> SigningKey {
         SigningKey::from_bytes(&self.secret)
     }
+
+    /// Return the raw 32-byte secret key bytes.
+    ///
+    /// Use this to pass the device key into key derivation functions such as
+    /// `derive_chunk_key`. Avoid storing or logging the returned reference.
+    pub fn secret_bytes(&self) -> &[u8; 32] {
+        &self.secret
+    }
+}
+
+/// Derive a 32-byte XChaCha20Poly1305 chunk encryption key from a device Ed25519 secret key.
+///
+/// Uses HKDF-SHA256 (RFC 5869) with an empty salt (the device key is high-entropy IKM)
+/// and a fixed domain tag `TRUSTEDGE_TRST_CHUNK_KEY`. The output is deterministic:
+/// the same device key always produces the same chunk key.
+pub fn derive_chunk_key(device_secret_bytes: &[u8; 32]) -> chacha20poly1305::Key {
+    let hkdf = Hkdf::<Sha256>::new(None, device_secret_bytes.as_slice());
+    let mut okm = [0u8; 32];
+    hkdf.expand(b"TRUSTEDGE_TRST_CHUNK_KEY", &mut okm)
+        .expect("HKDF expand with 32-byte OKM is always valid");
+    chacha20poly1305::Key::from(okm)
 }
 
 /// Generate a 24-byte nonce for XChaCha20Poly1305
@@ -444,5 +467,34 @@ mod tests {
         // but we can test that zeroize works on our test data
         secret_bytes.zeroize();
         assert_eq!(secret_bytes, [0u8; 32]);
+    }
+
+    #[test]
+    fn test_derive_chunk_key_deterministic() {
+        let input = [0xABu8; 32];
+        let key1 = derive_chunk_key(&input);
+        let key2 = derive_chunk_key(&input);
+        assert_eq!(key1.as_slice(), key2.as_slice());
+    }
+
+    #[test]
+    fn test_derive_chunk_key_different_inputs() {
+        let input_a = [0x01u8; 32];
+        let input_b = [0x02u8; 32];
+        let key_a = derive_chunk_key(&input_a);
+        let key_b = derive_chunk_key(&input_b);
+        assert_ne!(key_a.as_slice(), key_b.as_slice());
+    }
+
+    #[test]
+    fn test_secret_bytes_accessor() {
+        let keypair = DeviceKeypair::generate().unwrap();
+        let secret = keypair.secret_bytes();
+        assert_eq!(secret.len(), 32);
+
+        // Round-trip: export secret string, import, compare secret bytes
+        let exported = keypair.export_secret();
+        let imported = DeviceKeypair::import_secret(&exported).unwrap();
+        assert_eq!(keypair.secret_bytes(), imported.secret_bytes());
     }
 }
