@@ -116,7 +116,7 @@ Delivered working end-to-end demonstration of TrustEdge's full value proposition
 
 ---
 
-### 🚧 v2.1 Data Lifecycle & Hardware Integration (In Progress)
+### v2.1 Data Lifecycle & Hardware Integration (In Progress)
 
 **Milestone Goal:** Complete the data lifecycle by adding decryption/unwrap capability, expose YubiKey hardware signing in the CLI, and add named archive profiles for specific use cases.
 
@@ -132,7 +132,11 @@ Delivered working end-to-end demonstration of TrustEdge's full value proposition
   3. User can run `trst wrap --profile log` with log-specific fields (application, host, log_level) and receive a valid .trst archive
   4. All three profile archives pass `trst verify` with exit code 0
   5. `trst verify` on a sensor/audio/log archive produces the same human-readable output format as a generic archive
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 42-01-PLAN.md -- Add metadata structs, enum variants, validate/canonical, unit tests
+- [ ] 42-02-PLAN.md -- Add CLI flags for sensor/audio/log, acceptance tests
 
 ### Phase 43: Archive Decryption (trst unwrap)
 **Goal**: Users can recover original data from a .trst archive, completing the wrap/unwrap data lifecycle
@@ -165,9 +169,9 @@ Delivered working end-to-end demonstration of TrustEdge's full value proposition
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 42. Named Archive Profiles | v2.1 | 0/? | Not started | - |
+| 42. Named Archive Profiles | v2.1 | 0/2 | Planning complete | - |
 | 43. Archive Decryption (trst unwrap) | v2.1 | 0/? | Not started | - |
 | 44. YubiKey CLI Integration | v2.1 | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-03-16 after v2.1 roadmap created*
+*Last updated: 2026-03-16 after phase 42 planning*
