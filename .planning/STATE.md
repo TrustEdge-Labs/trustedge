@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Data Lifecycle & Hardware Integration
 status: planning
-stopped_at: Completed 43-01-PLAN.md
-last_updated: "2026-03-17T17:10:35.104Z"
+stopped_at: Completed 43-02-PLAN.md
+last_updated: "2026-03-17T17:25:57.605Z"
 last_activity: 2026-03-16 -- Roadmap created for v2.1
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -71,6 +71,7 @@ Key design decisions to lock before coding each phase:
 - [Phase 42-named-archive-profiles]: SensorMetadata, AudioMetadata, LogMetadata re-exported from trustedge-core to keep downstream import paths consistent
 - [Phase 43]: HKDF-SHA256 with empty salt + domain tag TRUSTEDGE_TRST_CHUNK_KEY derives deterministic chunk key from Ed25519 device key
 - [Phase 43]: Chunk files now [nonce:24][ciphertext:N]; BLAKE3 hashes cover nonce+ciphertext to match validate_archive disk reads
+- [Phase 43]: Used process::exit() on all error paths in handle_unwrap() to guarantee no partial output file is written on signature/continuity/decryption failure
 
 ### Pending Todos
 
@@ -84,8 +85,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T17:10:35.102Z
-Stopped at: Completed 43-01-PLAN.md
+Last session: 2026-03-17T17:25:57.603Z
+Stopped at: Completed 43-02-PLAN.md
 Resume file: None
 
 ---
