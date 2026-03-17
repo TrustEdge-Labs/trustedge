@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Data Lifecycle & Hardware Integration
 status: planning
-stopped_at: Completed 42-01-PLAN.md
-last_updated: "2026-03-17T03:18:39.536Z"
+stopped_at: Completed 42-02-PLAN.md
+last_updated: "2026-03-17T03:42:46.889Z"
 last_activity: 2026-03-16 -- Roadmap created for v2.1
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -67,6 +67,8 @@ Key design decisions to lock before coding each phase:
 - [Phase 44 — before code]: Signature format for ECDSA P-256 must be decided before implementation: "ecdsa-p256:<base64_der>" alongside existing "ed25519:..." format; confirm p256 crate version and workspace compatibility
 - [Phase 42-named-archive-profiles]: ProfileMetadata variant order: CamVideo, Sensor, Audio, Log, Generic - each typed variant has unique required fields for unambiguous untagged serde deserialization
 - [Phase 42-named-archive-profiles]: AudioMetadata.sample_rate_hz is u32 (integer Hz); SensorMetadata.sample_rate_hz is f64 (fractional Hz for precision sensors)
+- [Phase 42-named-archive-profiles]: Negative float CLI values require --flag=VALUE syntax; leading '-' is parsed as a flag prefix by clap
+- [Phase 42-named-archive-profiles]: SensorMetadata, AudioMetadata, LogMetadata re-exported from trustedge-core to keep downstream import paths consistent
 
 ### Pending Todos
 
@@ -80,8 +82,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T03:18:39.533Z
-Stopped at: Completed 42-01-PLAN.md
+Last session: 2026-03-17T03:42:46.887Z
+Stopped at: Completed 42-02-PLAN.md
 Resume file: None
 
 ---
