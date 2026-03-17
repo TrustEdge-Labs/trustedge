@@ -436,12 +436,12 @@ fn test_seed_deterministic_output() {
     // Test that seeded runs produce identical results
     assert_eq!(manifest1["segments"], manifest2["segments"]);
     assert_eq!(
-        manifest1["capture"]["started_at"],
-        manifest2["capture"]["started_at"]
+        manifest1["metadata"]["started_at"],
+        manifest2["metadata"]["started_at"]
     );
     assert_eq!(
-        manifest1["capture"]["ended_at"],
-        manifest2["capture"]["ended_at"]
+        manifest1["metadata"]["ended_at"],
+        manifest2["metadata"]["ended_at"]
     );
 
     // Check that segment hashes are identical (indicating same nonces were used)
@@ -455,8 +455,8 @@ fn test_seed_deterministic_output() {
     // Test that non-seeded run produces different results
     // (timestamps should be different, and hashes likely different due to different nonces)
     assert_ne!(
-        manifest1["capture"]["started_at"],
-        manifest3["capture"]["started_at"]
+        manifest1["metadata"]["started_at"],
+        manifest3["metadata"]["started_at"]
     );
 
     // Segment hashes should be different (due to different nonces)
