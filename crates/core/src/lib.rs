@@ -165,8 +165,9 @@ pub use format::*;
 pub use hybrid::{open_envelope, seal_for_recipient, HybridEncryptionError, SymmetricKey};
 pub use transport::{Transport, TransportConfig, TransportFactory};
 pub use trustedge_trst_protocols::archive::manifest::{
-    CamVideoManifest, CamVideoMetadata, CaptureInfo, ChunkInfo, DeviceInfo, GenericMetadata,
-    ManifestFormatError, ProfileMetadata, SegmentInfo, TrstManifest,
+    AudioMetadata, CamVideoManifest, CamVideoMetadata, CaptureInfo, ChunkInfo, DeviceInfo,
+    GenericMetadata, LogMetadata, ManifestFormatError, ProfileMetadata, SegmentInfo,
+    SensorMetadata, TrstManifest,
 };
 
 // Shared wire types — re-exported from trustedge-types for downstream access

@@ -22,8 +22,9 @@ use serde::Serialize;
 use std::time::Instant;
 use trustedge_core::{
     chain_next, encrypt_segment, generate_aad, genesis, read_archive, segment_hash, sign_manifest,
-    validate_archive, verify_manifest, write_archive, CamVideoMetadata, ChunkInfo, DeviceInfo,
-    DeviceKeypair, GenericMetadata, ProfileMetadata, SegmentInfo, TrstManifest,
+    validate_archive, verify_manifest, write_archive, AudioMetadata, CamVideoMetadata, ChunkInfo,
+    DeviceInfo, DeviceKeypair, GenericMetadata, LogMetadata, ProfileMetadata, SegmentInfo,
+    SensorMetadata, TrstManifest,
 };
 // Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
 // SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
@@ -123,6 +124,45 @@ struct WrapCmd {
     /// MIME type for generic profile
     #[arg(long, help = "MIME type (generic profile)")]
     mime_type: Option<String>,
+    /// Sample rate in Hz (sensor or audio profile)
+    #[arg(long, help = "Sample rate in Hz (sensor or audio profile)")]
+    sample_rate: Option<f64>,
+    /// Measurement unit (sensor profile: celsius, psi, rpm, etc.)
+    #[arg(long, help = "Measurement unit (sensor profile)")]
+    unit: Option<String>,
+    /// Sensor model identifier (sensor profile: DHT22, BMP280, etc.)
+    #[arg(long, help = "Sensor model (sensor profile)")]
+    sensor_model: Option<String>,
+    /// Latitude for geo-tagged sensor data
+    #[arg(long, help = "Latitude (sensor profile, optional)")]
+    latitude: Option<f64>,
+    /// Longitude for geo-tagged sensor data
+    #[arg(long, help = "Longitude (sensor profile, optional)")]
+    longitude: Option<f64>,
+    /// Altitude for geo-tagged sensor data
+    #[arg(long, help = "Altitude in meters (sensor profile, optional)")]
+    altitude: Option<f64>,
+    /// Bit depth (audio profile: 16, 24, 32)
+    #[arg(long, help = "Bit depth (audio profile)")]
+    bit_depth: Option<u16>,
+    /// Number of audio channels (audio profile: 1=mono, 2=stereo)
+    #[arg(long, help = "Number of channels (audio profile)")]
+    channels: Option<u8>,
+    /// Audio codec (audio profile: pcm, opus, aac)
+    #[arg(long, help = "Audio codec (audio profile)")]
+    codec: Option<String>,
+    /// Application name (log profile: nginx, syslog, etc.)
+    #[arg(long, help = "Application name (log profile)")]
+    application: Option<String>,
+    /// Host identifier (log profile)
+    #[arg(long, help = "Host identifier (log profile)")]
+    host: Option<String>,
+    /// Log level (log profile: info, error, debug, etc.)
+    #[arg(long, help = "Log level (log profile)")]
+    log_level: Option<String>,
+    /// Log format (log profile: json, syslog, plaintext)
+    #[arg(long, help = "Log format (log profile)")]
+    log_format: Option<String>,
 }
 
 #[derive(Args, Debug)]
@@ -351,6 +391,72 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
                 fps: fps as f64,
                 resolution: "1920x1080".to_string(),
                 codec: "raw".to_string(),
+            })
+        }
+        "sensor" => {
+            let sample_rate = args
+                .sample_rate
+                .ok_or_else(|| anyhow::anyhow!("--sample-rate is required for sensor profile"))?;
+            let unit = args
+                .unit
+                .ok_or_else(|| anyhow::anyhow!("--unit is required for sensor profile"))?;
+            let sensor_model = args
+                .sensor_model
+                .ok_or_else(|| anyhow::anyhow!("--sensor-model is required for sensor profile"))?;
+            ProfileMetadata::Sensor(SensorMetadata {
+                started_at: started_at.clone(),
+                ended_at: started_at.clone(),
+                sample_rate_hz: sample_rate,
+                unit,
+                sensor_model,
+                latitude: args.latitude,
+                longitude: args.longitude,
+                altitude: args.altitude,
+                labels: BTreeMap::new(),
+            })
+        }
+        "audio" => {
+            let sample_rate = args
+                .sample_rate
+                .ok_or_else(|| anyhow::anyhow!("--sample-rate is required for audio profile"))?;
+            let bit_depth = args
+                .bit_depth
+                .ok_or_else(|| anyhow::anyhow!("--bit-depth is required for audio profile"))?;
+            let channels = args
+                .channels
+                .ok_or_else(|| anyhow::anyhow!("--channels is required for audio profile"))?;
+            let codec = args
+                .codec
+                .ok_or_else(|| anyhow::anyhow!("--codec is required for audio profile"))?;
+            ProfileMetadata::Audio(AudioMetadata {
+                started_at: started_at.clone(),
+                ended_at: started_at.clone(),
+                sample_rate_hz: sample_rate as u32,
+                bit_depth,
+                channels,
+                codec,
+            })
+        }
+        "log" => {
+            let application = args
+                .application
+                .ok_or_else(|| anyhow::anyhow!("--application is required for log profile"))?;
+            let host = args
+                .host
+                .ok_or_else(|| anyhow::anyhow!("--host is required for log profile"))?;
+            let log_level = args
+                .log_level
+                .ok_or_else(|| anyhow::anyhow!("--log-level is required for log profile"))?;
+            let log_format = args
+                .log_format
+                .ok_or_else(|| anyhow::anyhow!("--log-format is required for log profile"))?;
+            ProfileMetadata::Log(LogMetadata {
+                started_at: started_at.clone(),
+                ended_at: started_at.clone(),
+                application,
+                host,
+                log_level,
+                log_format,
             })
         }
         _ => {
