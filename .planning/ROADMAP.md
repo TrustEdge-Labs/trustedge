@@ -132,7 +132,7 @@ Delivered working end-to-end demonstration of TrustEdge's full value proposition
   3. User can run `trst wrap --profile log` with log-specific fields (application, host, log_level) and receive a valid .trst archive
   4. All three profile archives pass `trst verify` with exit code 0
   5. `trst verify` on a sensor/audio/log archive produces the same human-readable output format as a generic archive
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 42-01-PLAN.md -- Add metadata structs, enum variants, validate/canonical, unit tests
@@ -169,7 +169,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 42. Named Archive Profiles | v2.1 | 0/2 | Planning complete | - |
+| 42. Named Archive Profiles | 1/2 | In Progress|  | - |
 | 43. Archive Decryption (trst unwrap) | v2.1 | 0/? | Not started | - |
 | 44. YubiKey CLI Integration | v2.1 | 0/? | Not started | - |
 

@@ -31,9 +31,9 @@ Requirements for the Data Lifecycle & Hardware Integration milestone. Each maps 
 
 ### Named Profiles
 
-- [ ] **PROF-05**: User can run `trst wrap --profile sensor` with sensor-specific metadata (sample_rate, unit, sensor_model)
-- [ ] **PROF-06**: User can run `trst wrap --profile audio` with audio-specific metadata (sample_rate, bit_depth, channels, codec)
-- [ ] **PROF-07**: User can run `trst wrap --profile log` with log-specific metadata (application, host, log_level)
+- [x] **PROF-05**: User can run `trst wrap --profile sensor` with sensor-specific metadata (sample_rate, unit, sensor_model)
+- [x] **PROF-06**: User can run `trst wrap --profile audio` with audio-specific metadata (sample_rate, bit_depth, channels, codec)
+- [x] **PROF-07**: User can run `trst wrap --profile log` with log-specific metadata (application, host, log_level)
 - [ ] **PROF-08**: All named profiles produce valid .trst archives that pass `trst verify`
 
 ## Future Requirements
@@ -78,9 +78,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | YUBI-02 | Phase 44 | Pending |
 | YUBI-03 | Phase 44 | Pending |
 | YUBI-04 | Phase 44 | Pending |
-| PROF-05 | Phase 42 | Pending |
-| PROF-06 | Phase 42 | Pending |
-| PROF-07 | Phase 42 | Pending |
+| PROF-05 | Phase 42 | Complete |
+| PROF-06 | Phase 42 | Complete |
+| PROF-07 | Phase 42 | Complete |
 | PROF-08 | Phase 42 | Pending |
 
 **Coverage:**

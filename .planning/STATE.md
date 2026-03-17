@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Data Lifecycle & Hardware Integration
 status: planning
-stopped_at: Phase 42 context gathered
-last_updated: "2026-03-17T02:37:17.160Z"
+stopped_at: Completed 42-01-PLAN.md
+last_updated: "2026-03-17T03:18:39.536Z"
 last_activity: 2026-03-16 -- Roadmap created for v2.1
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -65,6 +65,8 @@ Key design decisions to lock before coding each phase:
 - [Phase 42 — before code]: Typed enum variants (Sensor, Audio, Log) each need at least one required field not present in Generic for unambiguous serde deserialization; write canonical JSON fixture tests before adding any new variant
 - [Phase 43 — before code]: HKDF-SHA256 derives XChaCha20Poly1305 chunk key from Ed25519 signing key (domain tag "TRUSTEDGE_TRST_CHUNK_KEY"); wrap + unwrap updated atomically; v2.0 demo archives (hardcoded key) will not decrypt with new unwrap — document in CHANGELOG
 - [Phase 44 — before code]: Signature format for ECDSA P-256 must be decided before implementation: "ecdsa-p256:<base64_der>" alongside existing "ed25519:..." format; confirm p256 crate version and workspace compatibility
+- [Phase 42-named-archive-profiles]: ProfileMetadata variant order: CamVideo, Sensor, Audio, Log, Generic - each typed variant has unique required fields for unambiguous untagged serde deserialization
+- [Phase 42-named-archive-profiles]: AudioMetadata.sample_rate_hz is u32 (integer Hz); SensorMetadata.sample_rate_hz is f64 (fractional Hz for precision sensors)
 
 ### Pending Todos
 
@@ -78,9 +80,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T02:37:17.157Z
-Stopped at: Phase 42 context gathered
-Resume file: .planning/phases/42-named-archive-profiles/42-CONTEXT.md
+Last session: 2026-03-17T03:18:39.533Z
+Stopped at: Completed 42-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-16 after v2.1 roadmap created*
