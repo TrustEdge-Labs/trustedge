@@ -4,7 +4,7 @@ milestone: v2.1
 milestone_name: Data Lifecycle & Hardware Integration
 status: planning
 stopped_at: Completed 43-02-PLAN.md
-last_updated: "2026-03-17T17:25:57.605Z"
+last_updated: "2026-03-17T17:28:50.455Z"
 last_activity: 2026-03-16 -- Roadmap created for v2.1
 progress:
   total_phases: 3

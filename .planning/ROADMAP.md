@@ -174,7 +174,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 42. Named Archive Profiles | 2/2 | Complete    | 2026-03-17 | - |
-| 43. Archive Decryption (trst unwrap) | 2/2 | Complete   | 2026-03-17 | - |
+| 43. Archive Decryption (trst unwrap) | 2/2 | Complete    | 2026-03-17 | - |
 | 44. YubiKey CLI Integration | v2.1 | 0/? | Not started | - |
 
 ---
