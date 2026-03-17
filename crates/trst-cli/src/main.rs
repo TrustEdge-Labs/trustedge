@@ -20,10 +20,10 @@ use rand_chacha::ChaCha20Rng;
 use serde::Serialize;
 use std::time::Instant;
 use trustedge_core::{
-    chain_next, derive_chunk_key, encrypt_segment, generate_aad, genesis, read_archive,
-    segment_hash, sign_manifest, validate_archive, verify_manifest, write_archive, AudioMetadata,
-    CamVideoMetadata, ChunkInfo, DeviceInfo, DeviceKeypair, GenericMetadata, LogMetadata,
-    ProfileMetadata, SegmentInfo, SensorMetadata, TrstManifest,
+    chain_next, decrypt_segment, derive_chunk_key, encrypt_segment, generate_aad, genesis,
+    read_archive, segment_hash, sign_manifest, validate_archive, verify_manifest, write_archive,
+    AudioMetadata, CamVideoMetadata, ChunkInfo, DeviceInfo, DeviceKeypair, GenericMetadata,
+    LogMetadata, ProfileMetadata, SegmentInfo, SensorMetadata, TrstManifest,
 };
 // Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
 // SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
@@ -69,6 +69,7 @@ struct Cli {
 enum Commands {
     Wrap(WrapCmd),
     Verify(VerifyCmd),
+    Unwrap(UnwrapCmd),
     EmitRequest(EmitRequestCmd),
     Keygen(KeygenCmd),
 }
@@ -185,6 +186,24 @@ struct VerifyCmd {
 }
 
 #[derive(Args, Debug)]
+struct UnwrapCmd {
+    #[arg(value_name = "ARCHIVE", help = "Path to .trst archive directory")]
+    archive: PathBuf,
+    #[arg(
+        long = "device-key",
+        value_name = "PATH",
+        help = "Path to device signing key file"
+    )]
+    device_key: PathBuf,
+    #[arg(
+        long = "out",
+        value_name = "PATH",
+        help = "Output file path for recovered data"
+    )]
+    output: PathBuf,
+}
+
+#[derive(Args, Debug)]
 struct KeygenCmd {
     #[arg(
         long = "out-key",
@@ -243,6 +262,7 @@ async fn run() -> Result<()> {
     match cli.command {
         Commands::Wrap(args) => handle_wrap(args),
         Commands::Verify(args) => handle_verify(args),
+        Commands::Unwrap(args) => handle_unwrap(args),
         Commands::EmitRequest(args) => handle_emit_request(args).await,
         Commands::Keygen(args) => handle_keygen(args),
     }
@@ -666,6 +686,92 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
     // Success case
     report.verify_time_ms = start_time.elapsed().as_millis() as u64;
     output_success(&args, &report)?;
+    Ok(())
+}
+
+fn handle_unwrap(args: UnwrapCmd) -> Result<()> {
+    // Load device keypair from file
+    let key_bytes = fs::read(&args.device_key)
+        .with_context(|| format!("failed to read device key '{}'", args.device_key.display()))?;
+    let contents = String::from_utf8_lossy(&key_bytes).trim().to_string();
+    let device_keypair = DeviceKeypair::import_secret(&contents)?;
+
+    // Read archive
+    let (manifest, chunks) = read_archive(&args.archive)
+        .with_context(|| format!("Failed to read archive: {}", args.archive.display()))?;
+
+    // Verify signature BEFORE any decryption
+    let signature = manifest
+        .signature
+        .as_ref()
+        .ok_or_else(|| anyhow::anyhow!("Archive has no signature"))?;
+    let canonical_bytes = manifest.to_canonical_bytes()?;
+    let sig_valid = verify_manifest(&device_keypair.public, &canonical_bytes, signature)?;
+    if !sig_valid {
+        eprintln!("Signature: FAIL");
+        process::exit(10);
+    }
+    eprintln!("Signature: PASS");
+
+    // Validate continuity chain
+    if let Err(e) = validate_archive(&args.archive) {
+        eprintln!("Continuity: FAIL ({})", e);
+        process::exit(11);
+    }
+    eprintln!("Continuity: PASS");
+
+    // Derive chunk key from device signing key via HKDF-SHA256
+    let encryption_key = derive_chunk_key(device_keypair.secret_bytes());
+
+    // Extract started_at from metadata for AAD reconstruction
+    let started_at = match &manifest.metadata {
+        ProfileMetadata::CamVideo(m) => m.started_at.clone(),
+        ProfileMetadata::Sensor(m) => m.started_at.clone(),
+        ProfileMetadata::Audio(m) => m.started_at.clone(),
+        ProfileMetadata::Log(m) => m.started_at.clone(),
+        ProfileMetadata::Generic(m) => m.started_at.clone(),
+    };
+
+    // Decrypt chunks in order and reassemble
+    let aad = generate_aad(
+        &manifest.trst_version,
+        &manifest.profile,
+        &manifest.device.id,
+        &started_at,
+    );
+    let mut output_data: Vec<u8> = Vec::new();
+
+    for (index, chunk_bytes) in &chunks {
+        if chunk_bytes.len() < 24 {
+            anyhow::bail!(
+                "Chunk {:05} too short to contain nonce ({} bytes)",
+                index,
+                chunk_bytes.len()
+            );
+        }
+        let nonce: [u8; 24] = chunk_bytes[..24].try_into().unwrap();
+        let ciphertext = &chunk_bytes[24..];
+        let plaintext = decrypt_segment(&encryption_key, &nonce, ciphertext, &aad)
+            .map_err(|e| {
+                eprintln!(
+                    "Decryption failed — wrong device key or corrupted archive: {}",
+                    e
+                );
+                process::exit(1);
+            })
+            .unwrap();
+        output_data.extend_from_slice(&plaintext);
+    }
+
+    // Write output file
+    fs::write(&args.output, &output_data)
+        .with_context(|| format!("Failed to write output: {}", args.output.display()))?;
+
+    // Print summary to stderr
+    eprintln!("Chunks: {}", chunks.len());
+    eprintln!("Bytes: {}", output_data.len());
+    eprintln!("Output: {}", args.output.display());
+
     Ok(())
 }
 
