@@ -490,3 +490,247 @@ fn acceptance_camvideo_still_works() {
     let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
     run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
 }
+
+// ─── Sensor profile acceptance tests ─────────────────────────────────────────
+
+#[test]
+fn acceptance_sensor_wrap_verify() {
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-sensor.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            "sensor",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+            "--sample-rate",
+            "100.0",
+            "--unit",
+            "celsius",
+            "--sensor-model",
+            "DHT22",
+        ])
+        .assert()
+        .success();
+
+    let manifest_json = fs::read_to_string(archive_dir.join("manifest.json")).unwrap();
+    let manifest_value: serde_json::Value = serde_json::from_str(&manifest_json).unwrap();
+    assert_eq!(manifest_value["profile"], "sensor");
+    assert_eq!(
+        manifest_value["metadata"]["sample_rate_hz"], 100.0,
+        "sample_rate_hz must be present in sensor manifest metadata"
+    );
+    assert_eq!(
+        manifest_value["metadata"]["unit"], "celsius",
+        "unit must be present in sensor manifest metadata"
+    );
+    assert_eq!(
+        manifest_value["metadata"]["sensor_model"], "DHT22",
+        "sensor_model must be present in sensor manifest metadata"
+    );
+
+    let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
+    run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
+}
+
+#[test]
+fn acceptance_audio_wrap_verify() {
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-audio.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            "audio",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+            "--sample-rate",
+            "44100",
+            "--bit-depth",
+            "16",
+            "--channels",
+            "2",
+            "--codec",
+            "pcm",
+        ])
+        .assert()
+        .success();
+
+    let manifest_json = fs::read_to_string(archive_dir.join("manifest.json")).unwrap();
+    let manifest_value: serde_json::Value = serde_json::from_str(&manifest_json).unwrap();
+    assert_eq!(manifest_value["profile"], "audio");
+    assert_eq!(
+        manifest_value["metadata"]["sample_rate_hz"], 44100,
+        "sample_rate_hz must be present in audio manifest metadata"
+    );
+    assert_eq!(
+        manifest_value["metadata"]["bit_depth"], 16,
+        "bit_depth must be present in audio manifest metadata"
+    );
+    assert_eq!(
+        manifest_value["metadata"]["channels"], 2,
+        "channels must be present in audio manifest metadata"
+    );
+    assert_eq!(
+        manifest_value["metadata"]["codec"], "pcm",
+        "codec must be present in audio manifest metadata"
+    );
+
+    let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
+    run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
+}
+
+#[test]
+fn acceptance_log_wrap_verify() {
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-log.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            "log",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+            "--application",
+            "nginx",
+            "--host",
+            "web-01",
+            "--log-level",
+            "info",
+            "--log-format",
+            "json",
+        ])
+        .assert()
+        .success();
+
+    let manifest_json = fs::read_to_string(archive_dir.join("manifest.json")).unwrap();
+    let manifest_value: serde_json::Value = serde_json::from_str(&manifest_json).unwrap();
+    assert_eq!(manifest_value["profile"], "log");
+    assert_eq!(
+        manifest_value["metadata"]["application"], "nginx",
+        "application must be present in log manifest metadata"
+    );
+    assert_eq!(
+        manifest_value["metadata"]["host"], "web-01",
+        "host must be present in log manifest metadata"
+    );
+    assert_eq!(
+        manifest_value["metadata"]["log_level"], "info",
+        "log_level must be present in log manifest metadata"
+    );
+    assert_eq!(
+        manifest_value["metadata"]["log_format"], "json",
+        "log_format must be present in log manifest metadata"
+    );
+
+    let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
+    run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
+}
+
+#[test]
+fn acceptance_sensor_with_geo() {
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-sensor-geo.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            "sensor",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+            "--sample-rate",
+            "50.0",
+            "--unit",
+            "psi",
+            "--sensor-model",
+            "BMP280",
+            "--latitude",
+            "37.7749",
+            "--longitude=-122.4194",
+            "--altitude",
+            "10.0",
+        ])
+        .assert()
+        .success();
+
+    let manifest_json = fs::read_to_string(archive_dir.join("manifest.json")).unwrap();
+    let manifest_value: serde_json::Value = serde_json::from_str(&manifest_json).unwrap();
+    assert_eq!(manifest_value["profile"], "sensor");
+    assert!(
+        manifest_value["metadata"]["latitude"].is_number(),
+        "latitude must be present in geo-tagged sensor manifest"
+    );
+    assert!(
+        manifest_value["metadata"]["longitude"].is_number(),
+        "longitude must be present in geo-tagged sensor manifest"
+    );
+    assert!(
+        manifest_value["metadata"]["altitude"].is_number(),
+        "altitude must be present in geo-tagged sensor manifest"
+    );
+
+    let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
+    run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
+}
+
+#[test]
+fn acceptance_sensor_missing_required_flag() {
+    // Missing --unit and --sensor-model; should fail with a clear error message
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-sensor-fail.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--profile",
+            "sensor",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+            "--sample-rate",
+            "100.0",
+            // --unit and --sensor-model intentionally omitted
+        ])
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains("required"));
+}
