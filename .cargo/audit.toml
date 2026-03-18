@@ -22,35 +22,9 @@
 # Ignore advisories that have no fix available or are transitive dependencies
 # from third-party crates we cannot control.
 
-ignore = [
-    # RUSTSEC-2023-0071: RSA Marvin Attack (timing sidechannel)
-    #
-    # Affected: rsa 0.7.2 (via yubikey crate), rsa 0.9.10 (direct dependency)
-    # Severity: 5.9 (MEDIUM)
-    # Date: 2023-11-22
-    # URL: https://rustsec.org/advisories/RUSTSEC-2023-0071
-    #
-    # Why unfixable:
-    # - Advisory states "No fixed upgrade is available!" across all RSA versions
-    # - rsa 0.7.2 is a transitive dependency from yubikey 0.7.0 (latest available)
-    # - rsa 0.9.10 is used for Pubky integration (experimental tier-2 crate)
-    #
-    # Risk acceptance rationale:
-    # - TrustEdge does NOT use RSA for encryption in production code paths
-    # - RSA is only used in:
-    #   1. YubiKey PIV operations (feature-gated, hardware-backed)
-    #   2. Pubky hybrid encryption (experimental tier-2 crate, not production)
-    # - Core security model uses Ed25519 signatures + AES-256-GCM encryption
-    # - Marvin Attack requires attacker to observe RSA decryption timing patterns,
-    #   which is not applicable to our use cases (YubiKey hardware ops, experimental features)
-    #
-    # Mitigation:
-    # - Monitor for upstream fixes in yubikey and rsa crates
-    # - Document that tier-2 Pubky crates are experimental and not security-audited
-    # - Consider removing RSA dependency from trustedge-core if Pubky integration
-    #   can be isolated to experimental crates only
-    #
-    # Review date: 2026-02-13
-    # Next review: When yubikey or rsa crates release updates
-    "RUSTSEC-2023-0071",
-]
+ignore = []
+# RUSTSEC-2023-0071 (RSA Marvin Attack) was previously risk-accepted here.
+# Removed in v2.2 (Phase 45) after migrating RSA encrypt/decrypt to OAEP-SHA256
+# padding in crates/core/src/asymmetric.rs. The advisory no longer applies to
+# TrustEdge's direct RSA usage. The yubikey transitive dependency on rsa 0.7.2
+# is not flagged by cargo-audit at this time.
