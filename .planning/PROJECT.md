@@ -16,6 +16,16 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
+## Current Milestone: v2.2 Security Remediation
+
+**Goal:** Fix critical cryptographic flaws — replace insecure RSA PKCS#1 v1.5 with OAEP padding, deprecate v1 envelope format, harden PBKDF2 minimums, and encrypt device keys at rest with passphrase protection.
+
+**Target fixes:**
+- RSA encryption uses OAEP padding instead of PKCS#1 v1.5 (padding oracle resistance)
+- v1 envelope format deprecated (force migration to HKDF-based v2)
+- PBKDF2 iteration minimum enforced at 300,000+
+- File-based device keys encrypted at rest with passphrase via rpassword
+
 ## Current State
 
 Shipped v2.1 Data Lifecycle & Hardware Integration. The full data lifecycle is now complete: wrap encrypts data into tamper-evident .trst archives, unwrap decrypts and reassembles original data with mandatory verify-before-decrypt. YubiKey hardware signing is exposed in the CLI via `--backend yubikey`. Named profiles (sensor, audio, log) support real-world use cases. Docker stack, demo script, and developer documentation from v2.0 remain current.
@@ -130,7 +140,10 @@ Shipped v2.1 Data Lifecycle & Hardware Integration. The full data lifecycle is n
 - ✓ Named archive profiles (sensor, audio, log) with typed metadata and CLI flags — v2.1
 - ✓ Multi-algorithm verify dispatch (Ed25519 + ECDSA P-256 prefix-based) — v2.1
 
-(None active — define next milestone with /gsd:new-milestone)
+- [ ] RSA OAEP padding replaces PKCS#1 v1.5 in asymmetric.rs
+- [ ] v1 envelope format deprecated with migration path
+- [ ] PBKDF2 minimum iteration count enforced at 300,000+
+- [ ] Device keys encrypted at rest with passphrase protection
 
 ### Deferred
 
@@ -268,4 +281,4 @@ CI uses `--workspace` for root workspace. YubiKey feature validated unconditiona
 | README leads with problem + quick start | Developer audience wants to try it fast, not read architecture | ✓ Good — 465 → 128 lines |
 
 ---
-*Last updated: 2026-03-18 after v2.1 milestone shipped*
+*Last updated: 2026-03-18 after v2.2 milestone started*
