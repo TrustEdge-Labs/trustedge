@@ -21,6 +21,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v1.8 KDF Architecture Fix** - Phases 35-37 (shipped 2026-02-24)
 - ✅ **v2.0 End-to-End Demo** - Phases 38-41 (shipped 2026-03-16)
 - ✅ **v2.1 Data Lifecycle & Hardware Integration** - Phases 42-44 (shipped 2026-03-18)
+- 🚧 **v2.2 Security Remediation** - Phases 45-47 (in progress)
 
 ## Phases
 
@@ -50,4 +51,60 @@ Completed the data lifecycle with decryption capability, exposed YubiKey hardwar
 </details>
 
 ---
-*Last updated: 2026-03-18 after v2.1 milestone shipped*
+
+### v2.2 Security Remediation (In Progress)
+
+**Milestone Goal:** Fix critical cryptographic flaws — replace insecure RSA PKCS#1 v1.5 with OAEP, deprecate v1 envelope format, enforce PBKDF2 minimums, and encrypt device keys at rest.
+
+#### Phase Summary
+
+- [ ] **Phase 45: RSA OAEP Migration** - Replace PKCS#1 v1.5 with OAEP-SHA256 padding in asymmetric.rs (encrypt and decrypt paths)
+- [ ] **Phase 46: Envelope Hardening** - Deprecate v1 envelope format, enforce v2-only sealing, enforce PBKDF2 minimum iterations
+- [ ] **Phase 47: Key Protection at Rest** - Encrypt device key files with passphrase, require passphrase on wrap/unwrap, reject unencrypted keys by default
+
+## Phase Details
+
+### Phase 45: RSA OAEP Migration
+**Goal**: RSA asymmetric operations are resistant to padding oracle attacks
+**Depends on**: Nothing (isolated to asymmetric.rs)
+**Requirements**: RSA-01, RSA-02
+**Success Criteria** (what must be TRUE):
+  1. `trustedge` CLI encrypting with RSA produces OAEP-SHA256 ciphertext (PKCS#1 v1.5 ciphertext is rejected on decrypt)
+  2. Decryption of PKCS#1 v1.5 ciphertext returns an error rather than silently succeeding
+  3. All existing RSA tests pass using OAEP padding (no test is skipped or weakened)
+  4. cargo-audit no longer flags RSA Marvin Attack advisory as a live concern for the encrypt/decrypt path
+**Plans**: TBD
+
+### Phase 46: Envelope Hardening
+**Goal**: The v1 envelope format is deprecated and PBKDF2 iteration minimums are enforced everywhere
+**Depends on**: Phase 45
+**Requirements**: ENV-01, ENV-02, KDF-01
+**Success Criteria** (what must be TRUE):
+  1. Calling `seal()` always produces a v2 envelope — no code path in the library produces v1 format
+  2. Calling `unseal()` on a v1 envelope succeeds but emits a deprecation warning visible in logs
+  3. Any call to a PBKDF2 function with fewer than 300,000 iterations returns an error rather than proceeding
+  4. CI passes with existing test suite (all v1 round-trip tests updated to expect deprecation warning)
+**Plans**: TBD
+
+### Phase 47: Key Protection at Rest
+**Goal**: Device key files are encrypted at rest and the CLI refuses to use unencrypted keys by default
+**Depends on**: Phase 46
+**Requirements**: KEY-01, KEY-02, KEY-03
+**Success Criteria** (what must be TRUE):
+  1. `trst keygen` prompts for a passphrase and writes an encrypted private key file (not plaintext)
+  2. `trst wrap` prompts for passphrase and decrypts the key before signing — no plaintext key is written to disk during the operation
+  3. `trst unwrap` prompts for passphrase and decrypts the key before reassembling — operation fails if wrong passphrase is supplied
+  4. Passing a plaintext (unencrypted) key file to `trst wrap` or `trst unwrap` returns an error unless `--unencrypted` flag is provided
+  5. CI/automation can pass `--unencrypted` to bypass the passphrase requirement without interactive input
+**Plans**: TBD
+
+## Progress
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 45. RSA OAEP Migration | v2.2 | 0/TBD | Not started | - |
+| 46. Envelope Hardening | v2.2 | 0/TBD | Not started | - |
+| 47. Key Protection at Rest | v2.2 | 0/TBD | Not started | - |
+
+---
+*Last updated: 2026-03-18 after v2.2 roadmap created*

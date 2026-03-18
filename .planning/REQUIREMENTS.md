@@ -65,20 +65,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RSA-01 | TBD | Pending |
-| RSA-02 | TBD | Pending |
-| ENV-01 | TBD | Pending |
-| ENV-02 | TBD | Pending |
-| KDF-01 | TBD | Pending |
-| KEY-01 | TBD | Pending |
-| KEY-02 | TBD | Pending |
-| KEY-03 | TBD | Pending |
+| RSA-01 | Phase 45 | Pending |
+| RSA-02 | Phase 45 | Pending |
+| ENV-01 | Phase 46 | Pending |
+| ENV-02 | Phase 46 | Pending |
+| KDF-01 | Phase 46 | Pending |
+| KEY-01 | Phase 47 | Pending |
+| KEY-02 | Phase 47 | Pending |
+| KEY-03 | Phase 47 | Pending |
 
 **Coverage:**
 - v2.2 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8
+- Mapped to phases: 8
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-18*
-*Last updated: 2026-03-18 after initial definition*
+*Last updated: 2026-03-18 after roadmap creation*

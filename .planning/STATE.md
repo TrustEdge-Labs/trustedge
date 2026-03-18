@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Data Lifecycle & Hardware Integration
+milestone: v2.2
+milestone_name: Security Remediation
 status: planning
-stopped_at: Completed 44-02-PLAN.md
-last_updated: "2026-03-18T00:52:49.350Z"
-last_activity: 2026-03-16 -- Roadmap created for v2.1
+stopped_at: Roadmap created for v2.2
+last_updated: "2026-03-18"
+last_activity: 2026-03-18 -- Roadmap created for v2.2 (3 phases, 8 requirements)
 progress:
   total_phases: 3
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -26,54 +26,46 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-16)
+See: .planning/PROJECT.md (updated 2026-03-18)
 
-**Core value:** Prove that data from an edge device has not been tampered with -- from capture to verification -- using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** v2.1 Data Lifecycle & Hardware Integration -- Phase 42: Named Archive Profiles
+**Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
+**Current focus:** v2.2 Security Remediation — Phase 45: RSA OAEP Migration
 
 ## Current Position
 
-Phase: 42 of 44 (Named Archive Profiles)
+Phase: 45 of 47 (RSA OAEP Migration)
 Plan: Ready to plan
 Status: Ready to plan
-Last activity: 2026-03-16 -- Roadmap created for v2.1
+Last activity: 2026-03-18 — Roadmap created for v2.2
 
 Progress: [..........] 0%
 
 ## Performance Metrics
 
 **Cumulative (all milestones):**
-- v1.0: 8 phases, 17 plans, 31 tasks
-- v1.1: 4 phases, 6 plans, 8 tasks
-- v1.2: 2 phases, 4 plans, 9 tasks
-- v1.3: 4 phases, 5 plans, 7 tasks
-- v1.4: 5 phases, 5 plans, 10 tasks
-- v1.5: 4 phases, 8 plans, 16 tasks
-- v1.6: 3 phases, 6 plans, 11 tasks
-- v1.7: 4 phases, 10 plans, 18 tasks
-- v1.8: 3 phases, 4 plans, 8 tasks
-- v2.0: 4 phases, 8 plans, ~17 tasks
-- **Total: 41 phases, 69 plans, ~135 tasks**
+- v1.0: 8 phases, 17 plans
+- v1.1: 4 phases, 6 plans
+- v1.2: 2 phases, 4 plans
+- v1.3: 4 phases, 5 plans
+- v1.4: 5 phases, 5 plans
+- v1.5: 4 phases, 8 plans
+- v1.6: 3 phases, 6 plans
+- v1.7: 4 phases, 10 plans
+- v1.8: 3 phases, 4 plans
+- v2.0: 4 phases, 8 plans
+- v2.1: 3 phases, 6 plans
+- **Total: 44 phases, 79 plans**
 
 ## Accumulated Context
 
 ### Decisions
 
-Cleared -- see PROJECT.md Key Decisions table for full history.
+Cleared — see PROJECT.md Key Decisions table for full history.
 
-Key design decisions to lock before coding each phase:
-- [Phase 42 — before code]: Typed enum variants (Sensor, Audio, Log) each need at least one required field not present in Generic for unambiguous serde deserialization; write canonical JSON fixture tests before adding any new variant
-- [Phase 43 — before code]: HKDF-SHA256 derives XChaCha20Poly1305 chunk key from Ed25519 signing key (domain tag "TRUSTEDGE_TRST_CHUNK_KEY"); wrap + unwrap updated atomically; v2.0 demo archives (hardcoded key) will not decrypt with new unwrap — document in CHANGELOG
-- [Phase 44 — before code]: Signature format for ECDSA P-256 must be decided before implementation: "ecdsa-p256:<base64_der>" alongside existing "ed25519:..." format; confirm p256 crate version and workspace compatibility
-- [Phase 42-named-archive-profiles]: ProfileMetadata variant order: CamVideo, Sensor, Audio, Log, Generic - each typed variant has unique required fields for unambiguous untagged serde deserialization
-- [Phase 42-named-archive-profiles]: AudioMetadata.sample_rate_hz is u32 (integer Hz); SensorMetadata.sample_rate_hz is f64 (fractional Hz for precision sensors)
-- [Phase 42-named-archive-profiles]: Negative float CLI values require --flag=VALUE syntax; leading '-' is parsed as a flag prefix by clap
-- [Phase 42-named-archive-profiles]: SensorMetadata, AudioMetadata, LogMetadata re-exported from trustedge-core to keep downstream import paths consistent
-- [Phase 43]: HKDF-SHA256 with empty salt + domain tag TRUSTEDGE_TRST_CHUNK_KEY derives deterministic chunk key from Ed25519 device key
-- [Phase 43]: Chunk files now [nonce:24][ciphertext:N]; BLAKE3 hashes cover nonce+ciphertext to match validate_archive disk reads
-- [Phase 43]: Used process::exit() on all error paths in handle_unwrap() to guarantee no partial output file is written on signature/continuity/decryption failure
-- [Phase 44-yubikey-cli-integration]: ECDSA P-256 signature format: ecdsa-p256:<base64_sec1_uncompressed> for keys, ecdsa-p256:<base64_der> for DER signatures; p256 crate handles SHA-256 hashing internally
-- [Phase 44-yubikey-cli-integration]: --device-key required with --backend yubikey; YubiKey handles only ECDSA P-256 signing, software key still does HKDF chunk encryption
+Relevant prior decisions for v2.2 phases:
+- [v1.3]: RSA Marvin Attack advisory (RUSTSEC-2023-0071) risk-accepted — Phase 45 resolves this; remove from .cargo/audit.toml after OAEP migration
+- [v1.8]: Keyring PBKDF2 hardened to 600k iterations — KDF-01 minimum is 300k; existing keyring already exceeds minimum
+- [v2.1]: rpassword used for YubiKey PIN prompt — same crate used for passphrase prompts in KEY-01/02
 
 ### Pending Todos
 
@@ -81,15 +73,14 @@ None.
 
 ### Blockers/Concerns
 
-- Hardware tests require physical YubiKey 5 series (carried from v1.1) — Phase 44 acceptance tests need hardware
-- RSA Marvin Attack advisory (RUSTSEC-2023-0071) risk-accepted (carried from v1.3)
-- Phase 44: Confirm p256 crate workspace version compatibility before coding (low risk, well-maintained crate family)
+- Phase 47: Existing key files from pre-v2.2 `trst keygen` are unencrypted plaintext — KEY-03 `--unencrypted` flag is the migration escape hatch for existing users
+- Phase 45: After OAEP migration, confirm RUSTSEC-2023-0071 is no longer applicable and update .cargo/audit.toml
 
 ## Session Continuity
 
-Last session: 2026-03-18T00:47:57.016Z
-Stopped at: Completed 44-02-PLAN.md
+Last session: 2026-03-18
+Stopped at: Roadmap created for v2.2, no plans written yet
 Resume file: None
 
 ---
-*Last updated: 2026-03-16 after v2.1 roadmap created*
+*Last updated: 2026-03-18 after v2.2 roadmap created*
