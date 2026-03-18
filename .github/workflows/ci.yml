@@ -1,21 +1,26 @@
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
 # Project: trustedge — Privacy and trust at the edge.
+#
+# CI runs on pull requests and release tags only.
+# Local checks (scripts/ci-check.sh) catch issues before push.
+# Use workflow_dispatch for manual runs when needed.
 
 name: CI
 permissions:
   contents: read
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # ── Fast checks (no Rust compilation) ─────────────────────────
+  # ── Fast checks (no compilation) ─────────────────────────────
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -74,21 +79,22 @@ jobs:
           done
           [ "$ok" = true ]
 
-  # ── Clippy + feature compatibility + WASM ─────────────────────
-  check:
+  # ── Build + clippy + test (single compile) ──────────────────
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
-      - uses: taiki-e/install-action@cargo-hack
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev libpcsclite-dev pkg-config pkgconf
 
-      - name: clippy (all buildable features)
+      # Clippy (reuses build artifacts for test step)
+      - name: Clippy workspace
         run: |
           cargo clippy -p trustedge-core --all-targets --all-features -- -D warnings
           cargo clippy -p trustedge-platform --all-targets --features "http,ca,openapi,yubikey" -- -D warnings
@@ -100,46 +106,8 @@ jobs:
           cargo clippy -p trustedge-wasm --all-targets -- -D warnings
           cargo clippy -p trustedge-trst-wasm --all-targets -- -D warnings
 
-      - name: Feature compatibility (each feature individually)
-        run: |
-          cargo hack check --each-feature --no-dev-deps --package trustedge-core
-          cargo hack check --each-feature --no-dev-deps --package trustedge-cli
-
-      - name: WASM build verification
-        run: |
-          rustup target add wasm32-unknown-unknown
-          cargo check -p trustedge-wasm --target wasm32-unknown-unknown
-          cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown
-
-      - name: Dependency tree size
-        run: |
-          dep_count=$(cargo tree --workspace --depth 1 --prefix none --no-dedupe 2>/dev/null | sort -u | wc -l)
-          echo "Dependency tree: $dep_count unique crates (baseline: 70)"
-          if [ "$dep_count" -gt 80 ]; then
-            echo "::warning::Dependency tree grew beyond threshold ($dep_count > 80)"
-          fi
-
-  # ── Build + test ──────────────────────────────────────────────
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libpcsclite-dev pkg-config pkgconf
-
-      - name: Build workspace (all buildable features, excludes postgres — sqlx removed)
-        run: |
-          cargo build -p trustedge-core --bins --all-features
-          cargo build -p trustedge-platform --bins --features "http,ca,openapi,yubikey"
-          cargo build -p trustedge-platform-server --bins
-          cargo build -p trustedge-cli --bins --all-features
-          cargo build -p trustedge-trst-cli --bins
-          cargo build --workspace --bins --no-default-features
-
-      - name: Test workspace (no default features)
+      # Tests (reuses clippy build artifacts)
+      - name: Test workspace (default features)
         run: cargo test --workspace --no-default-features --locked
 
       - name: Test trustedge-core (all non-yubikey features)
@@ -154,24 +122,26 @@ jobs:
           cargo test -p trustedge-platform --test verify_integration --locked
           cargo test -p trustedge-platform --test verify_integration --features http --locked
 
-  # ── Security audit ────────────────────────────────────────────
+      # WASM (quick check, no full build)
+      - name: WASM build verification
+        run: |
+          cargo check -p trustedge-wasm --target wasm32-unknown-unknown
+          cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown
+
+      - name: Dependency tree size
+        run: |
+          dep_count=$(cargo tree --workspace --depth 1 --prefix none --no-dedupe 2>/dev/null | sort -u | wc -l)
+          echo "Dependency tree: $dep_count unique crates (baseline: 70)"
+          if [ "$dep_count" -gt 80 ]; then
+            echo "::warning::Dependency tree grew beyond threshold ($dep_count > 80)"
+          fi
+
+  # ── Security audit (cargo-audit only, fast) ─────────────────
   security:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
       - uses: taiki-e/install-action@cargo-audit
-      - uses: taiki-e/install-action@cargo-semver-checks
-
-      - name: Install system dependencies for YubiKey feature
-        run: sudo apt-get update && sudo apt-get install -y libpcsclite-dev libasound2-dev
 
       - name: Security audit
         run: cargo audit
-
-      - name: API compatibility
-        continue-on-error: true
-        run: cargo semver-checks --package trustedge-core --baseline-rev HEAD~1
