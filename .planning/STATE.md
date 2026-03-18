@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Data Lifecycle & Hardware Integration
 status: planning
-stopped_at: Phase 44 context gathered
-last_updated: "2026-03-17T23:25:16.563Z"
+stopped_at: Completed 44-01-PLAN.md
+last_updated: "2026-03-18T00:41:01.908Z"
 last_activity: 2026-03-16 -- Roadmap created for v2.1
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 0
 ---
 
@@ -72,6 +72,7 @@ Key design decisions to lock before coding each phase:
 - [Phase 43]: HKDF-SHA256 with empty salt + domain tag TRUSTEDGE_TRST_CHUNK_KEY derives deterministic chunk key from Ed25519 device key
 - [Phase 43]: Chunk files now [nonce:24][ciphertext:N]; BLAKE3 hashes cover nonce+ciphertext to match validate_archive disk reads
 - [Phase 43]: Used process::exit() on all error paths in handle_unwrap() to guarantee no partial output file is written on signature/continuity/decryption failure
+- [Phase 44-yubikey-cli-integration]: ECDSA P-256 signature format: ecdsa-p256:<base64_sec1_uncompressed> for keys, ecdsa-p256:<base64_der> for DER signatures; p256 crate handles SHA-256 hashing internally
 
 ### Pending Todos
 
@@ -85,9 +86,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T23:25:16.560Z
-Stopped at: Phase 44 context gathered
-Resume file: .planning/phases/44-yubikey-cli-integration/44-CONTEXT.md
+Last session: 2026-03-18T00:41:01.906Z
+Stopped at: Completed 44-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-16 after v2.1 roadmap created*
