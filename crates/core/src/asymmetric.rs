@@ -303,13 +303,13 @@ fn rsa_encrypt_key(
 ) -> Result<Vec<u8>, AsymmetricError> {
     use rand::rngs::OsRng;
     use rsa::pkcs8::DecodePublicKey;
-    use rsa::{Pkcs1v15Encrypt, RsaPublicKey};
+    use rsa::{Oaep, RsaPublicKey};
 
     let rsa_public = RsaPublicKey::from_public_key_der(&public_key.key_bytes)
         .map_err(|e| AsymmetricError::InvalidKeyFormat(format!("Invalid RSA public key: {}", e)))?;
 
     let encrypted = rsa_public
-        .encrypt(&mut OsRng, Pkcs1v15Encrypt, session_key)
+        .encrypt(&mut OsRng, Oaep::new::<sha2::Sha256>(), session_key)
         .map_err(|e| AsymmetricError::KeyExchangeFailed(format!("RSA encryption failed: {}", e)))?;
 
     Ok(encrypted)
@@ -321,14 +321,14 @@ fn rsa_decrypt_key(
     private_key: &PrivateKey,
 ) -> Result<[u8; 32], AsymmetricError> {
     use rsa::pkcs8::DecodePrivateKey;
-    use rsa::{Pkcs1v15Encrypt, RsaPrivateKey};
+    use rsa::{Oaep, RsaPrivateKey};
 
     let rsa_private = RsaPrivateKey::from_pkcs8_der(&private_key.key_bytes).map_err(|e| {
         AsymmetricError::InvalidKeyFormat(format!("Invalid RSA private key: {}", e))
     })?;
 
     let decrypted = rsa_private
-        .decrypt(Pkcs1v15Encrypt, encrypted_key)
+        .decrypt(Oaep::new::<sha2::Sha256>(), encrypted_key)
         .map_err(|e| AsymmetricError::KeyExchangeFailed(format!("RSA decryption failed: {}", e)))?;
 
     if decrypted.len() != 32 {
