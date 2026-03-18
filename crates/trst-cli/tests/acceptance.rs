@@ -984,6 +984,83 @@ fn acceptance_verify_ecdsa_p256() {
     run_verify(&tempdir, &archive, &p256_pub_str).success();
 }
 
+// ─── Backend flag acceptance tests ───────────────────────────────────────────
+
+#[test]
+fn acceptance_backend_software_explicit() {
+    // --backend software must produce Ed25519-signed archives (regression guard)
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-sw.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--backend",
+            "software",
+            "--profile",
+            "generic",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+        ])
+        .assert()
+        .success();
+
+    let manifest_json = fs::read_to_string(archive_dir.join("manifest.json")).unwrap();
+    let manifest: serde_json::Value = serde_json::from_str(&manifest_json).unwrap();
+    assert!(
+        manifest["device"]["public_key"]
+            .as_str()
+            .unwrap()
+            .starts_with("ed25519:"),
+        "software backend must produce ed25519 public key"
+    );
+    assert!(
+        manifest["signature"]
+            .as_str()
+            .unwrap()
+            .starts_with("ed25519:"),
+        "software backend must produce ed25519 signature"
+    );
+
+    let device_pub = fs::read_to_string(tempdir.path().join("device.pub")).unwrap();
+    run_verify(&tempdir, &archive_dir, device_pub.trim()).success();
+}
+
+#[test]
+fn acceptance_backend_unknown_fails() {
+    // Unknown backend name must fail with a clear error message
+    let tempdir = TempDir::new().unwrap();
+    let input = write_sample_input(tempdir.path());
+    let archive_dir = tempdir.path().join("clip-unknown.trst");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--backend",
+            "unknown",
+            "--profile",
+            "generic",
+            "--in",
+            input.to_str().unwrap(),
+            "--out",
+            archive_dir.to_str().unwrap(),
+            "--chunk-size",
+            "4096",
+        ])
+        .assert()
+        .failure()
+        .stderr(contains("Unknown backend"));
+}
+
 #[test]
 fn acceptance_verify_ecdsa_p256_wrong_key() {
     // Same as above but pass a different P-256 public key — expect failure

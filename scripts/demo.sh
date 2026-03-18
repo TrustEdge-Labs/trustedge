@@ -55,6 +55,14 @@ if ! $FORCE_LOCAL; then
     fi
 fi
 
+# ── YubiKey detection ─────────────────────────────────────────────────────────
+YUBIKEY_AVAILABLE=false
+if command -v ykman &>/dev/null; then
+    if ykman list 2>/dev/null | grep -q "YubiKey"; then
+        YUBIKEY_AVAILABLE=true
+    fi
+fi
+
 # ── Output directory ──────────────────────────────────────────────────────────
 DEMO_DIR="demo-output"
 rm -rf "$DEMO_DIR" && mkdir -p "$DEMO_DIR"
@@ -62,11 +70,9 @@ rm -rf "$DEMO_DIR" && mkdir -p "$DEMO_DIR"
 # ── Step state ────────────────────────────────────────────────────────────────
 STEP=0
 FAILURES=0
-if $SERVER_AVAILABLE; then
-    TOTAL_STEPS=6
-else
-    TOTAL_STEPS=5
-fi
+TOTAL_STEPS=5
+if $SERVER_AVAILABLE; then TOTAL_STEPS=$((TOTAL_STEPS + 1)); fi
+if $YUBIKEY_AVAILABLE; then TOTAL_STEPS=$((TOTAL_STEPS + 1)); fi
 
 # ── Step helpers ──────────────────────────────────────────────────────────────
 step_banner() {
@@ -136,7 +142,36 @@ else
     fail "Cannot verify — keygen or wrap step failed"
 fi
 
-# ── Step 5: Server verification (only if server available) ────────────────────
+# ── Step 5: YubiKey hardware signing (only if YubiKey detected) ──────────────
+if $YUBIKEY_AVAILABLE; then
+    step_banner "Sign archive with YubiKey (ECDSA P-256)"
+    TRST_YUBIKEY="cargo run -q -p trustedge-trst-cli --features yubikey --"
+    if $TRST_YUBIKEY wrap \
+            --backend yubikey \
+            --profile generic \
+            --in "$DEMO_DIR/sample.bin" \
+            --out "$DEMO_DIR/sample-yubikey.trst" \
+            --device-key "$DEMO_DIR/device.key" \
+            --data-type "sensor" \
+            --source "demo-yubikey" \
+            --description "YubiKey hardware-signed demo" 2>&1; then
+        pass "Created $DEMO_DIR/sample-yubikey.trst (YubiKey ECDSA P-256 signed)"
+        # Verify the YubiKey-signed archive
+        YUBIKEY_PUB=$(jq -r '.device.public_key' "$DEMO_DIR/sample-yubikey.trst/manifest.json")
+        if $TRST verify "$DEMO_DIR/sample-yubikey.trst" --device-pub "$YUBIKEY_PUB" 2>&1; then
+            pass "YubiKey archive verification PASSED"
+        else
+            fail "YubiKey archive verification FAILED"
+        fi
+    else
+        fail "YubiKey wrap failed"
+    fi
+else
+    printf "\n  ${BOLD}[Skipped]${NC} YubiKey hardware signing (no YubiKey detected)\n"
+    printf "  Insert a YubiKey to see hardware signing.\n"
+fi
+
+# ── Step N: Server verification (only if server available) ────────────────────
 if $SERVER_AVAILABLE; then
     step_banner "Submit to platform verification server"
     if $TRST emit-request \
