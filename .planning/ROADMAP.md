@@ -58,7 +58,7 @@ Completed the data lifecycle with decryption capability, exposed YubiKey hardwar
 
 #### Phase Summary
 
-- [ ] **Phase 45: RSA OAEP Migration** - Replace PKCS#1 v1.5 with OAEP-SHA256 padding in asymmetric.rs (encrypt and decrypt paths)
+- [x] **Phase 45: RSA OAEP Migration** - Replace PKCS#1 v1.5 with OAEP-SHA256 padding in asymmetric.rs (encrypt and decrypt paths) (completed 2026-03-18)
 - [ ] **Phase 46: Envelope Hardening** - Deprecate v1 envelope format, enforce v2-only sealing, enforce PBKDF2 minimum iterations
 - [ ] **Phase 47: Key Protection at Rest** - Encrypt device key files with passphrase, require passphrase on wrap/unwrap, reject unencrypted keys by default
 
@@ -73,7 +73,7 @@ Completed the data lifecycle with decryption capability, exposed YubiKey hardwar
   2. Decryption of PKCS#1 v1.5 ciphertext returns an error rather than silently succeeding
   3. All existing RSA tests pass using OAEP padding (no test is skipped or weakened)
   4. cargo-audit no longer flags RSA Marvin Attack advisory as a live concern for the encrypt/decrypt path
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 45-01-PLAN.md -- Replace PKCS#1 v1.5 with OAEP-SHA256 and update cargo-audit config
@@ -105,7 +105,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 45. RSA OAEP Migration | v2.2 | 0/1 | Not started | - |
+| 45. RSA OAEP Migration | 1/1 | Complete   | 2026-03-18 | - |
 | 46. Envelope Hardening | v2.2 | 0/TBD | Not started | - |
 | 47. Key Protection at Rest | v2.2 | 0/TBD | Not started | - |
 

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Security Remediation
 status: planning
-stopped_at: Phase 45 context gathered
-last_updated: "2026-03-18T01:25:15.808Z"
+stopped_at: Completed 45-01-PLAN.md
+last_updated: "2026-03-18T01:52:20.214Z"
 last_activity: 2026-03-18 — Roadmap created for v2.2
 progress:
   total_phases: 3
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
   percent: 0
 ---
 
@@ -66,6 +66,7 @@ Relevant prior decisions for v2.2 phases:
 - [v1.3]: RSA Marvin Attack advisory (RUSTSEC-2023-0071) risk-accepted — Phase 45 resolves this; remove from .cargo/audit.toml after OAEP migration
 - [v1.8]: Keyring PBKDF2 hardened to 600k iterations — KDF-01 minimum is 300k; existing keyring already exceeds minimum
 - [v2.1]: rpassword used for YubiKey PIN prompt — same crate used for passphrase prompts in KEY-01/02
+- [Phase 45]: RSA OAEP migration: replaced Pkcs1v15Encrypt with Oaep::new::<sha2::Sha256>() in asymmetric.rs; RUSTSEC-2023-0071 removed from audit.toml ignore list
 
 ### Pending Todos
 
@@ -78,9 +79,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T01:25:15.806Z
-Stopped at: Phase 45 context gathered
-Resume file: .planning/phases/45-rsa-oaep-migration/45-CONTEXT.md
+Last session: 2026-03-18T01:52:20.211Z
+Stopped at: Completed 45-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-18 after v2.2 roadmap created*

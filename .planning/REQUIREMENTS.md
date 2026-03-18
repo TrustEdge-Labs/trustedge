@@ -17,8 +17,8 @@ Requirements for the Security Remediation milestone. Each maps to roadmap phases
 
 ### RSA Encryption
 
-- [ ] **RSA-01**: RSA key exchange uses OAEP-SHA256 padding instead of PKCS#1 v1.5 in asymmetric.rs
-- [ ] **RSA-02**: RSA decryption uses OAEP-SHA256 padding, rejects PKCS#1 v1.5 ciphertext
+- [x] **RSA-01**: RSA key exchange uses OAEP-SHA256 padding instead of PKCS#1 v1.5 in asymmetric.rs
+- [x] **RSA-02**: RSA decryption uses OAEP-SHA256 padding, rejects PKCS#1 v1.5 ciphertext
 
 ### Envelope Format
 
@@ -65,8 +65,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RSA-01 | Phase 45 | Pending |
-| RSA-02 | Phase 45 | Pending |
+| RSA-01 | Phase 45 | Complete |
+| RSA-02 | Phase 45 | Complete |
 | ENV-01 | Phase 46 | Pending |
 | ENV-02 | Phase 46 | Pending |
 | KDF-01 | Phase 46 | Pending |
