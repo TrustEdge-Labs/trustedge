@@ -10,6 +10,10 @@ use aead::{Aead, KeyInit};
 use chacha20poly1305::XChaCha20Poly1305;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use hkdf::Hkdf;
+use p256::ecdsa::{
+    signature::Verifier as P256Verifier, Signature as P256Signature,
+    VerifyingKey as P256VerifyingKey,
+};
 use rand_core::{OsRng, RngCore};
 use serde_json::json;
 use sha2::Sha256;
@@ -244,36 +248,86 @@ pub fn sign_manifest(
     ))
 }
 
-/// Verify manifest signature with device public key
+/// Verify manifest signature with device public key.
+///
+/// Dispatches on the signature algorithm prefix:
+/// - "ed25519:" — Ed25519 signature verification
+/// - "ecdsa-p256:" — ECDSA P-256 (secp256r1) signature verification
+///
+/// Returns Ok(true) if valid, Ok(false) if the signature does not match,
+/// or Err if the key/signature format is invalid or algorithms mismatch.
 pub fn verify_manifest(
     device_public: &str,
     canonical_bytes: &[u8],
     signature_str: &str,
 ) -> Result<bool, CryptoError> {
+    if let Some(b64_part) = signature_str.strip_prefix("ed25519:") {
+        // Ed25519 path — requires matching "ed25519:" public key
+        let verifying_key = DeviceKeypair::from_public(device_public)?;
+
+        let sig_bytes = base64_decode(b64_part)
+            .map_err(|e| CryptoError::InvalidSignatureFormat(format!("Invalid base64: {}", e)))?;
+
+        if sig_bytes.len() != 64 {
+            return Err(CryptoError::InvalidSignatureFormat(
+                "Ed25519 signature must be 64 bytes".to_string(),
+            ));
+        }
+
+        let signature = Signature::from_bytes(&sig_bytes.try_into().unwrap());
+
+        match verifying_key.verify(canonical_bytes, &signature) {
+            Ok(()) => Ok(true),
+            Err(_) => Ok(false),
+        }
+    } else if signature_str.starts_with("ecdsa-p256:") {
+        verify_manifest_ecdsa_p256(device_public, canonical_bytes, signature_str)
+    } else {
+        Err(CryptoError::InvalidSignatureFormat(
+            "Unsupported signature algorithm. Expected ed25519: or ecdsa-p256: prefix".to_string(),
+        ))
+    }
+}
+
+/// Verify a manifest signature using ECDSA P-256 (secp256r1).
+///
+/// - `device_public`: "ecdsa-p256:<base64_sec1_bytes>" (uncompressed or compressed)
+/// - `signature_str`: "ecdsa-p256:<base64_der_encoded_signature>"
+///
+/// The p256 crate's `verify()` method hashes the message with SHA-256 internally,
+/// so `canonical_bytes` is passed directly (not pre-hashed).
+fn verify_manifest_ecdsa_p256(
+    device_public: &str,
+    canonical_bytes: &[u8],
+    signature_str: &str,
+) -> Result<bool, CryptoError> {
     // Parse public key
-    let verifying_key = DeviceKeypair::from_public(device_public)?;
+    let pub_b64 = device_public.strip_prefix("ecdsa-p256:").ok_or_else(|| {
+        CryptoError::InvalidKeyFormat(
+            "ECDSA P-256 public key must start with 'ecdsa-p256:'".to_string(),
+        )
+    })?;
+    let pub_bytes = base64_decode(pub_b64).map_err(|e| {
+        CryptoError::InvalidKeyFormat(format!("Invalid base64 in public key: {}", e))
+    })?;
+    let verifying_key = P256VerifyingKey::from_sec1_bytes(&pub_bytes)
+        .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid P-256 public key: {}", e)))?;
 
-    // Parse signature
-    if !signature_str.starts_with("ed25519:") {
-        return Err(CryptoError::InvalidSignatureFormat(
-            "Signature must start with 'ed25519:'".to_string(),
-        ));
-    }
+    // Parse signature (DER-encoded)
+    let sig_b64 = signature_str.strip_prefix("ecdsa-p256:").ok_or_else(|| {
+        CryptoError::InvalidSignatureFormat(
+            "ECDSA P-256 signature must start with 'ecdsa-p256:'".to_string(),
+        )
+    })?;
+    let sig_bytes = base64_decode(sig_b64).map_err(|e| {
+        CryptoError::InvalidSignatureFormat(format!("Invalid base64 in signature: {}", e))
+    })?;
+    let signature = P256Signature::from_der(&sig_bytes).map_err(|e| {
+        CryptoError::InvalidSignatureFormat(format!("Invalid P-256 DER signature: {}", e))
+    })?;
 
-    let b64_part = &signature_str[8..];
-    let sig_bytes = base64_decode(b64_part)
-        .map_err(|e| CryptoError::InvalidSignatureFormat(format!("Invalid base64: {}", e)))?;
-
-    if sig_bytes.len() != 64 {
-        return Err(CryptoError::InvalidSignatureFormat(
-            "Signature must be 64 bytes".to_string(),
-        ));
-    }
-
-    let signature = Signature::from_bytes(&sig_bytes.try_into().unwrap());
-
-    // Verify signature
-    match verifying_key.verify(canonical_bytes, &signature) {
+    // Verify — P256Verifier::verify() hashes with SHA-256 internally
+    match P256Verifier::verify(&verifying_key, canonical_bytes, &signature) {
         Ok(()) => Ok(true),
         Err(_) => Ok(false),
     }
@@ -496,5 +550,87 @@ mod tests {
         let exported = keypair.export_secret();
         let imported = DeviceKeypair::import_secret(&exported).unwrap();
         assert_eq!(keypair.secret_bytes(), imported.secret_bytes());
+    }
+
+    // ─── ECDSA P-256 tests ────────────────────────────────────────────────────
+
+    #[test]
+    fn test_ecdsa_p256_sign_verify_round_trip() {
+        use p256::ecdsa::{signature::Signer as _, SigningKey as P256SigningKey};
+
+        let signing_key = P256SigningKey::random(&mut OsRng);
+        let verifying_key = signing_key.verifying_key();
+
+        let canonical_bytes = b"test canonical bytes for p256 signing";
+
+        // Sign: returns a fixed-size ECDSA signature which we DER-encode
+        let signature: p256::ecdsa::Signature = signing_key.sign(canonical_bytes);
+        let sig_der = signature.to_der();
+        let sig_str = format!("ecdsa-p256:{}", base64_encode(sig_der.as_bytes()));
+
+        // Format public key as SEC1 uncompressed bytes
+        let pub_bytes = verifying_key.to_encoded_point(false);
+        let pub_str = format!("ecdsa-p256:{}", base64_encode(pub_bytes.as_bytes()));
+
+        let result = verify_manifest(&pub_str, canonical_bytes, &sig_str).unwrap();
+        assert!(result, "ECDSA P-256 signature should verify correctly");
+    }
+
+    #[test]
+    fn test_ecdsa_p256_wrong_data() {
+        use p256::ecdsa::{signature::Signer as _, SigningKey as P256SigningKey};
+
+        let signing_key = P256SigningKey::random(&mut OsRng);
+        let verifying_key = signing_key.verifying_key();
+
+        let canonical_bytes = b"original data";
+        let wrong_data = b"tampered data";
+
+        let signature: p256::ecdsa::Signature = signing_key.sign(canonical_bytes);
+        let sig_der = signature.to_der();
+        let sig_str = format!("ecdsa-p256:{}", base64_encode(sig_der.as_bytes()));
+
+        let pub_bytes = verifying_key.to_encoded_point(false);
+        let pub_str = format!("ecdsa-p256:{}", base64_encode(pub_bytes.as_bytes()));
+
+        // Verify against wrong data should return Ok(false)
+        let result = verify_manifest(&pub_str, wrong_data, &sig_str).unwrap();
+        assert!(
+            !result,
+            "ECDSA P-256 signature with wrong data should return false"
+        );
+    }
+
+    #[test]
+    fn test_ed25519_still_works_after_dispatch() {
+        // Regression: Ed25519 verification must still work after multi-algorithm dispatch
+        let keypair = DeviceKeypair::generate().unwrap();
+        let test_data = b"ed25519 regression test after p256 dispatch";
+
+        let signature = sign_manifest(&keypair, test_data).unwrap();
+        assert!(signature.starts_with("ed25519:"));
+
+        let is_valid = verify_manifest(&keypair.public, test_data, &signature).unwrap();
+        assert!(
+            is_valid,
+            "Ed25519 must still verify correctly after dispatch refactor"
+        );
+    }
+
+    #[test]
+    fn test_unknown_signature_prefix() {
+        let keypair = DeviceKeypair::generate().unwrap();
+        let test_data = b"some data";
+
+        let result = verify_manifest(&keypair.public, test_data, "rsa:AAAA");
+        assert!(
+            result.is_err(),
+            "Unknown signature prefix should return Err"
+        );
+        let err_msg = result.unwrap_err().to_string();
+        assert!(
+            err_msg.contains("Unsupported signature algorithm"),
+            "Error message should mention 'Unsupported signature algorithm', got: {err_msg}"
+        );
     }
 }
