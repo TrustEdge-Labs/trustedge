@@ -172,7 +172,7 @@ struct VerifyCmd {
     #[arg(
         long = "device-pub",
         value_name = "KEY",
-        help = "Device public key (ed25519:<base64>)"
+        help = "Device public key (ed25519:<base64> or ecdsa-p256:<base64>)"
     )]
     device_pub: String,
     #[arg(long, help = "Output results as JSON")]
@@ -588,12 +588,13 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
         }
     };
 
-    // Parse device public key (invalid args would be caught by clap)
-    let device_pub_key = if args.device_pub.starts_with("ed25519:") {
-        args.device_pub.clone()
-    } else {
-        format!("ed25519:{}", args.device_pub)
-    };
+    // Parse device public key: pass through recognized prefixes, default bare keys to ed25519
+    let device_pub_key =
+        if args.device_pub.starts_with("ed25519:") || args.device_pub.starts_with("ecdsa-p256:") {
+            args.device_pub.clone()
+        } else {
+            format!("ed25519:{}", args.device_pub)
+        };
 
     // Populate report with manifest data
     report.profile = manifest.profile.clone();

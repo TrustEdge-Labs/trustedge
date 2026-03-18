@@ -13,6 +13,7 @@
 use assert_cmd::prelude::*;
 use base64::Engine;
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
+use p256::ecdsa::signature::Signer as P256Signer;
 use predicates::str::contains;
 use rand_core::OsRng;
 use std::fs;
@@ -914,4 +915,96 @@ fn acceptance_sensor_missing_required_flag() {
         .assert()
         .failure()
         .stderr(predicates::str::contains("required"));
+}
+
+// ─── ECDSA P-256 acceptance tests ────────────────────────────────────────────
+
+/// Helper: encode bytes as standard base64 (using the existing base64 crate in trst-cli)
+fn b64_std(bytes: &[u8]) -> String {
+    base64::engine::general_purpose::STANDARD.encode(bytes)
+}
+
+/// Helper: resign an archive manifest using a P-256 signing key.
+/// Updates both manifest.json and signatures/manifest.sig with the new signature.
+/// The canonical bytes signed include the new P-256 public_key in device info.
+fn resign_manifest_p256(
+    archive: &Path,
+    signing_key: &p256::ecdsa::SigningKey,
+    manifest: &mut TrstManifest,
+) {
+    // Update public key in manifest device info BEFORE computing canonical bytes
+    let verifying_key = signing_key.verifying_key();
+    let pub_bytes = verifying_key.to_encoded_point(false);
+    manifest.device.public_key = format!("ecdsa-p256:{}", b64_std(pub_bytes.as_bytes()));
+
+    // Clear existing signature for canonical serialization
+    manifest.signature = None;
+    let canonical_bytes = manifest.to_canonical_bytes().unwrap();
+
+    // Sign with P-256 — the p256 Signer hashes with SHA-256 internally
+    let signature: p256::ecdsa::Signature = P256Signer::sign(signing_key, &canonical_bytes);
+    let sig_der = signature.to_der();
+    let sig_str = format!("ecdsa-p256:{}", b64_std(sig_der.as_bytes()));
+
+    manifest.signature = Some(sig_str.clone());
+
+    // Write updated manifest.json
+    let manifest_json = serde_json::to_string_pretty(&manifest).unwrap();
+    fs::write(archive.join("manifest.json"), manifest_json).unwrap();
+
+    // Write detached signature file
+    fs::write(
+        archive.join("signatures").join("manifest.sig"),
+        sig_str.as_bytes(),
+    )
+    .unwrap();
+}
+
+#[test]
+fn acceptance_verify_ecdsa_p256() {
+    // Wrap an archive with Ed25519, then replace the signature with P-256 and verify
+    let tempdir = TempDir::new().unwrap();
+    let (archive, _ed25519_pub) = wrap_archive(&tempdir);
+
+    // Read the manifest
+    let manifest_path = archive.join("manifest.json");
+    let manifest_json = fs::read_to_string(&manifest_path).unwrap();
+    let mut manifest: TrstManifest = serde_json::from_str(&manifest_json).unwrap();
+
+    // Generate a new P-256 signing key
+    let p256_signing_key = p256::ecdsa::SigningKey::random(&mut OsRng);
+
+    // Replace the manifest signature with P-256 (also updates manifest.device.public_key)
+    resign_manifest_p256(&archive, &p256_signing_key, &mut manifest);
+
+    // Use the public_key from the updated manifest (set by resign_manifest_p256)
+    let p256_pub_str = manifest.device.public_key.clone();
+
+    // Verify with the P-256 public key — expect success
+    run_verify(&tempdir, &archive, &p256_pub_str).success();
+}
+
+#[test]
+fn acceptance_verify_ecdsa_p256_wrong_key() {
+    // Same as above but pass a different P-256 public key — expect failure
+    let tempdir = TempDir::new().unwrap();
+    let (archive, _ed25519_pub) = wrap_archive(&tempdir);
+
+    let manifest_path = archive.join("manifest.json");
+    let manifest_json = fs::read_to_string(&manifest_path).unwrap();
+    let mut manifest: TrstManifest = serde_json::from_str(&manifest_json).unwrap();
+
+    // Sign with one P-256 key
+    let p256_signing_key = p256::ecdsa::SigningKey::random(&mut OsRng);
+    resign_manifest_p256(&archive, &p256_signing_key, &mut manifest);
+
+    // Verify with a different (wrong) P-256 public key
+    let wrong_key = p256::ecdsa::SigningKey::random(&mut OsRng);
+    let wrong_verifying_key = wrong_key.verifying_key();
+    let wrong_pub_bytes = wrong_verifying_key.to_encoded_point(false);
+    let wrong_pub_str = format!("ecdsa-p256:{}", b64_std(wrong_pub_bytes.as_bytes()));
+
+    run_verify(&tempdir, &archive, &wrong_pub_str)
+        .failure()
+        .stderr(contains("Signature verification failed"));
 }
