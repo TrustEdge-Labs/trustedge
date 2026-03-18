@@ -166,6 +166,9 @@ jobs:
       - uses: taiki-e/install-action@cargo-audit
       - uses: taiki-e/install-action@cargo-semver-checks
 
+      - name: Install system dependencies for YubiKey feature
+        run: sudo apt-get update && sudo apt-get install -y libpcsclite-dev libasound2-dev
+
       - name: Security audit
         run: cargo audit
 
