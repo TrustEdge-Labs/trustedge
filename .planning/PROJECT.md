@@ -16,18 +16,9 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## Current Milestone: v2.1 Data Lifecycle & Hardware Integration
-
-**Goal:** Complete the data lifecycle by adding decryption/unwrap capability, expose YubiKey hardware signing in the CLI, and add named archive profiles for specific use cases.
-
-**Target features:**
-- `trst unwrap` command to decrypt and reassemble original data from .trst archives
-- YubiKey hardware signing exposed in `trst wrap` and `trst verify` CLI
-- Named profiles (sensor, audio, log) with tailored metadata schemas beyond generic + cam.video
-
 ## Current State
 
-Shipped v2.0 End-to-End Demo. The project now has a working demo: `docker compose up` starts the full platform, `scripts/demo.sh` shows the complete lifecycle (keygen, wrap, verify, receipt), and the README explains TrustEdge to a new developer in under 5 minutes.
+Shipped v2.1 Data Lifecycle & Hardware Integration. The full data lifecycle is now complete: wrap encrypts data into tamper-evident .trst archives, unwrap decrypts and reassembles original data with mandatory verify-before-decrypt. YubiKey hardware signing is exposed in the CLI via `--backend yubikey`. Named profiles (sensor, audio, log) support real-world use cases. Docker stack, demo script, and developer documentation from v2.0 remain current.
 
 ## Requirements
 
@@ -134,9 +125,12 @@ Shipped v2.0 End-to-End Demo. The project now has a working demo: `docker compos
 
 ### Active
 
-- [ ] Archive decryption and data reassembly (`trst unwrap`)
-- [ ] YubiKey hardware signing exposed in CLI (`trst wrap --backend yubikey`)
-- [ ] Named archive profiles (sensor, audio, log) with tailored metadata
+- ✓ Archive decryption and data reassembly (`trst unwrap` with HKDF key derivation, verify-before-decrypt) — v2.1
+- ✓ YubiKey hardware signing exposed in CLI (`trst wrap --backend yubikey`, ECDSA P-256, interactive PIN) — v2.1
+- ✓ Named archive profiles (sensor, audio, log) with typed metadata and CLI flags — v2.1
+- ✓ Multi-algorithm verify dispatch (Ed25519 + ECDSA P-256 prefix-based) — v2.1
+
+(None active — define next milestone with /gsd:new-milestone)
 
 ### Deferred
 
@@ -163,21 +157,21 @@ Shipped v2.0 End-to-End Demo. The project now has a working demo: `docker compos
 - **v1.7 Security & Quality Hardening** — Secret<T> zeroize wrapper, facade crates deleted, experimental workspace isolated, verify handler deduplicated, CORS hardened, 16 new integration tests
 - **v1.8 KDF Architecture Fix** — HKDF-SHA256 replaces PBKDF2 for envelope key derivation, versioned format with v1 backward compatibility, keyring PBKDF2 hardened to OWASP 2023
 - **v2.0 End-to-End Demo** — Generic archive profiles, Docker stack, demo script, README rewrite with use cases
+- **v2.1 Data Lifecycle & Hardware Integration** — trst unwrap, YubiKey CLI, named profiles (sensor, audio, log)
 
 ## Context
 
-Shipped v2.0 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
-Tech stack: Rust, AES-256-GCM, Ed25519, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit (TypeScript), Docker.
+Shipped v2.1 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
+Tech stack: Rust, AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit (TypeScript), Docker.
 TrustEdge-Labs GitHub org has exactly 3 repos: trustedge (main workspace), trustedgelabs-website, shipsecure.
-trustedge-core owns all crypto — platform calls core::chain and core::crypto; re-exports SigningKey/VerifyingKey for downstream use.
-TrstManifest supports generic and cam.video profiles via ProfileMetadata enum. Generic profile is the default for `trst wrap`.
-Docker Compose stack (`deploy/docker-compose.yml`) starts platform-server (Rust 1.88, auto-migration), postgres, and dashboard (nginx static). Zero-config with inline defaults.
-Demo script (`scripts/demo.sh`) shows full lifecycle: keygen, sample data, wrap, server verify, local verify. Auto-detects docker vs local mode.
-Platform server healthz excluded from auth middleware. CORS allows localhost:3000 and localhost:8080.
-Envelope encryption uses HKDF-SHA256 (v2 format) with deterministic counter nonces. Legacy v1 (PBKDF2-per-chunk) envelopes still decrypt via try-then-fallback.
-Keyring backends use OWASP 2023 PBKDF2 parameters (600k iterations, 32-byte salts).
-CI uses `--workspace` for root workspace. Experimental crates (pubky) isolated in standalone workspace at crates/experimental/. YubiKey feature validated unconditionally. cargo-audit + TODO hygiene enforced on every push/PR.
-Key generation and attestation deferred to future (yubikey crate API limitations).
+Full data lifecycle: `trst keygen` → `trst wrap` (encrypt + sign) → `trst verify` (validate) → `trst unwrap` (verify + decrypt).
+`trst wrap` derives XChaCha20Poly1305 chunk key via HKDF-SHA256 from Ed25519 device key. Nonces prepended to chunk files.
+`trst verify` dispatches on key prefix: `ed25519:` (Ed25519) or `ecdsa-p256:` (ECDSA P-256).
+`trst wrap --backend yubikey` signs manifest with ECDSA P-256 via PIV slot 9c, interactive PIN via rpassword.
+ProfileMetadata enum: CamVideo, Sensor, Audio, Log, Generic (untagged serde, unique-field discrimination).
+Docker Compose stack starts platform-server (Rust 1.88, auto-migration), postgres, and dashboard (nginx static). Zero-config.
+Demo script auto-detects docker/local mode and YubiKey hardware.
+CI uses `--workspace` for root workspace. YubiKey feature validated unconditionally. cargo-audit + TODO hygiene enforced.
 
 ## Constraints
 
@@ -274,4 +268,4 @@ Key generation and attestation deferred to future (yubikey crate API limitations
 | README leads with problem + quick start | Developer audience wants to try it fast, not read architecture | ✓ Good — 465 → 128 lines |
 
 ---
-*Last updated: 2026-03-16 after v2.1 milestone started*
+*Last updated: 2026-03-18 after v2.1 milestone shipped*

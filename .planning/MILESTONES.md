@@ -1,5 +1,34 @@
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 
+## v2.1 Data Lifecycle & Hardware Integration (Shipped: 2026-03-18)
+
+**Phases completed:** 3 phases (42-44), 6 plans
+**Timeline:** 2 days (2026-03-16 → 2026-03-17)
+**Stats:** 28 files changed, 4,397 insertions, 117 deletions, 27 commits
+
+**Delivered:** Completed the data lifecycle with decryption capability, exposed YubiKey hardware signing in the CLI, and added named archive profiles for real-world use cases.
+
+**Key accomplishments:**
+- Named profiles (sensor, audio, log) with typed metadata structs and profile-conditional CLI flags (SensorMetadata with geo fields, AudioMetadata, LogMetadata)
+- `trst unwrap` command: HKDF-SHA256 key derivation from device signing key replaces hardcoded demo key, nonce-prepended chunk format, mandatory verify-before-decrypt
+- Multi-algorithm verify dispatch: `trst verify` accepts both `ed25519:` and `ecdsa-p256:` signatures with prefix-based dispatch
+- `trst wrap --backend yubikey` wires ECDSA P-256 hardware signing via PIV slot 9c with interactive `rpassword` PIN prompt
+- Demo script auto-detects YubiKey and adds optional hardware signing step
+- 28 acceptance tests (10 new), 30+ unit tests in trst-protocols
+
+**Tech debt carried forward:**
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+- RSA Marvin Attack advisory (RUSTSEC-2023-0071) accepted (carried from v1.3)
+- Demo-key archives (from before v2.1) are not decryptable by `trst unwrap` — accepted, test artifacts only
+
+**Git range:** v2.0..v2.1
+
+**Archives:**
+- `.planning/milestones/v2.1-ROADMAP.md`
+- `.planning/milestones/v2.1-REQUIREMENTS.md`
+
+---
+
 **Phases completed:** 4 phases (38-41), 8 plans
 **Timeline:** 2 days (2026-03-15 → 2026-03-16)
 **Stats:** 50 files changed, 4,867 insertions, 574 deletions, 42 commits
