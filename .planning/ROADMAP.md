@@ -73,7 +73,10 @@ Completed the data lifecycle with decryption capability, exposed YubiKey hardwar
   2. Decryption of PKCS#1 v1.5 ciphertext returns an error rather than silently succeeding
   3. All existing RSA tests pass using OAEP padding (no test is skipped or weakened)
   4. cargo-audit no longer flags RSA Marvin Attack advisory as a live concern for the encrypt/decrypt path
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 45-01-PLAN.md -- Replace PKCS#1 v1.5 with OAEP-SHA256 and update cargo-audit config
 
 ### Phase 46: Envelope Hardening
 **Goal**: The v1 envelope format is deprecated and PBKDF2 iteration minimums are enforced everywhere
@@ -102,9 +105,9 @@ Completed the data lifecycle with decryption capability, exposed YubiKey hardwar
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 45. RSA OAEP Migration | v2.2 | 0/TBD | Not started | - |
+| 45. RSA OAEP Migration | v2.2 | 0/1 | Not started | - |
 | 46. Envelope Hardening | v2.2 | 0/TBD | Not started | - |
 | 47. Key Protection at Rest | v2.2 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-03-18 after v2.2 roadmap created*
+*Last updated: 2026-03-18 after phase 45 planning*
