@@ -11,6 +11,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
 
+use base64::Engine as _;
+
 use anyhow::{Context, Result};
 use blake3::Hasher;
 use chrono::{DateTime, SecondsFormat, Utc};
@@ -28,6 +30,17 @@ use trustedge_core::{
 // Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
 // SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
 use trustedge_types::verification::{SegmentRef, VerifyOptions, VerifyRequest};
+
+#[cfg(feature = "yubikey")]
+use p256::pkcs8::DecodePublicKey;
+#[cfg(feature = "yubikey")]
+use trustedge_core::backends::universal::{
+    CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend,
+};
+#[cfg(feature = "yubikey")]
+use trustedge_core::backends::yubikey::YubiKeyConfig;
+#[cfg(feature = "yubikey")]
+use trustedge_core::backends::YubiKeyBackend;
 
 #[derive(Debug)]
 struct WrapResult {
@@ -163,6 +176,12 @@ struct WrapCmd {
     /// Log format (log profile: json, syslog, plaintext)
     #[arg(long, help = "Log format (log profile)")]
     log_format: Option<String>,
+    /// Signing backend: "software" (default) or "yubikey"
+    #[arg(long, default_value = "software")]
+    backend: String,
+    /// PIV slot for YubiKey signing (9a, 9c, 9d, 9e). Default: 9c (Digital Signature)
+    #[arg(long, default_value = "9c")]
+    slot: String,
 }
 
 #[derive(Args, Debug)]
@@ -249,6 +268,30 @@ fn generate_seeded_nonce24(rng: &mut dyn RngCore) -> [u8; 24] {
     nonce
 }
 
+/// Derive a device_id string from a prefixed public key string.
+///
+/// Extracts the first 6 bytes of the raw key bytes (after the prefix) and formats
+/// them as "te:cam:<hex>". Works for both "ed25519:<base64>" and "ecdsa-p256:<base64>" formats.
+fn pub_key_to_device_id(pub_key_str: &str) -> Result<String> {
+    let raw_b64 = if let Some(rest) = pub_key_str.strip_prefix("ed25519:") {
+        rest
+    } else if let Some(rest) = pub_key_str.strip_prefix("ecdsa-p256:") {
+        rest
+    } else {
+        anyhow::bail!("Unrecognized public key prefix in: {}", pub_key_str);
+    };
+    let key_bytes = base64::engine::general_purpose::STANDARD
+        .decode(raw_b64)
+        .with_context(|| "Failed to decode public key bytes for device_id")?;
+    if key_bytes.len() < 6 {
+        anyhow::bail!(
+            "Public key bytes too short for device_id (got {} bytes)",
+            key_bytes.len()
+        );
+    }
+    Ok(format!("te:cam:{}", hex::encode(&key_bytes[..6])))
+}
+
 #[tokio::main]
 async fn main() {
     if let Err(err) = run().await {
@@ -298,6 +341,13 @@ fn handle_keygen(args: KeygenCmd) -> Result<()> {
 }
 
 fn handle_wrap(args: WrapCmd) -> Result<()> {
+    // Validate backend-specific requirements up front
+    if args.backend == "yubikey" && args.device_key.is_none() {
+        anyhow::bail!(
+            "--device-key is required with --backend yubikey (used for chunk encryption)"
+        );
+    }
+
     let (device_keypair, secret_path, public_path, generated) =
         load_or_generate_keypair(args.device_key.as_deref())?;
 
@@ -342,7 +392,8 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     let mut chain_state = genesis();
     let mut encrypted_chunks = Vec::new();
 
-    // Derive encryption key from device signing key via HKDF-SHA256
+    // Derive encryption key from device signing key via HKDF-SHA256.
+    // For yubikey backend, the software device key is still used for chunk encryption.
     let encryption_key = derive_chunk_key(device_keypair.secret_bytes());
 
     // Create timestamp for all operations - deterministic if seeded
@@ -352,10 +403,11 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     } else {
         current_timestamp()?
     };
-    let device_id = format!(
-        "te:cam:{}",
-        hex::encode(&device_keypair.public.as_bytes()[9..15])
-    ); // Skip "ed25519:" prefix
+
+    // Compute device_id from the initial software public key (will be overridden for yubikey
+    // after we obtain the hardware public key below)
+    let initial_pub_str = &device_keypair.public;
+    let device_id = pub_key_to_device_id(initial_pub_str)?;
 
     for (i, chunk_data) in chunks.iter().enumerate() {
         let chunk_id = i as u32;
@@ -498,15 +550,133 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
         }
     };
 
-    // Build the TrstManifest
-    let manifest = TrstManifest {
+    // Determine signing public key string and signature based on backend
+    let (signing_public_key, signature) = match args.backend.as_str() {
+        "software" => {
+            let pub_key = device_keypair.public.clone();
+            let canonical_bytes = {
+                // Build a temporary manifest to get canonical bytes for signing
+                let tmp = TrstManifest {
+                    trst_version: "0.1.0".to_string(),
+                    profile: args.profile.clone(),
+                    device: DeviceInfo {
+                        id: device_id.clone(),
+                        model: "TrustEdgeRefCam".to_string(),
+                        firmware_version: "1.0.0".to_string(),
+                        public_key: pub_key.clone(),
+                    },
+                    metadata: metadata.clone(),
+                    chunk: ChunkInfo {
+                        size_bytes: args.chunk_size as u64,
+                        duration_seconds: chunk_seconds,
+                    },
+                    segments: segments.clone(),
+                    claims: vec!["location:unknown".to_string()],
+                    prev_archive_hash: None,
+                    signature: None,
+                };
+                tmp.to_canonical_bytes()?
+            };
+            let sig = sign_manifest(&device_keypair, &canonical_bytes)?;
+            (pub_key, sig)
+        }
+        "yubikey" => {
+            #[cfg(feature = "yubikey")]
+            {
+                // Prompt for PIN interactively without echoing
+                let pin =
+                    rpassword::prompt_password("YubiKey PIN: ").context("Failed to read PIN")?;
+                let config = YubiKeyConfig::builder()
+                    .pin(pin)
+                    .default_slot(args.slot.clone())
+                    .build();
+                let backend = YubiKeyBackend::with_config(config)
+                    .map_err(|e| anyhow::anyhow!("Failed to connect to YubiKey: {}", e))?;
+
+                // Extract public key from hardware slot (DER-encoded SPKI)
+                let pub_key_result = backend
+                    .perform_operation(&args.slot, CryptoOperation::GetPublicKey)
+                    .map_err(|e| anyhow::anyhow!("Failed to get YubiKey public key: {}", e))?;
+                let der_bytes = match pub_key_result {
+                    CryptoResult::PublicKey(b) => b,
+                    _ => anyhow::bail!("Unexpected result from GetPublicKey"),
+                };
+
+                // Parse SPKI DER to SEC1 uncompressed point bytes
+                let p256_pub = p256::PublicKey::from_public_key_der(&der_bytes)
+                    .map_err(|e| anyhow::anyhow!("Failed to parse P-256 public key: {}", e))?;
+                let sec1_bytes = p256_pub.to_sec1_bytes();
+                let pub_key_str = format!(
+                    "ecdsa-p256:{}",
+                    base64::engine::general_purpose::STANDARD.encode(sec1_bytes.as_ref())
+                );
+
+                // Build canonical bytes with the P-256 public key and updated device_id
+                let yk_device_id = pub_key_to_device_id(&pub_key_str)?;
+                let canonical_bytes = {
+                    let tmp = TrstManifest {
+                        trst_version: "0.1.0".to_string(),
+                        profile: args.profile.clone(),
+                        device: DeviceInfo {
+                            id: yk_device_id,
+                            model: "TrustEdgeRefCam".to_string(),
+                            firmware_version: "1.0.0".to_string(),
+                            public_key: pub_key_str.clone(),
+                        },
+                        metadata: metadata.clone(),
+                        chunk: ChunkInfo {
+                            size_bytes: args.chunk_size as u64,
+                            duration_seconds: chunk_seconds,
+                        },
+                        segments: segments.clone(),
+                        claims: vec!["location:unknown".to_string()],
+                        prev_archive_hash: None,
+                        signature: None,
+                    };
+                    tmp.to_canonical_bytes()?
+                };
+
+                // Sign with YubiKey hardware (ECDSA P-256)
+                let sign_result = backend
+                    .perform_operation(
+                        &args.slot,
+                        CryptoOperation::Sign {
+                            data: canonical_bytes,
+                            algorithm: SignatureAlgorithm::EcdsaP256,
+                        },
+                    )
+                    .map_err(|e| anyhow::anyhow!("YubiKey signing failed: {}", e))?;
+                let sig_bytes = match sign_result {
+                    CryptoResult::Signed(b) => b,
+                    _ => anyhow::bail!("Unexpected result from Sign operation"),
+                };
+                let sig_str = format!(
+                    "ecdsa-p256:{}",
+                    base64::engine::general_purpose::STANDARD.encode(&sig_bytes)
+                );
+
+                (pub_key_str, sig_str)
+            }
+            #[cfg(not(feature = "yubikey"))]
+            {
+                anyhow::bail!("YubiKey support requires building with --features yubikey");
+            }
+        }
+        other => anyhow::bail!("Unknown backend '{}'. Use 'software' or 'yubikey'", other),
+    };
+
+    // Recompute device_id from the final signing public key (handles yubikey override)
+    let final_device_id = pub_key_to_device_id(&signing_public_key)?;
+
+    // Build the TrstManifest with the final public key and device_id
+    let signed_manifest = TrstManifest {
         trst_version: "0.1.0".to_string(),
         profile: args.profile.clone(),
         device: DeviceInfo {
-            id: device_id,
+            id: final_device_id,
             model: "TrustEdgeRefCam".to_string(),
             firmware_version: "1.0.0".to_string(),
-            public_key: device_keypair.public.clone(),
+            public_key: signing_public_key,
         },
         metadata,
         chunk: ChunkInfo {
@@ -516,15 +686,7 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
         segments,
         claims: vec!["location:unknown".to_string()],
         prev_archive_hash: None,
-        signature: None,
-    };
-
-    // Sign manifest
-    let canonical_bytes = manifest.to_canonical_bytes()?;
-    let signature = sign_manifest(&device_keypair, &canonical_bytes)?;
-    let signed_manifest = TrstManifest {
         signature: Some(signature.clone()),
-        ..manifest
     };
 
     // Write archive

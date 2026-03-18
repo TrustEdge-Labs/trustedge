@@ -20,13 +20,18 @@ test = false
 tier = "stable"
 maintained = true
 
+[features]
+yubikey = ["trustedge-core/yubikey"]
+
 [dependencies]
 anyhow = { workspace = true }
 base64 = "0.22"
 chrono = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 ed25519-dalek = { workspace = true }
+p256 = { workspace = true }
 rand_core = { workspace = true, features = ["getrandom"] }
+rpassword = "7"
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 trustedge-core = { path = "../core" }
