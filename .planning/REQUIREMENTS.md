@@ -24,10 +24,10 @@ Requirements for the Data Lifecycle & Hardware Integration milestone. Each maps 
 
 ### YubiKey CLI
 
-- [ ] **YUBI-01**: User can run `trst wrap --backend yubikey` to sign archives with hardware YubiKey (ECDSA P-256)
+- [x] **YUBI-01**: User can run `trst wrap --backend yubikey` to sign archives with hardware YubiKey (ECDSA P-256)
 - [x] **YUBI-02**: `trst verify` accepts both Ed25519 and ECDSA P-256 signatures (dispatches on key prefix)
-- [ ] **YUBI-03**: YubiKey PIN is prompted interactively when required (not passed as CLI flag)
-- [ ] **YUBI-04**: Demo script works with `--local` when no YubiKey is present (graceful skip)
+- [x] **YUBI-03**: YubiKey PIN is prompted interactively when required (not passed as CLI flag)
+- [x] **YUBI-04**: Demo script works with `--local` when no YubiKey is present (graceful skip)
 
 ### Named Profiles
 
@@ -74,10 +74,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UNWRAP-02 | Phase 43 | Complete |
 | UNWRAP-03 | Phase 43 | Complete |
 | UNWRAP-04 | Phase 43 | Complete |
-| YUBI-01 | Phase 44 | Pending |
+| YUBI-01 | Phase 44 | Complete |
 | YUBI-02 | Phase 44 | Complete |
-| YUBI-03 | Phase 44 | Pending |
-| YUBI-04 | Phase 44 | Pending |
+| YUBI-03 | Phase 44 | Complete |
+| YUBI-04 | Phase 44 | Complete |
 | PROF-05 | Phase 42 | Complete |
 | PROF-06 | Phase 42 | Complete |
 | PROF-07 | Phase 42 | Complete |

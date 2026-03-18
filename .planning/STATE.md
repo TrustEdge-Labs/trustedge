@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Data Lifecycle & Hardware Integration
 status: planning
-stopped_at: Completed 44-01-PLAN.md
-last_updated: "2026-03-18T00:41:01.908Z"
+stopped_at: Completed 44-02-PLAN.md
+last_updated: "2026-03-18T00:47:57.019Z"
 last_activity: 2026-03-16 -- Roadmap created for v2.1
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -73,6 +73,7 @@ Key design decisions to lock before coding each phase:
 - [Phase 43]: Chunk files now [nonce:24][ciphertext:N]; BLAKE3 hashes cover nonce+ciphertext to match validate_archive disk reads
 - [Phase 43]: Used process::exit() on all error paths in handle_unwrap() to guarantee no partial output file is written on signature/continuity/decryption failure
 - [Phase 44-yubikey-cli-integration]: ECDSA P-256 signature format: ecdsa-p256:<base64_sec1_uncompressed> for keys, ecdsa-p256:<base64_der> for DER signatures; p256 crate handles SHA-256 hashing internally
+- [Phase 44-yubikey-cli-integration]: --device-key required with --backend yubikey; YubiKey handles only ECDSA P-256 signing, software key still does HKDF chunk encryption
 
 ### Pending Todos
 
@@ -86,8 +87,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T00:41:01.906Z
-Stopped at: Completed 44-01-PLAN.md
+Last session: 2026-03-18T00:47:57.016Z
+Stopped at: Completed 44-02-PLAN.md
 Resume file: None
 
 ---
