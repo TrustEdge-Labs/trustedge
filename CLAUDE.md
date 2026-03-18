@@ -167,8 +167,17 @@ cargo run -p trustedge-trst-cli -- wrap --in sample.bin --out archive.trst --dev
 # Create archive (cam.video profile)
 cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in sample.bin --out archive.trst --device-key device.key --device-pub device.pub
 
+# Create archive (sensor profile with geo)
+cargo run -p trustedge-trst-cli -- wrap --profile sensor --in data.csv --out archive.trst --sample-rate 100 --unit celsius --sensor-model DHT22 --latitude 40.7 --longitude=-74.0 --device-key device.key --device-pub device.pub
+
 # Verify archive locally
 cargo run -p trustedge-trst-cli -- verify archive.trst --device-pub "ed25519:..."
+
+# Decrypt and recover original data
+cargo run -p trustedge-trst-cli -- unwrap archive.trst --device-key device.key --out recovered.bin
+
+# Sign with YubiKey hardware (requires yubikey feature)
+cargo run -p trustedge-trst-cli --features yubikey -- wrap --backend yubikey --in data.bin --out archive.trst --device-key device.key
 
 # Submit to platform server for verification
 cargo run -p trustedge-trst-cli -- emit-request --archive archive.trst --device-pub device.pub --out request.json --post http://localhost:3001/v1/verify

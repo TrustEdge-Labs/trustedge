@@ -42,6 +42,22 @@ cd trustedge
 cargo test --features yubikey --test yubikey_integration
 ```
 
+### Step 3: Sign a .trst archive with YubiKey
+
+```bash
+# Generate a software key for encryption (YubiKey handles signing only)
+cargo run -p trustedge-trst-cli -- keygen --out-key device.key --out-pub device.pub
+
+# Wrap and sign with YubiKey (ECDSA P-256 via PIV slot 9c)
+cargo run -p trustedge-trst-cli --features yubikey -- wrap \
+  --backend yubikey --in data.bin --out archive.trst --device-key device.key
+
+# Verify the hardware-signed archive
+cargo run -p trustedge-trst-cli -- verify archive.trst --device-pub "ecdsa-p256:..."
+```
+
+The CLI prompts for your YubiKey PIN interactively. The `--device-key` is used for chunk encryption (HKDF key derivation); YubiKey handles the ECDSA P-256 manifest signature.
+
 ---
 
 ## What Happens

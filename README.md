@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v2.0)
+[![Version](https://img.shields.io/badge/version-2.1-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v2.1)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge
@@ -86,16 +86,44 @@ trst wrap --in interview.wav --out recording.trst \
   --device-key recorder.key --device-pub recorder.pub
 ```
 
-All examples use the generic profile (default). For cam.video-specific archives with frame
-rate and segment duration, see [examples/cam.video](examples/cam.video/).
+Named profiles are also available for use-case-specific metadata:
+
+```bash
+# Sensor data with geo-tagging
+trst wrap --profile sensor --in readings.csv --out telemetry.trst \
+  --sample-rate 100 --unit celsius --sensor-model DHT22 \
+  --latitude 40.7128 --longitude=-74.0060 \
+  --device-key sensor.key --device-pub sensor.pub
+
+# Audio with codec metadata
+trst wrap --profile audio --in call.wav --out recording.trst \
+  --sample-rate 44100 --bit-depth 16 --channels 2 --codec pcm \
+  --device-key mic.key --device-pub mic.pub
+
+# Application logs
+trst wrap --profile log --in access.log --out logs.trst \
+  --application nginx --host web-01 --log-level info --log-format json \
+  --device-key server.key --device-pub server.pub
+```
+
+To decrypt and recover original data:
+
+```bash
+trst unwrap recording.trst --device-key mic.key --out recovered.wav
+```
+
+For cam.video-specific archives with frame rate and segment duration, see [examples/cam.video](examples/cam.video/).
 
 ## How It Works
 
-1. **Sign** -- Device generates an Ed25519 keypair and signs data at the point of capture
-2. **Encrypt** -- Data is chunked and each chunk is encrypted with AES-256-GCM
+1. **Sign** -- Device generates an Ed25519 keypair (or uses YubiKey ECDSA P-256) and signs data at the point of capture
+2. **Encrypt** -- Data is chunked and each chunk is encrypted with XChaCha20Poly1305 using an HKDF-derived key
 3. **Wrap** -- Chunks, manifest, and signature are packaged into a `.trst` archive with a BLAKE3 continuity chain
 4. **Verify** -- An independent verification service checks the signature, chain integrity, and manifest
-5. **Receipt** -- A cryptographic receipt is issued proving the data was verified at a specific time
+5. **Unwrap** -- Original data is recovered after mandatory signature and chain verification
+6. **Receipt** -- A cryptographic receipt is issued proving the data was verified at a specific time
+
+Hardware-backed signing is supported via YubiKey PIV (`trst wrap --backend yubikey`). See [docs/yubikey-guide.md](docs/yubikey-guide.md).
 
 ## Architecture
 
