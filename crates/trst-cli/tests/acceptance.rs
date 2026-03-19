@@ -50,6 +50,7 @@ fn wrap_archive(tempdir: &TempDir) -> (PathBuf, String) {
             "4096",
             "--chunk-seconds",
             "2.0",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -74,6 +75,7 @@ fn wrap_generic_archive(tempdir: &TempDir) -> (PathBuf, String) {
             archive_dir.to_str().unwrap(),
             "--chunk-size",
             "4096",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -280,6 +282,7 @@ fn acceptance_generic_explicit_profile() {
             archive_dir.to_str().unwrap(),
             "--chunk-size",
             "4096",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -317,6 +320,7 @@ fn acceptance_generic_with_metadata() {
             "sensor",
             "--source",
             "drone-01",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -356,6 +360,7 @@ fn acceptance_keygen_creates_files() {
             key_path.to_str().unwrap(),
             "--out-pub",
             pub_path.to_str().unwrap(),
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -393,6 +398,7 @@ fn acceptance_keygen_roundtrip() {
             key_path.to_str().unwrap(),
             "--out-pub",
             pub_path.to_str().unwrap(),
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -418,6 +424,7 @@ fn acceptance_keygen_roundtrip() {
             "2.0",
             "--device-key",
             key_path.to_str().unwrap(),
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -475,6 +482,7 @@ fn acceptance_camvideo_still_works() {
             "2.0",
             "--fps",
             "30",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -519,6 +527,7 @@ fn acceptance_sensor_wrap_verify() {
             "celsius",
             "--sensor-model",
             "DHT22",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -570,6 +579,7 @@ fn acceptance_audio_wrap_verify() {
             "2",
             "--codec",
             "pcm",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -625,6 +635,7 @@ fn acceptance_log_wrap_verify() {
             "info",
             "--log-format",
             "json",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -683,6 +694,7 @@ fn acceptance_sensor_with_geo() {
             "--longitude=-122.4194",
             "--altitude",
             "10.0",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -725,6 +737,7 @@ fn run_unwrap(
             device_key.to_str().unwrap(),
             "--out",
             output.to_str().unwrap(),
+            "--unencrypted",
         ])
         .assert()
 }
@@ -742,6 +755,7 @@ fn wrap_with_key(tempdir: &TempDir, input: &Path, profile: &str) -> (PathBuf, Pa
             key_path.to_str().unwrap(),
             "--out-pub",
             pub_path.to_str().unwrap(),
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -762,6 +776,7 @@ fn wrap_with_key(tempdir: &TempDir, input: &Path, profile: &str) -> (PathBuf, Pa
             "4096",
             "--device-key",
             key_path.to_str().unwrap(),
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -806,6 +821,7 @@ fn acceptance_unwrap_wrong_key() {
             wrong_key_path.to_str().unwrap(),
             "--out-pub",
             wrong_pub_path.to_str().unwrap(),
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -910,6 +926,7 @@ fn acceptance_sensor_missing_required_flag() {
             "4096",
             "--sample-rate",
             "100.0",
+            "--unencrypted",
             // --unit and --sensor-model intentionally omitted
         ])
         .assert()
@@ -1008,6 +1025,7 @@ fn acceptance_backend_software_explicit() {
             archive_dir.to_str().unwrap(),
             "--chunk-size",
             "4096",
+            "--unencrypted",
         ])
         .assert()
         .success();
@@ -1055,6 +1073,7 @@ fn acceptance_backend_unknown_fails() {
             archive_dir.to_str().unwrap(),
             "--chunk-size",
             "4096",
+            "--unencrypted",
         ])
         .assert()
         .failure()

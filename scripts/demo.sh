@@ -97,7 +97,8 @@ fi
 step_banner "Generate Ed25519 device key pair"
 if $TRST keygen \
         --out-key "$DEMO_DIR/device.key" \
-        --out-pub "$DEMO_DIR/device.pub" 2>&1; then
+        --out-pub "$DEMO_DIR/device.pub" \
+        --unencrypted 2>&1; then
     pass "Created $DEMO_DIR/device.key and $DEMO_DIR/device.pub"
     DEVICE_PUB=$(cat "$DEMO_DIR/device.pub" | tr -d '\n')
     printf "  Public key: %s\n" "$DEVICE_PUB"
@@ -124,7 +125,8 @@ if $TRST wrap \
         --device-pub "$DEMO_DIR/device.pub" \
         --data-type "sensor" \
         --source "demo-device-01" \
-        --description "Demo sensor data capture" 2>&1; then
+        --description "Demo sensor data capture" \
+        --unencrypted 2>&1; then
     pass "Created $DEMO_DIR/sample.trst archive"
 else
     fail "Wrap failed"
@@ -154,7 +156,8 @@ if $YUBIKEY_AVAILABLE; then
             --device-key "$DEMO_DIR/device.key" \
             --data-type "sensor" \
             --source "demo-yubikey" \
-            --description "YubiKey hardware-signed demo" 2>&1; then
+            --description "YubiKey hardware-signed demo" \
+            --unencrypted 2>&1; then
         pass "Created $DEMO_DIR/sample-yubikey.trst (YubiKey ECDSA P-256 signed)"
         # Verify the YubiKey-signed archive
         YUBIKEY_PUB=$(jq -r '.device.public_key' "$DEMO_DIR/sample-yubikey.trst/manifest.json")

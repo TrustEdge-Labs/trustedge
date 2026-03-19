@@ -43,6 +43,7 @@ fn test_wrap_and_verify_basic_workflow() {
         .arg("2.0")
         .arg("--fps")
         .arg("30")
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     cmd.assert()
@@ -116,6 +117,7 @@ fn test_wrap_with_existing_device_key() {
         .arg(&output_archive)
         .arg("--device-key")
         .arg(&device_key_file)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     cmd.assert()
@@ -164,6 +166,7 @@ fn test_verify_with_wrong_public_key() {
         .arg(&input_file)
         .arg("--out")
         .arg(&output_archive)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     cmd.assert().success();
@@ -198,6 +201,7 @@ fn test_wrap_nonexistent_input_file() {
         .arg(&nonexistent_file)
         .arg("--out")
         .arg(&output_archive)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     cmd.assert()
@@ -243,6 +247,7 @@ fn test_invalid_output_directory_name() {
         .arg(&input_file)
         .arg("--out")
         .arg(&invalid_output)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     cmd.assert().failure().stderr(predicate::str::contains(
@@ -271,6 +276,7 @@ fn test_verify_emit_receipt() {
         .arg(&input_file)
         .arg("--out")
         .arg(&output_archive)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     cmd.assert().success();
@@ -386,6 +392,7 @@ fn test_seed_deterministic_output() {
         .arg(&device_key_file)
         .arg("--seed")
         .arg("42")
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     cmd1.assert().success();
@@ -404,6 +411,7 @@ fn test_seed_deterministic_output() {
         .arg(&device_key_file)
         .arg("--seed")
         .arg("42")
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     cmd2.assert().success();
@@ -420,6 +428,7 @@ fn test_seed_deterministic_output() {
         .arg(&output_archive3)
         .arg("--device-key")
         .arg(&device_key_file)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     cmd3.assert().success();
@@ -491,6 +500,7 @@ fn test_a1_successful_verification() {
         .arg(&input_file)
         .arg("--out")
         .arg(&output_archive)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     wrap_cmd.assert().success();
@@ -552,6 +562,7 @@ fn test_a3_signature_verification_failure() {
         .arg(&input_file)
         .arg("--out")
         .arg(&output_archive)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     wrap_cmd.assert().success();
@@ -587,6 +598,7 @@ fn test_a4_missing_signature_in_manifest() {
         .arg(&input_file)
         .arg("--out")
         .arg(&output_archive)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     wrap_cmd.assert().success();
@@ -643,6 +655,7 @@ fn test_a5_continuity_failure_with_json() {
         .arg(&input_file)
         .arg("--out")
         .arg(&output_archive)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     wrap_cmd.assert().success();
@@ -704,6 +717,7 @@ fn test_emit_request_basic_functionality() {
         .arg(&input_file)
         .arg("--out")
         .arg(&output_archive)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     wrap_cmd.assert().success();
@@ -777,6 +791,7 @@ fn test_emit_request_blake3_computation() {
         .arg(&output_archive)
         .arg("--chunk-size")
         .arg("50") // Small chunk size to ensure we get at least one chunk
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     wrap_cmd.assert().success();
@@ -837,6 +852,7 @@ fn test_emit_request_http_error_handling() {
         .arg(&input_file)
         .arg("--out")
         .arg(&output_archive)
+        .arg("--unencrypted")
         .current_dir(temp_path);
 
     wrap_cmd.assert().success();
