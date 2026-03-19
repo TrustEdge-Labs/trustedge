@@ -633,4 +633,69 @@ mod tests {
             "Error message should mention 'Unsupported signature algorithm', got: {err_msg}"
         );
     }
+
+    // ─── Encrypted key file tests ─────────────────────────────────────────────
+
+    #[test]
+    fn test_encrypted_key_roundtrip() {
+        let keypair = DeviceKeypair::generate().unwrap();
+        let original_secret = *keypair.secret_bytes();
+
+        let encrypted = keypair.export_secret_encrypted("test123").unwrap();
+        let imported = DeviceKeypair::import_secret_encrypted(&encrypted, "test123").unwrap();
+
+        assert_eq!(&original_secret, imported.secret_bytes());
+        assert_eq!(keypair.public, imported.public);
+    }
+
+    #[test]
+    fn test_encrypted_key_wrong_passphrase() {
+        let keypair = DeviceKeypair::generate().unwrap();
+        let encrypted = keypair
+            .export_secret_encrypted("correct-passphrase")
+            .unwrap();
+
+        let result = DeviceKeypair::import_secret_encrypted(&encrypted, "wrong-passphrase");
+        assert!(
+            result.is_err(),
+            "Wrong passphrase must return Err, not Ok with garbage data"
+        );
+    }
+
+    #[test]
+    fn test_is_encrypted_key_file() {
+        // True: starts with TRUSTEDGE-KEY-V1\n
+        assert!(is_encrypted_key_file(b"TRUSTEDGE-KEY-V1\nsome data"));
+        // False: plaintext ed25519: prefix
+        assert!(!is_encrypted_key_file(b"ed25519:AAAA"));
+        // False: empty
+        assert!(!is_encrypted_key_file(b""));
+        // False: random bytes
+        assert!(!is_encrypted_key_file(b"\x00\x01\x02\x03"));
+    }
+
+    #[test]
+    fn test_encrypted_key_format() {
+        let keypair = DeviceKeypair::generate().unwrap();
+        let encrypted = keypair.export_secret_encrypted("test-passphrase").unwrap();
+
+        // First line must be TRUSTEDGE-KEY-V1
+        let first_newline = encrypted.iter().position(|&b| b == b'\n').unwrap();
+        let header = std::str::from_utf8(&encrypted[..first_newline]).unwrap();
+        assert_eq!(header, "TRUSTEDGE-KEY-V1");
+
+        // Second line must be valid JSON with salt, nonce, iterations
+        let rest = &encrypted[first_newline + 1..];
+        let second_newline = rest.iter().position(|&b| b == b'\n').unwrap();
+        let meta_str = std::str::from_utf8(&rest[..second_newline]).unwrap();
+        let meta: serde_json::Value = serde_json::from_str(meta_str).unwrap();
+
+        assert!(meta["salt"].is_string(), "metadata must have salt field");
+        assert!(meta["nonce"].is_string(), "metadata must have nonce field");
+        assert!(
+            meta["iterations"].is_number(),
+            "metadata must have iterations field"
+        );
+        assert_eq!(meta["iterations"].as_u64().unwrap(), 600_000);
+    }
 }
