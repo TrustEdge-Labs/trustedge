@@ -7,6 +7,7 @@
 //
 
 use aead::{Aead, KeyInit};
+use aes_gcm::{Aes256Gcm, Nonce as AesGcmNonce};
 use chacha20poly1305::XChaCha20Poly1305;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use hkdf::Hkdf;
@@ -14,12 +15,16 @@ use p256::ecdsa::{
     signature::Verifier as P256Verifier, Signature as P256Signature,
     VerifyingKey as P256VerifyingKey,
 };
+use pbkdf2::pbkdf2_hmac;
 use rand_core::{OsRng, RngCore};
 use serde_json::json;
 use sha2::Sha256;
 use zeroize::Zeroize;
 
 pub use crate::error::CryptoError;
+
+/// Magic header prefix identifying an encrypted TrustEdge key file.
+const ENCRYPTED_KEY_HEADER: &str = "TRUSTEDGE-KEY-V1";
 
 /// Device keypair for Ed25519 signing operations
 ///
@@ -121,6 +126,140 @@ impl DeviceKeypair {
     /// `derive_chunk_key`. Avoid storing or logging the returned reference.
     pub fn secret_bytes(&self) -> &[u8; 32] {
         &self.secret
+    }
+
+    /// Export the secret key encrypted with a passphrase using PBKDF2-SHA256 + AES-256-GCM.
+    ///
+    /// Output format:
+    /// ```text
+    /// TRUSTEDGE-KEY-V1\n
+    /// {"salt":"<b64>","nonce":"<b64>","iterations":600000}\n
+    /// <AES-256-GCM ciphertext bytes>
+    /// ```
+    pub fn export_secret_encrypted(&self, passphrase: &str) -> Result<Vec<u8>, CryptoError> {
+        // Generate 32-byte random salt and 12-byte random nonce
+        let mut salt = [0u8; 32];
+        OsRng.fill_bytes(&mut salt);
+        let mut nonce_bytes = [0u8; 12];
+        OsRng.fill_bytes(&mut nonce_bytes);
+
+        let iterations: u32 = 600_000;
+
+        // Derive 32-byte encryption key via PBKDF2-SHA256
+        let mut derived_key = [0u8; 32];
+        pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), &salt, iterations, &mut derived_key);
+
+        // Encrypt secret key bytes with AES-256-GCM
+        let cipher = Aes256Gcm::new_from_slice(&derived_key)
+            .map_err(|e| CryptoError::EncryptionFailed(format!("AES key init: {e}")))?;
+        derived_key.zeroize();
+
+        let nonce = AesGcmNonce::from_slice(&nonce_bytes);
+        let ciphertext = cipher
+            .encrypt(nonce, self.secret.as_ref())
+            .map_err(|e| CryptoError::EncryptionFailed(format!("AES-GCM encrypt: {e}")))?;
+
+        // Build output: header\nJSON-metadata\nciphertext
+        let metadata = serde_json::json!({
+            "salt": base64_encode(&salt),
+            "nonce": base64_encode(&nonce_bytes),
+            "iterations": iterations,
+        });
+        let mut output = Vec::new();
+        output.extend_from_slice(ENCRYPTED_KEY_HEADER.as_bytes());
+        output.push(b'\n');
+        output.extend_from_slice(metadata.to_string().as_bytes());
+        output.push(b'\n');
+        output.extend_from_slice(&ciphertext);
+
+        Ok(output)
+    }
+
+    /// Import a keypair from an encrypted key file using a passphrase.
+    ///
+    /// Returns `Err(CryptoError::DecryptionFailed)` if the passphrase is wrong or
+    /// the file is corrupted.
+    pub fn import_secret_encrypted(data: &[u8], passphrase: &str) -> Result<Self, CryptoError> {
+        // Parse header line
+        let header_end = data
+            .iter()
+            .position(|&b| b == b'\n')
+            .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing header line".into()))?;
+        let header = std::str::from_utf8(&data[..header_end])
+            .map_err(|_| CryptoError::InvalidKeyFormat("Invalid UTF-8 header".into()))?;
+        if header != ENCRYPTED_KEY_HEADER {
+            return Err(CryptoError::InvalidKeyFormat(format!(
+                "Expected header '{}', got '{}'",
+                ENCRYPTED_KEY_HEADER, header
+            )));
+        }
+
+        // Parse metadata JSON line
+        let meta_start = header_end + 1;
+        let meta_end = data[meta_start..]
+            .iter()
+            .position(|&b| b == b'\n')
+            .map(|p| meta_start + p)
+            .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing metadata line".into()))?;
+        let meta_str = std::str::from_utf8(&data[meta_start..meta_end])
+            .map_err(|_| CryptoError::InvalidKeyFormat("Invalid UTF-8 metadata".into()))?;
+        let meta: serde_json::Value = serde_json::from_str(meta_str)
+            .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid JSON metadata: {e}")))?;
+
+        let salt = base64_decode(
+            meta["salt"]
+                .as_str()
+                .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing salt".into()))?,
+        )
+        .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid salt base64: {e}")))?;
+
+        let nonce_bytes = base64_decode(
+            meta["nonce"]
+                .as_str()
+                .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing nonce".into()))?,
+        )
+        .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid nonce base64: {e}")))?;
+
+        let iterations = meta["iterations"]
+            .as_u64()
+            .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing iterations".into()))?
+            as u32;
+
+        if nonce_bytes.len() != 12 {
+            return Err(CryptoError::InvalidKeyFormat(
+                "Nonce must be 12 bytes".into(),
+            ));
+        }
+
+        let ciphertext = &data[meta_end + 1..];
+
+        // Derive key and decrypt
+        let mut derived_key = [0u8; 32];
+        pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), &salt, iterations, &mut derived_key);
+
+        let cipher = Aes256Gcm::new_from_slice(&derived_key)
+            .map_err(|e| CryptoError::EncryptionFailed(format!("AES key init: {e}")))?;
+        derived_key.zeroize();
+
+        let nonce = AesGcmNonce::from_slice(&nonce_bytes);
+        let plaintext = cipher.decrypt(nonce, ciphertext).map_err(|_| {
+            CryptoError::DecryptionFailed("Wrong passphrase or corrupted key file".into())
+        })?;
+
+        if plaintext.len() != 32 {
+            return Err(CryptoError::InvalidKeyFormat(
+                "Decrypted key must be 32 bytes".into(),
+            ));
+        }
+
+        let mut secret = [0u8; 32];
+        secret.copy_from_slice(&plaintext);
+
+        let signing_key = SigningKey::from_bytes(&secret);
+        let verifying_key = signing_key.verifying_key();
+        let public = format!("ed25519:{}", base64_encode(verifying_key.as_bytes()));
+
+        Ok(Self { public, secret })
     }
 }
 
@@ -232,6 +371,15 @@ pub fn generate_aad(
 
     // Use compact JSON representation for AAD
     serde_json::to_string(&aad_json).unwrap().into_bytes()
+}
+
+/// Detect whether raw bytes represent an encrypted TrustEdge key file.
+///
+/// Returns `true` if `data` starts with `"TRUSTEDGE-KEY-V1\n"`, which is the
+/// magic header written by [`DeviceKeypair::export_secret_encrypted`].
+/// Returns `false` for plaintext `"ed25519:…"` key strings and any other content.
+pub fn is_encrypted_key_file(data: &[u8]) -> bool {
+    data.starts_with(b"TRUSTEDGE-KEY-V1\n")
 }
 
 /// Sign manifest canonical bytes with device secret key

@@ -153,7 +153,8 @@ pub use chain::{
 };
 pub use crypto::{
     decrypt_segment, derive_chunk_key, encrypt_segment, format_nonce, generate_aad,
-    generate_nonce24, parse_nonce, sign_manifest, verify_manifest, CryptoError, DeviceKeypair,
+    generate_nonce24, is_encrypted_key_file, parse_nonce, sign_manifest, verify_manifest,
+    CryptoError, DeviceKeypair,
 };
 pub use secret::Secret;
 // Ed25519 types re-exported for downstream crates (JWKS, key management)
