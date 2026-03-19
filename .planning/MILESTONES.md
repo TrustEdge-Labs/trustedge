@@ -1,5 +1,35 @@
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 
+## v2.2 Security Remediation (Shipped: 2026-03-19)
+
+**Phases completed:** 3 phases (45-47), 5 plans
+**Timeline:** 2 days (2026-03-17 → 2026-03-18)
+**Stats:** 33 files changed, 2,498 insertions, 401 deletions, 23 commits
+
+**Delivered:** Fixed critical cryptographic flaws — replaced insecure RSA padding, removed legacy envelope format, enforced key derivation minimums, and added passphrase-encrypted device keys.
+
+**Key accomplishments:**
+- RSA PKCS#1 v1.5 replaced with OAEP-SHA256 in asymmetric.rs (RUSTSEC-2023-0071 resolved after being carried since v1.3)
+- v1 envelope format removed entirely (not just deprecated) — unseal() simplified from 66 to 30 lines
+- PBKDF2 minimum 300k iterations enforced at 4 points (builder + backend, both APIs)
+- Device keys encrypted at rest: TRUSTEDGE-KEY-V1 format with PBKDF2-SHA256 (600k) + AES-256-GCM
+- `--unencrypted` escape hatch for CI/automation, secure-by-default for interactive use
+
+**Tech debt resolved:**
+- RUSTSEC-2023-0071 risk acceptance removed (carried from v1.3 — 7 milestones)
+- v1 envelope dead code eliminated
+
+**Tech debt carried forward:**
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+
+**Git range:** v2.1..v2.2
+
+**Archives:**
+- `.planning/milestones/v2.2-ROADMAP.md`
+- `.planning/milestones/v2.2-REQUIREMENTS.md`
+
+---
+
 ## v2.1 Data Lifecycle & Hardware Integration (Shipped: 2026-03-18)
 
 **Phases completed:** 3 phases (42-44), 6 plans

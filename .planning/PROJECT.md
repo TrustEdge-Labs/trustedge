@@ -16,19 +16,9 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## Current Milestone: v2.2 Security Remediation
-
-**Goal:** Fix critical cryptographic flaws — replace insecure RSA PKCS#1 v1.5 with OAEP padding, deprecate v1 envelope format, harden PBKDF2 minimums, and encrypt device keys at rest with passphrase protection.
-
-**Target fixes:**
-- RSA encryption uses OAEP padding instead of PKCS#1 v1.5 (padding oracle resistance)
-- v1 envelope format deprecated (force migration to HKDF-based v2)
-- PBKDF2 iteration minimum enforced at 300,000+
-- File-based device keys encrypted at rest with passphrase via rpassword
-
 ## Current State
 
-Shipped v2.1 Data Lifecycle & Hardware Integration. The full data lifecycle is now complete: wrap encrypts data into tamper-evident .trst archives, unwrap decrypts and reassembles original data with mandatory verify-before-decrypt. YubiKey hardware signing is exposed in the CLI via `--backend yubikey`. Named profiles (sensor, audio, log) support real-world use cases. Docker stack, demo script, and developer documentation from v2.0 remain current.
+Shipped v2.2 Security Remediation. All known cryptographic flaws are resolved: RSA uses OAEP-SHA256 (no more PKCS#1 v1.5), v1 envelope format removed entirely, PBKDF2 enforces 300k+ iterations, and device keys are encrypted at rest with passphrase protection. The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack, and demo remain current from v2.0-v2.1.
 
 ## Requirements
 
@@ -140,10 +130,12 @@ Shipped v2.1 Data Lifecycle & Hardware Integration. The full data lifecycle is n
 - ✓ Named archive profiles (sensor, audio, log) with typed metadata and CLI flags — v2.1
 - ✓ Multi-algorithm verify dispatch (Ed25519 + ECDSA P-256 prefix-based) — v2.1
 
-- [ ] RSA OAEP padding replaces PKCS#1 v1.5 in asymmetric.rs
-- [ ] v1 envelope format deprecated with migration path
-- [ ] PBKDF2 minimum iteration count enforced at 300,000+
-- [ ] Device keys encrypted at rest with passphrase protection
+- ✓ RSA OAEP-SHA256 replaces PKCS#1 v1.5 (RUSTSEC-2023-0071 fully resolved) — v2.2
+- ✓ v1 envelope format removed entirely (not just deprecated) — v2.2
+- ✓ PBKDF2 minimum 300k iterations enforced at builder + backend levels — v2.2
+- ✓ Device keys encrypted at rest (TRUSTEDGE-KEY-V1 format, PBKDF2+AES-GCM, --unencrypted escape) — v2.2
+
+(None active — define next milestone with /gsd:new-milestone)
 
 ### Deferred
 
@@ -171,14 +163,17 @@ Shipped v2.1 Data Lifecycle & Hardware Integration. The full data lifecycle is n
 - **v1.8 KDF Architecture Fix** — HKDF-SHA256 replaces PBKDF2 for envelope key derivation, versioned format with v1 backward compatibility, keyring PBKDF2 hardened to OWASP 2023
 - **v2.0 End-to-End Demo** — Generic archive profiles, Docker stack, demo script, README rewrite with use cases
 - **v2.1 Data Lifecycle & Hardware Integration** — trst unwrap, YubiKey CLI, named profiles (sensor, audio, log)
+- **v2.2 Security Remediation** — RSA OAEP, v1 envelope removed, PBKDF2 minimums, encrypted keys at rest
 
 ## Context
 
-Shipped v2.1 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
-Tech stack: Rust, AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit (TypeScript), Docker.
+Shipped v2.2 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
+Tech stack: Rust, AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, RSA-OAEP-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit 5 (TypeScript), Docker.
 TrustEdge-Labs GitHub org has exactly 3 repos: trustedge (main workspace), trustedgelabs-website, shipsecure.
-Full data lifecycle: `trst keygen` → `trst wrap` (encrypt + sign) → `trst verify` (validate) → `trst unwrap` (verify + decrypt).
-`trst wrap` derives XChaCha20Poly1305 chunk key via HKDF-SHA256 from Ed25519 device key. Nonces prepended to chunk files.
+Full data lifecycle: `trst keygen` (passphrase-encrypted keys) → `trst wrap` (encrypt + sign) → `trst verify` (validate) → `trst unwrap` (verify + decrypt).
+Device keys encrypted at rest: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM). `--unencrypted` escape for CI.
+RSA uses OAEP-SHA256 exclusively (PKCS#1 v1.5 eliminated). v1 envelope format removed entirely (v2-only).
+PBKDF2 minimum 300k iterations enforced at builder + backend levels.
 `trst verify` dispatches on key prefix: `ed25519:` (Ed25519) or `ecdsa-p256:` (ECDSA P-256).
 `trst wrap --backend yubikey` signs manifest with ECDSA P-256 via PIV slot 9c, interactive PIN via rpassword.
 ProfileMetadata enum: CamVideo, Sensor, Audio, Log, Generic (untagged serde, unique-field discrimination).
@@ -281,4 +276,4 @@ CI uses `--workspace` for root workspace. YubiKey feature validated unconditiona
 | README leads with problem + quick start | Developer audience wants to try it fast, not read architecture | ✓ Good — 465 → 128 lines |
 
 ---
-*Last updated: 2026-03-18 after v2.2 milestone started*
+*Last updated: 2026-03-19 after v2.2 milestone shipped*
