@@ -31,7 +31,7 @@ Requirements for the Security Remediation milestone. Each maps to roadmap phases
 
 ### Key Protection
 
-- [ ] **KEY-01**: trst keygen encrypts private key files at rest using a passphrase (prompted via rpassword)
+- [x] **KEY-01**: trst keygen encrypts private key files at rest using a passphrase (prompted via rpassword)
 - [ ] **KEY-02**: trst wrap and trst unwrap prompt for passphrase to decrypt key files before use
 - [ ] **KEY-03**: Unencrypted key files are rejected by default (with --unencrypted escape hatch for CI/automation)
 
@@ -70,7 +70,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENV-01 | Phase 46 | Complete |
 | ENV-02 | Phase 46 | Complete |
 | KDF-01 | Phase 46 | Complete |
-| KEY-01 | Phase 47 | Pending |
+| KEY-01 | Phase 47 | Complete |
 | KEY-02 | Phase 47 | Pending |
 | KEY-03 | Phase 47 | Pending |
 

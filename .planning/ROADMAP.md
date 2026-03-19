@@ -103,7 +103,7 @@ Plans:
   3. `trst unwrap` prompts for passphrase and decrypts the key before reassembling — operation fails if wrong passphrase is supplied
   4. Passing a plaintext (unencrypted) key file to `trst wrap` or `trst unwrap` returns an error unless `--unencrypted` flag is provided
   5. CI/automation can pass `--unencrypted` to bypass the passphrase requirement without interactive input
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 47-01-PLAN.md -- Add encrypted key export/import to DeviceKeypair in crypto.rs
@@ -115,7 +115,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 45. RSA OAEP Migration | 1/1 | Complete    | 2026-03-18 | - |
 | 46. Envelope Hardening | 2/2 | Complete    | 2026-03-19 | - |
-| 47. Key Protection at Rest | v2.2 | 0/2 | Not started | - |
+| 47. Key Protection at Rest | 1/2 | In Progress|  | - |
 
 ---
 *Last updated: 2026-03-19 after phase 47 planning*

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Security Remediation
 status: executing
-stopped_at: Phase 47 context gathered
-last_updated: "2026-03-19T01:39:20.253Z"
+stopped_at: Completed 47-01 (encrypted key file support in DeviceKeypair)
+last_updated: "2026-03-19T02:09:00.170Z"
 last_activity: 2026-03-19 — Completed 46-01 (v1 envelope removal)
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 5
+  completed_plans: 4
   percent: 67
 ---
 
@@ -69,6 +69,8 @@ Relevant prior decisions for v2.2 phases:
 - [Phase 45]: RSA OAEP migration: replaced Pkcs1v15Encrypt with Oaep::new::<sha2::Sha256>() in asymmetric.rs; RUSTSEC-2023-0071 removed from audit.toml ignore list
 - [Phase 46]: v1 envelope format removed entirely (not deprecated) — no v1 envelopes exist in production; ENV-01/ENV-02 satisfied
 - [Phase 46]: PBKDF2_MIN_ITERATIONS = 300_000 constant in universal.rs; assert at builder level, error return at backend level (belt-and-suspenders KDF-01)
+- [Phase 47-key-protection-at-rest]: Used existing CryptoError::EncryptionFailed and DecryptionFailed variants (not new ones) to avoid error enum churn
+- [Phase 47-key-protection-at-rest]: is_encrypted_key_file is a standalone function (not method) since it operates on raw bytes before a keypair exists
 
 ### Pending Todos
 
@@ -81,9 +83,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T01:39:20.250Z
-Stopped at: Phase 47 context gathered
-Resume file: .planning/phases/47-key-protection-at-rest/47-CONTEXT.md
+Last session: 2026-03-19T02:09:00.167Z
+Stopped at: Completed 47-01 (encrypted key file support in DeviceKeypair)
+Resume file: None
 
 ---
 *Last updated: 2026-03-18 after v2.2 roadmap created*
