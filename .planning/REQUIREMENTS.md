@@ -27,7 +27,7 @@ Requirements for the Security Remediation milestone. Each maps to roadmap phases
 
 ### Key Derivation
 
-- [ ] **KDF-01**: Any PBKDF2 usage enforces a minimum of 300,000 iterations (fail if lower is requested)
+- [x] **KDF-01**: Any PBKDF2 usage enforces a minimum of 300,000 iterations (fail if lower is requested)
 
 ### Key Protection
 
@@ -69,7 +69,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RSA-02 | Phase 45 | Complete |
 | ENV-01 | Phase 46 | Complete |
 | ENV-02 | Phase 46 | Complete |
-| KDF-01 | Phase 46 | Pending |
+| KDF-01 | Phase 46 | Complete |
 | KEY-01 | Phase 47 | Pending |
 | KEY-02 | Phase 47 | Pending |
 | KEY-03 | Phase 47 | Pending |

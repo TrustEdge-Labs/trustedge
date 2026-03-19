@@ -59,7 +59,7 @@ Completed the data lifecycle with decryption capability, exposed YubiKey hardwar
 #### Phase Summary
 
 - [x] **Phase 45: RSA OAEP Migration** - Replace PKCS#1 v1.5 with OAEP-SHA256 padding in asymmetric.rs (encrypt and decrypt paths) (completed 2026-03-18)
-- [ ] **Phase 46: Envelope Hardening** - Remove v1 envelope format, enforce v2-only sealing, enforce PBKDF2 minimum iterations
+- [x] **Phase 46: Envelope Hardening** - Remove v1 envelope format, enforce v2-only sealing, enforce PBKDF2 minimum iterations (completed 2026-03-19)
 - [ ] **Phase 47: Key Protection at Rest** - Encrypt device key files with passphrase, require passphrase on wrap/unwrap, reject unencrypted keys by default
 
 ## Phase Details
@@ -87,7 +87,7 @@ Plans:
   2. No v1 decrypt code path exists — `decrypt_chunk_v1()` and v1 fallback in `unseal()` are deleted
   3. Any call to a PBKDF2 function with fewer than 300,000 iterations returns an error rather than proceeding
   4. CI passes with existing test suite (v1-only tests deleted, v2 tests pass)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 46-01-PLAN.md -- Remove v1 envelope format entirely from envelope.rs
@@ -110,7 +110,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 45. RSA OAEP Migration | 1/1 | Complete    | 2026-03-18 | - |
-| 46. Envelope Hardening | 1/2 | In Progress|  | - |
+| 46. Envelope Hardening | 2/2 | Complete   | 2026-03-19 | - |
 | 47. Key Protection at Rest | v2.2 | 0/TBD | Not started | - |
 
 ---

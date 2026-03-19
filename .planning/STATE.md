@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Security Remediation
-status: planning
-stopped_at: Completed 46-01-PLAN.md
-last_updated: "2026-03-19T01:04:40.621Z"
-last_activity: 2026-03-18 — Roadmap created for v2.2
+status: executing
+stopped_at: Completed 46-02-PLAN.md
+last_updated: "2026-03-19T01:31:14.739Z"
+last_activity: 2026-03-19 — Completed 46-01 (v1 envelope removal)
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 67
 ---
 
@@ -68,6 +68,7 @@ Relevant prior decisions for v2.2 phases:
 - [v2.1]: rpassword used for YubiKey PIN prompt — same crate used for passphrase prompts in KEY-01/02
 - [Phase 45]: RSA OAEP migration: replaced Pkcs1v15Encrypt with Oaep::new::<sha2::Sha256>() in asymmetric.rs; RUSTSEC-2023-0071 removed from audit.toml ignore list
 - [Phase 46]: v1 envelope format removed entirely (not deprecated) — no v1 envelopes exist in production; ENV-01/ENV-02 satisfied
+- [Phase 46]: PBKDF2_MIN_ITERATIONS = 300_000 constant in universal.rs; assert at builder level, error return at backend level (belt-and-suspenders KDF-01)
 
 ### Pending Todos
 
@@ -80,8 +81,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T01:04:40.618Z
-Stopped at: Completed 46-01-PLAN.md
+Last session: 2026-03-19T01:31:14.736Z
+Stopped at: Completed 46-02-PLAN.md
 Resume file: None
 
 ---
