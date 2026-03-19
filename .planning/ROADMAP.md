@@ -90,8 +90,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 46-01-PLAN.md -- Remove v1 envelope format entirely from envelope.rs
-- [ ] 46-02-PLAN.md -- Enforce PBKDF2 minimum 300k iterations in all backends
+- [x] 46-01-PLAN.md -- Remove v1 envelope format entirely from envelope.rs
+- [x] 46-02-PLAN.md -- Enforce PBKDF2 minimum 300k iterations in all backends
 
 ### Phase 47: Key Protection at Rest
 **Goal**: Device key files are encrypted at rest and the CLI refuses to use unencrypted keys by default
@@ -103,7 +103,11 @@ Plans:
   3. `trst unwrap` prompts for passphrase and decrypts the key before reassembling — operation fails if wrong passphrase is supplied
   4. Passing a plaintext (unencrypted) key file to `trst wrap` or `trst unwrap` returns an error unless `--unencrypted` flag is provided
   5. CI/automation can pass `--unencrypted` to bypass the passphrase requirement without interactive input
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 47-01-PLAN.md -- Add encrypted key export/import to DeviceKeypair in crypto.rs
+- [ ] 47-02-PLAN.md -- Integrate passphrase prompts and --unencrypted flag into CLI + tests + demo
 
 ## Progress
 
@@ -111,7 +115,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 45. RSA OAEP Migration | 1/1 | Complete    | 2026-03-18 | - |
 | 46. Envelope Hardening | 2/2 | Complete    | 2026-03-19 | - |
-| 47. Key Protection at Rest | v2.2 | 0/TBD | Not started | - |
+| 47. Key Protection at Rest | v2.2 | 0/2 | Not started | - |
 
 ---
-*Last updated: 2026-03-18 after phase 46 planning*
+*Last updated: 2026-03-19 after phase 47 planning*
