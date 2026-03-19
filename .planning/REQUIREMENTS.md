@@ -22,8 +22,8 @@ Requirements for the Security Remediation milestone. Each maps to roadmap phases
 
 ### Envelope Format
 
-- [ ] **ENV-01**: v1 envelope format is deprecated -- unseal() logs a deprecation warning when decrypting v1 envelopes
-- [ ] **ENV-02**: seal() always produces v2 envelopes (no code path creates v1 format)
+- [x] **ENV-01**: v1 envelope format is deprecated -- unseal() logs a deprecation warning when decrypting v1 envelopes
+- [x] **ENV-02**: seal() always produces v2 envelopes (no code path creates v1 format)
 
 ### Key Derivation
 
@@ -67,8 +67,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | RSA-01 | Phase 45 | Complete |
 | RSA-02 | Phase 45 | Complete |
-| ENV-01 | Phase 46 | Pending |
-| ENV-02 | Phase 46 | Pending |
+| ENV-01 | Phase 46 | Complete |
+| ENV-02 | Phase 46 | Complete |
 | KDF-01 | Phase 46 | Pending |
 | KEY-01 | Phase 47 | Pending |
 | KEY-02 | Phase 47 | Pending |

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Security Remediation
 status: planning
-stopped_at: Phase 46 context gathered
-last_updated: "2026-03-18T23:35:44.746Z"
+stopped_at: Completed 46-01-PLAN.md
+last_updated: "2026-03-19T01:04:40.621Z"
 last_activity: 2026-03-18 — Roadmap created for v2.2
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 0
+  total_plans: 3
+  completed_plans: 2
+  percent: 67
 ---
 
 <!--
@@ -29,16 +29,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** v2.2 Security Remediation — Phase 45: RSA OAEP Migration
+**Current focus:** v2.2 Security Remediation — Phase 46: Envelope Hardening
 
 ## Current Position
 
-Phase: 45 of 47 (RSA OAEP Migration)
-Plan: Ready to plan
-Status: Ready to plan
-Last activity: 2026-03-18 — Roadmap created for v2.2
+Phase: 46 of 47 (Envelope Hardening)
+Plan: 01 complete, plan 02 next
+Status: In Progress
+Last activity: 2026-03-19 — Completed 46-01 (v1 envelope removal)
 
-Progress: [..........] 0%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Relevant prior decisions for v2.2 phases:
 - [v1.8]: Keyring PBKDF2 hardened to 600k iterations — KDF-01 minimum is 300k; existing keyring already exceeds minimum
 - [v2.1]: rpassword used for YubiKey PIN prompt — same crate used for passphrase prompts in KEY-01/02
 - [Phase 45]: RSA OAEP migration: replaced Pkcs1v15Encrypt with Oaep::new::<sha2::Sha256>() in asymmetric.rs; RUSTSEC-2023-0071 removed from audit.toml ignore list
+- [Phase 46]: v1 envelope format removed entirely (not deprecated) — no v1 envelopes exist in production; ENV-01/ENV-02 satisfied
 
 ### Pending Todos
 
@@ -79,9 +80,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T23:35:44.743Z
-Stopped at: Phase 46 context gathered
-Resume file: .planning/phases/46-envelope-hardening/46-CONTEXT.md
+Last session: 2026-03-19T01:04:40.618Z
+Stopped at: Completed 46-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-18 after v2.2 roadmap created*
