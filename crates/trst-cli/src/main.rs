@@ -23,9 +23,10 @@ use serde::Serialize;
 use std::time::Instant;
 use trustedge_core::{
     chain_next, decrypt_segment, derive_chunk_key, encrypt_segment, generate_aad, genesis,
-    read_archive, segment_hash, sign_manifest, validate_archive, verify_manifest, write_archive,
-    AudioMetadata, CamVideoMetadata, ChunkInfo, DeviceInfo, DeviceKeypair, GenericMetadata,
-    LogMetadata, ProfileMetadata, SegmentInfo, SensorMetadata, TrstManifest,
+    is_encrypted_key_file, read_archive, segment_hash, sign_manifest, validate_archive,
+    verify_manifest, write_archive, AudioMetadata, CamVideoMetadata, ChunkInfo, DeviceInfo,
+    DeviceKeypair, GenericMetadata, LogMetadata, ProfileMetadata, SegmentInfo, SensorMetadata,
+    TrstManifest,
 };
 // Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
 // SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
@@ -182,6 +183,9 @@ struct WrapCmd {
     /// PIV slot for YubiKey signing (9a, 9c, 9d, 9e). Default: 9c (Digital Signature)
     #[arg(long, default_value = "9c")]
     slot: String,
+    /// Accept plaintext key files without passphrase prompt (for CI/automation only)
+    #[arg(long)]
+    unencrypted: bool,
 }
 
 #[derive(Args, Debug)]
@@ -220,6 +224,9 @@ struct UnwrapCmd {
         help = "Output file path for recovered data"
     )]
     output: PathBuf,
+    /// Accept plaintext key files without passphrase prompt (for CI/automation only)
+    #[arg(long)]
+    unencrypted: bool,
 }
 
 #[derive(Args, Debug)]
@@ -236,6 +243,9 @@ struct KeygenCmd {
         help = "Output path for public key file"
     )]
     out_pub: PathBuf,
+    /// Write plaintext key (insecure, for CI/automation only)
+    #[arg(long)]
+    unencrypted: bool,
 }
 
 #[derive(Args, Debug)]
@@ -327,11 +337,28 @@ fn handle_keygen(args: KeygenCmd) -> Result<()> {
     }
 
     let device_keypair = DeviceKeypair::generate()?;
-    fs::write(
-        &args.out_key,
-        format!("{}\n", device_keypair.export_secret()),
-    )
-    .with_context(|| format!("Failed to write secret key: {}", args.out_key.display()))?;
+
+    if args.unencrypted {
+        fs::write(
+            &args.out_key,
+            format!("{}\n", device_keypair.export_secret()),
+        )
+        .with_context(|| format!("Failed to write secret key: {}", args.out_key.display()))?;
+    } else {
+        let passphrase =
+            rpassword::prompt_password("Passphrase: ").context("Failed to read passphrase")?;
+        let confirm = rpassword::prompt_password("Confirm passphrase: ")
+            .context("Failed to read passphrase confirmation")?;
+        if passphrase != confirm {
+            anyhow::bail!("Passphrases do not match");
+        }
+        let encrypted = device_keypair
+            .export_secret_encrypted(&passphrase)
+            .context("Failed to encrypt key")?;
+        fs::write(&args.out_key, &encrypted)
+            .with_context(|| format!("Failed to write secret key: {}", args.out_key.display()))?;
+    }
+
     fs::write(&args.out_pub, format!("{}\n", device_keypair.public))
         .with_context(|| format!("Failed to write public key: {}", args.out_pub.display()))?;
 
@@ -349,7 +376,7 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     }
 
     let (device_keypair, secret_path, public_path, generated) =
-        load_or_generate_keypair(args.device_key.as_deref())?;
+        load_or_generate_keypair(args.device_key.as_deref(), args.unencrypted)?;
 
     // Read input file
     let input_data = fs::read(&args.input)
@@ -856,8 +883,18 @@ fn handle_unwrap(args: UnwrapCmd) -> Result<()> {
     // Load device keypair from file
     let key_bytes = fs::read(&args.device_key)
         .with_context(|| format!("failed to read device key '{}'", args.device_key.display()))?;
-    let contents = String::from_utf8_lossy(&key_bytes).trim().to_string();
-    let device_keypair = DeviceKeypair::import_secret(&contents)?;
+    let device_keypair = if is_encrypted_key_file(&key_bytes) {
+        let passphrase =
+            rpassword::prompt_password("Passphrase: ").context("Failed to read passphrase")?;
+        DeviceKeypair::import_secret_encrypted(&key_bytes, &passphrase)
+            .map_err(|e| anyhow::anyhow!("Failed to decrypt key: {}", e))?
+    } else if args.unencrypted {
+        let contents = String::from_utf8_lossy(&key_bytes).trim().to_string();
+        DeviceKeypair::import_secret(&contents)
+            .map_err(|e| anyhow::anyhow!("Failed to import key: {}", e))?
+    } else {
+        anyhow::bail!("Key file is not encrypted. Use --unencrypted to bypass.");
+    };
 
     // Read archive
     let (manifest, chunks) = read_archive(&args.archive)
@@ -1020,13 +1057,27 @@ fn output_continuity_error(args: &VerifyCmd, report: &VerifyReport) -> Result<()
 
 fn load_or_generate_keypair(
     path: Option<&Path>,
+    unencrypted: bool,
 ) -> Result<(DeviceKeypair, PathBuf, PathBuf, bool)> {
     match path {
         Some(existing) => {
             let key_bytes = fs::read(existing)
                 .with_context(|| format!("failed to read device key '{}'", existing.display()))?;
-            let contents = String::from_utf8_lossy(&key_bytes).trim().to_string();
-            let device_keypair = DeviceKeypair::import_secret(&contents)?;
+            let device_keypair = if is_encrypted_key_file(&key_bytes) {
+                if unencrypted {
+                    anyhow::bail!("Cannot use --unencrypted with an encrypted key file");
+                }
+                let passphrase = rpassword::prompt_password("Passphrase: ")
+                    .context("Failed to read passphrase")?;
+                DeviceKeypair::import_secret_encrypted(&key_bytes, &passphrase)
+                    .map_err(|e| anyhow::anyhow!("Failed to decrypt key: {}", e))?
+            } else if unencrypted {
+                let contents = String::from_utf8_lossy(&key_bytes).trim().to_string();
+                DeviceKeypair::import_secret(&contents)
+                    .map_err(|e| anyhow::anyhow!("Failed to import key: {}", e))?
+            } else {
+                anyhow::bail!("Key file is not encrypted. Use --unencrypted to bypass.");
+            };
             let public_path = existing.with_extension("pub");
             Ok((device_keypair, existing.to_path_buf(), public_path, false))
         }
@@ -1034,10 +1085,26 @@ fn load_or_generate_keypair(
             let device_keypair = DeviceKeypair::generate()?;
             let secret_path = PathBuf::from("device.key");
             let public_path = PathBuf::from("device.pub");
-            let secret_string = device_keypair.export_secret();
-            let public_string = device_keypair.public.clone();
-            fs::write(&secret_path, format!("{secret_string}\n"))?;
-            fs::write(&public_path, format!("{public_string}\n"))?;
+            if unencrypted {
+                let secret_string = device_keypair.export_secret();
+                let public_string = device_keypair.public.clone();
+                fs::write(&secret_path, format!("{secret_string}\n"))?;
+                fs::write(&public_path, format!("{public_string}\n"))?;
+            } else {
+                let passphrase = rpassword::prompt_password("Passphrase: ")
+                    .context("Failed to read passphrase")?;
+                let confirm = rpassword::prompt_password("Confirm passphrase: ")
+                    .context("Failed to read passphrase confirmation")?;
+                if passphrase != confirm {
+                    anyhow::bail!("Passphrases do not match");
+                }
+                let encrypted = device_keypair
+                    .export_secret_encrypted(&passphrase)
+                    .context("Failed to encrypt key")?;
+                fs::write(&secret_path, &encrypted)?;
+                let public_string = device_keypair.public.clone();
+                fs::write(&public_path, format!("{public_string}\n"))?;
+            }
             Ok((device_keypair, secret_path, public_path, true))
         }
     }
