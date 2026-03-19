@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Security Remediation
 status: executing
-stopped_at: Completed 47-01 (encrypted key file support in DeviceKeypair)
-last_updated: "2026-03-19T02:09:00.170Z"
-last_activity: 2026-03-19 — Completed 46-01 (v1 envelope removal)
+stopped_at: Completed 47-02 (CLI --unencrypted flag, passphrase prompts, test/demo updates)
+last_updated: "2026-03-19T02:30:00.000Z"
+last_activity: 2026-03-19 — Completed 47-02 (CLI integration for encrypted key files)
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 5
-  completed_plans: 4
-  percent: 67
+  completed_plans: 5
+  percent: 80
 ---
 
 <!--
@@ -29,16 +29,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** v2.2 Security Remediation — Phase 46: Envelope Hardening
+**Current focus:** v2.2 Security Remediation — Phase 47: Key Protection at Rest
 
 ## Current Position
 
-Phase: 46 of 47 (Envelope Hardening)
-Plan: 01 complete, plan 02 next
+Phase: 47 of 47 (Key Protection at Rest)
+Plan: 02 complete (phase complete)
 Status: In Progress
-Last activity: 2026-03-19 — Completed 46-01 (v1 envelope removal)
+Last activity: 2026-03-19 — Completed 47-02 (CLI --unencrypted flag + passphrase prompts)
 
-Progress: [███████░░░] 67%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Relevant prior decisions for v2.2 phases:
 - [Phase 46]: PBKDF2_MIN_ITERATIONS = 300_000 constant in universal.rs; assert at builder level, error return at backend level (belt-and-suspenders KDF-01)
 - [Phase 47-key-protection-at-rest]: Used existing CryptoError::EncryptionFailed and DecryptionFailed variants (not new ones) to avoid error enum churn
 - [Phase 47-key-protection-at-rest]: is_encrypted_key_file is a standalone function (not method) since it operates on raw bytes before a keypair exists
+- [Phase 47-02]: --unencrypted is the canonical automation escape hatch; integration_tests.rs also required --unencrypted (Rule 2 auto-fix)
 
 ### Pending Todos
 
@@ -78,14 +79,13 @@ None.
 
 ### Blockers/Concerns
 
-- Phase 47: Existing key files from pre-v2.2 `trst keygen` are unencrypted plaintext — KEY-03 `--unencrypted` flag is the migration escape hatch for existing users
 - Phase 45: After OAEP migration, confirm RUSTSEC-2023-0071 is no longer applicable and update .cargo/audit.toml
 
 ## Session Continuity
 
-Last session: 2026-03-19T02:09:00.167Z
-Stopped at: Completed 47-01 (encrypted key file support in DeviceKeypair)
+Last session: 2026-03-19T02:30:00.000Z
+Stopped at: Completed 47-02 (CLI --unencrypted flag, passphrase prompts, test/demo updates)
 Resume file: None
 
 ---
-*Last updated: 2026-03-18 after v2.2 roadmap created*
+*Last updated: 2026-03-19 after 47-02 completion*
