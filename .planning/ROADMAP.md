@@ -115,7 +115,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 45. RSA OAEP Migration | 1/1 | Complete    | 2026-03-18 | - |
 | 46. Envelope Hardening | 2/2 | Complete    | 2026-03-19 | - |
-| 47. Key Protection at Rest | 2/2 | Complete   | 2026-03-19 | - |
+| 47. Key Protection at Rest | 2/2 | Complete    | 2026-03-19 | - |
 
 ---
 *Last updated: 2026-03-19 after phase 47 planning*
