@@ -110,7 +110,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 45. RSA OAEP Migration | 1/1 | Complete    | 2026-03-18 | - |
-| 46. Envelope Hardening | 2/2 | Complete   | 2026-03-19 | - |
+| 46. Envelope Hardening | 2/2 | Complete    | 2026-03-19 | - |
 | 47. Key Protection at Rest | v2.2 | 0/TBD | Not started | - |
 
 ---
