@@ -61,7 +61,7 @@ fn main() -> Result<()> {
 
     let context = KeyDerivationContext::new(vec![1; 16])
         .with_additional_data(b"demo_context".to_vec())
-        .with_iterations(10_000); // Reduced for demo
+        .with_iterations(600_000);
 
     let derive_op = CryptoOperation::DeriveKey { context };
 

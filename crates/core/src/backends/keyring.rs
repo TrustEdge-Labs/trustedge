@@ -81,6 +81,13 @@ impl KeyBackend for KeyringBackend {
 
         // Use PBKDF2 with SHA256 (OWASP 2023 recommended iterations)
         let iterations = context.iterations.unwrap_or(600_000);
+        if iterations < crate::backends::universal::PBKDF2_MIN_ITERATIONS {
+            return Err(BackendError::OperationFailed(format!(
+                "PBKDF2 iterations {} is below minimum of {}",
+                iterations,
+                crate::backends::universal::PBKDF2_MIN_ITERATIONS,
+            )));
+        }
         let mut key = [0u8; 32];
 
         // Include key_id in the derivation for key isolation

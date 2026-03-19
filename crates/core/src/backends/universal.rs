@@ -15,6 +15,9 @@
 use crate::error::BackendError;
 use serde::{Deserialize, Serialize};
 
+/// Minimum allowed PBKDF2 iteration count (KDF-01 requirement)
+pub const PBKDF2_MIN_ITERATIONS: u32 = 300_000;
+
 /// Cryptographic algorithms supported by backends
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SymmetricAlgorithm {
@@ -74,6 +77,12 @@ impl KeyDerivationContext {
     }
 
     pub fn with_iterations(mut self, iterations: u32) -> Self {
+        assert!(
+            iterations >= PBKDF2_MIN_ITERATIONS,
+            "PBKDF2 iterations must be at least {} (got {}). See OWASP 2023 guidelines.",
+            PBKDF2_MIN_ITERATIONS,
+            iterations,
+        );
         self.iterations = Some(iterations);
         self
     }
@@ -292,13 +301,19 @@ mod tests {
     fn test_key_derivation_context_builder() {
         let context = KeyDerivationContext::new(vec![1, 2, 3, 4])
             .with_additional_data(vec![5, 6, 7, 8])
-            .with_iterations(50_000)
+            .with_iterations(600_000)
             .with_hash_algorithm(HashAlgorithm::Sha512);
 
         assert_eq!(context.salt, vec![1, 2, 3, 4]);
         assert_eq!(context.additional_data, vec![5, 6, 7, 8]);
-        assert_eq!(context.iterations, Some(50_000));
+        assert_eq!(context.iterations, Some(600_000));
         assert_eq!(context.hash_algorithm, Some(HashAlgorithm::Sha512));
+    }
+
+    #[test]
+    #[should_panic(expected = "PBKDF2 iterations must be at least 300000")]
+    fn test_key_derivation_context_rejects_low_iterations() {
+        let _context = KeyDerivationContext::new(vec![1, 2, 3, 4]).with_iterations(50_000);
     }
 
     #[test]

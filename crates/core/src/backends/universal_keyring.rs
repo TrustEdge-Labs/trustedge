@@ -75,6 +75,13 @@ impl UniversalKeyringBackend {
 
         // Use PBKDF2 with the specified hash algorithm (OWASP 2023 recommended iterations)
         let iterations = context.iterations.unwrap_or(600_000);
+        if iterations < crate::backends::universal::PBKDF2_MIN_ITERATIONS {
+            return Err(anyhow!(
+                "PBKDF2 iterations {} is below minimum of {}",
+                iterations,
+                crate::backends::universal::PBKDF2_MIN_ITERATIONS,
+            ));
+        }
         let mut key = [0u8; 32];
 
         // Include key_id in the derivation for key isolation
@@ -308,7 +315,7 @@ mod tests {
         // but should show the operation structure works
         let context = KeyDerivationContext::new(vec![1; 32])
             .with_additional_data(vec![2, 3, 4])
-            .with_iterations(1000);
+            .with_iterations(600_000);
 
         let result = backend.perform_operation("test_key", CryptoOperation::DeriveKey { context });
 
@@ -323,5 +330,11 @@ mod tests {
             }
             _ => panic!("Unexpected result type"),
         }
+    }
+
+    #[test]
+    #[should_panic(expected = "PBKDF2 iterations must be at least 300000")]
+    fn test_pbkdf2_minimum_iterations_rejected() {
+        let _context = KeyDerivationContext::new(vec![1; 32]).with_iterations(1000);
     }
 }
