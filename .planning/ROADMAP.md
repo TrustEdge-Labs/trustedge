@@ -84,7 +84,7 @@ Fixed critical cryptographic flaws. RSA OAEP-SHA256 replaces PKCS#1 v1.5, v1 env
   2. Adding a spurious chunk file to the archive directory causes `trst verify` to fail with a BLAKE3 chain break error
   3. Swapping the order of two chunk files causes `trst verify` to fail with a continuity chain error
   4. Changing any field in manifest.json after signing causes `trst verify` to fail with a signature verification error
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 48-01: Archive tampering attack tests (byte mutation, chunk injection, reorder, manifest modification)
@@ -97,7 +97,7 @@ Plans:
   1. Inspecting all chunk nonces within a single archive confirms no two chunks share the same nonce
   2. Encrypting the same plaintext twice with the same device key produces two archives with different chunk nonces
   3. Deriving envelope keys from two different device keys produces two non-equal AES-256-GCM keys
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 49-01: Nonce uniqueness and HKDF key derivation tests
@@ -110,7 +110,7 @@ Plans:
   1. Loading a key file truncated to an arbitrary byte length returns an explicit error, not a panic or partial key
   2. Loading a key file with a corrupted JSON header returns a clear parse error identifying the problem
   3. Supplying the wrong passphrase to a valid encrypted key file returns a clear authentication error, not garbled key material
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 50-01: Encrypted key file format attack tests (truncation, corruption, wrong passphrase)
@@ -122,7 +122,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Submitting the same archive to /v1/verify twice returns two receipts with different verification IDs and different timestamps
   2. The manifest_digest field in a receipt matches the BLAKE3 digest of the exact archive submitted — a different archive produces a different digest
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
 - [ ] 51-01: Replay resistance and receipt content binding tests
