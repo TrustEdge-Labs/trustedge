@@ -81,6 +81,12 @@ None.
 
 - Phase 45: After OAEP migration, confirm RUSTSEC-2023-0071 is no longer applicable and update .cargo/audit.toml
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260319-s39 | Update README and CLAUDE.md for v2.2 security features | 2026-03-20 | 8935670 | [260319-s39-update-readme-and-claude-md-for-v2-2-sec](./quick/260319-s39-update-readme-and-claude-md-for-v2-2-sec/) |
+
 ## Session Continuity
 
 Last session: 2026-03-20T00:17:12.663Z
