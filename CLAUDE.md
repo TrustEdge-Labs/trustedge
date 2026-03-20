@@ -155,13 +155,29 @@ clip-<id>.trst/
     └── ...
 ```
 
+### Encrypted Key Files (TRUSTEDGE-KEY-V1)
+
+Device private keys are encrypted at rest using PBKDF2-HMAC-SHA256 (600k iterations) + AES-256-GCM.
+The format header is `TRUSTEDGE-KEY-V1`. A passphrase is prompted at runtime via `rpassword`.
+
+For CI/automation where interactive prompts are not possible, use `--unencrypted`:
+- `trst keygen --unencrypted` — generates plaintext key file
+- `trst wrap --unencrypted` — reads key without passphrase prompt
+- `trst unwrap --unencrypted` — reads key without passphrase prompt
+
+Production devices should always use encrypted key files. The `--unencrypted` flag is an
+explicit escape hatch and is never the default.
+
 ### Working with Archives
 
 ```bash
-# Generate device keys
+# Generate device keypair (encrypted at rest — passphrase prompted)
 cargo run -p trustedge-trst-cli -- keygen --out-key device.key --out-pub device.pub
 
-# Create archive (generic profile, default)
+# For CI/automation (unencrypted key file — no passphrase)
+cargo run -p trustedge-trst-cli -- keygen --out-key device.key --out-pub device.pub --unencrypted
+
+# Create archive (generic profile, default; passphrase prompted if key is encrypted)
 cargo run -p trustedge-trst-cli -- wrap --in sample.bin --out archive.trst --device-key device.key --device-pub device.pub
 
 # Create archive (cam.video profile)
