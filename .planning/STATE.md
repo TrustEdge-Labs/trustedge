@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: executing
-stopped_at: Completed quick-sh1 (build.rs compile-time guard for release+insecure-tls)
-last_updated: "2026-03-20T00:40:00.000Z"
-last_activity: 2026-03-19 — Completed 47-02 (CLI --unencrypted flag + passphrase prompts)
+milestone: v2.3
+milestone_name: Security Testing
+status: ready_to_plan
+stopped_at: Roadmap created for v2.3 (4 phases, 48-51)
+last_updated: "2026-03-20T00:00:00.000Z"
+last_activity: 2026-03-20 — v2.3 roadmap created, ready to plan Phase 48
 progress:
-  total_phases: 27
-  completed_phases: 27
-  total_plans: 47
-  completed_plans: 47
-  percent: 80
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 4
+  completed_plans: 0
+  percent: 0
 ---
 
 <!--
@@ -26,19 +26,19 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-18)
+See: .planning/PROJECT.md (updated 2026-03-20)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** v2.2 Security Remediation — Phase 47: Key Protection at Rest
+**Current focus:** v2.3 Security Testing — Phase 48: Archive Integrity Attacks
 
 ## Current Position
 
-Phase: 47 of 47 (Key Protection at Rest)
-Plan: 02 complete (phase complete)
-Status: In Progress
-Last activity: 2026-03-19 — Completed 47-02 (CLI --unencrypted flag + passphrase prompts)
+Phase: 48 of 51 (Archive Integrity Attacks)
+Plan: 0 of 1 in current phase
+Status: Ready to plan
+Last activity: 2026-03-20 — v2.3 roadmap created, phases 48-51 defined
 
-Progress: [████████░░] 80%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -54,7 +54,8 @@ Progress: [████████░░] 80%
 - v1.8: 3 phases, 4 plans
 - v2.0: 4 phases, 8 plans
 - v2.1: 3 phases, 6 plans
-- **Total: 44 phases, 79 plans**
+- v2.2: 3 phases, 5 plans
+- **Total: 47 phases, 84 plans**
 
 ## Accumulated Context
 
@@ -62,16 +63,11 @@ Progress: [████████░░] 80%
 
 Cleared — see PROJECT.md Key Decisions table for full history.
 
-Relevant prior decisions for v2.2 phases:
-- [v1.3]: RSA Marvin Attack advisory (RUSTSEC-2023-0071) risk-accepted — Phase 45 resolves this; remove from .cargo/audit.toml after OAEP migration
-- [v1.8]: Keyring PBKDF2 hardened to 600k iterations — KDF-01 minimum is 300k; existing keyring already exceeds minimum
-- [v2.1]: rpassword used for YubiKey PIN prompt — same crate used for passphrase prompts in KEY-01/02
-- [Phase 45]: RSA OAEP migration: replaced Pkcs1v15Encrypt with Oaep::new::<sha2::Sha256>() in asymmetric.rs; RUSTSEC-2023-0071 removed from audit.toml ignore list
-- [Phase 46]: v1 envelope format removed entirely (not deprecated) — no v1 envelopes exist in production; ENV-01/ENV-02 satisfied
-- [Phase 46]: PBKDF2_MIN_ITERATIONS = 300_000 constant in universal.rs; assert at builder level, error return at backend level (belt-and-suspenders KDF-01)
-- [Phase 47-key-protection-at-rest]: Used existing CryptoError::EncryptionFailed and DecryptionFailed variants (not new ones) to avoid error enum churn
-- [Phase 47-key-protection-at-rest]: is_encrypted_key_file is a standalone function (not method) since it operates on raw bytes before a keypair exists
-- [Phase 47-02]: --unencrypted is the canonical automation escape hatch; integration_tests.rs also required --unencrypted (Rule 2 auto-fix)
+Relevant prior decisions for v2.3:
+- [v2.2]: TRUSTEDGE-KEY-V1 format: PBKDF2-SHA256 (600k) + AES-256-GCM for key files — Phase 50 tests rejection of malformed instances of this format
+- [v1.8]: Deterministic counter nonces (nonce_prefix[8] || chunk_index[3] || last_flag[1]) — Phase 49 tests uniqueness of these across chunks
+- [v2.2]: v1 envelope format removed entirely — Phase 48/49 tests only need to cover v2 (HKDF) envelope paths
+- [v2.2]: --unencrypted flag is the automation escape hatch — use it in test setup where passphrase prompts would block
 
 ### Pending Todos
 
@@ -79,21 +75,13 @@ None.
 
 ### Blockers/Concerns
 
-- Phase 45: After OAEP migration, confirm RUSTSEC-2023-0071 is no longer applicable and update .cargo/audit.toml
-
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260319-s39 | Update README and CLAUDE.md for v2.2 security features | 2026-03-20 | 8935670 | [260319-s39-update-readme-and-claude-md-for-v2-2-sec](./quick/260319-s39-update-readme-and-claude-md-for-v2-2-sec/) |
-| 260319-sh1 | Add build.rs compile-time guard blocking release+insecure-tls | 2026-03-20 | d2ba04f | [260319-sh1-enforce-secure-build-build-rs-compile-ti](./quick/260319-sh1-enforce-secure-build-build-rs-compile-ti/) |
-| 260320-ayg | Rewrite docs/technical/threat-model.md for TrustEdge v2.2 | 2026-03-20 | 8cf9038 | [260320-ayg-create-docs-technical-threat-model-md-wi](./quick/260320-ayg-create-docs-technical-threat-model-md-wi/) |
+- Phase 51 (receipt binding) requires a running platform server with postgres feature. Tests may need the `http` + `postgres` features and a test database, or may use the existing test_utils pattern (create_test_app). Confirm approach during planning.
 
 ## Session Continuity
 
-Last session: 2026-03-20T12:00:31Z
-Stopped at: Completed quick-ayg (threat-model.md rewrite for v2.2)
+Last session: 2026-03-20
+Stopped at: Roadmap created for v2.3 (phases 48-51), ready to plan Phase 48
 Resume file: None
 
 ---
-*Last updated: 2026-03-20 after quick-ayg completion*
+*Last updated: 2026-03-20 after v2.3 roadmap creation*
