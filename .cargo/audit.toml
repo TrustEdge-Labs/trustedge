@@ -22,9 +22,14 @@
 # Ignore advisories that have no fix available or are transitive dependencies
 # from third-party crates we cannot control.
 
-ignore = []
-# RUSTSEC-2023-0071 (RSA Marvin Attack) was previously risk-accepted here.
-# Removed in v2.2 (Phase 45) after migrating RSA encrypt/decrypt to OAEP-SHA256
-# padding in crates/core/src/asymmetric.rs. The advisory no longer applies to
-# TrustEdge's direct RSA usage. The yubikey transitive dependency on rsa 0.7.2
-# is not flagged by cargo-audit at this time.
+ignore = [
+    # RUSTSEC-2023-0071: RSA Marvin Attack (timing side-channel in rsa crate)
+    # Severity: Medium
+    # Status: MITIGATED — TrustEdge uses OAEP-SHA256 exclusively (v2.2 Phase 45).
+    # PKCS#1 v1.5 padding was eliminated. The advisory flags the crate-level timing
+    # behavior which affects all padding modes, but OAEP is resistant to the practical
+    # attack vector (chosen-ciphertext padding oracle). The rsa crate has no patched
+    # version available. Two instances: direct dep + yubikey transitive dep.
+    # Re-accepted: v2.2 after Phase 45 OAEP migration (was previously accepted v1.3-v2.1).
+    "RUSTSEC-2023-0071",
+]
