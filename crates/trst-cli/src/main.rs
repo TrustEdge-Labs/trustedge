@@ -1028,10 +1028,14 @@ fn output_continuity_error(args: &VerifyCmd, report: &VerifyReport) -> Result<()
         let json_output = serde_json::to_string(report)?;
         println!("{}", json_output);
     } else {
-        // Check if error message contains hash mismatch for legacy compatibility
+        // Check error message for specific failure types
         if let Some(error) = &report.error {
             if error.contains("hash mismatch") {
                 eprintln!("hash mismatch");
+                return Ok(());
+            }
+            if error.contains("Unreferenced chunk file") {
+                eprintln!("Unreferenced chunk file: {}", error);
                 return Ok(());
             }
         }
