@@ -87,12 +87,13 @@ None.
 |---|-------------|------|--------|-----------|
 | 260319-s39 | Update README and CLAUDE.md for v2.2 security features | 2026-03-20 | 8935670 | [260319-s39-update-readme-and-claude-md-for-v2-2-sec](./quick/260319-s39-update-readme-and-claude-md-for-v2-2-sec/) |
 | 260319-sh1 | Add build.rs compile-time guard blocking release+insecure-tls | 2026-03-20 | d2ba04f | [260319-sh1-enforce-secure-build-build-rs-compile-ti](./quick/260319-sh1-enforce-secure-build-build-rs-compile-ti/) |
+| 260320-ayg | Rewrite docs/technical/threat-model.md for TrustEdge v2.2 | 2026-03-20 | 8cf9038 | [260320-ayg-create-docs-technical-threat-model-md-wi](./quick/260320-ayg-create-docs-technical-threat-model-md-wi/) |
 
 ## Session Continuity
 
-Last session: 2026-03-20T00:40:00.000Z
-Stopped at: Completed quick-sh1 (build.rs compile-time guard for release+insecure-tls)
+Last session: 2026-03-20T12:00:31Z
+Stopped at: Completed quick-ayg (threat-model.md rewrite for v2.2)
 Resume file: None
 
 ---
-*Last updated: 2026-03-20 after quick-sh1 completion*
+*Last updated: 2026-03-20 after quick-ayg completion*
