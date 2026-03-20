@@ -8,402 +8,343 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge Threat Model
 
-**Version**: 1.0  
-**Date**: August 2025  
-**Scope**: Edge AI privacy-preserving data processing system
-
-> **Related Documentation**: For vulnerability reporting and security policies, see [`SECURITY.md`](../../SECURITY.md)
-
-## Overview
-
-TrustEdge is designed to provide privacy-preserving data processing at the edge, with a focus on AI workloads. This threat model identifies security threats, attack vectors, and the defenses implemented or planned to mitigate them.
-
-## System Architecture Context
-
-```
-[Edge Device] <---> [Network Transport] <---> [Processing Node]
-     |                     |                        |
-[Local Data]        [Protocol Layer]         [AI Models/Results]
-     |                     |                        |
-[Encryption]         [Session Security]      [Result Encryption]
-```
-
-## Assets Under Protection
-
-### Primary Assets
-
-- **Raw Data**: Audio files, sensor data, personal information processed at the edge
-- **Processed Results**: AI model outputs, analytics results, derived insights
-- **Encryption Keys**: AES-256 keys, Ed25519 signing keys, session keys
-- **AI Models**: Model weights, architecture, training data characteristics
-- **Metadata**: File provenance, processing timestamps, system configurations
-
-### Secondary Assets
-
-- **System Availability**: Uptime and responsiveness of edge processing
-- **Processing Integrity**: Correctness of computations and transformations
-- **Network Resources**: Bandwidth, connection stability
-- **System Configuration**: Security policies, access controls
-
-## Threat Actors
-
-### Adversary Classifications
-
-**A1: Passive Network Adversary**
-
-- **Capability**: Monitor network traffic, timing analysis
-- **Motivation**: Data collection, surveillance, commercial espionage
-- **Resources**: Network access, traffic analysis tools
-
-**A2: Active Network Adversary**
-
-- **Capability**: Modify, inject, replay, or drop network packets
-- **Motivation**: Data manipulation, service disruption, unauthorized access
-- **Resources**: Network control, sophisticated attack tools
-
-**A3: Malicious Edge Node**
-
-- **Capability**: Compromise processing nodes, access local data
-- **Motivation**: Data theft, system compromise, lateral movement
-- **Resources**: System access, malware, social engineering
-
-**A4: Supply Chain Adversary**
-
-- **Capability**: Compromise software dependencies, hardware, or infrastructure
-- **Motivation**: Persistent access, wide-scale compromise
-- **Resources**: Development resources, long-term planning
-
-**A5: Insider Threat**
-
-- **Capability**: Legitimate system access, configuration changes
-- **Motivation**: Financial gain, revenge, coercion
-- **Resources**: System knowledge, authorized access
-
-## Threat Categories
-
-### Network-Level Threats
-
-#### N1: Traffic Analysis
-
-**Description**: Adversary analyzes network patterns to infer sensitive information
-- **Attack Vector**: Monitor packet sizes, timing, frequency patterns
-- **Impact**: Privacy violation, data inference, behavioral profiling
-- **Likelihood**: High (passive monitoring is common)
-- **Current Mitigation**: Limited (basic TLS-level protection planned)
-- **Planned Mitigation**: 
-  - Implement traffic padding to normalize packet sizes
-  - Add dummy traffic to mask real communication patterns
-  - Consider onion routing for high-sensitivity scenarios
-
-#### N2: Man-in-the-Middle (MITM)
-
-**Description**: Adversary intercepts and potentially modifies network communications
-- **Attack Vector**: Certificate spoofing, DNS hijacking, BGP attacks, rogue WiFi
-- **Impact**: Complete compromise of confidentiality and integrity
-- **Likelihood**: Medium (depends on network environment)
-- **Current Mitigation**: None (local processing only)
-- **Planned Mitigation**: 
-  - Mutual TLS with certificate pinning
-  - Perfect forward secrecy with ephemeral keys
-  - Out-of-band key verification for high-security deployments
-
-#### N3: Replay Attacks
-
-**Description**: Adversary captures and retransmits valid network messages
-- **Attack Vector**: Packet capture and retransmission at protocol level
-- **Impact**: Unauthorized operations, data corruption, resource exhaustion
-- **Likelihood**: High (easy to execute)
-- **Current Mitigation**: Per-chunk nonces in current implementation
-- **Planned Mitigation**: 
-  - Sliding window nonce validation
-  - Timestamp-based replay protection
-  - Session-level sequence numbers
-
-#### N4: Packet Injection/Modification
-
-**Description**: Adversary injects malicious packets or modifies legitimate ones
-- **Attack Vector**: Protocol-level packet crafting, BGP manipulation
-- **Impact**: Data corruption, service disruption, unauthorized access
-- **Likelihood**: Medium (requires network position)
-- **Current Mitigation**: AES-GCM authentication tags
-- **Planned Mitigation**: 
-  - Protocol-level integrity checks
-  - Robust packet validation and filtering
-  - Cryptographic session binding
-
-### Application-Level Threats
-
-#### A1: Chunk Reordering/Missing
-
-**Description**: Adversary manipulates the order or availability of data chunks
-- **Attack Vector**: Selective packet dropping, delayed delivery
-- **Impact**: Data corruption, processing errors, denial of service
-- **Likelihood**: Medium
-- **Current Mitigation**: Sequence numbers in chunk headers
-- **Planned Mitigation**: 
-  - Robust reordering detection and correction
-  - Timeout-based missing chunk detection
-  - Graceful degradation for incomplete data
-
-#### A2: Session Hijacking
-
-**Description**: Adversary takes control of an established secure session
-- **Attack Vector**: Session token theft, connection takeover
-- **Impact**: Complete compromise of ongoing communications
-- **Likelihood**: Low (requires significant capabilities)
-- **Current Mitigation**: None (no sessions yet)
-- **Planned Mitigation**: 
-  - Strong session authentication
-  - Regular session key rotation
-  - Session binding to network characteristics
-
-#### A3: Malicious Model Injection
-
-**Description**: Adversary replaces legitimate AI models with malicious ones
-- **Attack Vector**: Supply chain compromise, model repository attacks
-- **Impact**: Data exfiltration, backdoor access, incorrect results
-- **Likelihood**: Medium (increasing threat)
-- **Current Mitigation**: Ed25519 signatures on manifests
-- **Planned Mitigation**: 
-  - Model integrity verification with hash chains
-  - Model provenance tracking
-  - Runtime model behavior monitoring
-
-### Cryptographic Threats
-
-#### C1: Key Compromise
-
-**Description**: Adversary obtains encryption or signing keys
-- **Attack Vector**: Memory dumps, side-channel attacks, poor key storage
-- **Impact**: Complete confidentiality and integrity loss
-- **Likelihood**: Medium
-- **Current Mitigation**: Keys generated per session
-- **Planned Mitigation**: 
-  - Hardware security modules (HSMs) for key storage
-  - Perfect forward secrecy to limit compromise impact
-  - Regular key rotation policies
-
-#### C2: Weak Random Number Generation
-
-**Description**: Predictable or weak randomness compromises cryptographic security
-- **Attack Vector**: Poor entropy sources, deterministic generators
-- **Impact**: Key prediction, nonce collisions, signature forgery
-- **Likelihood**: Low (Rust's `rand` crate is robust)
-- **Current Mitigation**: System entropy sources
-- **Planned Mitigation**: 
-  - Entropy validation and health checks
-  - Multiple entropy sources with mixing
-  - Fail-safe behavior on entropy exhaustion
-
-#### C3: Cryptographic Implementation Flaws
-
-**Description**: Bugs in cryptographic implementation compromise security
-- **Attack Vector**: Timing attacks, fault injection, implementation bugs
-- **Impact**: Key recovery, authentication bypass, data decryption
-- **Likelihood**: Medium (complex implementations have bugs)
-- **Current Mitigation**: Using established crypto libraries (aes-gcm, ed25519)
-- **Planned Mitigation**: 
-  - Formal security audits of cryptographic code
-  - Constant-time implementations where critical
-  - Comprehensive cryptographic testing including negative cases
-
-### Side-Channel Threats
-
-#### S1: Timing Attacks
-
-**Description**: Adversary infers secrets through timing variations
-- **Attack Vector**: Measure encryption/decryption timing, network response times
-- **Impact**: Key recovery, data inference
-- **Likelihood**: Medium (requires statistical analysis)
-- **Current Mitigation**: Limited
-- **Planned Mitigation**: 
-  - Constant-time cryptographic operations
-  - Timing randomization for sensitive operations
-  - Rate limiting to prevent timing measurement
-
-#### S2: Memory Disclosure
-
-**Description**: Sensitive data exposed through memory dumps or swap files
-- **Attack Vector**: Process memory access, swap file analysis, crash dumps
-- **Impact**: Key exposure, data leakage
-- **Likelihood**: Medium
-- **Current Mitigation**: Rust's memory safety
-- **Planned Mitigation**: 
-  - Explicit memory clearing for sensitive data
-  - Disable swap for sensitive processes
-  - Memory locking for cryptographic keys
-
-#### S3: Traffic Pattern Analysis
-
-**Description**: Adversary infers information from network traffic patterns
-- **Attack Vector**: Statistical analysis of packet sizes, timing, frequency
-- **Impact**: Activity inference, user profiling, data classification
-- **Likelihood**: High (passive attack)
-- **Current Mitigation**: None
-- **Planned Mitigation**: 
-  - Traffic shaping and padding
-  - Decoy traffic generation
-  - Batch processing to normalize patterns
-
-### Physical/Hardware Threats
-
-#### P1: Device Compromise
-
-**Description**: Adversary gains physical or administrative access to edge devices
-- **Attack Vector**: Physical theft, malware installation, privilege escalation
-- **Impact**: Complete system compromise, data access, persistent backdoors
-- **Likelihood**: Medium (depends on deployment)
-- **Current Mitigation**: OS-level security (out of scope)
-- **Planned Mitigation**: 
-  - Trusted execution environments (TEE) integration
-  - Remote attestation capabilities
-  - Secure boot and integrity measurement
-
-#### P2: Hardware Attacks
-
-**Description**: Adversary exploits hardware vulnerabilities or side channels
-- **Attack Vector**: Power analysis, electromagnetic analysis, hardware trojans
-- **Impact**: Key extraction, computation manipulation
-- **Likelihood**: Low (requires specialized equipment)
-- **Current Mitigation**: None
-- **Planned Mitigation**: 
-  - Hardware security module (HSM) integration
-  - Power analysis countermeasures
-  - Hardware attestation and monitoring
-
-## Risk Assessment Matrix
-
-| Threat ID | Likelihood | Impact | Risk Level | Priority |
-|-----------|------------|--------|------------|----------|
-| N1 | High | Medium | High | P1 |
-| N2 | Medium | High | High | P1 |
-| N3 | High | Medium | High | P1 |
-| N4 | Medium | High | High | P1 |
-| A1 | Medium | Medium | Medium | P2 |
-| A2 | Low | High | Medium | P2 |
-| A3 | Medium | High | High | P1 |
-| C1 | Medium | High | High | P1 |
-| C2 | Low | High | Medium | P3 |
-| C3 | Medium | High | High | P2 |
-| S1 | Medium | Medium | Medium | P3 |
-| S2 | Medium | High | High | P2 |
-| S3 | High | Low | Medium | P3 |
-| P1 | Medium | High | High | P2 |
-| P2 | Low | High | Medium | P3 |
-
-## Security Requirements
-
-### Confidentiality Requirements
-
-- **CR1**: All data must be encrypted at rest and in transit using industry-standard algorithms
-- **CR2**: Encryption keys must be protected against unauthorized access
-- **CR3**: Network communications must provide perfect forward secrecy
-- **CR4**: Sensitive data must be cleared from memory after use
-
-### Integrity Requirements
-
-- **IR1**: All data must include cryptographic integrity protection
-- **IR2**: Processing results must be tamper-evident
-- **IR3**: AI models must be authenticated and their provenance verified
-- **IR4**: Protocol messages must prevent replay and reordering attacks
-
-### Availability Requirements
-
-- **AR1**: System must gracefully degrade under attack or failure
-- **AR2**: Network interruptions must not cause data loss
-- **AR3**: Processing must continue with reduced functionality if security features fail
-- **AR4**: Resource exhaustion attacks must be detected and mitigated
-
-### Authentication Requirements
-
-- **ATR1**: All network endpoints must be mutually authenticated
-- **ATR2**: Data provenance must be cryptographically verifiable
-- **ATR3**: Session establishment must prevent impersonation attacks
-- **ATR4**: Model integrity must be verifiable through signatures
-
-### Privacy Requirements
-
-- **PR1**: Network traffic must not reveal processing patterns
-- **PR2**: Timing and size patterns must not leak sensitive information
-- **PR3**: System must minimize data collection and retention
-- **PR4**: Error messages must not leak sensitive information
-
-## Assumptions and Dependencies
-
-### Security Assumptions
-
-1. **Trusted Platform**: The underlying OS and hardware are assumed to be secure
-2. **Secure Channels**: Initial key exchange requires a secure out-of-band channel
-3. **Time Synchronization**: Nodes have reasonably synchronized clocks for replay protection
-4. **Entropy Quality**: System provides adequate entropy for cryptographic operations
-
-### Dependencies
-
-1. **Cryptographic Libraries**: Security depends on correctness of `aes-gcm`, `ed25519-dalek`, etc.
-2. **Network Stack**: Relies on OS network stack for basic connectivity
-3. **Random Number Generation**: Depends on OS entropy sources
-4. **System Clock**: Accurate timestamps required for certain protections
-
-## Out of Scope
-
-The following threats are acknowledged but considered out of scope for the current phase:
-
-1. **Physical Security**: Device theft, tampering, environmental monitoring
-2. **Social Engineering**: Attacks targeting users or administrators
-3. **Supply Chain Security**: Compromise of development tools or dependencies (planned for future)
-4. **Regulatory Compliance**: GDPR, CCPA, sector-specific requirements
-5. **Business Logic Flaws**: Application-specific vulnerabilities in AI processing logic
-
-## Testing and Validation
-
-### Security Testing Requirements
-
-1. **Cryptographic Testing**: Validate encryption, signatures, and key management
-2. **Protocol Testing**: Fuzz testing of network protocol implementation  
-3. **Negative Testing**: Verify proper handling of malformed inputs and attack scenarios
-4. **Performance Testing**: Ensure security features don't introduce unacceptable performance degradation
-
-### Ongoing Monitoring
-
-1. **Security Metrics**: Track failed authentication attempts, unusual traffic patterns
-2. **Vulnerability Management**: Regular updates to dependencies and security patches
-3. **Incident Response**: Procedures for responding to security incidents
-4. **Security Reviews**: Regular architecture and code security reviews
-
-## Mitigation Roadmap
-
-### Phase 1 (Current): Local Processing Security
-- ✅ Chunk-level AES-GCM encryption
-- ✅ Ed25519 signatures for data integrity
-- ✅ Secure key generation and handling
-
-### Phase 2: Network Security Foundation
-- 🔄 Protocol design and state machine implementation
-- 🔄 Mutual TLS with certificate verification
-- 🔄 Session management with perfect forward secrecy
-- 🔄 Anti-replay protection with sliding windows
-
-### Phase 3: Advanced Network Security
-- ⏳ Traffic analysis resistance (padding, timing)
-- ⏳ Advanced session security (key rotation, binding)
-- ⏳ Robust error handling and recovery
-
-### Phase 4: Production Hardening
-- ⏳ Formal security audit and penetration testing
-- ⏳ Performance optimization of security features
-- ⏳ Advanced monitoring and incident response
-- ⏳ Hardware security integration (HSM, TEE)
+**Version**: 2.2
+**Date**: 2026-03-20
+**Replaces**: August 2025 draft (obsolete — described a different system)
+
+> For vulnerability reporting and security policies, see [`SECURITY.md`](../../SECURITY.md)
 
 ---
 
-**Legend**: ✅ Complete | 🔄 In Progress | ⏳ Planned
+## System Overview
+
+TrustEdge is a cryptographic provenance system for edge device data. It proves that data — captured at an edge device — has not been tampered with from capture through to verification, using BLAKE3 continuity chains, Ed25519/ECDSA P-256 signatures, and verifiable receipts. The system provides encryption, attestation, and tamper-evidence for any data type (video, audio, sensor, logs). Device keys are passphrase-protected at rest; hardware-backed keys via YubiKey PIV are also supported.
+
+---
+
+## Architecture
+
+```
+[Edge Device / CLI (trst)]
+    |-- keygen: TRUSTEDGE-KEY-V1 (PBKDF2-HMAC-SHA256 600k + AES-256-GCM, passphrase-protected)
+    |-- wrap: chunk data -> XChaCha20-Poly1305 + BLAKE3 chain -> Ed25519/ECDSA P-256 sign
+    |-- unwrap: verify signature + BLAKE3 chain -> HKDF key derivation -> decrypt chunks
+         |
+         v
+[.trst Archive] ─── HTTP POST /v1/verify ───> [Platform Server (Axum)]
+                                                     |-- JWT bearer auth (Secret<T>, ZeroizeOnDrop)
+                                                     |-- BLAKE3 + Ed25519/ECDSA P-256 verify
+                                                     |-- PostgreSQL (receipts, devices, orgs)
+                                                     |-- JWKS endpoint
+                                                     |-- CORS restricted (same-origin or header-limited)
+                                                     v
+                                              [Cryptographic Receipt (JWS)]
+                                                     |
+                                              [Dashboard (SvelteKit + nginx)]
+                                              [Browser WASM (trst-wasm)]
+
+[Network Transport (optional)]
+    |-- TCP with framing (trustedge-core transport)
+    |-- QUIC with TLS (webpki-roots trust store, secure-by-default)
+         insecure-tls feature: compile-time blocked in release builds (build.rs guard)
+```
+
+### Docker Compose Stack
+
+```
+platform-server (Rust, Axum HTTP) <-> postgres (internal network, no external port)
+                                  <-> dashboard (nginx static, port 3000)
+```
+
+---
+
+## Assets Under Protection
+
+| Asset | Protection Mechanism |
+|-------|---------------------|
+| Archive content (plaintext data) | XChaCha20-Poly1305 per-chunk encryption at rest and in transit |
+| Device private keys | TRUSTEDGE-KEY-V1: PBKDF2-HMAC-SHA256 (600k iterations, 32-byte salt) + AES-256-GCM |
+| Verification receipts | JWS-signed by platform server |
+| Platform JWT secret | Secret<T> wrapper with ZeroizeOnDrop; never serialized or logged |
+| PostgreSQL credentials | Secret<T> wrapper with ZeroizeOnDrop |
+| YubiKey PIV PIN | Secret<T> wrapper; prompted at runtime via rpassword; never stored |
+
+---
+
+## Cryptographic Primitives
+
+| Primitive | Algorithm | Where Used | Notes |
+|-----------|-----------|-----------|-------|
+| Signing (software) | Ed25519 | Archive manifest signing, mutual auth | `ed25519-dalek`; "ed25519:BASE64" wire prefix |
+| Signing (hardware) | ECDSA P-256 | YubiKey PIV slot 9c, YubiKey-generated X.509 certs | `yubikey` crate; "ecdsa-p256:BASE64" wire prefix |
+| Symmetric encryption | AES-256-GCM | Per-chunk envelope encryption; TRUSTEDGE-KEY-V1 key-at-rest | Authenticated encryption with 128-bit tags |
+| Symmetric encryption | XChaCha20-Poly1305 | .trst chunk encryption (crypto.rs) | Extended nonce variant, resistant to nonce misuse |
+| Key derivation (envelope) | HKDF-SHA256 (RFC 5869) | v2 envelope key derivation | Single Extract+Expand, 40-byte OKM (32-byte AES key + 8-byte nonce prefix); info = "TRUSTEDGE_ENVELOPE_V1" |
+| Key derivation (at rest) | PBKDF2-HMAC-SHA256 | TRUSTEDGE-KEY-V1 key-at-rest; Keyring backend | 600,000 iterations (OWASP 2023); 32-byte salt; min 300,000 enforced |
+| Session key derivation | X25519 ECDH | Mutual-auth network transport session keys | BLAKE3 domain-separated KDF post-ECDH |
+| Hash / chain | BLAKE3 | Continuity chain (genesis seed: blake3("trustedge:genesis")), segment linking, receipt binding | Non-cryptographic-signing usage; collision resistance only |
+| Hybrid encryption | RSA-OAEP-SHA256 | Asymmetric encryption in hybrid.rs | Oaep::new::<sha2::Sha256>(); PKCS#1 v1.5 eliminated in v2.2 |
+
+---
+
+## Threat Categories
+
+### T1: Data Tampering in Transit
+
+**Description**: An adversary intercepts and modifies archive data or verification responses during network transmission.
+
+**Attack Vectors**: Active network position (MITM), packet injection, TLS stripping.
+
+**Status**: MITIGATED
+
+**Mitigations**:
+- AES-GCM authentication tags on each chunk — any modification is detected before decryption
+- Ed25519 or ECDSA P-256 signature over the canonical manifest.json — signature verification is the first step in `trst verify` and `/v1/verify`
+- BLAKE3 continuity chain — any missing, reordered, or substituted chunk breaks the chain from genesis seed
+- `trst unwrap` enforces verify-then-decrypt: signature and chain must pass before any chunk is decrypted
+
+---
+
+### T2: Data Tampering at Rest
+
+**Description**: An adversary modifies a .trst archive after it has been written to disk or object storage.
+
+**Attack Vectors**: Direct filesystem access, storage layer manipulation, corrupt-and-replace.
+
+**Status**: MITIGATED
+
+**Mitigations**:
+- .trst archives are tamper-evident read-only bundles: manifest.json + detached signature + encrypted chunks
+- Ed25519/ECDSA P-256 signature over manifest.json; any manifest change invalidates the signature
+- BLAKE3 continuity chain links all chunks back to the genesis seed — any chunk substitution or addition breaks the chain
+- Chunk filenames are zero-padded indices; gaps or reordering are detected during verification
+
+---
+
+### T3: Key Compromise (Private Key at Rest)
+
+**Description**: An adversary obtains a device's private signing key from disk storage.
+
+**Attack Vectors**: Filesystem access, disk theft, memory dumps, backup exfiltration.
+
+**Status**: MITIGATED (v2.2)
+
+**Mitigations**:
+- TRUSTEDGE-KEY-V1 format: private key encrypted with AES-256-GCM; encryption key derived via PBKDF2-HMAC-SHA256 (600,000 iterations, 32-byte salt per OWASP 2023)
+- Passphrase prompted at runtime via `rpassword` — never stored on disk or in environment variables
+- `--unencrypted` flag available as explicit opt-in for CI/automation environments; requires conscious operator choice
+- Hardware option: YubiKey PIV slot 9c — private key is generated on hardware and never extractable; software only holds the public certificate
+
+---
+
+### T4: RSA Padding Oracle / Timing Side-Channel (RUSTSEC-2023-0071)
+
+**Description**: An adversary exploits PKCS#1 v1.5 decryption timing variations to recover RSA private keys via the Marvin Attack.
+
+**Attack Vectors**: Adaptive chosen-ciphertext attack, statistical timing measurement of decryption responses.
+
+**Status**: MITIGATED (v2.2)
+
+**Mitigations**:
+- PKCS#1 v1.5 (`Pkcs1v15Encrypt` trait) completely eliminated from codebase in v2.2
+- All RSA operations now use OAEP with SHA-256 (`Oaep::new::<sha2::Sha256>()`) — not vulnerable to RUSTSEC-2023-0071
+- RUSTSEC-2023-0071 removed from `.cargo/audit.toml` ignore list; `cargo-audit` now passes with zero suppressed advisories
+
+See **RSA Vulnerability History** section for full timeline.
+
+---
+
+### T5: Weak Key Derivation
+
+**Description**: An adversary performs offline brute-force or dictionary attacks against stored key material, or exploits incorrect use of a KDF for its input type.
+
+**Attack Vectors**: Offline dictionary attack against TRUSTEDGE-KEY-V1 files, rainbow tables, GPU brute-force.
+
+**Status**: MITIGATED
+
+**Mitigations**:
+- `PBKDF2_MIN_ITERATIONS = 300_000` constant in `universal.rs`; enforced at builder level (assert!) and backend level (error return) — belt-and-suspenders
+- Default iteration count: 600,000 (OWASP 2023 PBKDF2-HMAC-SHA256 recommendation)
+- Envelope key derivation uses HKDF-SHA256 (RFC 5869): correct KDF for high-entropy input (ECDH shared secret) per NIST SP 800-56C; PBKDF2 is not appropriate for high-entropy seeds
+
+---
+
+### T6: Legacy Envelope Format
+
+**Description**: An adversary or implementation bug exploits the weaker v1 envelope format (PBKDF2 per-chunk KDF, random nonces) that was present through v1.8.
+
+**Attack Vectors**: Downgrade attack, tooling that re-introduces v1 handling, nonce collision in high-volume usage.
+
+**Status**: MITIGATED (v2.2)
+
+**Mitigations**:
+- v1 envelope format removed entirely in v2.2 — no code path produces or consumes v1 envelopes
+- Codebase is v2-only: single HKDF derivation per envelope, deterministic counter nonces (nonce_prefix[8] || chunk_index[3] || last_flag[1] = 12-byte nonce), no per-chunk re-derivation
+- HKDF domain separation: info parameter = "TRUSTEDGE_ENVELOPE_V1" binds the derived key to TrustEdge context
+
+---
+
+### T7: Insecure Transport
+
+**Description**: An adversary intercepts network communications using weak or absent TLS, or exploits a debug/testing bypass left enabled in production.
+
+**Attack Vectors**: TLS downgrade, self-signed cert acceptance in production, `insecure-tls` feature left enabled.
+
+**Status**: MITIGATED
+
+**Mitigations**:
+- QUIC transport uses `webpki-roots` trust store by default — consistent cross-platform certificate validation
+- `insecure-tls` is a compile-time feature flag; `build.rs` includes a compile-time guard that prevents release builds from enabling `insecure-tls` (uses `cfg!(not(debug_assertions))` check — not a runtime config)
+- Docker Compose stack: platform-server and postgres communicate over Docker internal network; postgres port is not exposed externally; dashboard served via nginx with TLS termination upstream
+
+---
+
+### T8: Replay Attacks on Verification
+
+**Description**: An adversary captures a valid verification request or receipt and replays it to obtain an additional receipt for content it does not control.
+
+**Attack Vectors**: Network capture and replay of `/v1/verify` HTTP requests, re-submission of previously verified archives.
+
+**Status**: PARTIAL
+
+**Mitigations (implemented)**:
+- Cryptographic receipts are bound to specific archive content via BLAKE3 digest — a receipt for archive A cannot be claimed as a receipt for archive B
+- Per-chunk deterministic counter nonces prevent chunk-level replay (each chunk's nonce is unique by construction)
+- Mutual auth challenge-response uses BLAKE3 domain-separated KDF with time-limited sessions — replaying a session handshake outside the session window fails
+
+**Planned**:
+- Sliding-window nonce validation for high-volume `/v1/verify` endpoints
+- Request-level idempotency tokens with server-side deduplication
+
+---
+
+### T9: Dashboard / API Authentication Bypass
+
+**Description**: An adversary gains access to the platform API or dashboard without valid credentials, or exploits CORS misconfigurations to make cross-origin requests on behalf of authenticated users.
+
+**Attack Vectors**: Missing auth middleware, JWT algorithm confusion, CORS wildcard, credential theft via XSS.
+
+**Status**: MITIGATED
+
+**Mitigations**:
+- JWT bearer tokens required for all platform endpoints except `/healthz` (excluded for Docker health checks)
+- JWT secret stored in `Secret<T>` with `ZeroizeOnDrop` — never serialized, never logged, zeroed on drop
+- `LoginRequest` password wrapped in `Secret<T>` at JSON parse boundary via private raw struct — no exposure window
+- CORS: `CorsLayer::new()` (same-origin only) for verify-only builds; restricted to `Content-Type`, `Authorization`, `Accept` headers for postgres builds
+- CI Step 23: grep-based check prevents regression of `#[derive(Serialize)]` on secret-holding structs
+
+---
+
+### T10: Secret Material in Memory
+
+**Description**: Sensitive values (private keys, passphrases, PINs, JWT secrets, database passwords) remain in memory after use, accessible via memory dumps, core files, or debug logging.
+
+**Attack Vectors**: Process memory inspection, crash dumps, debug logging of config structs.
+
+**Status**: MITIGATED
+
+**Mitigations**:
+- `Secret<T>` wrapper type (in-house, using `zeroize` crate): implements `ZeroizeOnDrop` on all secret-holding fields
+- Covered fields: YubiKey PIV PIN, passphrase (key-at-rest), JWT secret, database password
+- `Debug` impl on `Secret<T>` outputs `[REDACTED]` — prevents accidental logging
+- No `Display`, `Deref`, or `Serialize` derives on `Secret<T>` — prevents inadvertent exposure
+- CI Step 23 enforces no regression: any `Serialize` derive added to a struct holding a `Secret<T>` field fails CI
+- Rust memory safety prevents use-after-free of secret material
+
+---
+
+### T11: Supply Chain (Dependency Vulnerabilities)
+
+**Description**: A vulnerability in a transitive Rust dependency introduces a security flaw, or a malicious package is introduced into the build.
+
+**Attack Vectors**: Compromised crate on crates.io, unpinned dependencies drifting to vulnerable versions.
+
+**Status**: MITIGATED
+
+**Mitigations**:
+- `cargo-audit` integrated as a blocking CI check — every build scans against the RustSec advisory database
+- `Cargo.lock` tracked in git — audits run against exact pinned versions, not resolved-at-build-time versions
+- RUSTSEC-2023-0071 (RSA Marvin Attack) was the only suppressed advisory; it is now resolved and removed from `.cargo/audit.toml`
+- CI now passes with zero suppressed advisories
+
+---
+
+### T12: YubiKey Hardware Failure / Silent Fallback
+
+**Description**: YubiKey hardware becomes unavailable and the system silently falls back to software key operations, defeating the hardware isolation guarantee.
+
+**Attack Vectors**: YubiKey disconnect, PIV applet error, driver failure, supply chain substitution.
+
+**Status**: MITIGATED
+
+**Mitigations**:
+- Fail-closed design: hardware unavailable = error returned to caller; no silent software fallback
+- `ensure_connected()` is called at the start of every PIV operation — gates all hardware-backed operations
+- 18 simulation tests + 9 hardware integration tests; all tests use real assertions, not placeholder values
+- ECDSA P-256 signing via PIV slot 9c: private key is generated on hardware and is non-exportable by design
+
+---
+
+## RSA Vulnerability History
+
+This section documents the full lifecycle of RUSTSEC-2023-0071 (Marvin Attack) in TrustEdge.
+
+**The advisory**: The `rsa` crate's PKCS#1 v1.5 decryption (`Pkcs1v15Encrypt`) is vulnerable to a timing side-channel attack (Marvin Attack) that enables adaptive chosen-ciphertext recovery of RSA private keys. Published 2023; CVE pending.
+
+**v1.3 (2026-02-13) — Risk Accepted**
+
+During cargo-audit integration, RUSTSEC-2023-0071 was identified against the `rsa` crate used in `hybrid.rs`. At the time, TrustEdge's RSA usage was limited to `hybrid.rs`, which was used for non-production asymmetric encryption scenarios. The advisory was risk-accepted with documented rationale and added to `.cargo/audit.toml` ignore list.
+
+Rationale: TrustEdge's primary encryption path (AES-256-GCM) was unaffected. RSA in `hybrid.rs` was not used in the primary data lifecycle. Risk was acknowledged as a known limitation.
+
+**v1.3 through v2.1 — Carried as Known Risk**
+
+The advisory remained in `.cargo/audit.toml` with the risk-accepted rationale. Any use of `hybrid.rs` RSA decryption was potentially vulnerable to timing-based key recovery if an adversary could measure decryption response times.
+
+**v2.2 Phase 45 (2026-03-19) — Fully Resolved**
+
+`Pkcs1v15Encrypt` was replaced with `Oaep::new::<sha2::Sha256>()` in `asymmetric.rs` (`hybrid.rs`). OAEP does not have the timing side-channel vulnerability present in PKCS#1 v1.5 decryption.
+
+RUSTSEC-2023-0071 was removed from `.cargo/audit.toml`. `cargo-audit` now passes with no suppressed advisories. The codebase contains no remaining PKCS#1 v1.5 decryption code.
+
+---
+
+## Mitigation Status Summary
+
+| Threat | Status | Version Resolved |
+|--------|--------|-----------------|
+| T1: Data tampering in transit | MITIGATED | v1.0 |
+| T2: Data tampering at rest | MITIGATED | v1.0 |
+| T3: Key compromise at rest | MITIGATED | v2.2 |
+| T4: RSA padding oracle (RUSTSEC-2023-0071) | MITIGATED | v2.2 |
+| T5: Weak key derivation | MITIGATED | v1.8 / v2.2 |
+| T6: Legacy envelope format | MITIGATED | v2.2 |
+| T7: Insecure transport | MITIGATED | v1.4 / v2.2 |
+| T8: Replay attacks on verification | PARTIAL | — |
+| T9: API / dashboard auth bypass | MITIGATED | v1.7 |
+| T10: Secret material in memory | MITIGATED | v1.7 |
+| T11: Supply chain vulnerabilities | MITIGATED | v1.3 / v2.2 |
+| T12: YubiKey hardware fallback | MITIGATED | v1.1 |
+
+---
+
+## Out of Scope
+
+The following are acknowledged but outside the current threat model:
+
+- **TPM support** — planned for a future milestone; no hardware available to test against
+- **Post-quantum cryptography** — research phase only; no production use case
+- **Physical device security** — OS-level and environmental security are operator responsibilities
+- **Regulatory compliance** — GDPR, CCPA, and sector-specific requirements are implementation-site concerns
+- **Social engineering** — attacks against operators or administrators
+
+---
 
 ## Document Maintenance
 
-This threat model should be reviewed and updated:
+This document must be reviewed:
 - Before each major release
-- When new features are added
-- After security incidents
-- At least quarterly during active development
+- After any security incident
+- When the cryptographic primitive set changes
 
-**Next Review Date**: November 2025
+Next scheduled review: before v2.3 or next major milestone.
