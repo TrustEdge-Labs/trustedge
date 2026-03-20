@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-2.1-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v2.1)
+[![Version](https://img.shields.io/badge/version-2.2-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v2.2)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge
@@ -47,6 +47,8 @@ has not been edited between capture and submission to the client.
 
 ```bash
 trst keygen --out-key drone.key --out-pub drone.pub
+# For CI/automation (no passphrase prompt):
+# trst keygen --out-key drone.key --out-pub drone.pub --unencrypted
 trst wrap --in flight-recording.bin --out inspection.trst \
   --data-type video --source "DJI-Mavic-3E" --description "Bridge inspection flight 2024-03-15" \
   --device-key drone.key --device-pub drone.pub
@@ -116,8 +118,10 @@ For cam.video-specific archives with frame rate and segment duration, see [examp
 
 ## How It Works
 
-1. **Sign** -- Device generates an Ed25519 keypair (or uses YubiKey ECDSA P-256) and signs data at the point of capture
-2. **Encrypt** -- Data is chunked and each chunk is encrypted with XChaCha20Poly1305 using an HKDF-derived key
+**Security Posture (v2.2):** TrustEdge uses RSA OAEP-SHA256 for all asymmetric operations (replacing PKCS#1 v1.5). Envelopes are v2-only format with HKDF-SHA256 key derivation. Device private keys are encrypted at rest using TRUSTEDGE-KEY-V1 format (PBKDF2-HMAC-SHA256 + AES-256-GCM); a passphrase is prompted at runtime.
+
+1. **Sign** -- Device generates an Ed25519 keypair (or uses YubiKey ECDSA P-256) and signs data at the point of capture; private keys are encrypted at rest with TRUSTEDGE-KEY-V1 format (PBKDF2 + AES-GCM), passphrase prompted at runtime
+2. **Encrypt** -- Data is chunked and each chunk is AES-256-GCM encrypted using HKDF-derived keys (v2 envelope format)
 3. **Wrap** -- Chunks, manifest, and signature are packaged into a `.trst` archive with a BLAKE3 continuity chain
 4. **Verify** -- An independent verification service checks the signature, chain integrity, and manifest
 5. **Unwrap** -- Original data is recovered after mandatory signature and chain verification
