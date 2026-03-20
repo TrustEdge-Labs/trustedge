@@ -758,6 +758,9 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
             // Map error types to human messages
             let first_line = match e {
                 trustedge_core::archive::ArchiveError::MissingChunk(_) => "Missing chunk file",
+                trustedge_core::archive::ArchiveError::UnreferencedChunk(_) => {
+                    "Unreferenced chunk file"
+                }
                 trustedge_core::archive::ArchiveError::InvalidChunkIndex { .. } => {
                     "Missing chunk file"
                 }

@@ -7,6 +7,7 @@
 //
 
 use crate::TrstManifest;
+use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::Path;
@@ -120,7 +121,26 @@ pub fn read_archive<P: AsRef<Path>>(
 
 /// Validate archive integrity including continuity chain
 pub fn validate_archive<P: AsRef<Path>>(base_dir: P) -> Result<(), ArchiveError> {
-    let (manifest, chunk_data) = read_archive(base_dir)?;
+    let base_path = base_dir.as_ref();
+    let (manifest, chunk_data) = read_archive(base_path)?;
+
+    // Check for unreferenced chunk files (SEC-02)
+    let expected_chunks: HashSet<String> = manifest
+        .segments
+        .iter()
+        .map(|s| s.chunk_file.clone())
+        .collect();
+
+    let chunks_dir = base_path.join("chunks");
+    if chunks_dir.is_dir() {
+        for entry in std::fs::read_dir(&chunks_dir)? {
+            let entry = entry?;
+            let file_name = entry.file_name().to_string_lossy().to_string();
+            if file_name.ends_with(".bin") && !expected_chunks.contains(&file_name) {
+                return Err(ArchiveError::UnreferencedChunk(file_name));
+            }
+        }
+    }
 
     // Validate manifest structure
     manifest.validate().map_err(|e| {
@@ -403,5 +423,39 @@ mod tests {
     fn test_archive_dir_name() {
         assert_eq!(archive_dir_name("test123"), "clip-test123.trst");
         assert_eq!(archive_dir_name("CAM-001"), "clip-CAM-001.trst");
+    }
+
+    #[test]
+    fn test_unreferenced_chunk_detected() {
+        let temp_dir = TempDir::new().unwrap();
+        let archive_path = temp_dir.path().join("test.trst");
+
+        let manifest = create_test_manifest();
+        let chunk_data = vec![
+            b"test_chunk_0".to_vec(),
+            b"test_chunk_1".to_vec(),
+            b"test_chunk_2".to_vec(),
+        ];
+        let detached_sig = b"ed25519:test_signature";
+
+        // Write a valid archive
+        write_archive(&archive_path, &manifest, chunk_data, detached_sig).unwrap();
+
+        // Write a spurious chunk file not referenced in the manifest
+        let spurious_chunk = archive_path.join("chunks/99999.bin");
+        fs::write(&spurious_chunk, b"spurious").unwrap();
+
+        // Validation should fail with UnreferencedChunk error
+        let result = validate_archive(&archive_path);
+        assert!(
+            result.is_err(),
+            "validate_archive should fail with spurious chunk"
+        );
+        match result.unwrap_err() {
+            ArchiveError::UnreferencedChunk(filename) => {
+                assert_eq!(filename, "99999.bin");
+            }
+            other => panic!("Expected UnreferencedChunk error, got {:?}", other),
+        }
     }
 }

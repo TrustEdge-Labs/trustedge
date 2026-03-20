@@ -116,6 +116,9 @@ pub enum ArchiveError {
     #[error("Missing chunk file: {0}")]
     MissingChunk(String),
 
+    #[error("Unreferenced chunk file in archive: {0}")]
+    UnreferencedChunk(String),
+
     #[error("Invalid chunk index: expected {expected}, found {found}")]
     InvalidChunkIndex { expected: usize, found: usize },
 
