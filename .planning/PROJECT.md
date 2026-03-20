@@ -16,6 +16,18 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
+## Current Milestone: v2.3 Security Testing
+
+**Goal:** Implement targeted security tests that attempt to exploit vulnerabilities identified in the threat model — malicious data injection, replay attacks, nonce uniqueness verification, failure cases, and edge conditions. Provide concrete evidence for security claims.
+
+**Target tests:**
+- Archive tampering attacks (chunk injection, manifest manipulation, signature forgery)
+- Nonce uniqueness and reuse prevention
+- Key derivation edge cases (wrong passphrase, corrupted key files, truncated data)
+- Replay attack resistance on verification receipts
+- PBKDF2 iteration enforcement under adversarial conditions
+- Encrypted key file format attacks (truncation, corruption, wrong format)
+
 ## Current State
 
 Shipped v2.2 Security Remediation. All known cryptographic flaws are resolved: RSA uses OAEP-SHA256 (no more PKCS#1 v1.5), v1 envelope format removed entirely, PBKDF2 enforces 300k+ iterations, and device keys are encrypted at rest with passphrase protection. The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack, and demo remain current from v2.0-v2.1.
@@ -135,7 +147,9 @@ Shipped v2.2 Security Remediation. All known cryptographic flaws are resolved: R
 - ✓ PBKDF2 minimum 300k iterations enforced at builder + backend levels — v2.2
 - ✓ Device keys encrypted at rest (TRUSTEDGE-KEY-V1 format, PBKDF2+AES-GCM, --unencrypted escape) — v2.2
 
-(None active — define next milestone with /gsd:new-milestone)
+- [ ] Targeted security tests for archive tampering, nonce reuse, key derivation edge cases
+- [ ] Replay attack resistance tests for verification receipts
+- [ ] Encrypted key file format attack tests (corruption, truncation, wrong format)
 
 ### Deferred
 
@@ -276,4 +290,4 @@ CI uses `--workspace` for root workspace. YubiKey feature validated unconditiona
 | README leads with problem + quick start | Developer audience wants to try it fast, not read architecture | ✓ Good — 465 → 128 lines |
 
 ---
-*Last updated: 2026-03-19 after v2.2 milestone shipped*
+*Last updated: 2026-03-20 after v2.3 milestone started*
