@@ -17,10 +17,10 @@ Requirements for the Security Testing milestone. Each maps to roadmap phases. Te
 
 ### Archive Tampering (T1, T2)
 
-- [ ] **SEC-01**: Test that modifying any byte of an encrypted chunk causes trst verify to fail (AES-GCM auth tag detection)
-- [ ] **SEC-02**: Test that injecting an extra chunk file into a .trst archive causes verification failure (BLAKE3 chain break)
-- [ ] **SEC-03**: Test that reordering chunk files in a .trst archive causes verification failure (continuity chain)
-- [ ] **SEC-04**: Test that modifying manifest.json after signing causes signature verification failure
+- [x] **SEC-01**: Test that modifying any byte of an encrypted chunk causes trst verify to fail (AES-GCM auth tag detection)
+- [x] **SEC-02**: Test that injecting an extra chunk file into a .trst archive causes verification failure (BLAKE3 chain break)
+- [x] **SEC-03**: Test that reordering chunk files in a .trst archive causes verification failure (continuity chain)
+- [x] **SEC-04**: Test that modifying manifest.json after signing causes signature verification failure
 
 ### Nonce & Key Derivation (T5, T6)
 
@@ -70,10 +70,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 48 | Pending |
-| SEC-02 | Phase 48 | Pending |
-| SEC-03 | Phase 48 | Pending |
-| SEC-04 | Phase 48 | Pending |
+| SEC-01 | Phase 48 | Complete |
+| SEC-02 | Phase 48 | Complete |
+| SEC-03 | Phase 48 | Complete |
+| SEC-04 | Phase 48 | Complete |
 | SEC-05 | Phase 49 | Pending |
 | SEC-06 | Phase 49 | Pending |
 | SEC-07 | Phase 49 | Pending |

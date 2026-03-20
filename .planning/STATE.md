@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Security Testing
 status: planning
-stopped_at: Phase 48 context gathered
-last_updated: "2026-03-20T21:40:56.465Z"
+stopped_at: Completed 48-archive-integrity-attacks-01-PLAN.md
+last_updated: "2026-03-20T23:01:10.132Z"
 last_activity: 2026-03-20 — v2.3 roadmap created, phases 48-51 defined
 progress:
   total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
   percent: 0
 ---
 
@@ -68,6 +68,7 @@ Relevant prior decisions for v2.3:
 - [v1.8]: Deterministic counter nonces (nonce_prefix[8] || chunk_index[3] || last_flag[1]) — Phase 49 tests uniqueness of these across chunks
 - [v2.2]: v1 envelope format removed entirely — Phase 48/49 tests only need to cover v2 (HKDF) envelope paths
 - [v2.2]: --unencrypted flag is the automation escape hatch — use it in test setup where passphrase prompts would block
+- [Phase 48-archive-integrity-attacks]: UnreferencedChunk check placed in validate_archive() not read_archive() — validation logic belongs in validation, not data-loading
 
 ### Pending Todos
 
@@ -79,9 +80,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T21:40:56.463Z
-Stopped at: Phase 48 context gathered
-Resume file: .planning/phases/48-archive-integrity-attacks/48-CONTEXT.md
+Last session: 2026-03-20T23:01:10.129Z
+Stopped at: Completed 48-archive-integrity-attacks-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-20 after v2.3 roadmap creation*
