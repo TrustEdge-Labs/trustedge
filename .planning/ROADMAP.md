@@ -133,7 +133,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 48. Archive Integrity Attacks | 1/1 | Complete   | 2026-03-20 | - |
+| 48. Archive Integrity Attacks | 1/1 | Complete    | 2026-03-20 | - |
 | 49. Nonce and Key Derivation | v2.3 | 0/1 | Not started | - |
 | 50. Encrypted Key File Protection | v2.3 | 0/1 | Not started | - |
 | 51. Verification Receipt Binding | v2.3 | 0/1 | Not started | - |
