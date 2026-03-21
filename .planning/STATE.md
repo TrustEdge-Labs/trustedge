@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Security Testing
 status: planning
-stopped_at: Completed 50-encrypted-key-file-protection-01-PLAN.md
-last_updated: "2026-03-21T02:51:43.542Z"
+stopped_at: Completed 51-verification-receipt-binding-01-PLAN.md
+last_updated: "2026-03-21T13:51:26.758Z"
 last_activity: 2026-03-20 — v2.3 roadmap created, phases 48-51 defined
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 4
+  total_plans: 4
+  completed_plans: 4
   percent: 0
 ---
 
@@ -71,6 +71,7 @@ Relevant prior decisions for v2.3:
 - [Phase 48-archive-integrity-attacks]: UnreferencedChunk check placed in validate_archive() not read_archive() — validation logic belongs in validation, not data-loading
 - [Phase 49-nonce-and-key-derivation]: 6 tests (not 7) cover SEC-05/06/07 — plan done criteria had off-by-one; task body enumerates 6 distinct test names
 - [Phase 50]: 14 tests (not 15): plan said 14-15; sec_10_wrong_passphrase_no_partial_key already covers enum variant check; DeviceKeypair lacks Debug so static assert message used
+- [Phase 51]: SEC-11/SEC-12: Two separate create_test_app() instances per test required because oneshot consumes the router
 
 ### Pending Todos
 
@@ -82,8 +83,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T02:40:38.645Z
-Stopped at: Completed 50-encrypted-key-file-protection-01-PLAN.md
+Last session: 2026-03-21T13:51:26.756Z
+Stopped at: Completed 51-verification-receipt-binding-01-PLAN.md
 Resume file: None
 
 ---

@@ -36,8 +36,8 @@ Requirements for the Security Testing milestone. Each maps to roadmap phases. Te
 
 ### Replay & Receipt (T8)
 
-- [ ] **SEC-11**: Test that the same archive submitted twice to /v1/verify produces receipts with different verification IDs and timestamps
-- [ ] **SEC-12**: Test that a receipt's manifest_digest is bound to the specific archive content
+- [x] **SEC-11**: Test that the same archive submitted twice to /v1/verify produces receipts with different verification IDs and timestamps
+- [x] **SEC-12**: Test that a receipt's manifest_digest is bound to the specific archive content
 
 ## Future Requirements
 
@@ -80,8 +80,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEC-08 | Phase 50 | Complete |
 | SEC-09 | Phase 50 | Complete |
 | SEC-10 | Phase 50 | Complete |
-| SEC-11 | Phase 51 | Pending |
-| SEC-12 | Phase 51 | Pending |
+| SEC-11 | Phase 51 | Complete |
+| SEC-12 | Phase 51 | Complete |
 
 **Coverage:**
 - v2.3 requirements: 12 total
