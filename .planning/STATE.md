@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: Security Testing
 status: planning
-stopped_at: Completed 49-nonce-and-key-derivation-01-PLAN.md
-last_updated: "2026-03-21T01:51:43.052Z"
+stopped_at: Completed 50-encrypted-key-file-protection-01-PLAN.md
+last_updated: "2026-03-21T02:40:38.647Z"
 last_activity: 2026-03-20 — v2.3 roadmap created, phases 48-51 defined
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
   percent: 0
 ---
 
@@ -70,6 +70,7 @@ Relevant prior decisions for v2.3:
 - [v2.2]: --unencrypted flag is the automation escape hatch — use it in test setup where passphrase prompts would block
 - [Phase 48-archive-integrity-attacks]: UnreferencedChunk check placed in validate_archive() not read_archive() — validation logic belongs in validation, not data-loading
 - [Phase 49-nonce-and-key-derivation]: 6 tests (not 7) cover SEC-05/06/07 — plan done criteria had off-by-one; task body enumerates 6 distinct test names
+- [Phase 50]: 14 tests (not 15): plan said 14-15; sec_10_wrong_passphrase_no_partial_key already covers enum variant check; DeviceKeypair lacks Debug so static assert message used
 
 ### Pending Todos
 
@@ -81,8 +82,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T01:49:31.204Z
-Stopped at: Completed 49-nonce-and-key-derivation-01-PLAN.md
+Last session: 2026-03-21T02:40:38.645Z
+Stopped at: Completed 50-encrypted-key-file-protection-01-PLAN.md
 Resume file: None
 
 ---

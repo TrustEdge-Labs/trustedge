@@ -30,9 +30,9 @@ Requirements for the Security Testing milestone. Each maps to roadmap phases. Te
 
 ### Key Protection (T3)
 
-- [ ] **SEC-08**: Test that truncated encrypted key files are rejected (not silently corrupted)
-- [ ] **SEC-09**: Test that corrupted JSON header in encrypted key files is rejected with clear error
-- [ ] **SEC-10**: Test that wrong passphrase returns a clear error, not garbled data
+- [x] **SEC-08**: Test that truncated encrypted key files are rejected (not silently corrupted)
+- [x] **SEC-09**: Test that corrupted JSON header in encrypted key files is rejected with clear error
+- [x] **SEC-10**: Test that wrong passphrase returns a clear error, not garbled data
 
 ### Replay & Receipt (T8)
 
@@ -77,9 +77,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEC-05 | Phase 49 | Complete |
 | SEC-06 | Phase 49 | Complete |
 | SEC-07 | Phase 49 | Complete |
-| SEC-08 | Phase 50 | Pending |
-| SEC-09 | Phase 50 | Pending |
-| SEC-10 | Phase 50 | Pending |
+| SEC-08 | Phase 50 | Complete |
+| SEC-09 | Phase 50 | Complete |
+| SEC-10 | Phase 50 | Complete |
 | SEC-11 | Phase 51 | Pending |
 | SEC-12 | Phase 51 | Pending |
 
