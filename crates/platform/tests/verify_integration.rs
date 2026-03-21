@@ -472,6 +472,304 @@ mod http_tests {
 
         Ok(())
     }
+
+    // -----------------------------------------------------------------------
+    // Test 7: SEC-11 — duplicate submission produces distinct receipts.
+    //
+    // Submitting the same archive twice must yield two receipts with different
+    // verification_id values and different receipt verification_id claims.
+    // This proves the system resists receipt replay attacks.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn sec_11_duplicate_submission_distinct_receipts() -> Result<()> {
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let (signed_manifest, device_pub) = build_signed_manifest(&signing_key);
+        let body_bytes = build_verify_body(&signed_manifest, &device_pub, true);
+
+        // Two separate app instances — oneshot consumes the router.
+        let app1 = create_test_app().await;
+        let app2 = create_test_app().await;
+
+        let resp1 = app1
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/verify")
+                    .header(CONTENT_TYPE, "application/json")
+                    .body(Body::from(body_bytes.clone()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        let resp2 = app2
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/verify")
+                    .header(CONTENT_TYPE, "application/json")
+                    .body(Body::from(body_bytes))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(resp1.status(), axum::http::StatusCode::OK);
+        assert_eq!(resp2.status(), axum::http::StatusCode::OK);
+
+        let body1 = axum::body::to_bytes(resp1.into_body(), usize::MAX).await?;
+        let body2 = axum::body::to_bytes(resp2.into_body(), usize::MAX).await?;
+
+        let json1: serde_json::Value = serde_json::from_slice(&body1)?;
+        let json2: serde_json::Value = serde_json::from_slice(&body2)?;
+
+        let vid1 = json1["verification_id"].as_str().unwrap_or("");
+        let vid2 = json2["verification_id"].as_str().unwrap_or("");
+
+        assert_ne!(
+            vid1, vid2,
+            "SEC-11: duplicate submissions must produce different verification_id values (replay resistance)"
+        );
+
+        // Decode JWS receipts and compare inner receipt verification_id claims.
+        let jws1 = json1["receipt"]
+            .as_str()
+            .expect("receipt must be present in response 1");
+        let jws2 = json2["receipt"]
+            .as_str()
+            .expect("receipt must be present in response 2");
+
+        let parts1: Vec<&str> = jws1.split('.').collect();
+        let parts2: Vec<&str> = jws2.split('.').collect();
+
+        assert_eq!(parts1.len(), 3, "JWS 1 must have exactly 3 parts");
+        assert_eq!(parts2.len(), 3, "JWS 2 must have exactly 3 parts");
+
+        let payload1_bytes = BASE64URL.decode(parts1[1])?;
+        let payload2_bytes = BASE64URL.decode(parts2[1])?;
+
+        let payload1: serde_json::Value = serde_json::from_slice(&payload1_bytes)?;
+        let payload2: serde_json::Value = serde_json::from_slice(&payload2_bytes)?;
+
+        let receipt_vid1 = &payload1["receipt"]["verification_id"];
+        let receipt_vid2 = &payload2["receipt"]["verification_id"];
+
+        assert_ne!(
+            receipt_vid1, receipt_vid2,
+            "SEC-11: receipt verification_id claims in JWS payloads must differ between duplicate submissions"
+        );
+
+        // Both receipts must have iat timestamps.
+        assert!(
+            payload1["iat"].is_number() || payload1["receipt"].get("iat").is_some(),
+            "SEC-11: receipt 1 must contain an iat field"
+        );
+        assert!(
+            payload2["iat"].is_number() || payload2["receipt"].get("iat").is_some(),
+            "SEC-11: receipt 2 must contain an iat field"
+        );
+
+        Ok(())
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 8: SEC-12a — different archive content produces different manifest_digest.
+    //
+    // Two different manifests must produce receipts with different manifest_digest
+    // values. This proves the receipt is cryptographically bound to the specific
+    // archive content that was submitted.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn sec_12_receipt_digest_bound_to_content() -> Result<()> {
+        // Two different signing keys with different device_id values in the manifest.
+        let key_a = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let key_b = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+
+        // Build manifest A with device-alpha.
+        let manifest_a = serde_json::json!({
+            "version": "1.0",
+            "segments": 1,
+            "device_id": "device-alpha"
+        });
+        let manifest_bytes_a = serde_json::to_string(&manifest_a)?.into_bytes();
+        let sig_a = key_a.sign(&manifest_bytes_a);
+        let mut signed_a = manifest_a.clone();
+        signed_a["signature"] = serde_json::json!(BASE64.encode(sig_a.to_bytes()));
+        let device_pub_a = format!(
+            "ed25519:{}",
+            BASE64.encode(key_a.verifying_key().as_bytes())
+        );
+
+        // Build manifest B with device-beta.
+        let manifest_b = serde_json::json!({
+            "version": "1.0",
+            "segments": 1,
+            "device_id": "device-beta"
+        });
+        let manifest_bytes_b = serde_json::to_string(&manifest_b)?.into_bytes();
+        let sig_b = key_b.sign(&manifest_bytes_b);
+        let mut signed_b = manifest_b.clone();
+        signed_b["signature"] = serde_json::json!(BASE64.encode(sig_b.to_bytes()));
+        let device_pub_b = format!(
+            "ed25519:{}",
+            BASE64.encode(key_b.verifying_key().as_bytes())
+        );
+
+        let body_a = build_verify_body(&signed_a, &device_pub_a, true);
+        let body_b = build_verify_body(&signed_b, &device_pub_b, true);
+
+        let app_a = create_test_app().await;
+        let app_b = create_test_app().await;
+
+        let resp_a = app_a
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/verify")
+                    .header(CONTENT_TYPE, "application/json")
+                    .body(Body::from(body_a))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        let resp_b = app_b
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/verify")
+                    .header(CONTENT_TYPE, "application/json")
+                    .body(Body::from(body_b))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(resp_a.status(), axum::http::StatusCode::OK);
+        assert_eq!(resp_b.status(), axum::http::StatusCode::OK);
+
+        let body_bytes_a = axum::body::to_bytes(resp_a.into_body(), usize::MAX).await?;
+        let body_bytes_b = axum::body::to_bytes(resp_b.into_body(), usize::MAX).await?;
+
+        let json_a: serde_json::Value = serde_json::from_slice(&body_bytes_a)?;
+        let json_b: serde_json::Value = serde_json::from_slice(&body_bytes_b)?;
+
+        let jws_a = json_a["receipt"]
+            .as_str()
+            .expect("receipt must be present for manifest A");
+        let jws_b = json_b["receipt"]
+            .as_str()
+            .expect("receipt must be present for manifest B");
+
+        let parts_a: Vec<&str> = jws_a.split('.').collect();
+        let parts_b: Vec<&str> = jws_b.split('.').collect();
+
+        let payload_a: serde_json::Value = serde_json::from_slice(&BASE64URL.decode(parts_a[1])?)?;
+        let payload_b: serde_json::Value = serde_json::from_slice(&BASE64URL.decode(parts_b[1])?)?;
+
+        let digest_a = payload_a["receipt"]["manifest_digest"]
+            .as_str()
+            .expect("manifest_digest must be present in receipt A");
+        let digest_b = payload_b["receipt"]["manifest_digest"]
+            .as_str()
+            .expect("manifest_digest must be present in receipt B");
+
+        assert_ne!(
+            digest_a, digest_b,
+            "SEC-12: different archive content must produce different manifest_digest values"
+        );
+
+        assert!(
+            digest_a.starts_with("b3:"),
+            "SEC-12: manifest_digest must be prefixed with 'b3:' (BLAKE3)"
+        );
+        assert!(
+            digest_b.starts_with("b3:"),
+            "SEC-12: manifest_digest must be prefixed with 'b3:' (BLAKE3)"
+        );
+
+        Ok(())
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 9: SEC-12b — same archive content produces identical manifest_digest.
+    //
+    // Two submissions of the same manifest must produce receipts with identical
+    // manifest_digest values. This proves the digest is deterministically bound
+    // to the archive content (not random or time-based).
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn sec_12_same_content_same_digest() -> Result<()> {
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let (signed_manifest, device_pub) = build_signed_manifest(&signing_key);
+        let body_bytes = build_verify_body(&signed_manifest, &device_pub, true);
+
+        let app1 = create_test_app().await;
+        let app2 = create_test_app().await;
+
+        let resp1 = app1
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/verify")
+                    .header(CONTENT_TYPE, "application/json")
+                    .body(Body::from(body_bytes.clone()))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        let resp2 = app2
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/verify")
+                    .header(CONTENT_TYPE, "application/json")
+                    .body(Body::from(body_bytes))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(resp1.status(), axum::http::StatusCode::OK);
+        assert_eq!(resp2.status(), axum::http::StatusCode::OK);
+
+        let body1 = axum::body::to_bytes(resp1.into_body(), usize::MAX).await?;
+        let body2 = axum::body::to_bytes(resp2.into_body(), usize::MAX).await?;
+
+        let json1: serde_json::Value = serde_json::from_slice(&body1)?;
+        let json2: serde_json::Value = serde_json::from_slice(&body2)?;
+
+        let jws1 = json1["receipt"]
+            .as_str()
+            .expect("receipt must be present in response 1");
+        let jws2 = json2["receipt"]
+            .as_str()
+            .expect("receipt must be present in response 2");
+
+        let parts1: Vec<&str> = jws1.split('.').collect();
+        let parts2: Vec<&str> = jws2.split('.').collect();
+
+        let payload1: serde_json::Value = serde_json::from_slice(&BASE64URL.decode(parts1[1])?)?;
+        let payload2: serde_json::Value = serde_json::from_slice(&BASE64URL.decode(parts2[1])?)?;
+
+        let digest1 = payload1["receipt"]["manifest_digest"]
+            .as_str()
+            .expect("manifest_digest must be present in receipt 1");
+        let digest2 = payload2["receipt"]["manifest_digest"]
+            .as_str()
+            .expect("manifest_digest must be present in receipt 2");
+
+        assert_eq!(
+            digest1, digest2,
+            "SEC-12: same archive content must produce identical manifest_digest values (deterministic content binding)"
+        );
+
+        Ok(())
+    }
 }
 
 // ---------------------------------------------------------------------------
