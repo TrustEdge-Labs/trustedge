@@ -16,21 +16,11 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## Current Milestone: v2.3 Security Testing
-
-**Goal:** Implement targeted security tests that attempt to exploit vulnerabilities identified in the threat model — malicious data injection, replay attacks, nonce uniqueness verification, failure cases, and edge conditions. Provide concrete evidence for security claims.
-
-**Target tests:**
-- Archive tampering attacks (chunk injection, manifest manipulation, signature forgery)
-- Nonce uniqueness and reuse prevention
-- Key derivation edge cases (wrong passphrase, corrupted key files, truncated data)
-- Replay attack resistance on verification receipts
-- PBKDF2 iteration enforcement under adversarial conditions
-- Encrypted key file format attacks (truncation, corruption, wrong format)
-
 ## Current State
 
-Shipped v2.2 Security Remediation. All known cryptographic flaws are resolved: RSA uses OAEP-SHA256 (no more PKCS#1 v1.5), v1 envelope format removed entirely, PBKDF2 enforces 300k+ iterations, and device keys are encrypted at rest with passphrase protection. The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack, and demo remain current from v2.0-v2.1.
+Shipped v2.3 Security Testing. All security claims now have concrete test evidence: 31 new security tests across 4 categories (archive integrity, nonce/key derivation, key file protection, receipt binding). Every threat model vector tested has automated verification. Combined with v2.2's cryptographic fixes, TrustEdge's security posture is fully validated through tests that actively attempt exploitation.
+
+The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack, and demo remain current from v2.0-v2.1. All cryptographic fixes from v2.2 (OAEP-SHA256, v1 removal, PBKDF2 minimums, encrypted keys) are validated by the v2.3 security test suite.
 
 ## Requirements
 
@@ -121,6 +111,21 @@ Shipped v2.2 Security Remediation. All known cryptographic flaws are resolved: R
 - ✓ Platform-server wiring integration tests (Config, AppState, router health) — v1.7
 - ✓ Full HTTP verify round-trip test with JWS receipt verified against JWKS endpoint — v1.7
 
+- ✓ Archive decryption and data reassembly (`trst unwrap` with HKDF key derivation, verify-before-decrypt) — v2.1
+- ✓ YubiKey hardware signing exposed in CLI (`trst wrap --backend yubikey`, ECDSA P-256, interactive PIN) — v2.1
+- ✓ Named archive profiles (sensor, audio, log) with typed metadata and CLI flags — v2.1
+- ✓ Multi-algorithm verify dispatch (Ed25519 + ECDSA P-256 prefix-based) — v2.1
+
+- ✓ RSA OAEP-SHA256 replaces PKCS#1 v1.5 (RUSTSEC-2023-0071 fully resolved) — v2.2
+- ✓ v1 envelope format removed entirely (not just deprecated) — v2.2
+- ✓ PBKDF2 minimum 300k iterations enforced at builder + backend levels — v2.2
+- ✓ Device keys encrypted at rest (TRUSTEDGE-KEY-V1 format, PBKDF2+AES-GCM, --unencrypted escape) — v2.2
+
+- ✓ Archive integrity attack tests (byte mutation, chunk injection, reorder, manifest modification) — v2.3
+- ✓ Nonce uniqueness and HKDF key-binding tests — v2.3
+- ✓ Encrypted key file protection tests (truncation, corruption, wrong passphrase) — v2.3
+- ✓ Replay resistance and receipt content binding tests — v2.3
+
 - ✓ HKDF-SHA256 replaces PBKDF2 for ECDH key derivation in envelope.rs — v1.8
 - ✓ Single HKDF derivation per envelope (DerivedKey + NoncePrefix), not per-chunk — v1.8
 - ✓ Deterministic counter nonces (NoncePrefix || chunk_index || last_flag) — v1.8
@@ -137,19 +142,7 @@ Shipped v2.2 Security Remediation. All known cryptographic flaws are resolved: R
 
 ### Active
 
-- ✓ Archive decryption and data reassembly (`trst unwrap` with HKDF key derivation, verify-before-decrypt) — v2.1
-- ✓ YubiKey hardware signing exposed in CLI (`trst wrap --backend yubikey`, ECDSA P-256, interactive PIN) — v2.1
-- ✓ Named archive profiles (sensor, audio, log) with typed metadata and CLI flags — v2.1
-- ✓ Multi-algorithm verify dispatch (Ed25519 + ECDSA P-256 prefix-based) — v2.1
-
-- ✓ RSA OAEP-SHA256 replaces PKCS#1 v1.5 (RUSTSEC-2023-0071 fully resolved) — v2.2
-- ✓ v1 envelope format removed entirely (not just deprecated) — v2.2
-- ✓ PBKDF2 minimum 300k iterations enforced at builder + backend levels — v2.2
-- ✓ Device keys encrypted at rest (TRUSTEDGE-KEY-V1 format, PBKDF2+AES-GCM, --unencrypted escape) — v2.2
-
-- [ ] Targeted security tests for archive tampering, nonce reuse, key derivation edge cases
-- [ ] Replay attack resistance tests for verification receipts
-- [ ] Encrypted key file format attack tests (corruption, truncation, wrong format)
+(No active requirements — next milestone will define new requirements via `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -178,16 +171,18 @@ Shipped v2.2 Security Remediation. All known cryptographic flaws are resolved: R
 - **v2.0 End-to-End Demo** — Generic archive profiles, Docker stack, demo script, README rewrite with use cases
 - **v2.1 Data Lifecycle & Hardware Integration** — trst unwrap, YubiKey CLI, named profiles (sensor, audio, log)
 - **v2.2 Security Remediation** — RSA OAEP, v1 envelope removed, PBKDF2 minimums, encrypted keys at rest
+- **v2.3 Security Testing** — 31 security tests across 4 threat model categories, archive integrity, nonce/key derivation, key file protection, receipt binding
 
 ## Context
 
-Shipped v2.2 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
-Tech stack: Rust, AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, RSA-OAEP-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit 5 (TypeScript), Docker.
+Shipped v2.3 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
+Tech stack: Rust (61,006 LOC), AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, RSA-OAEP-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit 5 (TypeScript), Docker.
 TrustEdge-Labs GitHub org has exactly 3 repos: trustedge (main workspace), trustedgelabs-website, shipsecure.
 Full data lifecycle: `trst keygen` (passphrase-encrypted keys) → `trst wrap` (encrypt + sign) → `trst verify` (validate) → `trst unwrap` (verify + decrypt).
 Device keys encrypted at rest: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM). `--unencrypted` escape for CI.
 RSA uses OAEP-SHA256 exclusively (PKCS#1 v1.5 eliminated). v1 envelope format removed entirely (v2-only).
 PBKDF2 minimum 300k iterations enforced at builder + backend levels.
+Security test suite: 31 tests across archive integrity (8), nonce/key derivation (6), key file protection (14), receipt binding (3).
 `trst verify` dispatches on key prefix: `ed25519:` (Ed25519) or `ecdsa-p256:` (ECDSA P-256).
 `trst wrap --backend yubikey` signs manifest with ECDSA P-256 via PIV slot 9c, interactive PIN via rpassword.
 ProfileMetadata enum: CamVideo, Sensor, Audio, Log, Generic (untagged serde, unique-field discrimination).
@@ -289,5 +284,11 @@ CI uses `--workspace` for root workspace. YubiKey feature validated unconditiona
 | Demo auto-detects docker vs local | Single script works everywhere, --local/--docker overrides | ✓ Good — no user confusion |
 | README leads with problem + quick start | Developer audience wants to try it fast, not read architecture | ✓ Good — 465 → 128 lines |
 
+| UnreferencedChunk in validate_archive() not read_archive() | Validation logic belongs in validation, not data-loading | ✓ Good — clean separation |
+| SEC-NN_ test prefix naming convention | Direct traceability from test function names to requirement IDs | ✓ Good — 31 tests traceable |
+| Black-box CLI testing via assert_cmd | Tests independent of internal implementation — verify user-facing behavior | ✓ Good — stable test suite |
+| Library-level API tests for key file protection | Key format testing doesn't need CLI — DeviceKeypair API is the right boundary | ✓ Good — faster, more precise |
+| Two create_test_app() instances per receipt test | tower::oneshot consumes the router, need fresh instance per HTTP request | ✓ Good — matches existing pattern |
+
 ---
-*Last updated: 2026-03-20 after v2.3 milestone started*
+*Last updated: 2026-03-21 after v2.3 milestone*

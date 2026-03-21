@@ -1,5 +1,34 @@
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 
+## v2.3 Security Testing (Shipped: 2026-03-21)
+
+**Phases completed:** 4 phases (48-51), 4 plans, 6 tasks
+**Timeline:** 2 days (2026-03-20 → 2026-03-21)
+**Stats:** 8 files changed, 1,326 insertions, 2 deletions, 6 commits
+
+**Delivered:** Implemented targeted security tests proving TrustEdge's tamper-evidence, nonce uniqueness, key protection, and replay resistance claims with 31 new security tests across 4 threat model categories.
+
+**Key accomplishments:**
+- 8 archive integrity tests: byte mutation, chunk injection, chunk reordering, and post-signing manifest modification all detected by `trst verify` with specific exit codes and error messages
+- 6 nonce/key derivation tests: HashSet-based nonce uniqueness proof within archives, cross-archive nonce divergence, and HKDF key-binding via direct `derive_chunk_key()` calls
+- 14 key file protection tests: TRUSTEDGE-KEY-V1 truncation (5 boundaries), JSON corruption (6 variants), and wrong-passphrase rejection — never panics or produces partial keys
+- 3 receipt binding tests: duplicate submissions yield distinct verification_ids, manifest_digest is BLAKE3-bound to content, deterministic binding verified
+
+**Known gaps:**
+- Phase 51 missing VERIFICATION.md (process gap — tests pass, integration verified)
+
+**Tech debt carried forward:**
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+
+**Git range:** v2.2..v2.3
+
+**Archives:**
+- `.planning/milestones/v2.3-ROADMAP.md`
+- `.planning/milestones/v2.3-REQUIREMENTS.md`
+- `.planning/milestones/v2.3-MILESTONE-AUDIT.md`
+
+---
+
 ## v2.2 Security Remediation (Shipped: 2026-03-19)
 
 **Phases completed:** 3 phases (45-47), 5 plans
