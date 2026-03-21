@@ -136,7 +136,7 @@ Plans:
 | 48. Archive Integrity Attacks | 1/1 | Complete    | 2026-03-20 | - |
 | 49. Nonce and Key Derivation | 1/1 | Complete    | 2026-03-21 | - |
 | 50. Encrypted Key File Protection | 1/1 | Complete    | 2026-03-21 | - |
-| 51. Verification Receipt Binding | 1/1 | Complete   | 2026-03-21 | - |
+| 51. Verification Receipt Binding | 1/1 | Complete    | 2026-03-21 | - |
 
 ---
 *Last updated: 2026-03-20 after v2.3 roadmap created*
