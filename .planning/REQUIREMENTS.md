@@ -24,9 +24,9 @@ Requirements for the Security Testing milestone. Each maps to roadmap phases. Te
 
 ### Nonce & Key Derivation (T5, T6)
 
-- [ ] **SEC-05**: Test that nonces across chunks within an archive are unique (no nonce reuse)
-- [ ] **SEC-06**: Test that the same plaintext encrypted twice with the same device key produces different nonces (random nonce generation)
-- [ ] **SEC-07**: Test that HKDF derivation with different device keys produces different encryption keys
+- [x] **SEC-05**: Test that nonces across chunks within an archive are unique (no nonce reuse)
+- [x] **SEC-06**: Test that the same plaintext encrypted twice with the same device key produces different nonces (random nonce generation)
+- [x] **SEC-07**: Test that HKDF derivation with different device keys produces different encryption keys
 
 ### Key Protection (T3)
 
@@ -74,9 +74,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEC-02 | Phase 48 | Complete |
 | SEC-03 | Phase 48 | Complete |
 | SEC-04 | Phase 48 | Complete |
-| SEC-05 | Phase 49 | Pending |
-| SEC-06 | Phase 49 | Pending |
-| SEC-07 | Phase 49 | Pending |
+| SEC-05 | Phase 49 | Complete |
+| SEC-06 | Phase 49 | Complete |
+| SEC-07 | Phase 49 | Complete |
 | SEC-08 | Phase 50 | Pending |
 | SEC-09 | Phase 50 | Pending |
 | SEC-10 | Phase 50 | Pending |

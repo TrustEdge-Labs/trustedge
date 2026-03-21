@@ -69,7 +69,7 @@ Fixed critical cryptographic flaws. RSA OAEP-SHA256 replaces PKCS#1 v1.5, v1 env
 ## Phases (v2.3)
 
 - [x] **Phase 48: Archive Integrity Attacks** - Tests that byte-level tampering, chunk injection, reordering, and manifest modification are all detected by trst verify (completed 2026-03-20)
-- [ ] **Phase 49: Nonce and Key Derivation** - Tests that nonces are unique across and within archives, and that HKDF produces distinct keys for distinct device keys
+- [x] **Phase 49: Nonce and Key Derivation** - Tests that nonces are unique across and within archives, and that HKDF produces distinct keys for distinct device keys (completed 2026-03-21)
 - [ ] **Phase 50: Encrypted Key File Protection** - Tests that truncated, corrupted, and wrong-passphrase key files are rejected with clear errors, not silently mishandled
 - [ ] **Phase 51: Verification Receipt Binding** - Tests that duplicate archive submissions produce distinct receipts and that receipt digest is bound to archive content
 
@@ -134,7 +134,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 48. Archive Integrity Attacks | 1/1 | Complete    | 2026-03-20 | - |
-| 49. Nonce and Key Derivation | v2.3 | 0/1 | Not started | - |
+| 49. Nonce and Key Derivation | 1/1 | Complete   | 2026-03-21 | - |
 | 50. Encrypted Key File Protection | v2.3 | 0/1 | Not started | - |
 | 51. Verification Receipt Binding | v2.3 | 0/1 | Not started | - |
 
