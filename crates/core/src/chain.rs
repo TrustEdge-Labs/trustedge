@@ -11,9 +11,12 @@ const GENESIS_SEED: &[u8] = b"trustedge:genesis";
 
 pub use crate::error::ChainError;
 
+use base64::engine::general_purpose::STANDARD as BASE64;
+use base64::Engine as _;
+
 /// Convert BLAKE3 hash bytes to base64 with "b3:" prefix for manifest storage
 pub fn blake3_hex_or_b64(bytes: &[u8]) -> String {
-    format!("b3:{}", base64_encode(bytes))
+    format!("b3:{}", BASE64.encode(bytes))
 }
 
 /// Compute BLAKE3 hash of segment ciphertext
@@ -72,41 +75,6 @@ pub fn validate_chain(segments: &[ChainSegment]) -> Result<(), ChainError> {
     }
 
     Ok(())
-}
-
-/// Simple base64 encoding helper
-fn base64_encode(bytes: &[u8]) -> String {
-    const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    let mut result = String::new();
-    let mut i = 0;
-
-    while i < bytes.len() {
-        let b1 = bytes[i];
-        let b2 = if i + 1 < bytes.len() { bytes[i + 1] } else { 0 };
-        let b3 = if i + 2 < bytes.len() { bytes[i + 2] } else { 0 };
-
-        let chunk = ((b1 as u32) << 16) | ((b2 as u32) << 8) | (b3 as u32);
-
-        result.push(CHARS[((chunk >> 18) & 63) as usize] as char);
-        result.push(CHARS[((chunk >> 12) & 63) as usize] as char);
-
-        if i + 1 < bytes.len() {
-            result.push(CHARS[((chunk >> 6) & 63) as usize] as char);
-        } else {
-            result.push('=');
-        }
-
-        if i + 2 < bytes.len() {
-            result.push(CHARS[(chunk & 63) as usize] as char);
-        } else {
-            result.push('=');
-        }
-
-        i += 3;
-    }
-
-    result
 }
 
 #[cfg(test)]
@@ -308,15 +276,15 @@ mod tests {
     }
 
     #[test]
-    fn test_base64_encoding() {
-        // Test our simple base64 implementation
+    fn test_blake3_b64_format() {
         let test_data = [0x14, 0xfb, 0x9c, 0x03, 0xd9, 0x7e];
-        let encoded = base64_encode(&test_data);
-
-        // Should be valid base64
-        assert_eq!(encoded.len() % 4, 0);
-        assert!(encoded
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '/' || c == '='));
+        let result = blake3_hex_or_b64(&test_data);
+        assert!(result.starts_with("b3:"));
+        // Verify the base64 part round-trips
+        let b64_part = &result[3..];
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(b64_part)
+            .expect("valid base64");
+        assert_eq!(decoded, test_data);
     }
 }
