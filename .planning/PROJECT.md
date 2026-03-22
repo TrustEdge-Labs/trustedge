@@ -29,7 +29,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-Phase 52 (Code Hardening) complete — all P1/P2 code-level findings from security review fixed. Custom base64 replaced with standard crate, encrypted key file format versioned, auth timestamp check made unidirectional, envelope panic paths eliminated, key files get 0600 permissions, nonce overflow guarded. 392 tests pass across workspace.
+v2.4 Security Review Remediation complete. All P1/P2 code-level findings from the 2026-03-22 security review fixed: custom base64 replaced, key file format versioned, timestamp check unidirectional, envelope panics eliminated, key files get 0600 permissions, nonce overflow guarded. 14 new error path tests covering key file corruption, sensor metadata validation, and auth clock skew. 406 tests pass across workspace.
 
 The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack, and demo remain current from v2.0-v2.1. All cryptographic fixes from v2.2 (OAEP-SHA256, v1 removal, PBKDF2 minimums, encrypted keys) are validated by the v2.3 security test suite.
 
@@ -157,11 +157,11 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ Key files get 0600 Unix permissions on generation — v2.4 Phase 52
 - ✓ PBKDF2 iteration count versioned in encrypted key metadata — v2.4 Phase 52
 - ✓ Nonce construction guards against chunk index overflow (2^24 limit) — v2.4 Phase 52
+- ✓ Error path tests: key file truncation/corruption, sensor metadata validation, auth clock skew rejection (14 tests) — v2.4 Phase 53
 
 ### Active
 
-<!-- v2.4 Security Review Remediation — remaining items -->
-- [ ] Add error path tests (wrong passphrase, malformed metadata, clock skew)
+(No active requirements — v2.4 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -327,4 +327,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-22 after Phase 52 completion*
+*Last updated: 2026-03-22 after v2.4 milestone completion*
