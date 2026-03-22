@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.4
 milestone_name: Security Review Remediation
 status: unknown
-stopped_at: Completed 52-02-PLAN.md
-last_updated: "2026-03-22T02:37:41.499Z"
+stopped_at: Completed 52-01-PLAN.md
+last_updated: "2026-03-22T03:04:31.693Z"
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 <!--
@@ -61,6 +61,8 @@ Plan: 2 of 2
 - TEST-01 and TEST-02 placed in Phase 53 (after Phase 52) because the error paths they test are introduced or hardened in Phase 52.
 - [Phase 52-code-hardening]: beneficiary()/issuer() return Result<VerifyingKey>: callers decide how to handle invalid key bytes, no silent panics in security paths
 - [Phase 52-code-hardening]: 0o600 permissions on generated key files: PermissionsExt on Unix, eprintln warning on non-Unix
+- [Phase 52]: Use FUTURE_TOLERANCE_SECS=5/PAST_TOLERANCE_SECS=300 for asymmetric timestamp validation in auth handshake
+- [Phase 52]: Add version field to encrypted key file metadata for future format evolution
 
 ### Pending Todos
 
@@ -72,8 +74,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T02:37:41.496Z
-Stopped at: Completed 52-02-PLAN.md
+Last session: 2026-03-22T03:04:31.690Z
+Stopped at: Completed 52-01-PLAN.md
 Resume file: None
 
 ---

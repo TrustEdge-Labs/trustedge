@@ -73,7 +73,7 @@ Fixed critical cryptographic flaws. RSA OAEP-SHA256 replaces PKCS#1 v1.5, v1 env
 
 ### v2.4 Security Review Remediation (Phases 52-53)
 
-- [ ] **Phase 52: Code Hardening** - Replace unsafe patterns, fix timestamp replay, enforce key permissions, guard nonce overflow
+- [x] **Phase 52: Code Hardening** - Replace unsafe patterns, fix timestamp replay, enforce key permissions, guard nonce overflow (completed 2026-03-22)
 - [ ] **Phase 53: Error Path Tests** - Negative tests for passphrase errors, malformed metadata, and clock skew rejection
 
 ## Phase Details
@@ -88,10 +88,10 @@ Fixed critical cryptographic flaws. RSA OAEP-SHA256 replaces PKCS#1 v1.5, v1 env
   3. Attempting to wrap an archive whose chunk count would exceed 2^32 returns an explicit error instead of silently wrapping a broken or panicking archive.
   4. Auth handshake with a response timestamp in the future is rejected; a timestamp slightly in the past within the tolerance window is accepted.
   5. `cargo clippy` and `cargo test --workspace` pass with no panics introduced by the changed code paths (no unwrap/expect in auth.rs or envelope.rs security paths).
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 52-01-PLAN.md — Replace custom base64, version key file format, fix auth timestamp
+- [x] 52-01-PLAN.md — Replace custom base64, version key file format, fix auth timestamp
 - [x] 52-02-PLAN.md — Eliminate envelope panics, guard nonce overflow, enforce key file permissions
 
 ### Phase 53: Error Path Tests
@@ -110,7 +110,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 52. Code Hardening | 1/2 | In Progress|  |
+| 52. Code Hardening | 2/2 | Complete   | 2026-03-22 |
 | 53. Error Path Tests | 0/? | Not started | - |
 
 ---

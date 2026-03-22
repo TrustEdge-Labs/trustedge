@@ -9,12 +9,12 @@ Requirements for Security Review Remediation. Each maps to roadmap phases.
 
 ### Crypto Hygiene
 
-- [ ] **CRYP-01**: Custom base64 encoder/decoder in crypto.rs replaced with standard `base64` crate
-- [ ] **CRYP-02**: PBKDF2 iteration count versioned in encrypted key file metadata with documented upgrade path
+- [x] **CRYP-01**: Custom base64 encoder/decoder in crypto.rs replaced with standard `base64` crate
+- [x] **CRYP-02**: PBKDF2 iteration count versioned in encrypted key file metadata with documented upgrade path
 
 ### Auth Hardening
 
-- [ ] **AUTH-01**: Timestamp validation rejects future-dated auth responses (unidirectional check, past-only tolerance)
+- [x] **AUTH-01**: Timestamp validation rejects future-dated auth responses (unidirectional check, past-only tolerance)
 - [x] **AUTH-02**: All `unwrap()`/`expect()` in auth.rs and envelope.rs security paths replaced with proper error propagation
 
 ### Key File Security
@@ -47,9 +47,9 @@ Requirements for Security Review Remediation. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CRYP-01 | Phase 52 | Pending |
-| CRYP-02 | Phase 52 | Pending |
-| AUTH-01 | Phase 52 | Pending |
+| CRYP-01 | Phase 52 | Complete |
+| CRYP-02 | Phase 52 | Complete |
+| AUTH-01 | Phase 52 | Complete |
 | AUTH-02 | Phase 52 | Complete |
 | KEYF-01 | Phase 52 | Complete |
 | KEYF-02 | Phase 52 | Complete |
