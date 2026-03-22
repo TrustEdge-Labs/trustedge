@@ -41,34 +41,54 @@ pub trait Transport: Send + Sync {
 }
 
 /// Transport configuration options.
+///
+/// # Security rationale for timeout defaults
+///
+/// All timeouts are bounded to prevent resource exhaustion attacks (slowloris, idle
+/// connection hoarding). Defaults are conservative for edge-device workloads where
+/// connections are short-lived and data transfers are bounded.
+///
+/// - **Connect timeout (10s):** Prevents SYN-flood resource holding. Edge devices on
+///   unreliable networks should fail fast and retry rather than hold half-open connections.
+/// - **Read timeout (30s):** Bounds the window for slow-read attacks. A 16 MB max message
+///   at typical edge bandwidth (1 Mbps) transfers in ~128s; 30s covers per-frame reads
+///   with margin while preventing indefinite blocking.
+/// - **Idle timeout (5 min):** Reclaims connections that completed their transfer but
+///   weren't explicitly closed. Shorter than typical HTTP keep-alive (which serves
+///   connection reuse) because TrustEdge connections are single-purpose data transfers.
+///   Set to 0 to disable (not recommended in production).
 #[derive(Debug, Clone)]
 pub struct TransportConfig {
-    /// Connection timeout in milliseconds.
+    /// Connection timeout in milliseconds (default: 10,000 = 10s).
+    /// Bounds half-open connection duration to prevent SYN-flood resource exhaustion.
     pub connect_timeout_ms: u64,
-    /// Read timeout in milliseconds.
+    /// Read timeout in milliseconds (default: 30,000 = 30s).
+    /// Bounds per-frame read wait to prevent slow-read attacks.
     pub read_timeout_ms: u64,
-    /// Maximum message size.
+    /// Maximum message size in bytes (default: 16 MB).
     pub max_message_size: usize,
     /// Keep-alive interval in milliseconds (0 = disabled).
     pub keep_alive_ms: u64,
-    /// Maximum bytes per connection (0 = unlimited).
+    /// Maximum bytes per connection (0 = unlimited, default: 1 GB).
     pub max_connection_bytes: u64,
-    /// Maximum chunks per connection (0 = unlimited).
+    /// Maximum chunks per connection (0 = unlimited, default: 10,000).
     pub max_connection_chunks: u64,
-    /// Connection idle timeout in milliseconds.
+    /// Connection idle timeout in milliseconds (default: 300,000 = 5 min).
+    /// Reclaims connections that completed transfer but weren't explicitly closed.
+    /// Set to 0 to disable idle timeout (not recommended in production).
     pub connection_idle_timeout_ms: u64,
 }
 
 impl Default for TransportConfig {
     fn default() -> Self {
         Self {
-            connect_timeout_ms: 10_000,               // 10 seconds
-            read_timeout_ms: 30_000,                  // 30 seconds
-            max_message_size: 16 * 1024 * 1024,       // 16 MB
-            keep_alive_ms: 0,                         // Disabled by default
+            connect_timeout_ms: 10_000, // 10s — fail fast on unreliable networks
+            read_timeout_ms: 30_000,    // 30s — per-frame read bound
+            max_message_size: 16 * 1024 * 1024, // 16 MB
+            keep_alive_ms: 0,           // Disabled — connections are single-purpose
             max_connection_bytes: 1024 * 1024 * 1024, // 1 GB per connection
-            max_connection_chunks: 10_000,            // 10k chunks per connection
-            connection_idle_timeout_ms: 300_000,      // 5 minutes
+            max_connection_chunks: 10_000, // 10k chunks per connection
+            connection_idle_timeout_ms: 300_000, // 5 min — reclaim idle connections
         }
     }
 }
