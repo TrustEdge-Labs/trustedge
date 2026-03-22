@@ -15,12 +15,12 @@ Requirements for Security Review Remediation. Each maps to roadmap phases.
 ### Auth Hardening
 
 - [ ] **AUTH-01**: Timestamp validation rejects future-dated auth responses (unidirectional check, past-only tolerance)
-- [ ] **AUTH-02**: All `unwrap()`/`expect()` in auth.rs and envelope.rs security paths replaced with proper error propagation
+- [x] **AUTH-02**: All `unwrap()`/`expect()` in auth.rs and envelope.rs security paths replaced with proper error propagation
 
 ### Key File Security
 
-- [ ] **KEYF-01**: Generated key files have 0600 Unix permissions (owner-only read/write) on Unix systems
-- [ ] **KEYF-02**: Envelope nonce construction explicitly guards against u32 chunk index overflow with error on exceeding 2^32 chunks
+- [x] **KEYF-01**: Generated key files have 0600 Unix permissions (owner-only read/write) on Unix systems
+- [x] **KEYF-02**: Envelope nonce construction explicitly guards against u32 chunk index overflow with error on exceeding 2^32 chunks
 
 ### Error Path Testing
 
@@ -50,9 +50,9 @@ Requirements for Security Review Remediation. Each maps to roadmap phases.
 | CRYP-01 | Phase 52 | Pending |
 | CRYP-02 | Phase 52 | Pending |
 | AUTH-01 | Phase 52 | Pending |
-| AUTH-02 | Phase 52 | Pending |
-| KEYF-01 | Phase 52 | Pending |
-| KEYF-02 | Phase 52 | Pending |
+| AUTH-02 | Phase 52 | Complete |
+| KEYF-01 | Phase 52 | Complete |
+| KEYF-02 | Phase 52 | Complete |
 | TEST-01 | Phase 53 | Pending |
 | TEST-02 | Phase 53 | Pending |
 

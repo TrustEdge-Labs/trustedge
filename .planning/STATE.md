@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.4
 milestone_name: Security Review Remediation
-status: roadmap_created
-stopped_at: null
-last_updated: "2026-03-22T00:00:00.000Z"
-last_activity: 2026-03-22 — Roadmap created (2 phases, 8 requirements mapped)
+status: unknown
+stopped_at: Completed 52-02-PLAN.md
+last_updated: "2026-03-22T02:37:41.499Z"
 progress:
   total_phases: 2
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
 ---
 
 <!--
@@ -21,7 +19,6 @@ Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
-
 # Project State
 
 ## Project Reference
@@ -29,22 +26,17 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** v2.4 Security Review Remediation — Phase 52: Code Hardening
+**Current focus:** Phase 52 — Code Hardening
 
 ## Current Position
 
-Phase: 52 (Code Hardening) — not started
-Plan: —
-Status: Roadmap created, awaiting plan-phase
-Last activity: 2026-03-22 — Roadmap created
-
-```
-v2.4 Progress: [....................] 0% (0/2 phases)
-```
+Phase: 52 (Code Hardening) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
 **Cumulative (all milestones):**
+
 - v1.0: 8 phases, 17 plans
 - v1.1: 4 phases, 6 plans
 - v1.2: 2 phases, 4 plans
@@ -67,6 +59,8 @@ v2.4 Progress: [....................] 0% (0/2 phases)
 
 - 2-phase structure chosen over 4-phase (one per category): 8 small requirements cluster cleanly into production fixes (Phase 52) then test coverage (Phase 53). Fewer phases, faster completion.
 - TEST-01 and TEST-02 placed in Phase 53 (after Phase 52) because the error paths they test are introduced or hardened in Phase 52.
+- [Phase 52-code-hardening]: beneficiary()/issuer() return Result<VerifyingKey>: callers decide how to handle invalid key bytes, no silent panics in security paths
+- [Phase 52-code-hardening]: 0o600 permissions on generated key files: PermissionsExt on Unix, eprintln warning on non-Unix
 
 ### Pending Todos
 
@@ -78,8 +72,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22
-Stopped at: Roadmap created — next step is `/gsd:plan-phase 52`
+Last session: 2026-03-22T02:37:41.496Z
+Stopped at: Completed 52-02-PLAN.md
 Resume file: None
 
 ---
