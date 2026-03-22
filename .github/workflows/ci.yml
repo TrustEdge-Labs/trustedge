@@ -106,7 +106,11 @@ jobs:
           cargo clippy -p trustedge-wasm --all-targets -- -D warnings
           cargo clippy -p trustedge-trst-wasm --all-targets -- -D warnings
 
-      # Tests (reuses clippy build artifacts)
+      # Build CLI binaries (needed by roundtrip_integration tests that invoke trustedge binary)
+      - name: Build workspace
+        run: cargo build --workspace --locked
+
+      # Tests (reuses build artifacts)
       - name: Test workspace (default features)
         run: cargo test --workspace --no-default-features --locked
 
