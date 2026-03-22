@@ -786,3 +786,113 @@ pub async fn client_authenticate(
         _ => Err(anyhow!("Unexpected server response type")),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn now_secs() -> u64 {
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+    }
+
+    /// AUTH-01: A timestamp 60 seconds in the future is rejected with "too far in the future".
+    ///
+    /// The authenticate_client function enforces FUTURE_TOLERANCE_SECS=5.
+    /// A timestamp 60s ahead of now far exceeds this tolerance and must be rejected
+    /// before the signature check, preventing future-dated replay attacks.
+    #[test]
+    fn test_timestamp_future_rejected() {
+        let mut session_manager =
+            SessionManager::new("test-server".into()).expect("SessionManager::new must succeed");
+        let challenge = session_manager
+            .create_challenge()
+            .expect("create_challenge must succeed");
+
+        let response = ClientAuthResponse {
+            client_public_key: [0u8; 32],
+            challenge_signature: [0u8; 64],
+            client_identity: None,
+            timestamp: now_secs() + 60,
+        };
+
+        let err = session_manager
+            .authenticate_client(&challenge, &response)
+            .unwrap_err();
+        assert!(
+            err.to_string().contains("too far in the future"),
+            "expected 'too far in the future' in error, got: {err}"
+        );
+    }
+
+    /// AUTH-01: A timestamp from 1970 (effectively year zero) is rejected with "too old".
+    ///
+    /// The authenticate_client function enforces PAST_TOLERANCE_SECS=300.
+    /// A timestamp of 1000 seconds (early 1970) is far outside the replay window
+    /// and must be rejected to prevent replay of ancient authentication responses.
+    #[test]
+    fn test_timestamp_past_rejected() {
+        let mut session_manager =
+            SessionManager::new("test-server".into()).expect("SessionManager::new must succeed");
+        let challenge = session_manager
+            .create_challenge()
+            .expect("create_challenge must succeed");
+
+        let response = ClientAuthResponse {
+            client_public_key: [0u8; 32],
+            challenge_signature: [0u8; 64],
+            client_identity: None,
+            timestamp: 1000,
+        };
+
+        let err = session_manager
+            .authenticate_client(&challenge, &response)
+            .unwrap_err();
+        assert!(
+            err.to_string().contains("too old"),
+            "expected 'too old' in error, got: {err}"
+        );
+    }
+
+    /// AUTH-01: A timestamp 10 seconds in the past passes the clock-skew check and proceeds
+    /// to signature verification, failing on "Invalid client public key".
+    ///
+    /// This is the positive control: a recent timestamp (within 300s past tolerance)
+    /// must NOT be rejected by the timestamp check. The zeroed public key bytes cause
+    /// ed25519 to reject the key, confirming execution reached the signature phase.
+    #[test]
+    fn test_timestamp_within_tolerance_reaches_signature_check() {
+        let mut session_manager =
+            SessionManager::new("test-server".into()).expect("SessionManager::new must succeed");
+        let challenge = session_manager
+            .create_challenge()
+            .expect("create_challenge must succeed");
+
+        let response = ClientAuthResponse {
+            client_public_key: [0u8; 32],
+            challenge_signature: [0u8; 64],
+            client_identity: None,
+            timestamp: now_secs() - 10,
+        };
+
+        let err = session_manager
+            .authenticate_client(&challenge, &response)
+            .unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            !msg.contains("too far in the future") && !msg.contains("too old"),
+            "timestamp check must pass; got timestamp error: {msg}"
+        );
+        // After timestamp passes, execution reaches signature verification (which fails
+        // on the zeroed key/signature). The error is either key-format or signature-related.
+        assert!(
+            msg.contains("Invalid client public key")
+                || msg.contains("signature")
+                || msg.contains("verification"),
+            "expected a key/signature error after timestamp passes, got: {msg}"
+        );
+    }
+}
