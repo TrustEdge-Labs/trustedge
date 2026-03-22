@@ -12,6 +12,8 @@
 //!   SEC-08: Truncated encrypted key files are rejected with explicit errors (no panic, no partial key)
 //!   SEC-09: Corrupted JSON headers in encrypted key files produce clear parse errors
 //!   SEC-10: Wrong passphrase on a valid encrypted key file returns a clear authentication error
+//!   SEC-11: Additional truncation points (single-byte ciphertext, GCM tag boundary)
+//!   SEC-12: Corrupted JSON fields (version type, iterations type, nonce base64, salt length, unknown fields)
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use trustedge_core::{CryptoError, DeviceKeypair};
@@ -272,5 +274,139 @@ fn sec_10_wrong_passphrase_no_partial_key() {
 fn sec_10_empty_passphrase() {
     let valid = make_valid_encrypted_key();
     let result = DeviceKeypair::import_secret_encrypted(&valid, "");
+    assert_decryption_failed(result, "Wrong passphrase");
+}
+
+// ---------------------------------------------------------------------------
+// SEC-11: Additional truncation boundaries
+// ---------------------------------------------------------------------------
+
+/// SEC-11: Ciphertext truncated to a single byte is rejected with DecryptionFailed.
+///
+/// AES-256-GCM requires at least 16 bytes of authentication tag. A ciphertext of only
+/// 1 byte cannot contain a valid AEAD tag and must be rejected without panicking.
+#[test]
+fn sec_11_truncated_single_byte_ciphertext() {
+    let valid = make_valid_encrypted_key();
+    // Find the ciphertext start (after second newline)
+    let first_newline = valid.iter().position(|&b| b == b'\n').unwrap();
+    let second_newline = valid[first_newline + 1..]
+        .iter()
+        .position(|&b| b == b'\n')
+        .unwrap()
+        + first_newline
+        + 1;
+    let ciphertext_start = second_newline + 1;
+    // Keep only 1 byte of ciphertext
+    let mut truncated = valid[..ciphertext_start].to_vec();
+    truncated.push(valid[ciphertext_start]);
+    let result = DeviceKeypair::import_secret_encrypted(&truncated, "test-passphrase-123");
+    assert_decryption_failed(result, "Wrong passphrase");
+}
+
+/// SEC-11: Ciphertext truncated to exactly 16 bytes (AES-GCM tag size, no plaintext) is rejected.
+///
+/// Even when the ciphertext is exactly the size of an AES-GCM authentication tag,
+/// the tag will fail to authenticate because the expected plaintext is absent.
+/// This confirms the implementation does not panic on minimum-size inputs.
+#[test]
+fn sec_11_truncated_at_gcm_tag_boundary() {
+    let valid = make_valid_encrypted_key();
+    // Find the ciphertext start (after second newline)
+    let first_newline = valid.iter().position(|&b| b == b'\n').unwrap();
+    let second_newline = valid[first_newline + 1..]
+        .iter()
+        .position(|&b| b == b'\n')
+        .unwrap()
+        + first_newline
+        + 1;
+    let ciphertext_start = second_newline + 1;
+    // Keep exactly 16 bytes of ciphertext (AES-GCM tag size)
+    let truncated = valid[..ciphertext_start + 16].to_vec();
+    let result = DeviceKeypair::import_secret_encrypted(&truncated, "test-passphrase-123");
+    assert_decryption_failed(result, "Wrong passphrase");
+}
+
+// ---------------------------------------------------------------------------
+// SEC-12: Corrupted JSON fields (extended)
+// ---------------------------------------------------------------------------
+
+/// SEC-12: "version" field present with wrong type (string instead of integer) is tolerated.
+///
+/// The import function reads version via `as_u64()` which returns None for a string value;
+/// the implementation currently does not validate version, so it proceeds to decryption.
+/// The dummy ciphertext then fails AEAD authentication. This confirms that an unexpected
+/// version field type does not cause a panic or InvalidKeyFormat — backward compat is maintained.
+#[test]
+fn sec_12_json_version_wrong_type() {
+    let salt_b64 = BASE64.encode([0u8; 32]);
+    let nonce_b64 = BASE64.encode([0u8; 12]);
+    let meta = format!(
+        r#"{{"version":"not-a-number","salt":"{salt_b64}","nonce":"{nonce_b64}","iterations":600000}}"#
+    );
+    let data = build_corrupted_key_file(&meta, b"dummy-ciphertext");
+    let result = DeviceKeypair::import_secret_encrypted(&data, "any-passphrase");
+    assert_decryption_failed(result, "Wrong passphrase");
+}
+
+/// SEC-12: "iterations" field with wrong type (string instead of integer) is rejected with "Missing iterations".
+///
+/// The import reads iterations via `.as_u64()`. A string value returns None,
+/// which must be treated as a missing field — not silently defaulted to zero or any other value.
+#[test]
+fn sec_12_json_iterations_wrong_type() {
+    let salt_b64 = BASE64.encode([0u8; 32]);
+    let nonce_b64 = BASE64.encode([0u8; 12]);
+    let meta =
+        format!(r#"{{"salt":"{salt_b64}","nonce":"{nonce_b64}","iterations":"not-a-number"}}"#);
+    let data = build_corrupted_key_file(&meta, b"dummy-ciphertext");
+    let result = DeviceKeypair::import_secret_encrypted(&data, "any-passphrase");
+    assert_invalid_key_format(result, "Missing iterations");
+}
+
+/// SEC-12: "nonce" field with invalid base64 characters is rejected with "Invalid nonce base64".
+///
+/// The import decodes nonce via the standard base64 engine. Characters outside the
+/// base64 alphabet must produce a decode error, not garbage bytes used as a nonce.
+#[test]
+fn sec_12_json_nonce_bad_base64() {
+    let salt_b64 = BASE64.encode([0u8; 32]);
+    let meta = format!(r#"{{"salt":"{salt_b64}","nonce":"$$invalid$$","iterations":600000}}"#);
+    let data = build_corrupted_key_file(&meta, b"dummy-ciphertext");
+    let result = DeviceKeypair::import_secret_encrypted(&data, "any-passphrase");
+    assert_invalid_key_format(result, "Invalid nonce base64");
+}
+
+/// SEC-12: "salt" field containing only 16 bytes (too short) causes PBKDF2 to derive a different key.
+///
+/// A 16-byte salt is valid base64 but produces a different derived key than a 32-byte salt.
+/// The AES-GCM authentication tag then rejects the decryption. This confirms short salts
+/// do not cause panics — the implementation handles any salt length gracefully.
+#[test]
+fn sec_12_json_salt_wrong_length() {
+    // 16-byte salt (half of the expected 32 bytes)
+    let salt_b64 = BASE64.encode([0u8; 16]);
+    let nonce_b64 = BASE64.encode([0u8; 12]);
+    let meta = format!(r#"{{"salt":"{salt_b64}","nonce":"{nonce_b64}","iterations":600000}}"#);
+    let data = build_corrupted_key_file(&meta, b"dummy-ciphertext");
+    let result = DeviceKeypair::import_secret_encrypted(&data, "any-passphrase");
+    assert_decryption_failed(result, "Wrong passphrase");
+}
+
+/// SEC-12: Extra unknown JSON fields are tolerated — the parser does not reject forward-compatible fields.
+///
+/// Unknown fields in the metadata JSON must not cause an `InvalidKeyFormat` error.
+/// This allows future format evolution (e.g., adding a "kdf_variant" field) without
+/// breaking older parsers. The dummy ciphertext still fails AEAD, producing DecryptionFailed.
+#[test]
+fn sec_12_json_extra_unknown_fields() {
+    let salt_b64 = BASE64.encode([0u8; 32]);
+    let nonce_b64 = BASE64.encode([0u8; 12]);
+    let meta = format!(
+        r#"{{"salt":"{salt_b64}","nonce":"{nonce_b64}","iterations":600000,"future_field":"ignored","another":42}}"#
+    );
+    let data = build_corrupted_key_file(&meta, b"dummy-ciphertext");
+    let result = DeviceKeypair::import_secret_encrypted(&data, "any-passphrase");
+    // Must NOT fail with InvalidKeyFormat — unknown fields are tolerated
     assert_decryption_failed(result, "Wrong passphrase");
 }
