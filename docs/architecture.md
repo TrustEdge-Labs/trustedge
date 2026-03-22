@@ -55,7 +55,8 @@ trustedge/
 ## Technology Stack
 
 - **Language**: Rust (stable) for memory safety and performance
-- **Cryptography**: AES-256-GCM, Ed25519, X25519 ECDH, PBKDF2, BLAKE3 with algorithm agility
+- **Cryptography**: AES-256-GCM, Ed25519, X25519 ECDH, HKDF-SHA256, RSA OAEP-SHA256, BLAKE3 with algorithm agility
+- **Key Files**: TRUSTEDGE-KEY-V1 format — PBKDF2-HMAC-SHA256 (600k iterations) + AES-256-GCM encryption at rest
 - **Audio**: Cross-platform support (Linux/ALSA, Windows/WASAPI, macOS/CoreAudio)
 - **Hardware**: YubiKey PIV operations via `yubikey` crate and PCSC
 - **Network**: Ed25519-based mutual authentication with X25519 ECDH session key derivation
@@ -161,34 +162,45 @@ clip-<id>.trst/
 ### Working with Archives
 
 ```bash
-# Create archive
-cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in sample.bin --out archive.trst
+# Generate device keypair (passphrase prompted for encrypted key file)
+cargo run -p trustedge-trst-cli -- keygen --out-key device.key --out-pub device.pub
+
+# For CI/automation (unencrypted key — no passphrase)
+cargo run -p trustedge-trst-cli -- keygen --out-key device.key --out-pub device.pub --unencrypted
+
+# Create archive (cam.video profile)
+cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in sample.bin --out archive.trst --device-key device.key --device-pub device.pub
 
 # Verify archive
 cargo run -p trustedge-trst-cli -- verify archive.trst --device-pub "ed25519:..."
+
+# Recover original data
+cargo run -p trustedge-trst-cli -- unwrap archive.trst --device-key device.key --out recovered.bin
 ```
 
 ---
 
 ## Testing and Quality Assurance
 
-TrustEdge includes a comprehensive test suite with **270+ automated tests** covering all aspects of the system:
+TrustEdge includes a comprehensive test suite with **406 automated tests** across 9 workspace crates:
 
-- **155 Core Unit Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer (includes 18 YubiKey simulation tests)
-- **4 Auth Integration Tests**: Mutual authentication, session management, ECDH session key derivation, key uniqueness
+- **160+ Core Tests**: Envelope encryption, Universal Backend system, receipts, attestation, transport layer (includes 18 YubiKey simulation tests)
+- **4+ Auth Integration Tests**: Mutual authentication, session management, ECDH session key derivation, key uniqueness
 - **9 Hardware Integration Tests**: YubiKey PIV operations (require physical device, run manually)
-- **22 Archive Tests**: .trst format wrap/verify, cryptographic validation, CLI integration
-- **30+ Platform Tests**: Verification engine, HTTP round-trip, CORS, router parity
-- **18 Type Tests**: Shared wire type validation
+- **7 Archive Tests**: .trst format wrap/verify, cryptographic validation, CLI integration (trustedge-trst-cli acceptance)
+- **19+ Platform Tests**: Verification engine, HTTP round-trip, CORS, router parity
+- **18 Type Tests**: Shared wire type validation (trustedge-types)
+- **45+ Security Tests**: Timestamp validation, error handling, permissions, cryptographic correctness (v2.3–v2.4)
 
 ```bash
 # Run complete test suite
 ./scripts/ci-check.sh
 
-# Run tests by category
-cargo test -p trustedge-core --lib                # Core cryptography tests (155)
-cargo test -p trustedge-core --test auth_integration # Auth + ECDH tests (4)
-cargo test -p trustedge-trst-cli --test acceptance # Archive validation tests (7)
+# Run tests by crate
+cargo test -p trustedge-core --lib                # Core cryptography tests
+cargo test -p trustedge-types                     # Type tests (18)
+cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7)
+cargo test -p trustedge-platform --lib            # Platform unit tests
 cargo test --features yubikey --test yubikey_integration  # Hardware tests (need YubiKey)
 ```
 

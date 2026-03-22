@@ -6,7 +6,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 # TrustEdge Testing Guide
 
-Comprehensive testing, validation, and verification procedures for TrustEdge with **109 total tests** covering all components.
+Comprehensive testing, validation, and verification procedures for TrustEdge with **406 total tests** covering all components.
 
 ## Table of Contents
 - [Test Architecture](#test-architecture)
@@ -27,25 +27,30 @@ Comprehensive testing, validation, and verification procedures for TrustEdge wit
 TrustEdge employs a comprehensive 3-tier testing strategy:
 
 ### Test Statistics
-- **109 Total Tests** covering all production features
-- **86 Core Tests** (trustedge-core: envelope encryption, backends, transport, YubiKey)
-- **23 Receipt Tests** (trustedge-receipts: digital receipts, security, attack resistance)
+- **406 Total Tests** across 9 workspace crates
+- **160+ Core Tests** (trustedge-core: envelope encryption, backends, transport, receipts, auth, attestation)
+- **19+ Platform Tests** (trustedge-platform: verification engine, HTTP, CORS, router parity)
+- **18 Type Tests** (trustedge-types: shared wire type validation)
+- **7 Archive Tests** (trustedge-trst-cli: acceptance tests for wrap/verify/keygen)
+- **45+ Security Tests** (dedicated security coverage across v2.3–v2.4)
 - **100% Feature Coverage** (all major components tested)
 
 ### Quick Test Commands
 ```bash
 # All tests (recommended before commit)
-./ci-check.sh                    # Runs format, lint, build, and all tests
+./scripts/ci-check.sh            # Runs format, lint, build, and all tests
 
 # By crate
-cargo test -p trustedge-core --lib        # Core cryptography tests (86)
-cargo test -p trustedge-receipts          # Receipt system tests (23)
+cargo test -p trustedge-types                     # Types (18 tests)
+cargo test -p trustedge-core --lib                # Core cryptography (160+ tests)
+cargo test -p trustedge-platform --lib            # Platform unit tests
+cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
+
+# Full workspace
+cargo test --workspace
 
 # Hardware features
-cargo test --features yubikey    # Include YubiKey hardware tests
-
-# With features
-cargo test --features yubikey    # Include YubiKey hardware tests
+cargo test --features yubikey --test yubikey_integration  # YubiKey hardware tests
 ```
 
 [↑ Back to top](#table-of-contents)
@@ -54,7 +59,7 @@ cargo test --features yubikey    # Include YubiKey hardware tests
 
 ## Test Categories
 
-### 1. Core Cryptography Tests (86 Tests)
+### 1. Core Cryptography Tests (160+ Tests)
 **Envelope System** (`trustedge-core`):
 - AES-256-GCM encryption/decryption with real cryptography
 - PBKDF2 key derivation with 100,000 iterations
@@ -74,10 +79,10 @@ cargo test --features yubikey    # Include YubiKey hardware tests
 - Concurrent connection handling
 - Security configuration validation
 
-### 2. Digital Receipt System Tests (23 Tests)
-**Receipt Creation & Assignment** (`trustedge-receipts`):
+### 2. Digital Receipt System Tests
+**Receipt Creation & Assignment** (integrated into `trustedge-core`):
 ```bash
-cargo test -p trustedge-receipts
+cargo test -p trustedge-core --lib
 ```
 - **Cryptographic Security**: Real encryption/decryption with production algorithms
 - **Ownership Transfer**: Multi-party receipt assignment chains (Alice → Bob → Charlie → Dave → Eve)
@@ -90,7 +95,6 @@ cargo test -p trustedge-receipts
 - **Replay Attack Prevention**: Each receipt has unique cryptographic fingerprint
 - **Amount Tampering Resistance**: Receipt amounts are cryptographically bound and protected
 - **Chain Integrity Validation**: Broken or out-of-order chains are properly rejected
-```
 - Certificate generation and verification
 - Mutual authentication workflows
 - Session management and lifecycle
@@ -276,87 +280,62 @@ The test suite validates:
 
 ### Test Categories
 
-**1. Unit Tests (53 tests)**
+**1. Core Unit Tests (trustedge-core --lib)**
 - Audio configuration and chunk handling
-- Keyring backend functionality  
+- Keyring backend functionality
 - Universal Backend system
-- Software HSM backend (33 tests): Key generation, signing/verification, error handling, persistence, registry integration
+- Software HSM backend: Key generation, signing/verification, error handling, persistence, registry integration
 - Golden test vector validation
+- Digital receipt security (attack resistance, ownership chains)
+- Auth and attestation
 
-**2. Software HSM Integration Tests (9 tests)**
-- Cross-session key persistence and metadata integrity
-- Universal Backend registry integration and capability testing
-- File-based signing workflows and document verification
-- CLI tool integration (software-hsm-demo lifecycle testing)
-- Error recovery and resilience (corruption, permissions, partial failures)
-- Performance and scale testing (large-scale key management)
+**2. Core Integration Tests (trustedge-core --tests)**
+- Software HSM integration: Cross-session key persistence, CLI lifecycle, error recovery
+- Authentication integration: Certificate generation, session management, mutual auth flow
+- Roundtrip integration: End-to-end encrypt/decrypt workflows, multiple chunk sizes, byte-perfect restoration
+- Network integration: Client-server transfer, data integrity, connection error handling
+- Universal Backend integration: Capability-based selection, registry management
+- Domain separation security tests
 
-**3. Authentication Integration Tests (3 tests)**
-- Certificate generation and verification
-- Session management
-- Mutual authentication flow
+**3. Platform Tests (trustedge-platform)**
+- Verification engine unit tests
+- HTTP layer: Router parity, CORS hardening, round-trip verification
+- PostgreSQL backend (optional, requires postgres feature)
 
-**4. Roundtrip Integration Tests (15 tests)**
-- Small, medium, and large file roundtrips
-- Text and JSON format validation
-- Binary data integrity
-- Empty file handling
-- Metadata inspection
-- Multiple chunk size validation
-- Format-specific tests (PDF, MP3, unknown formats)
-- Comprehensive MIME type detection (39 file formats)
-- Byte-perfect restoration validation
+**4. Archive Tests (trustedge-trst-cli)**
+- Acceptance tests: keygen, wrap, verify, unwrap operations (7 tests)
+- cam.video, sensor, and other profile validation
 
-**5. Network Integration Tests (7 tests)**
-- Client-server data transfer validation
-- Multiple file type network transfer
-- Data integrity across network
-- Large file chunked transfer
-- Authentication workflow testing
-- Connection error handling
-- Empty file network transfer
-
-**6. Universal Backend Integration Tests (6 tests)**
-- End-to-end crypto workflows using Universal Backend
-- Capability-based backend selection
-- Registry management and backend discovery
-- Multi-operation workflow validation
-- Performance characteristics testing
-- Error handling and edge cases
-
-**Total: 93 tests** with comprehensive workflow validation
+**5. Type Tests (trustedge-types)**
+- Shared wire type serialization and validation (18 tests)
 
 ### Running Tests
 
 ```bash
-# Run all tests (93 total)
-cargo test
+# Run entire workspace
+cargo test --workspace
 
 # Run tests with detailed output
-cargo test -- --nocapture
+cargo test --workspace -- --nocapture
 
-# Run specific test suites
-cargo test --test software_hsm_integration       # Software HSM integration tests (9)
-cargo test --test roundtrip_integration          # Roundtrip tests (15)
-cargo test --test auth_integration               # Authentication tests (3)
-cargo test --test network_integration            # Network tests (7)
-cargo test --test universal_backend_integration  # Universal Backend tests (6)
-cargo test --lib                                 # Unit tests only (53)
+# Run specific crates
+cargo test -p trustedge-core --lib                # Core unit tests
+cargo test -p trustedge-types                     # Type tests (18)
+cargo test -p trustedge-trst-cli --test acceptance # Archive tests (7)
+cargo test -p trustedge-platform --lib            # Platform unit tests
+cargo test -p trustedge-platform --test verify_integration           # Verify integration (5)
+cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (7)
 
-# Software HSM specific tests
-cargo test software_hsm --lib                    # Software HSM unit tests only (33)
-cargo test software_hsm                          # All Software HSM tests (42 total)
+# Run specific test modules within core
+cargo test -p trustedge-core --test roundtrip_integration
+cargo test -p trustedge-core --test auth_integration
+cargo test -p trustedge-core vectors::tests::golden_trst_digest_is_stable
 
-# Run specific test modules
-cargo test backends::keyring
-cargo test vectors::tests::golden_trst_digest_is_stable
+# Hardware testing (requires YubiKey device)
+cargo test --features yubikey --test yubikey_integration
 
-# Run tests in release mode
-cargo test --release
-
-# Test specific functionality
-cargo test roundtrip                       # All roundtrip tests
-cargo test authentication                  # All auth tests
+# Run a single test with output
+cargo test -p trustedge-core test_name -- --nocapture
 ```
 
 ### Roundtrip Integration Tests
@@ -660,19 +639,19 @@ done
 
 TrustEdge includes **comprehensive security testing** covering cryptographic attacks and security scenarios:
 
-### Receipt System Security Tests (23 Tests)
+### Receipt System Security Tests
 
-**Production-Ready Security Testing:**
+**Production-Ready Security Testing** (integrated into `trustedge-core`):
 ```bash
 # Run all security tests
-cargo test -p trustedge-receipts
+cargo test -p trustedge-core --lib
 
 # Run specific security test categories
-cargo test -p trustedge-receipts test_cryptographic_key_isolation
-cargo test -p trustedge-receipts test_signature_forgery_resistance
-cargo test -p trustedge-receipts test_replay_attack_resistance
-cargo test -p trustedge-receipts test_amount_tampering_resistance
-cargo test -p trustedge-receipts test_chain_integrity_validation
+cargo test -p trustedge-core test_cryptographic_key_isolation
+cargo test -p trustedge-core test_signature_forgery_resistance
+cargo test -p trustedge-core test_replay_attack_resistance
+cargo test -p trustedge-core test_amount_tampering_resistance
+cargo test -p trustedge-core test_chain_integrity_validation
 ```
 
 **Security Test Categories:**

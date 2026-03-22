@@ -49,7 +49,6 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 | **[UNIVERSAL_BACKEND.md](technical/universal-backend.md)** | Universal Backend system design | Developers |
 | **[FORMAT.md](technical/format.md)** | Binary format specification | Developers |
 | **[PROTOCOL.md](technical/protocol.md)** | Network protocol specification | Developers |
-| **[WASM.md](../WASM.md)** | WebAssembly build and deployment guide | Developers |
 | **[manifest_cam_video.md](manifest_cam_video.md)** | cam.video manifest specification | Developers |
 
 ### Hardware
@@ -104,7 +103,6 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 3. [PROTOCOL.md](technical/protocol.md) - Network protocol
 4. [TESTING.md](developer/testing.md) - Test procedures
 5. [DEVELOPMENT.md](developer/development.md) - Dev environment
-6. [CLAUDE.md](developer/claude.md) - AI assistant coding guidelines
 
 #### 🤝 **Contributors**
 1. [CONTRIBUTING.md](../CONTRIBUTING.md) - How to contribute

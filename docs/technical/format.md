@@ -7,9 +7,9 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 # TrustEdge Format Specification v2.0
 
-**Version:** 2.0  
-**Date:** September 6, 2025  
-**Status:** Draft
+**Version:** 2.0
+**Date:** March 2026
+**Status:** Stable
 
 > **Related Documentation**: For security considerations and vulnerability reporting, see [`SECURITY.md`](../../SECURITY.md)
 
@@ -410,21 +410,22 @@ The implementation includes comprehensive integration tests:
 
 ---
 
-## 9. Test Vectors
+## 10. Test Vectors
 
-*Note: Test vectors with known keys and expected outputs will be added in a future revision.*
+See Section 8 for the deterministic test vector and golden hash used to validate format compliance.
 
 ---
 
-## 10. Version History
+## 11. Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2025-08-25 | Initial specification |
+| 2.0 | February 2026 | HKDF-SHA256 KDF, versioned envelope format, encrypted key files (TRUSTEDGE-KEY-V1), algorithm agility |
 
 ---
 
-## 11. References
+## 12. References
 
 - [BLAKE3 Specification](https://github.com/BLAKE3-team/BLAKE3-specs)
 - [Ed25519 - RFC 8032](https://tools.ietf.org/html/rfc8032)

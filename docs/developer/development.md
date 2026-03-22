@@ -35,10 +35,7 @@ Development information, roadmap, and contribution guidelines for TrustEdge.
 - Milestone-based development tracking
 - All repository issues are listed here (whether on project board or not)
 
-**Development Phases**: [Milestones](https://github.com/TrustEdge-Labs/trustedge/milestones)
-- Phase 3: Network Operations (Current)
-- Individual day-based milestones (Day 10-14)
-- Clear deliverables and acceptance criteria
+**Development History**: TrustEdge has shipped through v2.4 with 53 phases across 14 milestones (v1.0–v2.4). See [CLAUDE.md](../../CLAUDE.md) for current build and test commands.
 
 ### 🛠️ Project Management Tools
 
@@ -47,31 +44,16 @@ Development information, roadmap, and contribution guidelines for TrustEdge.
 # Quick project status overview
 ./scripts/project/check-status.sh
 
-# View specific milestone
-gh issue list --milestone "Day 10: Server Authentication"
+# View all issues
+gh issue list
 
-# View all Phase 3 issues
-gh issue list --label "phase-3"
-```
-
-**Issue Management**:
-```bash
 # Create new issue with template
 gh issue create --template bug-report
-
-# Assign issue to yourself
-gh issue edit <issue-number> --add-assignee @me
-
-# Update issue status
-gh issue edit <issue-number> --add-label "in-progress"
-
-# Add issue to project board
-./scripts/project/manage-board.sh
 ```
 
 ### 📋 Current Development Status
 
-See **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** for detailed tasks and **[Issue #16](https://github.com/TrustEdge-Labs/trustedge/issues/16)** for progress tracking.
+See **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** for detailed tasks and current priorities.
 
 [↑ Back to top](#table-of-contents)
 
@@ -123,33 +105,37 @@ trustedge-core/
 
 ### Testing Architecture
 
-**144 Total Tests** covering all system components:
+**406 Total Tests** across 9 workspace crates covering all system components:
 
-**Unit Tests (79):**
-- Core library functionality
-- Transport layer (QUIC/TCP) validation
-- Universal Backend system testing
-- Software HSM comprehensive coverage
+**Core Tests (160+):**
+- trustedge-core: envelope encryption, Universal Backend system, receipts, auth, transport
+- 18 YubiKey simulation tests included
 
-**Integration Tests (65):**
-- YubiKey hardware integration (PKCS#11)
-- Transport layer end-to-end validation
-- Authentication and session management
-- Network communication workflows
-- Security and domain separation
+**Platform Tests (19+):**
+- trustedge-platform: verification engine, HTTP round-trip, CORS, router parity
+
+**Archive Tests (7):**
+- trustedge-trst-cli: acceptance tests for wrap/verify/keygen operations
+
+**Type Tests (18):**
+- trustedge-types: shared wire type validation
+
+**Security Tests (45+):**
+- Dedicated security tests: timestamp validation, error handling, permissions, cryptographic correctness (v2.3–v2.4)
 
 **Quality Assurance:**
 ```bash
-# Complete test suite (all 79 tests)
-./ci-check.sh                    # CI pipeline validation
+# Complete test suite (406 tests)
+./scripts/ci-check.sh            # CI pipeline validation
 
-# Test categories
-cargo test --lib                 # Unit tests (79)
-cargo test --test yubikey_integration     # YubiKey tests (8)
-cargo test --test transport_integration   # Transport tests (10)
+# Test by crate
+cargo test -p trustedge-core --lib                # Core (160+ tests)
+cargo test -p trustedge-platform --lib            # Platform unit tests
+cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7)
+cargo test -p trustedge-types                     # Types (18)
 
 # Hardware feature testing
-cargo test --features yubikey    # Include YubiKey hardware tests
+cargo test --features yubikey --test yubikey_integration  # YubiKey hardware tests
 ```
 
 ### Data-Agnostic Architecture
@@ -198,12 +184,12 @@ pub trait KeyBackend {
 ```
 
 #### Current Backends
-- **Keyring Backend**: PBKDF2 with OS keyring integration
-- **Hex Backend**: Direct hexadecimal key specification
+- **Software HSM**: In-memory cryptographic operations for development and CI
+- **Keyring Backend**: OS keyring integration for key derivation and storage
+- **YubiKey Backend**: Hardware PIV operations (ECDSA P-256, RSA-2048) via `yubikey` crate
 
 #### Planned Backends
 - **TPM Backend**: Hardware security module integration
-- **HSM Backend**: Hardware security module support
 - **Cloud Backend**: Cloud key management service integration
 
 ### Chunked Encryption System
@@ -219,67 +205,13 @@ TrustEdge implements chunked encryption for performance and streaming:
 
 ---
 
-## Development Roadmap
+## Development History
 
-### Phase 1: Foundation ✅ (COMPLETED)
-- [x] Core TrustEdge format implementation
-- [x] Chunked encryption with AES-256-GCM
-- [x] Basic CLI interface
-- [x] File-based round-trip encryption/decryption
-- [x] Test vector validation system
-- [x] Initial documentation
+TrustEdge has shipped through v2.4 with 53 phases of development across 14 milestones. All foundational, network, security, and platform features are complete.
 
-### Phase 2: Key Management ✅ (COMPLETED)  
-- [x] Pluggable backend architecture
-- [x] Keyring backend with PBKDF2
-- [x] Passphrase management integration
-- [x] Backend selection CLI options
-- [x] Enhanced error handling
-- [x] Professional code quality (clippy clean)
+**Completed milestones**: v1.0 (Consolidation), v1.1 (YubiKey Overhaul), v1.2 (Scope Reduction), v1.3 (Dependency Audit), v1.4 (Placeholder Elimination), v1.5 (Platform Consolidation), v1.6 (Final Consolidation), v1.7 (Security Hardening), v1.8 (KDF Fix), v2.0 (End-to-End Demo), v2.1 (Data Lifecycle), v2.2 (Security Remediation), v2.3 (Security Testing), v2.4 (Security Review Remediation).
 
-### Phase 3: Network Operations ✅ (COMPLETED)
-- [x] Basic client-server architecture
-- [x] TCP connection handling
-- [x] Chunk streaming over network
-- [x] **Connection management improvements**
-- [x] **Connection timeouts and retry logic**
-- [x] **Graceful server shutdown handling**
-- [x] **Live audio capture integration**
-- [x] **Data-agnostic architecture with metadata**
-- [x] **Feature-gated compilation for audio dependencies**
-- [x] **Cross-platform audio support (Linux/Windows/macOS)**
-- [ ] **Server authentication**  
-- [ ] **Client certificate validation**
-- [ ] **Concurrent client handling**
-- [ ] **Network error recovery**
-
-### Phase 4: Security Hardening 🔄 (NEXT)
-- [ ] **Server authentication**  
-- [ ] **Client certificate validation**
-- [ ] **Concurrent client handling**
-- [ ] **Network error recovery**
-- [ ] **TPM backend implementation**
-- [ ] **Hardware security module support**
-- [ ] **Key rotation mechanisms**
-- [ ] **Secure key derivation audit**
-- [ ] **Side-channel attack mitigation**
-- [ ] **Memory protection improvements**
-
-### Phase 5: Production Features 📋 (PLANNED)
-- [ ] **Performance optimizations**
-- [ ] **Compression integration**
-- [ ] **Advanced metadata preservation**
-- [ ] **Batch processing modes**
-- [ ] **API library interface**
-- [ ] **Language bindings (Python, C)**
-
-### Phase 6: Enterprise Features 📋 (FUTURE)
-- [ ] **Multi-user access control**
-- [ ] **Audit logging system**
-- [ ] **Policy-based encryption**
-- [ ] **Cloud storage integration**
-- [ ] **Compliance reporting**
-- [ ] **Enterprise key management**
+See [CLAUDE.md](../../CLAUDE.md) for current build and test commands. See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for current priorities.
 
 [↑ Back to top](#table-of-contents)
 
@@ -303,8 +235,8 @@ cargo install cargo-audit cargo-outdated
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/trustedge.git
-cd trustedge/trustedge-core
+git clone https://github.com/TrustEdge-Labs/trustedge.git
+cd trustedge
 
 # Build project
 # Build with audio support
@@ -385,7 +317,7 @@ git push origin feature/tpm-backend
 
 2. **Choose an Issue**
    - Look for issues labeled `good-first-issue` for newcomers
-   - Check current [Phase 3 milestone](https://github.com/TrustEdge-Labs/trustedge/milestone/1) for priority work
+   - Check [open issues](https://github.com/TrustEdge-Labs/trustedge/issues) for priority work
    - Assign yourself to issues you want to work on
 
 3. **Use Templates**
@@ -411,12 +343,11 @@ git push origin feature/tpm-backend
    ```bash
    # Run all quality checks (prevents CI failures)
    ./scripts/ci-check.sh
-   
+
    # Or run individual checks:
    cargo fmt --check
    cargo clippy --all-targets --no-default-features -- -D warnings
-   cargo test
-   ./scripts/project/check-status.sh  # Check issue status
+   cargo test --workspace
    ```
 
 3. **Issue Updates**
