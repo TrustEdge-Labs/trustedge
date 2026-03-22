@@ -10,6 +10,8 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 
 use base64::Engine as _;
 
@@ -357,6 +359,21 @@ fn handle_keygen(args: KeygenCmd) -> Result<()> {
             .context("Failed to encrypt key")?;
         fs::write(&args.out_key, &encrypted)
             .with_context(|| format!("Failed to write secret key: {}", args.out_key.display()))?;
+    }
+
+    // Set secret key file to owner-only permissions (0600)
+    #[cfg(unix)]
+    {
+        let perms = std::fs::Permissions::from_mode(0o600);
+        std::fs::set_permissions(&args.out_key, perms)
+            .with_context(|| format!("Failed to set permissions on {}", args.out_key.display()))?;
+    }
+    #[cfg(not(unix))]
+    {
+        eprintln!(
+            "Warning: Unable to restrict key file permissions on this platform. Manually restrict access to {}",
+            args.out_key.display()
+        );
     }
 
     fs::write(&args.out_pub, format!("{}\n", device_keypair.public))
