@@ -886,13 +886,17 @@ mod tests {
             !msg.contains("too far in the future") && !msg.contains("too old"),
             "timestamp check must pass; got timestamp error: {msg}"
         );
-        // After timestamp passes, execution reaches signature verification (which fails
-        // on the zeroed key/signature). The error is either key-format or signature-related.
+        // After timestamp passes, execution reaches ECDH/signature verification (which fails
+        // on the zeroed key/signature). The exact error depends on the crypto backend:
+        // - "Invalid client public key" (key parse failure)
+        // - "signature"/"verification" (signature check failure)
+        // - "ECDH produced zero shared secret" (identity point triggers ECDH safety check)
         assert!(
             msg.contains("Invalid client public key")
                 || msg.contains("signature")
-                || msg.contains("verification"),
-            "expected a key/signature error after timestamp passes, got: {msg}"
+                || msg.contains("verification")
+                || msg.contains("ECDH"),
+            "expected a key/signature/ECDH error after timestamp passes, got: {msg}"
         );
     }
 }
