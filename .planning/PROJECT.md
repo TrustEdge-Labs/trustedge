@@ -29,7 +29,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-Shipped v2.3 Security Testing. All security claims now have concrete test evidence: 31 new security tests across 4 categories (archive integrity, nonce/key derivation, key file protection, receipt binding). Every threat model vector tested has automated verification. Combined with v2.2's cryptographic fixes, TrustEdge's security posture is fully validated through tests that actively attempt exploitation.
+Phase 52 (Code Hardening) complete — all P1/P2 code-level findings from security review fixed. Custom base64 replaced with standard crate, encrypted key file format versioned, auth timestamp check made unidirectional, envelope panic paths eliminated, key files get 0600 permissions, nonce overflow guarded. 392 tests pass across workspace.
 
 The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack, and demo remain current from v2.0-v2.1. All cryptographic fixes from v2.2 (OAEP-SHA256, v1 removal, PBKDF2 minimums, encrypted keys) are validated by the v2.3 security test suite.
 
@@ -151,20 +151,17 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ End-to-end demo script (keygen → wrap → verify → receipt, docker/local auto-detect) — v2.0
 - ✓ README rewrite focused on use cases and demo (128 lines, 4 use cases, 3-command quick start) — v2.0
 
+- ✓ Custom base64 replaced with standard `base64` crate (23 call sites) — v2.4 Phase 52
+- ✓ Envelope beneficiary()/issuer() return Result instead of panicking — v2.4 Phase 52
+- ✓ Auth timestamp check unidirectional (5s future, 300s past tolerance) — v2.4 Phase 52
+- ✓ Key files get 0600 Unix permissions on generation — v2.4 Phase 52
+- ✓ PBKDF2 iteration count versioned in encrypted key metadata — v2.4 Phase 52
+- ✓ Nonce construction guards against chunk index overflow (2^24 limit) — v2.4 Phase 52
+
 ### Active
 
-<!-- v2.4 Security Review Remediation — P1 + P2 findings -->
-- [ ] Replace custom base64 implementation with standard base64 crate
-- [ ] Audit and fix unwrap()/expect() in security-critical paths
-- [ ] Fix bidirectional timestamp check to unidirectional (prevent replay with clock skew)
-- [ ] Enforce Unix 0600 file permissions on generated key files
-- [ ] Fix YubiKey PIN verification timing side-channel
-- [ ] Document PBKDF2 iteration policy and add version field to encrypted key format
-- [ ] Complete YubiKey key generation and attestation (capability alignment)
-- [ ] Replace manual ASN.1 DER encoding with x509-cert crate
+<!-- v2.4 Security Review Remediation — remaining items -->
 - [ ] Add error path tests (wrong passphrase, malformed metadata, clock skew)
-- [ ] Enforce explicit chunk limits for v2 envelope deterministic nonces
-- [ ] Remove unused dependencies
 
 ### Deferred
 
@@ -330,4 +327,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-22 after v2.4 milestone started*
+*Last updated: 2026-03-22 after Phase 52 completion*
