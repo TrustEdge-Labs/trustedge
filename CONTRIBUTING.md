@@ -23,7 +23,7 @@ Thank you for your interest in contributing to TrustEdge! This document provides
 1. **Check existing work**: Search [issues](https://github.com/TrustEdge-Labs/trustedge/issues) and [PRs](https://github.com/TrustEdge-Labs/trustedge/pulls)
 2. **Read the docs**: Review [docs/developer/development.md](./docs/developer/development.md) for technical details
 3. **Review coding standards**: See [docs/developer/coding-standards.md](./docs/developer/coding-standards.md) for style guidelines
-4. **Check progress**: See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) and [Issue #16](https://github.com/TrustEdge-Labs/trustedge/issues/16) for current status
+4. **Check progress**: See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for current status
 5. **Understand the code**: Review the codebase structure and patterns
 
 ## 🐛 Reporting Issues
@@ -351,9 +351,9 @@ Help improve test coverage:
 
 ## 🎯 Current Priorities
 
-**Current Status**: v1.0 released (February 2026)
+**Current Status**: v2.4 released (March 2026)
 
-TrustEdge v1.0 consolidation is complete. See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for current priorities and open work items.
+TrustEdge has shipped through v2.4 with 53 phases of development. See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for current priorities and open work items.
 
 **Good First Contributions**:
 - Documentation improvements and examples

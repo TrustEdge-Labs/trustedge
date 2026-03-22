@@ -14,9 +14,9 @@ TrustEdge is currently in active development. Security updates are provided for:
 
 | Version | Status | Support Level |
 | ------- | ------ | ------------- |
-| v1.7.x | ✅ Current | Active security fixes |
+| v2.4.x | ✅ Current | Active security fixes |
 | main branch | 🔄 Development | Active security fixes |
-| v1.0–v1.6 | ⏳ Legacy | Best effort |
+| v1.0–v2.3 | ⏳ Legacy | Best effort |
 | < v1.0 | ❌ Unsupported | No security support |
 
 **Note**: As of v1.0, TrustEdge follows semantic versioning. Security fixes will be backported to the latest release.
@@ -28,10 +28,11 @@ TrustEdge is currently in active development. Security updates are provided for:
 TrustEdge implements privacy-preserving edge data encryption with the following security properties:
 
 - **Encryption**: AES-256-GCM authenticated encryption
-- **Key Derivation**: PBKDF2 with configurable iterations
+- **Key Derivation**: PBKDF2-HMAC-SHA256 (600k iterations + AES-256-GCM) for encrypted key files at rest (TRUSTEDGE-KEY-V1 format); HKDF-SHA256 for envelope key derivation (v1.8+)
 - **Digital Signatures**: Ed25519 for manifest integrity with domain separation
 - **Hashing**: BLAKE3 for content verification
 - **Nonce Management**: Deterministic 12-byte nonces (4-byte random prefix + 8-byte counter)
+- **Asymmetric Encryption**: RSA OAEP-SHA256 for hybrid encryption (v2.2+)
 
 **Domain Separation**: Manifest signatures use cryptographic domain separation (`b"trustedge.manifest.v1"`) to prevent signature reuse across different contexts or protocols, ensuring signatures cannot be substituted from other systems.
 
@@ -41,14 +42,16 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 2. **Memory Safety**: Relies on Rust's memory safety guarantees
 3. **External Audit**: No third-party security audit completed yet
 
-### Current Security Status (v1.7)
+### Current Security Status (v2.4)
 
 **✅ Implemented Security Features:**
 - AES-256-GCM authenticated encryption
 - Ed25519 digital signatures for provenance with domain separation
 - **X25519 ECDH Session Key Exchange**: Automated key derivation during auth handshake with BLAKE3 domain-separated KDF
 - **Secret<T> Wrapper Type**: Zeroize-on-drop protection with redacted Debug for all sensitive fields (PINs, passphrases, JWT secrets, passwords)
-- PBKDF2 key derivation with keyring integration
+- **Encrypted Key Files at Rest**: TRUSTEDGE-KEY-V1 format — PBKDF2-HMAC-SHA256 (600k iterations) + AES-256-GCM (v2.2+)
+- **HKDF-SHA256 Envelope KDF**: Versioned envelope key derivation replacing legacy PBKDF2 usage (v1.8+)
+- **RSA OAEP-SHA256**: Hybrid asymmetric encryption replacing PKCS#1v1.5 padding (v2.2+)
 - Connection timeouts and retry logic
 - Graceful shutdown handling
 - Domain separation prevents cross-context signature reuse
@@ -60,6 +63,8 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 - **YubiKey Hardware Integration**: Hardware-backed signing and attestation via `yubikey` crate
 - **Digital Receipt System**: Cryptographic ownership chains with attack resistance
 - **Software Attestation**: Tamper-evident build provenance with Ed25519 signatures
+- **45+ Dedicated Security Tests**: Covering timestamp validation, error handling, permissions, and cryptographic correctness (v2.3–v2.4)
+- **Multi-Profile Archive Support**: cam.video, sensor, audio, and log archive profiles
 
 **📋 Planned Security Features:**
 - TPM and HSM key storage backends
@@ -189,12 +194,12 @@ We appreciate security researchers who help improve TrustEdge security:
 
 | Component | Last Audit | Status | Notes |
 | --------- | ---------- | ------ | ----- |
-| Cryptographic Implementation | TBD | ⏳ Pending | Awaiting external review |
-| Key Management | TBD | ⏳ Pending | Internal review needed |
-| Network Protocol | TBD | ⏳ Pending | Protocol design review |
-| File Format | TBD | ⏳ Pending | Format specification review |
+| Cryptographic Implementation | March 2026 | ✅ Reviewed | v2.4 Security Review Remediation completed |
+| Key Management | March 2026 | ✅ Reviewed | Encrypted key files, HKDF-SHA256 verified |
+| Network Protocol | March 2026 | ✅ Reviewed | Transport timeout security documented |
+| File Format | March 2026 | ✅ Reviewed | Base64, timestamp, permissions hardened |
 
-**Next Audit**: Planned for post-v1.0 release cycle
+**Previous Audit**: v2.4 Security Review Remediation completed March 2026 — 406 tests across 9 workspace crates, including 45+ dedicated security tests
 
 ## Compliance and Standards
 
@@ -213,9 +218,9 @@ TrustEdge aims to align with:
 
 ---
 
-**Document Version**: 3.0
-**Last Updated**: February 22, 2026
-**Next Review**: May 2026
+**Document Version**: 4.0
+**Last Updated**: March 2026
+**Next Review**: June 2026
 
 ---
 
