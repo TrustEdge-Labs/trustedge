@@ -545,8 +545,14 @@ mod tests {
         assert!(envelope.verify());
 
         // Test that we can access metadata
-        assert_eq!(envelope.beneficiary().expect("test"), beneficiary_key.verifying_key());
-        assert_eq!(envelope.issuer().expect("test"), signing_key.verifying_key());
+        assert_eq!(
+            envelope.beneficiary().expect("test"),
+            beneficiary_key.verifying_key()
+        );
+        assert_eq!(
+            envelope.issuer().expect("test"),
+            signing_key.verifying_key()
+        );
     }
 
     #[test]

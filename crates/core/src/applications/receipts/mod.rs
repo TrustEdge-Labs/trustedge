@@ -321,8 +321,12 @@ pub fn verify_receipt_chain(envelopes: &[Envelope]) -> bool {
         let current_envelope = &envelopes[i];
 
         // The issuer of the current envelope should be the beneficiary of the previous
-        let Ok(current_issuer) = current_envelope.issuer() else { return false; };
-        let Ok(prev_beneficiary) = prev_envelope.beneficiary() else { return false; };
+        let Ok(current_issuer) = current_envelope.issuer() else {
+            return false;
+        };
+        let Ok(prev_beneficiary) = prev_envelope.beneficiary() else {
+            return false;
+        };
         if current_issuer != prev_beneficiary {
             return false;
         }
@@ -375,7 +379,10 @@ mod tests {
 
         assert!(envelope.verify());
         assert_eq!(envelope.issuer().expect("test"), alice_key.verifying_key());
-        assert_eq!(envelope.beneficiary().expect("test"), bob_key.verifying_key());
+        assert_eq!(
+            envelope.beneficiary().expect("test"),
+            bob_key.verifying_key()
+        );
     }
 
     #[test]
@@ -403,7 +410,10 @@ mod tests {
         .expect("Failed to assign receipt");
 
         assert!(assignment_envelope.verify());
-        assert_eq!(assignment_envelope.issuer().expect("test"), bob_key.verifying_key());
+        assert_eq!(
+            assignment_envelope.issuer().expect("test"),
+            bob_key.verifying_key()
+        );
         assert_eq!(
             assignment_envelope.beneficiary().expect("test"),
             charlie_key.verifying_key()
@@ -828,7 +838,10 @@ mod tests {
 
         // Verify envelope metadata
         assert_eq!(envelope.issuer().expect("test"), alice_key.verifying_key());
-        assert_eq!(envelope.beneficiary().expect("test"), bob_key.verifying_key());
+        assert_eq!(
+            envelope.beneficiary().expect("test"),
+            bob_key.verifying_key()
+        );
         assert!(envelope.verify(), "Envelope should verify");
 
         // Verify hash consistency
@@ -990,7 +1003,10 @@ mod tests {
         );
 
         // But the issuer should be the attacker, not Alice
-        assert_eq!(malicious_envelope.issuer().expect("test"), attacker_key.verifying_key());
+        assert_eq!(
+            malicious_envelope.issuer().expect("test"),
+            attacker_key.verifying_key()
+        );
         assert_ne!(
             malicious_envelope.issuer().expect("test"),
             alice_key.verifying_key(),
