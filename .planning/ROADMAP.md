@@ -104,14 +104,17 @@ Plans:
   3. A test that corrupts specific JSON fields in an encrypted key file confirms each variant is rejected with a distinct, actionable error message.
   4. A test for archive unwrap with malformed profile metadata (e.g., missing required sensor fields) receives a parse error before any decryption is attempted.
   5. A test for the auth handshake with a clock-skewed future timestamp receives a rejection error matching the AUTH-01 enforcement from Phase 52.
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 53-01-PLAN.md — Key file error paths, sensor metadata validation, auth clock skew rejection
 
 ## Progress Table
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 52. Code Hardening | 2/2 | Complete    | 2026-03-22 |
-| 53. Error Path Tests | 0/? | Not started | - |
+| 53. Error Path Tests | 0/1 | Not started | - |
 
 ---
-*Last updated: 2026-03-22 after phase 52 planning*
+*Last updated: 2026-03-22 after phase 53 planning*
