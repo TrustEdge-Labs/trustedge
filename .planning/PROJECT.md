@@ -16,6 +16,17 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
+## Current Milestone: v2.4 Security Review Remediation
+
+**Goal:** Address all P1 (high) and P2 (medium) findings from the 2026-03-22 code & security review — replace unsafe patterns, harden error handling, close capability gaps, and remove dead dependencies.
+
+**Target features:**
+- Replace custom base64, fix timestamp replay vector, enforce key file permissions
+- Audit and eliminate unwrap()/expect() from security paths
+- Complete YubiKey capability alignment (key generation, attestation, x509-cert)
+- Add negative/error-path tests and enforce v2 envelope chunk limits
+- Remove unused dependencies
+
 ## Current State
 
 Shipped v2.3 Security Testing. All security claims now have concrete test evidence: 31 new security tests across 4 categories (archive integrity, nonce/key derivation, key file protection, receipt binding). Every threat model vector tested has automated verification. Combined with v2.2's cryptographic fixes, TrustEdge's security posture is fully validated through tests that actively attempt exploitation.
@@ -142,7 +153,18 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 
 ### Active
 
-(No active requirements — next milestone will define new requirements via `/gsd:new-milestone`)
+<!-- v2.4 Security Review Remediation — P1 + P2 findings -->
+- [ ] Replace custom base64 implementation with standard base64 crate
+- [ ] Audit and fix unwrap()/expect() in security-critical paths
+- [ ] Fix bidirectional timestamp check to unidirectional (prevent replay with clock skew)
+- [ ] Enforce Unix 0600 file permissions on generated key files
+- [ ] Fix YubiKey PIN verification timing side-channel
+- [ ] Document PBKDF2 iteration policy and add version field to encrypted key format
+- [ ] Complete YubiKey key generation and attestation (capability alignment)
+- [ ] Replace manual ASN.1 DER encoding with x509-cert crate
+- [ ] Add error path tests (wrong passphrase, malformed metadata, clock skew)
+- [ ] Enforce explicit chunk limits for v2 envelope deterministic nonces
+- [ ] Remove unused dependencies
 
 ### Deferred
 
@@ -290,5 +312,22 @@ CI uses `--workspace` for root workspace. YubiKey feature validated unconditiona
 | Library-level API tests for key file protection | Key format testing doesn't need CLI — DeviceKeypair API is the right boundary | ✓ Good — faster, more precise |
 | Two create_test_app() instances per receipt test | tower::oneshot consumes the router, need fresh instance per HTTP request | ✓ Good — matches existing pattern |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-03-21 after v2.3 milestone*
+*Last updated: 2026-03-22 after v2.4 milestone started*
