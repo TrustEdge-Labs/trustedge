@@ -11,21 +11,21 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
-## Current Status (v1.0)
+## Current Status (v2.4)
 
-TrustEdge v1.0 is a **consolidated, production-ready platform** with:
+TrustEdge v2.4 is a **security-hardened, fully tested platform** with:
 
-- ✅ **P0 cam.video Profile**: Locked .trst archive specification with Ed25519 signatures
-- ✅ **Real Cryptography**: AES-256-GCM encryption, BLAKE3 continuity chains, XChaCha20-Poly1305
-- ✅ **Digital Receipt System**: Cryptographically secure transferable receipts (consolidated into core)
-- ✅ **Software Attestation**: Tamper-evident build provenance (consolidated into core)
-- ✅ **YubiKey Hardware Integration**: PKCS#11 support with real hardware operations
-- ✅ **Universal Backend Architecture**: Pluggable crypto backends
-- ✅ **Live Audio Capture**: Cross-platform microphone input with encryption
-- ✅ **Network Transport**: TCP client-server with mutual authentication
+- ✅ **Data-Agnostic Archives**: .trst format with generic, cam.video, sensor, audio, and log profiles
+- ✅ **Full Data Lifecycle**: `trst keygen` → `trst wrap` → `trst verify` → `trst unwrap`
+- ✅ **Strong Cryptography**: AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, HKDF-SHA256, RSA OAEP-SHA256
+- ✅ **Encrypted Keys at Rest**: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM), 0600 permissions
+- ✅ **YubiKey Hardware Signing**: PIV ECDSA P-256 via `trst wrap --backend yubikey`
+- ✅ **Platform Service**: Axum HTTP verification server with PostgreSQL multi-tenant backend
+- ✅ **Docker Deployment**: One-command `docker compose up` with auto-migration
+- ✅ **SvelteKit Dashboard**: Device management and receipt viewing
 - ✅ **Browser Verification**: WASM-based .trst archive verification
-- ✅ **Comprehensive Testing**: 340+ tests across 10 crates
-- ✅ **Workspace Consolidation**: 21 unused deps removed, ~2,500 LOC duplication eliminated, zero API breaking changes
+- ✅ **Security Validated**: 45 security tests across archive integrity, key protection, nonce uniqueness, error paths
+- ✅ **406 Tests**: Across 9 workspace crates, 14 milestones shipped (v1.0-v2.4)
 
 ---
 

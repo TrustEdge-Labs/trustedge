@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-2.2-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v2.2)
+[![Version](https://img.shields.io/badge/version-2.4-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v2.4)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge
@@ -118,7 +118,7 @@ For cam.video-specific archives with frame rate and segment duration, see [examp
 
 ## How It Works
 
-**Security Posture (v2.2):** TrustEdge uses RSA OAEP-SHA256 for all asymmetric operations (replacing PKCS#1 v1.5). Envelopes are v2-only format with HKDF-SHA256 key derivation. Device private keys are encrypted at rest using TRUSTEDGE-KEY-V1 format (PBKDF2-HMAC-SHA256 + AES-256-GCM); a passphrase is prompted at runtime.
+**Security Posture (v2.4):** TrustEdge uses RSA OAEP-SHA256 for all asymmetric operations. Envelopes are v2-only format with HKDF-SHA256 key derivation. Device private keys are encrypted at rest using TRUSTEDGE-KEY-V1 format (PBKDF2-HMAC-SHA256 + AES-256-GCM, versioned metadata); a passphrase is prompted at runtime. Auth timestamps use asymmetric validation (5s future / 300s past tolerance). Generated key files are restricted to owner-only permissions (0600) on Unix. 45 security tests validate archive integrity, key protection, nonce uniqueness, and error rejection paths.
 
 1. **Sign** -- Device generates an Ed25519 keypair (or uses YubiKey ECDSA P-256) and signs data at the point of capture; private keys are encrypted at rest with TRUSTEDGE-KEY-V1 format (PBKDF2 + AES-GCM), passphrase prompted at runtime
 2. **Encrypt** -- Data is chunked and each chunk is AES-256-GCM encrypted using HKDF-derived keys (v2 envelope format)
