@@ -24,8 +24,8 @@ Requirements for Security Review Remediation. Each maps to roadmap phases.
 
 ### Error Path Testing
 
-- [ ] **TEST-01**: Negative tests for wrong passphrase, truncated key files, and corrupted key file JSON beyond existing SEC-08/09/10 coverage
-- [ ] **TEST-02**: Negative tests for malformed metadata in archives and clock skew rejection in auth handshake
+- [x] **TEST-01**: Negative tests for wrong passphrase, truncated key files, and corrupted key file JSON beyond existing SEC-08/09/10 coverage
+- [x] **TEST-02**: Negative tests for malformed metadata in archives and clock skew rejection in auth handshake
 
 ## Future Requirements
 
@@ -53,8 +53,8 @@ Requirements for Security Review Remediation. Each maps to roadmap phases.
 | AUTH-02 | Phase 52 | Complete |
 | KEYF-01 | Phase 52 | Complete |
 | KEYF-02 | Phase 52 | Complete |
-| TEST-01 | Phase 53 | Pending |
-| TEST-02 | Phase 53 | Pending |
+| TEST-01 | Phase 53 | Complete |
+| TEST-02 | Phase 53 | Complete |
 
 **Coverage:**
 - v2.4 requirements: 8 total

@@ -74,7 +74,7 @@ Fixed critical cryptographic flaws. RSA OAEP-SHA256 replaces PKCS#1 v1.5, v1 env
 ### v2.4 Security Review Remediation (Phases 52-53)
 
 - [x] **Phase 52: Code Hardening** - Replace unsafe patterns, fix timestamp replay, enforce key permissions, guard nonce overflow (completed 2026-03-22)
-- [ ] **Phase 53: Error Path Tests** - Negative tests for passphrase errors, malformed metadata, and clock skew rejection
+- [x] **Phase 53: Error Path Tests** - Negative tests for passphrase errors, malformed metadata, and clock skew rejection (completed 2026-03-22)
 
 ## Phase Details
 
@@ -104,17 +104,17 @@ Plans:
   3. A test that corrupts specific JSON fields in an encrypted key file confirms each variant is rejected with a distinct, actionable error message.
   4. A test for archive unwrap with malformed profile metadata (e.g., missing required sensor fields) receives a parse error before any decryption is attempted.
   5. A test for the auth handshake with a clock-skewed future timestamp receives a rejection error matching the AUTH-01 enforcement from Phase 52.
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 53-01-PLAN.md — Key file error paths, sensor metadata validation, auth clock skew rejection
+- [x] 53-01-PLAN.md — Key file error paths, sensor metadata validation, auth clock skew rejection
 
 ## Progress Table
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 52. Code Hardening | 2/2 | Complete    | 2026-03-22 |
-| 53. Error Path Tests | 0/1 | Not started | - |
+| 53. Error Path Tests | 1/1 | Complete   | 2026-03-22 |
 
 ---
 *Last updated: 2026-03-22 after phase 53 planning*
