@@ -8,6 +8,7 @@
 
 use aead::{Aead, KeyInit};
 use aes_gcm::{Aes256Gcm, Nonce as AesGcmNonce};
+use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use chacha20poly1305::XChaCha20Poly1305;
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use hkdf::Hkdf;
@@ -25,6 +26,10 @@ pub use crate::error::CryptoError;
 
 /// Magic header prefix identifying an encrypted TrustEdge key file.
 const ENCRYPTED_KEY_HEADER: &str = "TRUSTEDGE-KEY-V1";
+
+/// Minimum PBKDF2-HMAC-SHA256 iterations per OWASP 2023 guidelines.
+/// See: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+const PBKDF2_MIN_ITERATIONS: u32 = 600_000;
 
 /// Device keypair for Ed25519 signing operations
 ///
@@ -46,7 +51,7 @@ impl DeviceKeypair {
         let signing_key = SigningKey::generate(&mut OsRng);
         let verifying_key = signing_key.verifying_key();
 
-        let public = format!("ed25519:{}", base64_encode(verifying_key.as_bytes()));
+        let public = format!("ed25519:{}", BASE64.encode(verifying_key.as_bytes()));
         let secret = signing_key.to_bytes();
 
         Ok(Self { public, secret })
@@ -54,14 +59,15 @@ impl DeviceKeypair {
 
     /// Export the secret key as "ed25519:BASE64" format
     pub fn export_secret(&self) -> String {
-        format!("ed25519:{}", base64_encode(&self.secret))
+        format!("ed25519:{}", BASE64.encode(self.secret))
     }
 
     /// Import a keypair from secret key string (accepts "ed25519:BASE64" or hex)
     pub fn import_secret(secret_str: &str) -> Result<Self, CryptoError> {
         let secret_bytes = if let Some(b64_part) = secret_str.strip_prefix("ed25519:") {
             // Base64 format
-            base64_decode(b64_part)
+            BASE64
+                .decode(b64_part)
                 .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid base64: {}", e)))?
         } else if secret_str.len() == 64 {
             // Hex format
@@ -85,7 +91,7 @@ impl DeviceKeypair {
         // Compute public key from secret
         let signing_key = SigningKey::from_bytes(&secret);
         let verifying_key = signing_key.verifying_key();
-        let public = format!("ed25519:{}", base64_encode(verifying_key.as_bytes()));
+        let public = format!("ed25519:{}", BASE64.encode(verifying_key.as_bytes()));
 
         Ok(Self { public, secret })
     }
@@ -99,7 +105,8 @@ impl DeviceKeypair {
         }
 
         let b64_part = &public_str[8..];
-        let pub_bytes = base64_decode(b64_part)
+        let pub_bytes = BASE64
+            .decode(b64_part)
             .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid base64: {}", e)))?;
 
         if pub_bytes.len() != 32 {
@@ -143,7 +150,7 @@ impl DeviceKeypair {
         let mut nonce_bytes = [0u8; 12];
         OsRng.fill_bytes(&mut nonce_bytes);
 
-        let iterations: u32 = 600_000;
+        let iterations: u32 = PBKDF2_MIN_ITERATIONS;
 
         // Derive 32-byte encryption key via PBKDF2-SHA256
         let mut derived_key = [0u8; 32];
@@ -161,8 +168,9 @@ impl DeviceKeypair {
 
         // Build output: header\nJSON-metadata\nciphertext
         let metadata = serde_json::json!({
-            "salt": base64_encode(&salt),
-            "nonce": base64_encode(&nonce_bytes),
+            "version": 1,
+            "salt": BASE64.encode(salt),
+            "nonce": BASE64.encode(nonce_bytes),
             "iterations": iterations,
         });
         let mut output = Vec::new();
@@ -206,19 +214,21 @@ impl DeviceKeypair {
         let meta: serde_json::Value = serde_json::from_str(meta_str)
             .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid JSON metadata: {e}")))?;
 
-        let salt = base64_decode(
-            meta["salt"]
-                .as_str()
-                .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing salt".into()))?,
-        )
-        .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid salt base64: {e}")))?;
+        let salt = BASE64
+            .decode(
+                meta["salt"]
+                    .as_str()
+                    .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing salt".into()))?,
+            )
+            .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid salt base64: {e}")))?;
 
-        let nonce_bytes = base64_decode(
-            meta["nonce"]
-                .as_str()
-                .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing nonce".into()))?,
-        )
-        .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid nonce base64: {e}")))?;
+        let nonce_bytes = BASE64
+            .decode(
+                meta["nonce"]
+                    .as_str()
+                    .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing nonce".into()))?,
+            )
+            .map_err(|e| CryptoError::InvalidKeyFormat(format!("Invalid nonce base64: {e}")))?;
 
         let iterations = meta["iterations"]
             .as_u64()
@@ -257,7 +267,7 @@ impl DeviceKeypair {
 
         let signing_key = SigningKey::from_bytes(&secret);
         let verifying_key = signing_key.verifying_key();
-        let public = format!("ed25519:{}", base64_encode(verifying_key.as_bytes()));
+        let public = format!("ed25519:{}", BASE64.encode(verifying_key.as_bytes()));
 
         Ok(Self { public, secret })
     }
@@ -285,7 +295,7 @@ pub fn generate_nonce24() -> [u8; 24] {
 
 /// Format nonce for manifest storage
 pub fn format_nonce(nonce: &[u8; 24]) -> String {
-    format!("xchacha20:{}", base64_encode(nonce))
+    format!("xchacha20:{}", BASE64.encode(nonce))
 }
 
 /// Parse nonce from manifest format
@@ -297,7 +307,8 @@ pub fn parse_nonce(nonce_str: &str) -> Result<[u8; 24], CryptoError> {
     }
 
     let b64_part = &nonce_str[10..];
-    let nonce_bytes = base64_decode(b64_part)
+    let nonce_bytes = BASE64
+        .decode(b64_part)
         .map_err(|e| CryptoError::InvalidNonceFormat(format!("Invalid base64: {}", e)))?;
 
     if nonce_bytes.len() != 24 {
@@ -392,7 +403,7 @@ pub fn sign_manifest(
 
     Ok(format!(
         "ed25519:{}",
-        base64_encode(signature.to_bytes().as_ref())
+        BASE64.encode(signature.to_bytes().as_ref())
     ))
 }
 
@@ -413,7 +424,8 @@ pub fn verify_manifest(
         // Ed25519 path — requires matching "ed25519:" public key
         let verifying_key = DeviceKeypair::from_public(device_public)?;
 
-        let sig_bytes = base64_decode(b64_part)
+        let sig_bytes = BASE64
+            .decode(b64_part)
             .map_err(|e| CryptoError::InvalidSignatureFormat(format!("Invalid base64: {}", e)))?;
 
         if sig_bytes.len() != 64 {
@@ -455,7 +467,7 @@ fn verify_manifest_ecdsa_p256(
             "ECDSA P-256 public key must start with 'ecdsa-p256:'".to_string(),
         )
     })?;
-    let pub_bytes = base64_decode(pub_b64).map_err(|e| {
+    let pub_bytes = BASE64.decode(pub_b64).map_err(|e| {
         CryptoError::InvalidKeyFormat(format!("Invalid base64 in public key: {}", e))
     })?;
     let verifying_key = P256VerifyingKey::from_sec1_bytes(&pub_bytes)
@@ -467,7 +479,7 @@ fn verify_manifest_ecdsa_p256(
             "ECDSA P-256 signature must start with 'ecdsa-p256:'".to_string(),
         )
     })?;
-    let sig_bytes = base64_decode(sig_b64).map_err(|e| {
+    let sig_bytes = BASE64.decode(sig_b64).map_err(|e| {
         CryptoError::InvalidSignatureFormat(format!("Invalid base64 in signature: {}", e))
     })?;
     let signature = P256Signature::from_der(&sig_bytes).map_err(|e| {
@@ -479,68 +491,6 @@ fn verify_manifest_ecdsa_p256(
         Ok(()) => Ok(true),
         Err(_) => Ok(false),
     }
-}
-
-/// Simple base64 encoding
-fn base64_encode(bytes: &[u8]) -> String {
-    const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    let mut result = String::new();
-    let mut i = 0;
-
-    while i < bytes.len() {
-        let b1 = bytes[i];
-        let b2 = if i + 1 < bytes.len() { bytes[i + 1] } else { 0 };
-        let b3 = if i + 2 < bytes.len() { bytes[i + 2] } else { 0 };
-
-        let chunk = ((b1 as u32) << 16) | ((b2 as u32) << 8) | (b3 as u32);
-
-        result.push(CHARS[((chunk >> 18) & 63) as usize] as char);
-        result.push(CHARS[((chunk >> 12) & 63) as usize] as char);
-
-        if i + 1 < bytes.len() {
-            result.push(CHARS[((chunk >> 6) & 63) as usize] as char);
-        } else {
-            result.push('=');
-        }
-
-        if i + 2 < bytes.len() {
-            result.push(CHARS[(chunk & 63) as usize] as char);
-        } else {
-            result.push('=');
-        }
-
-        i += 3;
-    }
-
-    result
-}
-
-/// Simple base64 decoding
-fn base64_decode(s: &str) -> Result<Vec<u8>, String> {
-    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let mut result = Vec::new();
-    let mut buffer = 0u32;
-    let mut bits = 0;
-
-    for c in s.chars() {
-        if c == '=' {
-            break;
-        }
-
-        let value = chars
-            .find(c)
-            .ok_or_else(|| format!("Invalid character: {}", c))? as u32;
-        buffer = (buffer << 6) | value;
-        bits += 6;
-
-        if bits >= 8 {
-            result.push((buffer >> (bits - 8)) as u8);
-            bits -= 8;
-        }
-    }
-
-    Ok(result)
 }
 
 #[cfg(test)]
@@ -651,8 +601,8 @@ mod tests {
     #[test]
     fn test_base64_encoding_decoding() {
         let test_data = b"Hello, World! This is a test.";
-        let encoded = base64_encode(test_data);
-        let decoded = base64_decode(&encoded).unwrap();
+        let encoded = BASE64.encode(test_data);
+        let decoded = BASE64.decode(&encoded).unwrap();
         assert_eq!(test_data.to_vec(), decoded);
     }
 
@@ -714,11 +664,11 @@ mod tests {
         // Sign: returns a fixed-size ECDSA signature which we DER-encode
         let signature: p256::ecdsa::Signature = signing_key.sign(canonical_bytes);
         let sig_der = signature.to_der();
-        let sig_str = format!("ecdsa-p256:{}", base64_encode(sig_der.as_bytes()));
+        let sig_str = format!("ecdsa-p256:{}", BASE64.encode(sig_der.as_bytes()));
 
         // Format public key as SEC1 uncompressed bytes
         let pub_bytes = verifying_key.to_encoded_point(false);
-        let pub_str = format!("ecdsa-p256:{}", base64_encode(pub_bytes.as_bytes()));
+        let pub_str = format!("ecdsa-p256:{}", BASE64.encode(pub_bytes.as_bytes()));
 
         let result = verify_manifest(&pub_str, canonical_bytes, &sig_str).unwrap();
         assert!(result, "ECDSA P-256 signature should verify correctly");
@@ -736,10 +686,10 @@ mod tests {
 
         let signature: p256::ecdsa::Signature = signing_key.sign(canonical_bytes);
         let sig_der = signature.to_der();
-        let sig_str = format!("ecdsa-p256:{}", base64_encode(sig_der.as_bytes()));
+        let sig_str = format!("ecdsa-p256:{}", BASE64.encode(sig_der.as_bytes()));
 
         let pub_bytes = verifying_key.to_encoded_point(false);
-        let pub_str = format!("ecdsa-p256:{}", base64_encode(pub_bytes.as_bytes()));
+        let pub_str = format!("ecdsa-p256:{}", BASE64.encode(pub_bytes.as_bytes()));
 
         // Verify against wrong data should return Ok(false)
         let result = verify_manifest(&pub_str, wrong_data, &sig_str).unwrap();
