@@ -20,6 +20,9 @@ use zeroize::Zeroize;
 /// The chunk size to use when breaking up large payloads
 const DEFAULT_CHUNK_SIZE: usize = 64 * 1024; // 64KB chunks
 
+/// Maximum chunk index that fits in the 3-byte nonce field (2^24 - 1).
+const MAX_CHUNK_INDEX: u64 = 16_777_215;
+
 /// A high-level envelope that wraps and secures arbitrary payloads
 ///
 /// This is the "steering wheel" - a simple interface that hides the complexity
@@ -259,9 +262,9 @@ impl Envelope {
     }
 
     /// Get the beneficiary public key
-    pub fn beneficiary(&self) -> VerifyingKey {
+    pub fn beneficiary(&self) -> Result<VerifyingKey> {
         VerifyingKey::from_bytes(&self.beneficiary_key_bytes)
-            .expect("Invalid beneficiary key bytes")
+            .map_err(|e| anyhow::anyhow!("Invalid beneficiary key bytes: {e}"))
     }
 
     /// Get the envelope metadata
@@ -270,8 +273,9 @@ impl Envelope {
     }
 
     /// Get the issuer's verifying key
-    pub fn issuer(&self) -> VerifyingKey {
-        VerifyingKey::from_bytes(&self.verifying_key_bytes).expect("Invalid issuer key bytes")
+    pub fn issuer(&self) -> Result<VerifyingKey> {
+        VerifyingKey::from_bytes(&self.verifying_key_bytes)
+            .map_err(|e| anyhow::anyhow!("Invalid issuer key bytes: {e}"))
     }
 
     // Private helper methods for the complex crypto operations
@@ -294,6 +298,14 @@ impl Envelope {
         metadata: &EnvelopeMetadata,
     ) -> Result<NetworkChunk> {
         use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
+
+        // Guard: only 3 bytes of the u32 are used in the nonce (bytes 8..11),
+        // so chunk index must fit in 24 bits.
+        if sequence > MAX_CHUNK_INDEX {
+            return Err(anyhow::anyhow!(
+                "Chunk index exceeds maximum (16,777,215) — envelope too large for current nonce format"
+            ));
+        }
 
         // Construct deterministic 12-byte nonce:
         //   bytes 0..8  = nonce_prefix (8 bytes from HKDF output)
@@ -438,6 +450,14 @@ impl Envelope {
         let manifest: ChunkManifest = bincode::deserialize(&signed_manifest.manifest)
             .context("Failed to deserialize chunk manifest")?;
 
+        // Guard: only 3 bytes of the u32 are used in the nonce (bytes 8..11),
+        // so chunk index must fit in 24 bits.
+        if manifest.sequence > MAX_CHUNK_INDEX {
+            return Err(anyhow::anyhow!(
+                "Chunk index exceeds maximum (16,777,215) — envelope too large for current nonce format"
+            ));
+        }
+
         // Reconstruct the deterministic 12-byte nonce (must match create_encrypted_chunk)
         let mut nonce = [0u8; NONCE_LEN];
         nonce[0..8].copy_from_slice(nonce_prefix);
@@ -525,8 +545,8 @@ mod tests {
         assert!(envelope.verify());
 
         // Test that we can access metadata
-        assert_eq!(envelope.beneficiary(), beneficiary_key.verifying_key());
-        assert_eq!(envelope.issuer(), signing_key.verifying_key());
+        assert_eq!(envelope.beneficiary().expect("test"), beneficiary_key.verifying_key());
+        assert_eq!(envelope.issuer().expect("test"), signing_key.verifying_key());
     }
 
     #[test]
