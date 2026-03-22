@@ -47,20 +47,20 @@ Requirements for Security Review Remediation. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CRYP-01 | — | Pending |
-| CRYP-02 | — | Pending |
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| KEYF-01 | — | Pending |
-| KEYF-02 | — | Pending |
-| TEST-01 | — | Pending |
-| TEST-02 | — | Pending |
+| CRYP-01 | Phase 52 | Pending |
+| CRYP-02 | Phase 52 | Pending |
+| AUTH-01 | Phase 52 | Pending |
+| AUTH-02 | Phase 52 | Pending |
+| KEYF-01 | Phase 52 | Pending |
+| KEYF-02 | Phase 52 | Pending |
+| TEST-01 | Phase 53 | Pending |
+| TEST-02 | Phase 53 | Pending |
 
 **Coverage:**
 - v2.4 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8
+- Mapped to phases: 8
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-22*
-*Last updated: 2026-03-22 after initial definition*
+*Last updated: 2026-03-22 after roadmap created (all 8 requirements mapped)*

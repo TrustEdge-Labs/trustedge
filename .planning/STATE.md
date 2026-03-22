@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.4
 milestone_name: Security Review Remediation
-status: defining_requirements
+status: roadmap_created
 stopped_at: null
 last_updated: "2026-03-22T00:00:00.000Z"
-last_activity: 2026-03-22 — Milestone v2.4 started
+last_activity: 2026-03-22 — Roadmap created (2 phases, 8 requirements mapped)
 progress:
-  total_phases: 0
+  total_phases: 2
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -29,14 +29,18 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** v2.4 Security Review Remediation
+**Current focus:** v2.4 Security Review Remediation — Phase 52: Code Hardening
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 52 (Code Hardening) — not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-22 — Milestone v2.4 started
+Status: Roadmap created, awaiting plan-phase
+Last activity: 2026-03-22 — Roadmap created
+
+```
+v2.4 Progress: [....................] 0% (0/2 phases)
+```
 
 ## Performance Metrics
 
@@ -54,13 +58,15 @@ Last activity: 2026-03-22 — Milestone v2.4 started
 - v2.1: 3 phases, 6 plans
 - v2.2: 3 phases, 5 plans
 - v2.3: 4 phases, 4 plans
-- **Total: 51 phases, 88 plans**
+- v2.4: 2 phases (in progress)
+- **Total shipped: 51 phases, 88 plans**
 
 ## Accumulated Context
 
 ### Decisions
 
-Cleared — see PROJECT.md Key Decisions table for full history.
+- 2-phase structure chosen over 4-phase (one per category): 8 small requirements cluster cleanly into production fixes (Phase 52) then test coverage (Phase 53). Fewer phases, faster completion.
+- TEST-01 and TEST-02 placed in Phase 53 (after Phase 52) because the error paths they test are introduced or hardened in Phase 52.
 
 ### Pending Todos
 
@@ -73,8 +79,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Milestone v2.4 started — defining requirements
+Stopped at: Roadmap created — next step is `/gsd:plan-phase 52`
 Resume file: None
 
 ---
-*Last updated: 2026-03-22 after v2.4 milestone started*
+*Last updated: 2026-03-22 after v2.4 roadmap created*
