@@ -114,7 +114,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 52. Code Hardening | 2/2 | Complete    | 2026-03-22 |
-| 53. Error Path Tests | 1/1 | Complete   | 2026-03-22 |
+| 53. Error Path Tests | 1/1 | Complete    | 2026-03-22 |
 
 ---
 *Last updated: 2026-03-22 after phase 53 planning*
