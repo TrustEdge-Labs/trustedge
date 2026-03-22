@@ -437,10 +437,26 @@ impl SessionManager {
         challenge: &AuthChallenge,
         response: &ClientAuthResponse,
     ) -> Result<SessionInfo> {
-        // Verify timestamp (allow 5 minute window)
+        // Verify timestamp: reject future timestamps and stale timestamps separately
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
-        if response.timestamp.abs_diff(now) > 300 {
-            return Err(anyhow!("Authentication response timestamp out of range"));
+        // Reject future timestamps (allow only minimal clock drift)
+        const FUTURE_TOLERANCE_SECS: u64 = 5;
+        // Reject stale timestamps (replay window)
+        const PAST_TOLERANCE_SECS: u64 = 300;
+
+        if response.timestamp > now + FUTURE_TOLERANCE_SECS {
+            return Err(anyhow!(
+                "Authentication response timestamp too far in the future (response={}, now={})",
+                response.timestamp,
+                now
+            ));
+        }
+        if now.saturating_sub(response.timestamp) > PAST_TOLERANCE_SECS {
+            return Err(anyhow!(
+                "Authentication response timestamp too old (response={}, now={})",
+                response.timestamp,
+                now
+            ));
         }
 
         // Verify client signature of challenge
