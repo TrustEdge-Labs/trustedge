@@ -23,7 +23,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v2.1 Data Lifecycle & Hardware Integration** - Phases 42-44 (shipped 2026-03-18)
 - ✅ **v2.2 Security Remediation** - Phases 45-47 (shipped 2026-03-19)
 - ✅ **v2.3 Security Testing** - Phases 48-51 (shipped 2026-03-21)
-- **v2.4 Security Review Remediation** - Phases 52-53 (active)
+- ✅ **v2.4 Security Review Remediation** - Phases 52-53 (shipped 2026-03-22)
 
 ## Phases
 
@@ -71,50 +71,14 @@ Fixed critical cryptographic flaws. RSA OAEP-SHA256 replaces PKCS#1 v1.5, v1 env
 
 </details>
 
-### v2.4 Security Review Remediation (Phases 52-53)
+<details>
+<summary>v2.4 Security Review Remediation (Phases 52-53) - SHIPPED 2026-03-22</summary>
 
-- [x] **Phase 52: Code Hardening** - Replace unsafe patterns, fix timestamp replay, enforce key permissions, guard nonce overflow (completed 2026-03-22)
-- [x] **Phase 53: Error Path Tests** - Negative tests for passphrase errors, malformed metadata, and clock skew rejection (completed 2026-03-22)
+Addressed all P1/P2 findings from the code & security review. Custom base64 replaced, key format versioned, timestamp replay fixed, envelope panics eliminated, key file permissions enforced, nonce overflow guarded, 14 error path tests added. 2 phases, 3 plans, 8/8 requirements complete, 19 commits.
 
-## Phase Details
+**See:** `.planning/milestones/v2.4-ROADMAP.md` for full phase details.
 
-### Phase 52: Code Hardening
-**Goal**: All P1/P2 code-level findings from the security review are fixed — standard library used for base64, key file format versioned, timestamp check unidirectional, panic paths eliminated from security code, key files protected by OS permissions, and nonce overflow guarded.
-**Depends on**: Nothing (first phase of v2.4)
-**Requirements**: CRYP-01, CRYP-02, AUTH-01, AUTH-02, KEYF-01, KEYF-02
-**Success Criteria** (what must be TRUE):
-  1. Running `trst keygen` produces a key file readable only by the owner (mode 0600 on Unix); other-user read attempts fail with permission denied.
-  2. The encrypted key file JSON contains a version field and an iteration count field that a reader can inspect without decrypting.
-  3. Attempting to wrap an archive whose chunk count would exceed 2^32 returns an explicit error instead of silently wrapping a broken or panicking archive.
-  4. Auth handshake with a response timestamp in the future is rejected; a timestamp slightly in the past within the tolerance window is accepted.
-  5. `cargo clippy` and `cargo test --workspace` pass with no panics introduced by the changed code paths (no unwrap/expect in auth.rs or envelope.rs security paths).
-**Plans:** 2/2 plans complete
-
-Plans:
-- [x] 52-01-PLAN.md — Replace custom base64, version key file format, fix auth timestamp
-- [x] 52-02-PLAN.md — Eliminate envelope panics, guard nonce overflow, enforce key file permissions
-
-### Phase 53: Error Path Tests
-**Goal**: All negative/error paths introduced or exposed by Phase 52 are covered by automated tests that actively exercise the rejection behavior — wrong passphrase, truncated key files, corrupted key JSON, malformed archive metadata, and clock skew rejection.
-**Depends on**: Phase 52
-**Requirements**: TEST-01, TEST-02
-**Success Criteria** (what must be TRUE):
-  1. A test that feeds a wrong passphrase to key file decryption receives a typed error (not a panic or generic IO error) and the test passes.
-  2. A test that truncates a key file at multiple byte boundaries confirms the parser returns a descriptive error at every truncation point without panicking.
-  3. A test that corrupts specific JSON fields in an encrypted key file confirms each variant is rejected with a distinct, actionable error message.
-  4. A test for archive unwrap with malformed profile metadata (e.g., missing required sensor fields) receives a parse error before any decryption is attempted.
-  5. A test for the auth handshake with a clock-skewed future timestamp receives a rejection error matching the AUTH-01 enforcement from Phase 52.
-**Plans:** 1/1 plans complete
-
-Plans:
-- [x] 53-01-PLAN.md — Key file error paths, sensor metadata validation, auth clock skew rejection
-
-## Progress Table
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 52. Code Hardening | 2/2 | Complete    | 2026-03-22 |
-| 53. Error Path Tests | 1/1 | Complete    | 2026-03-22 |
+</details>
 
 ---
-*Last updated: 2026-03-22 after phase 53 planning*
+*Last updated: 2026-03-22 after v2.4 milestone*

@@ -16,20 +16,9 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## Current Milestone: v2.4 Security Review Remediation
-
-**Goal:** Address all P1 (high) and P2 (medium) findings from the 2026-03-22 code & security review — replace unsafe patterns, harden error handling, close capability gaps, and remove dead dependencies.
-
-**Target features:**
-- Replace custom base64, fix timestamp replay vector, enforce key file permissions
-- Audit and eliminate unwrap()/expect() from security paths
-- Complete YubiKey capability alignment (key generation, attestation, x509-cert)
-- Add negative/error-path tests and enforce v2 envelope chunk limits
-- Remove unused dependencies
-
 ## Current State
 
-v2.4 Security Review Remediation complete. All P1/P2 code-level findings from the 2026-03-22 security review fixed: custom base64 replaced, key file format versioned, timestamp check unidirectional, envelope panics eliminated, key files get 0600 permissions, nonce overflow guarded. 14 new error path tests covering key file corruption, sensor metadata validation, and auth clock skew. 406 tests pass across workspace.
+Shipped v2.4 Security Review Remediation. All P1/P2 findings from the code & security review addressed: custom base64 replaced with standard crate, encrypted key file format versioned, auth timestamp check made unidirectional, envelope panic paths eliminated, key files get 0600 Unix permissions, nonce overflow guarded. 14 new error path tests added. 406 tests pass across workspace (up from 392 pre-v2.4).
 
 The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack, and demo remain current from v2.0-v2.1. All cryptographic fixes from v2.2 (OAEP-SHA256, v1 removal, PBKDF2 minimums, encrypted keys) are validated by the v2.3 security test suite.
 
@@ -191,6 +180,7 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - **v2.1 Data Lifecycle & Hardware Integration** — trst unwrap, YubiKey CLI, named profiles (sensor, audio, log)
 - **v2.2 Security Remediation** — RSA OAEP, v1 envelope removed, PBKDF2 minimums, encrypted keys at rest
 - **v2.3 Security Testing** — 31 security tests across 4 threat model categories, archive integrity, nonce/key derivation, key file protection, receipt binding
+- **v2.4 Security Review Remediation** — Custom base64 replaced, key format versioned, timestamp replay fixed, envelope panics eliminated, key file permissions enforced, nonce overflow guarded, 14 error path tests
 
 ## Context
 
@@ -201,7 +191,11 @@ Full data lifecycle: `trst keygen` (passphrase-encrypted keys) → `trst wrap` (
 Device keys encrypted at rest: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM). `--unencrypted` escape for CI.
 RSA uses OAEP-SHA256 exclusively (PKCS#1 v1.5 eliminated). v1 envelope format removed entirely (v2-only).
 PBKDF2 minimum 300k iterations enforced at builder + backend levels.
-Security test suite: 31 tests across archive integrity (8), nonce/key derivation (6), key file protection (14), receipt binding (3).
+Security test suite: 45 tests — archive integrity (8), nonce/key derivation (6), key file protection (21), receipt binding (3), error paths (7: auth clock skew + sensor validation).
+Custom base64 eliminated from crypto.rs — standard `base64` crate used everywhere.
+Encrypted key file format includes `"version": 1` field for future iteration upgrades.
+Auth timestamp validation: asymmetric (5s future tolerance, 300s past tolerance).
+Envelope `beneficiary()`/`issuer()` return `Result<VerifyingKey>` — no panic paths in security code.
 `trst verify` dispatches on key prefix: `ed25519:` (Ed25519) or `ecdsa-p256:` (ECDSA P-256).
 `trst wrap --backend yubikey` signs manifest with ECDSA P-256 via PIV slot 9c, interactive PIN via rpassword.
 ProfileMetadata enum: CamVideo, Sensor, Audio, Log, Generic (untagged serde, unique-field discrimination).
@@ -327,4 +321,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-22 after v2.4 milestone completion*
+*Last updated: 2026-03-22 after v2.4 milestone*
