@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: Critical Security Fixes
-status: Ready to plan
-stopped_at: Phase 56 context gathered
-last_updated: "2026-03-23T20:41:11.169Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 56-wasm-fix 56-01-PLAN.md
+last_updated: "2026-03-23T21:22:25.696Z"
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
 ---
 
 <!--
@@ -26,12 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 55 — platform-http-hardening
+**Current focus:** Phase 56 — wasm-fix
 
 ## Current Position
 
-Phase: 56
-Plan: Not started
+Phase: 56 (wasm-fix) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -65,6 +65,8 @@ Cleared — see PROJECT.md Key Decisions table for full history.
 - [Phase 55-01]: governor with dashmap feature for keyed per-IP rate limiter; ConnectInfo falls back to 127.0.0.1 for test-safe middleware
 - [Phase 55-platform-http-hardening]: JWKS_KEY_PATH env var controls signing key location (temp dir default, not target/dev/)
 - [Phase 55-platform-http-hardening]: KeyManager stores key_path as struct field for use in all save/rotate methods without arg passing
+- [Phase 56-wasm-fix]: cfg(target_arch=wasm32) gates wasm-bindgen extern block; no-op console_log! fallback for native test compat
+- [Phase 56-wasm-fix]: Native test helpers (encrypt_native/decrypt_native with String errors) bypass JsValue non-unwinding panic on native targets
 
 ### Pending Todos
 
@@ -82,12 +84,13 @@ None.
 | Phase 54-transport-security P01 | 42m | 2 tasks | 2 files |
 | Phase 55-platform-http-hardening P01 | 10min | 2 tasks | 6 files |
 | Phase 55-platform-http-hardening P02 | 525694min | 2 tasks | 4 files |
+| Phase 56-wasm-fix P01 | 525541min | 2 tasks | 3 files |
 
 ## Session Continuity
 
-Last session: 2026-03-23T20:41:11.165Z
-Stopped at: Phase 56 context gathered
-Resume file: .planning/phases/56-wasm-fix/56-CONTEXT.md
+Last session: 2026-03-23T21:22:25.692Z
+Stopped at: Completed 56-wasm-fix 56-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-22 after v2.5 roadmap created*

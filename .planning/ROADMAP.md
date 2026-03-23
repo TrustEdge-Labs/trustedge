@@ -85,7 +85,7 @@ Addressed all P1/P2 findings from the code & security review. Custom base64 repl
 
 - [x] **Phase 54: Transport Security** - Fix QUIC TLS certificate verification no-op (MITM vulnerability) (completed 2026-03-23)
 - [x] **Phase 55: Platform HTTP Hardening** - Body size limit, rate limiting, and configurable JWKS signing key (completed 2026-03-23)
-- [ ] **Phase 56: WASM Fix** - Fix double-decrypt bug in trst-wasm browser verification
+- [x] **Phase 56: WASM Fix** - Fix double-decrypt bug in trst-wasm browser verification (completed 2026-03-23)
 
 ## Phase Details
 
@@ -125,9 +125,9 @@ Plans:
   1. The trst-wasm `decrypt` path calls `.decrypt()` exactly once per ciphertext chunk
   2. An end-to-end WASM test wraps an archive, passes it through the browser WASM bindings, and verifies the recovered data matches the original input
   3. The previously failing browser verification path now returns the correct plaintext without corruption
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 56-01-PLAN.md — Fix double-decrypt bug, add aes-gcm/rand deps, wire crypto module, round-trip tests
+- [x] 56-01-PLAN.md — Fix double-decrypt bug, add aes-gcm/rand deps, wire crypto module, round-trip tests
 **UI hint**: no
 
 ## Progress
@@ -136,7 +136,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 54. Transport Security | 1/1 | Complete    | 2026-03-23 |
 | 55. Platform HTTP Hardening | 2/2 | Complete    | 2026-03-23 |
-| 56. WASM Fix | 0/1 | Not started | - |
+| 56. WASM Fix | 1/1 | Complete   | 2026-03-23 |
 
 ---
 *Last updated: 2026-03-23 after Phase 56 planning complete*
