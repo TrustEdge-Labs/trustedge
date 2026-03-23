@@ -61,13 +61,14 @@ tower = { workspace = true, optional = true }
 tower-http = { workspace = true, optional = true }
 tokio = { workspace = true, optional = true }
 utoipa-swagger-ui = { version = "6.0", features = ["axum"], optional = true }
+governor = { version = "0.10", features = ["dashmap"], optional = true }
 
 [features]
 default = []
 postgres = ["dep:sqlx", "dep:bcrypt", "dep:sha2", "dep:dotenvy"]
 ca = ["dep:x509-parser", "dep:der", "dep:spki", "dep:pkcs8", "dep:x509-cert", "dep:const-oid", "dep:hex"]
 yubikey = ["ca", "trustedge-core/yubikey"]
-http = ["dep:axum", "dep:tower", "dep:tower-http", "dep:tokio", "dep:utoipa-swagger-ui", "dep:sha2", "dep:dotenvy"]
+http = ["dep:axum", "dep:tower", "dep:tower-http", "dep:tokio", "dep:utoipa-swagger-ui", "dep:sha2", "dep:dotenvy", "dep:governor"]
 test-utils = []
 openapi = ["dep:utoipa"]
 

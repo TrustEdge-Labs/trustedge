@@ -19,30 +19,54 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use tower_http::{cors::CorsLayer, trace::TraceLayer};
+use tower_http::{cors::CorsLayer, limit::RequestBodyLimitLayer, trace::TraceLayer};
 
 use super::{
     handlers::{health_handler, jwks_handler, verify_handler},
+    rate_limit::{rate_limit_middleware, RateLimitState},
     state::AppState,
 };
 
 /// Build the base router with routes shared across all feature configurations.
 ///
+/// The `/v1/verify` route is NOT included here — it is added in `create_router`
+/// with rate limiting applied. All other routes (healthz, jwks) are public and
+/// unthrottled.
+///
 /// Both `create_router` and `create_test_app` ultimately call this function,
 /// ensuring a single source of truth for the route set (TST-02 parity).
 pub fn build_base_router() -> Router<AppState> {
     Router::new()
-        .route("/v1/verify", post(verify_handler))
         .route("/.well-known/jwks.json", get(jwks_handler))
         .route("/healthz", get(health_handler))
 }
 
 /// Compose the full Axum router for the TrustEdge Platform service.
 ///
+/// Applies:
+/// - `RequestBodyLimitLayer` (2 MB) on all routes to prevent body-flood DoS.
+/// - Per-IP rate limiting on `/v1/verify` only (configurable via `RATE_LIMIT_RPS`,
+///   default 10 req/sec) to protect the CPU-intensive verify endpoint.
+///
 /// When the `postgres` feature is enabled, the router includes device and
 /// receipt endpoints protected by the Bearer token auth middleware.
 pub fn create_router(state: AppState) -> Router {
-    let base = build_base_router();
+    // Read rate limit RPS from environment, default to 10.
+    let rps = std::env::var("RATE_LIMIT_RPS")
+        .ok()
+        .and_then(|s| s.parse::<u32>().ok())
+        .unwrap_or(10);
+    let rl_state = RateLimitState::new(rps);
+
+    // Rate-limited verify sub-router — only /v1/verify is throttled.
+    let verify_router = Router::new()
+        .route("/v1/verify", post(verify_handler))
+        .route_layer(axum::middleware::from_fn_with_state(
+            rl_state,
+            rate_limit_middleware,
+        ));
+
+    let base = build_base_router().merge(verify_router);
 
     #[cfg(feature = "postgres")]
     let base = {
@@ -75,6 +99,7 @@ pub fn create_router(state: AppState) -> Router {
         // Merge: base routes (healthz, verify, jwks) are public, protected routes need auth
         base.merge(protected)
             .with_state(state)
+            .layer(RequestBodyLimitLayer::new(2 * 1024 * 1024))
             .layer(cors)
             .layer(TraceLayer::new_for_http())
     };
@@ -82,6 +107,7 @@ pub fn create_router(state: AppState) -> Router {
     #[cfg(not(feature = "postgres"))]
     let base = base
         .with_state(state)
+        .layer(RequestBodyLimitLayer::new(2 * 1024 * 1024))
         // Same-origin only — no cross-origin requests allowed for verify-only builds
         .layer(CorsLayer::new())
         .layer(TraceLayer::new_for_http());
