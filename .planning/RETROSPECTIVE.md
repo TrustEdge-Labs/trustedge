@@ -45,6 +45,45 @@
 
 ---
 
+## Milestone: v2.5 — Critical Security Fixes
+
+**Shipped:** 2026-03-23
+**Phases:** 3 | **Plans:** 4 | **Sessions:** ~2
+
+### What Was Built
+- QUIC TLS MITM vulnerability closed — HardwareBackedVerifier delegates to rustls crypto provider
+- 2 MB global body limit + per-IP rate limiting (governor) on /v1/verify
+- JWKS signing key path configurable via JWKS_KEY_PATH env var, 0600 permissions, no more target/dev/
+- trst-wasm double-decrypt bug fixed, crypto module wired into build with round-trip tests
+
+### What Worked
+- Clear P0/P1 triage split — v2.5 shipped fast (2 days) because scope was tight (5 fixes, nothing discretionary)
+- Researcher agent discovered tower_governor version conflict before planning, saving execution-time debugging
+- Parallel execution of 55-01 and 55-02 (non-overlapping file changes) worked cleanly with worktree isolation
+- Planner for Phase 56 caught that crypto.rs was never wired as a module — the "one-line fix" was actually a 3-part fix (deps, module wiring, bug)
+
+### What Was Inefficient
+- Phase 54 research took 9 minutes to discover what was essentially a "call verify() instead of discarding it" fix — research was user-requested but arguably unnecessary for this phase
+- Phase 55 plan checker flagged VALIDATION.md as a blocker (Nyquist compliance) even though research_enabled=false in config — false positive that required manual override
+
+### Patterns Established
+- Security review findings map cleanly to GSD milestones — P0 as one milestone, P1 as another
+- `insecure-tls` feature flag is the standard gate for dev-mode security bypasses
+- `governor` crate (not `tower_governor`) for rate limiting with axum — tower version conflict documented
+- JWKS_KEY_PATH follows the existing env-var pattern (PORT, DATABASE_URL, JWT_AUDIENCE)
+
+### Key Lessons
+1. Security bug fixes benefit from minimal discuss-phase — the findings ARE the requirements, gray areas are few
+2. Researcher agent adds value even for "obvious" fixes when new dependencies are involved (governor version conflict)
+3. Planner agents can discover deeper bugs than the security review — Phase 56's "double decrypt" was actually a dead code + missing module + duplicate call triple issue
+
+### Cost Observations
+- Model mix: ~60% sonnet (executor, researcher, checker), ~40% opus (planner, orchestration)
+- Sessions: ~2
+- Notable: All 3 phases executed in a single session — tight scope and independent phases enabled fast throughput
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -55,6 +94,8 @@
 | v2.1 | 3 | 6 | Data lifecycle completion (unwrap, YubiKey CLI, profiles) |
 | v2.2 | 3 | 5 | Cryptographic remediation (RSA OAEP, PBKDF2, encrypted keys) |
 | v2.3 | 4 | 4 | Security test suite (31 tests, 4 threat categories) |
+| v2.4 | 2 | 3 | Security review remediation (base64, timestamps, permissions) |
+| v2.5 | 3 | 4 | Critical security fixes (TLS MITM, HTTP hardening, WASM) |
 
 ### Cumulative Quality
 
