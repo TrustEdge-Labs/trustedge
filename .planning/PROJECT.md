@@ -154,6 +154,7 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ Per-IP rate limiting on /v1/verify via governor (configurable RATE_LIMIT_RPS, default 10/sec) — v2.5 Phase 55
 - ✓ JWKS signing key path configurable via JWKS_KEY_PATH env var, defaults to temp dir (not target/dev/) — v2.5 Phase 55
 - ✓ Signing key file gets 0600 Unix permissions, zero target/dev/ references remain — v2.5 Phase 55
+- ✓ trst-wasm double .decrypt() bug fixed, crypto module wired into build, encrypt/decrypt round-trip tests — v2.5 Phase 56
 
 ## Current Milestone: v2.5 Critical Security Fixes
 
@@ -339,4 +340,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 after Phase 55 Platform HTTP Hardening complete*
+*Last updated: 2026-03-23 after Phase 56 WASM Fix complete — v2.5 milestone complete*
