@@ -21,8 +21,8 @@ Requirements for critical security fixes. Each maps to roadmap phases.
 
 ### WASM
 
-- [ ] **WASM-01**: `trst-wasm` decrypt logic calls `.decrypt()` exactly once per ciphertext (double-decrypt bug fixed)
-- [ ] **WASM-02**: Browser-based archive verification completes successfully (test proves end-to-end WASM verify works)
+- [x] **WASM-01**: `trst-wasm` decrypt logic calls `.decrypt()` exactly once per ciphertext (double-decrypt bug fixed)
+- [x] **WASM-02**: Browser-based archive verification completes successfully (test proves end-to-end WASM verify works)
 
 ## Future Requirements (v2.6)
 
@@ -65,8 +65,8 @@ Deferred P1 findings — tracked but not in current roadmap.
 | HTTP-02 | Phase 55 | Complete |
 | HTTP-03 | Phase 55 | Complete |
 | HTTP-04 | Phase 55 | Complete |
-| WASM-01 | Phase 56 | Pending |
-| WASM-02 | Phase 56 | Pending |
+| WASM-01 | Phase 56 | Complete |
+| WASM-02 | Phase 56 | Complete |
 
 **Coverage:**
 - v2.5 requirements: 8 total
