@@ -156,20 +156,9 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ Signing key file gets 0600 Unix permissions, zero target/dev/ references remain — v2.5 Phase 55
 - ✓ trst-wasm double .decrypt() bug fixed, crypto module wired into build, encrypt/decrypt round-trip tests — v2.5 Phase 56
 
-## Current Milestone: v2.5 Critical Security Fixes
-
-**Goal:** Fix 5 actively broken or exploitable vulnerabilities that block production deployment.
-
-**Target features:**
-- Fix TLS signature verification no-op in QUIC HardwareBackedVerifier (MITM vulnerability)
-- Add request body size limit on /v1/verify (OOM/DoS prevention)
-- Make JWKS signing key path configurable, stop persisting plaintext to target/dev/
-- Add rate limiting on HTTP endpoints (CPU-intensive verify abuse prevention)
-- Fix double .decrypt() call in trst-wasm (browser verification broken)
-
 ### Active
 
-(Requirements will be defined via milestone requirements phase)
+(No active requirements — v2.5 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -200,17 +189,25 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - **v2.2 Security Remediation** — RSA OAEP, v1 envelope removed, PBKDF2 minimums, encrypted keys at rest
 - **v2.3 Security Testing** — 31 security tests across 4 threat model categories, archive integrity, nonce/key derivation, key file protection, receipt binding
 - **v2.4 Security Review Remediation** — Custom base64 replaced, key format versioned, timestamp replay fixed, envelope panics eliminated, key file permissions enforced, nonce overflow guarded, 14 error path tests
+- **v2.5 Critical Security Fixes** — QUIC TLS MITM vulnerability closed, 2 MB body limit + per-IP rate limiting on platform, JWKS key path configurable (no more target/dev/), WASM double-decrypt bug fixed
+
+## Current State
+
+Shipped v2.5 Critical Security Fixes. All 5 P0 findings from the second security review addressed: QUIC TLS MITM vulnerability closed (real signature verification via rustls provider), HTTP endpoints hardened (2 MB body limit, per-IP rate limiting via governor), JWKS signing key no longer persisted as plaintext to target/dev/ (configurable via JWKS_KEY_PATH env var, 0600 permissions), WASM double-decrypt bug fixed and crypto module wired into build.
 
 ## Context
 
-Shipped v2.3 with 9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
-Tech stack: Rust (61,006 LOC), AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, RSA-OAEP-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit 5 (TypeScript), Docker.
+9 crates in root workspace + 2 experimental crates in crates/experimental/ + SvelteKit dashboard at web/dashboard/.
+Tech stack: Rust, AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, XChaCha20-Poly1305, HKDF-SHA256, RSA-OAEP-SHA256, WASM, YubiKey PIV (ECDSA P-256, RSA-2048), Axum, PostgreSQL (sqlx), SvelteKit 5 (TypeScript), Docker.
 TrustEdge-Labs GitHub org has exactly 3 repos: trustedge (main workspace), trustedgelabs-website, shipsecure.
 Full data lifecycle: `trst keygen` (passphrase-encrypted keys) → `trst wrap` (encrypt + sign) → `trst verify` (validate) → `trst unwrap` (verify + decrypt).
 Device keys encrypted at rest: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM). `--unencrypted` escape for CI.
 RSA uses OAEP-SHA256 exclusively (PKCS#1 v1.5 eliminated). v1 envelope format removed entirely (v2-only).
 PBKDF2 minimum 300k iterations enforced at builder + backend levels.
-Security test suite: 45 tests — archive integrity (8), nonce/key derivation (6), key file protection (21), receipt binding (3), error paths (7: auth clock skew + sensor validation).
+Platform HTTP: 2 MB global body limit, per-IP rate limiting on /v1/verify (governor, configurable RATE_LIMIT_RPS, default 10/sec).
+JWKS signing key path configurable via JWKS_KEY_PATH env var; defaults to temp dir; 0600 Unix permissions.
+QUIC HardwareBackedVerifier performs real TLS signature verification; accept_any_hardware() gated behind insecure-tls.
+trst-wasm crypto module wired and functional; decrypt calls .decrypt() exactly once.
 Custom base64 eliminated from crypto.rs — standard `base64` crate used everywhere.
 Encrypted key file format includes `"version": 1` field for future iteration upgrades.
 Auth timestamp validation: asymmetric (5s future tolerance, 300s past tolerance).
@@ -340,4 +337,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 after Phase 56 WASM Fix complete — v2.5 milestone complete*
+*Last updated: 2026-03-23 after v2.5 milestone*

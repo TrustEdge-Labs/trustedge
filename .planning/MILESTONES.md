@@ -1,5 +1,18 @@
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 
+## v2.5 Critical Security Fixes (Shipped: 2026-03-23)
+
+**Phases completed:** 3 phases, 4 plans, 8 tasks
+
+**Key accomplishments:**
+
+- One-liner:
+- 2 MB RequestBodyLimitLayer on all routes + governor-based per-IP rate limiter on /v1/verify only, with 4 integration tests proving 413, 429, and healthz-unthrottled behaviors
+- KeyManager signing key moved from hardcoded target/dev/ to JWKS_KEY_PATH env var (temp dir default), with 0600 Unix permissions and 4 tests proving path configuration, permissions, and co-location.
+- Fixed P0 double-decrypt bug in trst-wasm AES-256-GCM, wired crypto module into build, proved correctness with round-trip and wrong-key-rejection tests
+
+---
+
 ## v2.4 Security Review Remediation (Shipped: 2026-03-22)
 
 **Phases completed:** 2 phases (52-53), 3 plans, 6 tasks
@@ -9,6 +22,7 @@
 **Delivered:** Addressed all P1 (high) and P2 (medium) findings from the 2026-03-22 code & security review — replaced unsafe patterns, hardened error handling, and added comprehensive negative tests for all new rejection behaviors.
 
 **Key accomplishments:**
+
 - Replaced custom 60-line base64 implementation with standard `base64` crate across 23 call sites in crypto.rs
 - Versioned encrypted key file format (`"version": 1` in JSON metadata) with documented PBKDF2 iteration constant (OWASP 2023)
 - Fixed auth timestamp check from bidirectional `abs_diff()` to asymmetric (5s future / 300s past tolerance) — closes replay-with-clock-skew vector
@@ -18,11 +32,13 @@
 - 14 new error path tests: key file truncation/corruption (7), auth clock skew rejection (3), sensor profile validation (4)
 
 **Tech debt carried forward:**
+
 - Hardware tests require physical YubiKey 5 series (carried from v1.1)
 
 **Git range:** v2.3..v2.4
 
 **Archives:**
+
 - `.planning/milestones/v2.4-ROADMAP.md`
 - `.planning/milestones/v2.4-REQUIREMENTS.md`
 

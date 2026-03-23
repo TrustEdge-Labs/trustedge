@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: Critical Security Fixes
-status: Milestone complete
+status: v2.5 milestone complete
 stopped_at: Completed 56-wasm-fix 56-01-PLAN.md
-last_updated: "2026-03-23T21:34:43.592Z"
+last_updated: "2026-03-23T23:03:19.064Z"
 progress:
   total_phases: 3
   completed_phases: 3
