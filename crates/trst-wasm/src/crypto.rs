@@ -15,14 +15,21 @@ use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
 }
 
+#[cfg(target_arch = "wasm32")]
 macro_rules! console_log {
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+macro_rules! console_log {
+    ($($t:tt)*) => {};
 }
 
 // Encrypted data structure that can be serialized to/from JSON
@@ -106,7 +113,9 @@ pub fn encrypt(
     }
 
     // Convert slice to array, then to Key (avoids deprecated GenericArray::from_slice)
-    let key_array: [u8; 32] = key_bytes.as_slice().try_into()
+    let key_array: [u8; 32] = key_bytes
+        .as_slice()
+        .try_into()
         .map_err(|_| JsValue::from_str("Key conversion failed"))?;
     let key: Key<Aes256Gcm> = key_array.into();
     let cipher = Aes256Gcm::new(&key);
@@ -122,7 +131,9 @@ pub fn encrypt(
         }
 
         // Convert slice to array, then to Nonce (avoids deprecated GenericArray::from_slice)
-        let nonce_array: [u8; 12] = nonce_bytes.as_slice().try_into()
+        let nonce_array: [u8; 12] = nonce_bytes
+            .as_slice()
+            .try_into()
             .map_err(|_| JsValue::from_str("Nonce conversion failed"))?;
         nonce_array.into()
     } else {
@@ -159,7 +170,9 @@ pub fn decrypt(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, 
     }
 
     // Convert slice to array, then to Key (avoids deprecated GenericArray::from_slice)
-    let key_array: [u8; 32] = key_bytes.as_slice().try_into()
+    let key_array: [u8; 32] = key_bytes
+        .as_slice()
+        .try_into()
         .map_err(|_| JsValue::from_str("Key conversion failed"))?;
     let key: Key<Aes256Gcm> = key_array.into();
     let cipher = Aes256Gcm::new(&key);
@@ -178,13 +191,14 @@ pub fn decrypt(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, 
     }
 
     // Convert slice to array reference (avoids deprecated GenericArray::from_slice)
-    let nonce_array: &[u8; 12] = nonce_bytes.as_slice().try_into()
+    let nonce_array: &[u8; 12] = nonce_bytes
+        .as_slice()
+        .try_into()
         .map_err(|_| JsValue::from_str("Nonce conversion failed"))?;
 
     // Decrypt the data
     let plaintext = cipher
         .decrypt(nonce_array.into(), ciphertext_bytes.as_slice())
-        .decrypt(nonce, ciphertext_bytes.as_slice())
         .map_err(|e| JsValue::from_str(&format!("Decryption failed: {}", e)))?;
 
     let result = String::from_utf8(plaintext)
@@ -223,5 +237,89 @@ pub fn validate_nonce(nonce_b64: &str) -> bool {
     match general_purpose::STANDARD.decode(nonce_b64) {
         Ok(bytes) => bytes.len() == 12,
         Err(_) => false,
+    }
+}
+
+/// Native-only inner encrypt/decrypt used by tests (no JsValue, no wasm-bindgen calls).
+#[cfg(test)]
+fn encrypt_native(data: &str, key_b64: &str) -> Result<EncryptedData, String> {
+    let key_bytes = general_purpose::STANDARD
+        .decode(key_b64)
+        .map_err(|e| format!("Invalid key format: {}", e))?;
+    if key_bytes.len() != 32 {
+        return Err("Key must be 32 bytes (256 bits)".to_string());
+    }
+    let key_array: [u8; 32] = key_bytes
+        .as_slice()
+        .try_into()
+        .map_err(|_| "Key conversion failed".to_string())?;
+    let key: Key<Aes256Gcm> = key_array.into();
+    let cipher = Aes256Gcm::new(&key);
+    let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
+    let ciphertext = cipher
+        .encrypt(&nonce, data.as_bytes())
+        .map_err(|e| format!("Encryption failed: {}", e))?;
+    Ok(EncryptedData {
+        ciphertext: general_purpose::STANDARD.encode(&ciphertext),
+        nonce: general_purpose::STANDARD.encode(&nonce[..]),
+        key_id: None,
+    })
+}
+
+/// Native-only inner decrypt used by tests (no JsValue, no wasm-bindgen calls).
+#[cfg(test)]
+fn decrypt_native(encrypted_data: &EncryptedData, key_b64: &str) -> Result<String, String> {
+    let key_bytes = general_purpose::STANDARD
+        .decode(key_b64)
+        .map_err(|e| format!("Invalid key format: {}", e))?;
+    if key_bytes.len() != 32 {
+        return Err("Key must be 32 bytes (256 bits)".to_string());
+    }
+    let key_array: [u8; 32] = key_bytes
+        .as_slice()
+        .try_into()
+        .map_err(|_| "Key conversion failed".to_string())?;
+    let key: Key<Aes256Gcm> = key_array.into();
+    let cipher = Aes256Gcm::new(&key);
+    let nonce_bytes = general_purpose::STANDARD
+        .decode(&encrypted_data.nonce)
+        .map_err(|e| format!("Invalid nonce format: {}", e))?;
+    let ciphertext_bytes = general_purpose::STANDARD
+        .decode(&encrypted_data.ciphertext)
+        .map_err(|e| format!("Invalid ciphertext format: {}", e))?;
+    if nonce_bytes.len() != 12 {
+        return Err("Nonce must be 12 bytes (96 bits)".to_string());
+    }
+    let nonce_array: &[u8; 12] = nonce_bytes
+        .as_slice()
+        .try_into()
+        .map_err(|_| "Nonce conversion failed".to_string())?;
+    let plaintext = cipher
+        .decrypt(nonce_array.into(), ciphertext_bytes.as_slice())
+        .map_err(|e| format!("Decryption failed: {}", e))?;
+    String::from_utf8(plaintext).map_err(|e| format!("Invalid UTF-8 in decrypted data: {}", e))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decrypt_roundtrip() {
+        let key_b64 = generate_key();
+        let plaintext = "hello, trustedge wasm crypto";
+        let encrypted = encrypt_native(plaintext, &key_b64).expect("encrypt failed");
+        let recovered = decrypt_native(&encrypted, &key_b64).expect("decrypt failed");
+        assert_eq!(recovered, plaintext);
+    }
+
+    #[test]
+    fn test_decrypt_wrong_key_fails() {
+        let key_b64 = generate_key();
+        let other_key_b64 = generate_key();
+        let plaintext = "sensitive data";
+        let encrypted = encrypt_native(plaintext, &key_b64).expect("encrypt failed");
+        let result = decrypt_native(&encrypted, &other_key_b64);
+        assert!(result.is_err(), "decrypt with wrong key should fail");
     }
 }
