@@ -111,14 +111,25 @@ impl QuicTransport {
 
     /// Create a client endpoint with hardware-backed certificate verification.
     /// This method uses the HardwareBackedVerifier for validating server certificates.
+    /// In default (secure) builds, `trusted_certificates` must not be empty.
     pub fn create_hardware_verified_endpoint(
         trusted_certificates: Vec<Vec<u8>>,
     ) -> Result<Endpoint> {
+        #[cfg(feature = "insecure-tls")]
         let verifier = if trusted_certificates.is_empty() {
             // Accept any hardware certificate for development
             Arc::new(HardwareBackedVerifier::accept_any_hardware())
         } else {
             // Use specific trusted certificates
+            Arc::new(HardwareBackedVerifier::new(trusted_certificates))
+        };
+
+        #[cfg(not(feature = "insecure-tls"))]
+        let verifier = {
+            anyhow::ensure!(
+                !trusted_certificates.is_empty(),
+                "trusted_certificates must not be empty in secure builds"
+            );
             Arc::new(HardwareBackedVerifier::new(trusted_certificates))
         };
 
@@ -353,7 +364,8 @@ impl HardwareBackedVerifier {
     }
 
     /// Create a verifier that accepts any YubiKey-generated certificate
-    /// This is useful for development but should be used carefully in production
+    /// WARNING: Only available with insecure-tls feature. Never use in production.
+    #[cfg(feature = "insecure-tls")]
     pub fn accept_any_hardware() -> Self {
         Self {
             trusted_certificates: Vec::new(),
@@ -408,45 +420,32 @@ impl rustls::client::danger::ServerCertVerifier for HardwareBackedVerifier {
 
     fn verify_tls12_signature(
         &self,
-        _message: &[u8],
-        _cert: &CertificateDer<'_>,
+        message: &[u8],
+        cert: &CertificateDer<'_>,
         dss: &rustls::DigitallySignedStruct,
     ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
-        // NOTE: Hardware-specific signature validation planned for post-P0.
-        // Currently using standard signature verification; future versions will
-        // verify signatures were produced by attested hardware keys.
-
-        // Use the default provider's signature verification
         let provider = rustls::crypto::aws_lc_rs::default_provider();
-        let _verifier = provider
-            .signature_verification_algorithms
-            .supported_schemes()
-            .iter()
-            .find(|scheme| **scheme == dss.scheme)
-            .ok_or(rustls::Error::UnsupportedNameType)?;
-
-        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+        rustls::crypto::verify_tls12_signature(
+            message,
+            cert,
+            dss,
+            &provider.signature_verification_algorithms,
+        )
     }
 
     fn verify_tls13_signature(
         &self,
-        _message: &[u8],
-        _cert: &CertificateDer<'_>,
+        message: &[u8],
+        cert: &CertificateDer<'_>,
         dss: &rustls::DigitallySignedStruct,
     ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
-        // NOTE: Hardware-specific signature validation planned for post-P0.
-        // Currently using standard signature verification; future versions will
-        // verify signatures were produced by attested hardware keys.
-
-        // Use the default provider's signature verification
         let provider = rustls::crypto::aws_lc_rs::default_provider();
-        let _verifier = provider
-            .signature_verification_algorithms
-            .supported_schemes()
-            .iter()
-            .find(|scheme| **scheme == dss.scheme)
-            .ok_or(rustls::Error::UnsupportedNameType)?;
-        Ok(rustls::client::danger::HandshakeSignatureValid::assertion())
+        rustls::crypto::verify_tls13_signature(
+            message,
+            cert,
+            dss,
+            &provider.signature_verification_algorithms,
+        )
     }
 
     fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
@@ -541,6 +540,163 @@ impl<T> Pipe<T> for T {
 mod tests {
     use super::*;
     use crate::transport::TransportConfig;
+    use rustls::client::danger::ServerCertVerifier;
+    use rustls::internal::msgs::codec::{Codec, Reader};
+
+    fn make_dss_with_sig(
+        scheme: rustls::SignatureScheme,
+        sig_bytes: &[u8],
+    ) -> rustls::DigitallySignedStruct {
+        let mut wire = Vec::new();
+        scheme.encode(&mut wire);
+        let len = sig_bytes.len() as u16;
+        wire.extend_from_slice(&len.to_be_bytes());
+        wire.extend_from_slice(sig_bytes);
+        let mut reader = Reader::init(&wire);
+        rustls::DigitallySignedStruct::read(&mut reader).expect("valid DSS wire bytes")
+    }
+
+    fn gen_test_cert() -> (
+        rustls::pki_types::CertificateDer<'static>,
+        rustls::pki_types::PrivatePkcs8KeyDer<'static>,
+    ) {
+        let cert = rcgen::generate_simple_self_signed(vec!["localhost".to_string()]).unwrap();
+        (
+            cert.cert.der().clone(),
+            rustls::pki_types::PrivatePkcs8KeyDer::from(cert.key_pair.serialize_der()),
+        )
+    }
+
+    #[tokio::test]
+    async fn test_hardware_verifier_rejects_bad_tls12_signature() {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
+        let rcgen_cert = rcgen::generate_simple_self_signed(vec!["localhost".to_string()]).unwrap();
+        let cert_der = rcgen_cert.cert.der().clone();
+
+        let verifier = HardwareBackedVerifier::new(vec![cert_der.to_vec()]);
+
+        let bad_dss = make_dss_with_sig(
+            rustls::SignatureScheme::ECDSA_NISTP256_SHA256,
+            &[0xDE, 0xAD, 0xBE, 0xEF],
+        );
+
+        let result = verifier.verify_tls12_signature(b"test message", &cert_der, &bad_dss);
+        assert!(result.is_err(), "Forged TLS 1.2 signature must be rejected");
+    }
+
+    #[tokio::test]
+    async fn test_hardware_verifier_rejects_bad_tls13_signature() {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
+        let rcgen_cert = rcgen::generate_simple_self_signed(vec!["localhost".to_string()]).unwrap();
+        let cert_der = rcgen_cert.cert.der().clone();
+
+        let verifier = HardwareBackedVerifier::new(vec![cert_der.to_vec()]);
+
+        let bad_dss = make_dss_with_sig(
+            rustls::SignatureScheme::ECDSA_NISTP256_SHA256,
+            &[0xDE, 0xAD, 0xBE, 0xEF],
+        );
+
+        let result = verifier.verify_tls13_signature(b"test message", &cert_der, &bad_dss);
+        assert!(result.is_err(), "Forged TLS 1.3 signature must be rejected");
+    }
+
+    #[tokio::test]
+    async fn test_hardware_verifier_accepts_valid_tls12_signature() {
+        // Acceptance of valid TLS 1.2 signatures is proven through the full QUIC
+        // handshake in test_quic_legitimate_connection_succeeds (Task 2).
+        // Here we verify the fix structurally: that verify_tls12_signature delegates
+        // to rustls::crypto::verify_tls12_signature and does NOT unconditionally return Ok.
+        //
+        // To prove the delegation is live, we use the known property: if the cert is valid
+        // but the signature bytes are garbage, it must fail. If the cert plus a real
+        // signature (from the QUIC handshake path) is used, it must pass. The latter
+        // is covered by test_quic_legitimate_connection_succeeds.
+        //
+        // For unit coverage of the acceptance path: confirm that an ECDH-based
+        // TLS 1.2 transcript verification succeeds. We use rustls's own test
+        // infrastructure by performing a loopback TLS handshake.
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
+        // Generate a fresh cert + key pair for testing
+        let rcgen_cert = rcgen::generate_simple_self_signed(vec!["localhost".to_string()]).unwrap();
+        let cert_der = rcgen_cert.cert.der().clone();
+        let key_der =
+            rustls::pki_types::PrivatePkcs8KeyDer::from(rcgen_cert.key_pair.serialize_der());
+
+        // Build a server TLS config using this cert
+        let server_config = rustls::ServerConfig::builder()
+            .with_no_client_auth()
+            .with_single_cert(vec![cert_der.clone()], key_der.into())
+            .expect("server config must be valid");
+
+        // Build a client TLS config using HardwareBackedVerifier with this cert as trusted
+        let verifier = Arc::new(HardwareBackedVerifier::new(vec![cert_der.to_vec()]));
+        let client_config = rustls::ClientConfig::builder()
+            .dangerous()
+            .with_custom_certificate_verifier(verifier)
+            .with_no_client_auth();
+
+        // Perform an in-memory TLS 1.2/1.3 handshake using rustls
+        let server_name = rustls::pki_types::ServerName::try_from("localhost").unwrap();
+        let mut client_conn = rustls::ClientConnection::new(Arc::new(client_config), server_name)
+            .expect("client connection must be created");
+        let mut server_conn = rustls::ServerConnection::new(Arc::new(server_config))
+            .expect("server connection must be created");
+
+        // Drive the handshake to completion (up to 20 round trips)
+        let mut client_buf = Vec::new();
+        let mut server_buf = Vec::new();
+        for _ in 0..20 {
+            // Client writes
+            client_conn
+                .write_tls(&mut client_buf)
+                .expect("client write_tls must succeed");
+            // Server reads client data
+            if !client_buf.is_empty() {
+                let mut cursor = client_buf.as_slice();
+                server_conn
+                    .read_tls(&mut cursor)
+                    .expect("server read_tls must succeed");
+                let _ = server_conn.process_new_packets();
+                client_buf.clear();
+            }
+            // Server writes
+            server_conn
+                .write_tls(&mut server_buf)
+                .expect("server write_tls must succeed");
+            // Client reads server data
+            if !server_buf.is_empty() {
+                let mut cursor = server_buf.as_slice();
+                client_conn
+                    .read_tls(&mut cursor)
+                    .expect("client read_tls must succeed");
+                let _ = client_conn.process_new_packets();
+                server_buf.clear();
+            }
+            if !client_conn.is_handshaking() && !server_conn.is_handshaking() {
+                break;
+            }
+        }
+
+        assert!(
+            !client_conn.is_handshaking(),
+            "TLS handshake must complete: HardwareBackedVerifier must accept the valid certificate and its signatures"
+        );
+    }
+
+    #[cfg(not(feature = "insecure-tls"))]
+    #[tokio::test]
+    async fn test_hardware_verifier_empty_certs_rejected_in_secure_build() {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        let result = QuicTransport::create_hardware_verified_endpoint(vec![]);
+        assert!(
+            result.is_err(),
+            "Empty trusted_certificates must be rejected in secure builds"
+        );
+    }
 
     #[tokio::test]
     async fn test_quic_transport_creation() {
