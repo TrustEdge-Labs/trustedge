@@ -8,7 +8,7 @@
 
 //! JWKS key management — Ed25519 signing key lifecycle with rotation support.
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -17,6 +17,7 @@ use trustedge_core::{SigningKey, VerifyingKey};
 
 #[derive(Debug, Clone)]
 pub struct KeyManager {
+    key_path: String,
     current_key: SigningKey,
     current_kid: String,
     previous_key: Option<SigningKey>,
@@ -31,36 +32,52 @@ struct StoredKey {
 }
 
 impl KeyManager {
+    /// Create a new `KeyManager`, reading the key path from the `JWKS_KEY_PATH`
+    /// environment variable. If unset, defaults to a path in the system temp directory.
     pub fn new() -> Result<Self> {
-        let dev_key_path = "target/dev/signing_key.json";
+        let key_path = std::env::var("JWKS_KEY_PATH").unwrap_or_else(|_| {
+            std::env::temp_dir()
+                .join("trustedge_signing_key.json")
+                .to_string_lossy()
+                .into_owned()
+        });
+        Self::new_with_path(&key_path)
+    }
 
-        if Path::new(dev_key_path).exists() {
-            Self::load_from_file(dev_key_path)
+    /// Create a `KeyManager` with an explicit key file path.
+    ///
+    /// Public for testing — allows callers to specify a deterministic path.
+    pub fn new_with_path(key_path: &str) -> Result<Self> {
+        if Path::new(key_path).exists() {
+            Self::load_from_file(key_path)
         } else {
-            Self::generate_new()
+            Self::generate_new(key_path)
         }
     }
 
-    fn generate_new() -> Result<Self> {
+    fn generate_new(key_path: &str) -> Result<Self> {
         let signing_key = SigningKey::generate(&mut rand::rngs::OsRng);
         let kid = format!("key_{}", uuid::Uuid::new_v4().simple());
 
         let key_manager = KeyManager {
+            key_path: key_path.to_string(),
             current_key: signing_key,
             current_kid: kid,
             previous_key: None,
             previous_kid: None,
         };
 
-        key_manager.save_to_file("target/dev/signing_key.json")?;
+        key_manager.save_to_file()?;
         key_manager.write_jwks_file()?;
 
         Ok(key_manager)
     }
 
-    fn load_from_file(path: &str) -> Result<Self> {
-        let content = fs::read_to_string(path)?;
-        let stored: StoredKey = serde_json::from_str(&content)?;
+    fn load_from_file(key_path: &str) -> Result<Self> {
+        let content = fs::read_to_string(key_path)
+            .with_context(|| format!("Failed to read signing key from {}", key_path))?;
+        let stored: StoredKey = serde_json::from_str(&content)
+            .with_context(|| format!("Failed to parse signing key JSON from {}", key_path))?;
 
         let private_key_bytes = BASE64.decode(&stored.private_key)?;
         let signing_key = SigningKey::from_bytes(
@@ -70,6 +87,7 @@ impl KeyManager {
         );
 
         Ok(KeyManager {
+            key_path: key_path.to_string(),
             current_key: signing_key,
             current_kid: stored.kid,
             previous_key: None,
@@ -77,9 +95,10 @@ impl KeyManager {
         })
     }
 
-    fn save_to_file(&self, path: &str) -> Result<()> {
-        if let Some(parent) = Path::new(path).parent() {
-            fs::create_dir_all(parent)?;
+    fn save_to_file(&self) -> Result<()> {
+        if let Some(parent) = Path::new(&self.key_path).parent() {
+            fs::create_dir_all(parent)
+                .with_context(|| format!("Failed to create directory for {}", self.key_path))?;
         }
 
         let stored = StoredKey {
@@ -89,20 +108,40 @@ impl KeyManager {
         };
 
         let content = serde_json::to_string_pretty(&stored)?;
-        fs::write(path, content)?;
+        fs::write(&self.key_path, content)
+            .with_context(|| format!("Failed to write signing key to {}", self.key_path))?;
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let perms = std::fs::Permissions::from_mode(0o600);
+            std::fs::set_permissions(&self.key_path, perms).with_context(|| {
+                format!("Failed to set permissions on {}", self.key_path)
+            })?;
+        }
 
         Ok(())
     }
 
+    fn jwks_path(&self) -> std::path::PathBuf {
+        Path::new(&self.key_path)
+            .parent()
+            .unwrap_or(Path::new("."))
+            .join("jwks.json")
+    }
+
     fn write_jwks_file(&self) -> Result<()> {
-        let jwks_path = "target/dev/jwks.json";
-        if let Some(parent) = Path::new(jwks_path).parent() {
-            fs::create_dir_all(parent)?;
+        let jwks_path = self.jwks_path();
+        if let Some(parent) = jwks_path.parent() {
+            fs::create_dir_all(parent).with_context(|| {
+                format!("Failed to create directory for {}", jwks_path.display())
+            })?;
         }
 
         let jwks = self.to_jwks();
         let content = serde_json::to_string_pretty(&jwks)?;
-        fs::write(jwks_path, content)?;
+        fs::write(&jwks_path, content)
+            .with_context(|| format!("Failed to write JWKS file to {}", jwks_path.display()))?;
 
         Ok(())
     }
@@ -155,7 +194,7 @@ impl KeyManager {
         self.current_key = new_signing_key;
         self.current_kid = new_kid;
 
-        self.save_to_file("target/dev/signing_key.json")?;
+        self.save_to_file()?;
         self.write_jwks_file()?;
 
         Ok(())

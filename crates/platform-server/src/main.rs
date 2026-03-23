@@ -69,6 +69,13 @@ async fn serve() -> Result<()> {
     );
     tracing::info!("Port: {}", config.port);
     tracing::info!("Mode: {}", mode);
+    let jwks_key_path = std::env::var("JWKS_KEY_PATH").unwrap_or_else(|_| {
+        std::env::temp_dir()
+            .join("trustedge_signing_key.json")
+            .to_string_lossy()
+            .into_owned()
+    });
+    tracing::info!("JWKS key path: {}", jwks_key_path);
 
     #[cfg(feature = "postgres")]
     tracing::info!(
@@ -94,9 +101,18 @@ async fn serve() -> Result<()> {
 
     tracing::info!("Listening on 0.0.0.0:{}", config.port);
 
-    axum::serve(listener, router)
-        .with_graceful_shutdown(shutdown_signal())
-        .await?;
+    let rps = std::env::var("RATE_LIMIT_RPS")
+        .ok()
+        .and_then(|s| s.parse::<u32>().ok())
+        .unwrap_or(10);
+    tracing::info!("Rate limit: {} req/sec per IP on /v1/verify", rps);
+
+    axum::serve(
+        listener,
+        router.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .with_graceful_shutdown(shutdown_signal())
+    .await?;
 
     tracing::info!("Server shut down cleanly");
 
