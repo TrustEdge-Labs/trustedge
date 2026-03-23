@@ -849,4 +849,147 @@ mod tests {
             "Insecure TLS endpoint creation should succeed"
         );
     }
+
+    /// MITM integration test: a QUIC client trusting the ATTACKER cert must fail
+    /// to connect to a server presenting the SERVER cert (wrong certificate).
+    /// This proves that HardwareBackedVerifier rejects MITM-forged certificates.
+    #[tokio::test]
+    async fn test_quic_mitm_certificate_rejected() {
+        use tokio::time::timeout;
+
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
+        // Generate two independent cert/key pairs: server and attacker
+        let (server_cert_der, server_key_der) = gen_test_cert();
+        let (attacker_cert_der, _attacker_key_der) = gen_test_cert();
+
+        // Create server endpoint with the SERVER cert
+        let server_config = quinn::ServerConfig::with_single_cert(
+            vec![server_cert_der.clone()],
+            server_key_der.into(),
+        )
+        .expect("server config must be valid");
+        let server_endpoint =
+            quinn::Endpoint::server(server_config, "127.0.0.1:0".parse().unwrap())
+                .expect("server endpoint must bind");
+        let server_addr = server_endpoint
+            .local_addr()
+            .expect("server must have local addr");
+
+        // Spawn the server to accept one connection (we expect it to fail on the client side)
+        let server_handle = tokio::spawn(async move {
+            if let Some(incoming) = server_endpoint.accept().await {
+                let _ = incoming.await; // accept the connection at the server side
+            }
+        });
+
+        // Create a client that trusts the ATTACKER cert, NOT the server cert
+        let verifier = Arc::new(HardwareBackedVerifier::new(
+            vec![attacker_cert_der.to_vec()],
+        ));
+        let client_tls = rustls::ClientConfig::builder()
+            .dangerous()
+            .with_custom_certificate_verifier(verifier)
+            .with_no_client_auth();
+        let client_quic_config = quinn::ClientConfig::new(Arc::new(
+            quinn::crypto::rustls::QuicClientConfig::try_from(client_tls)
+                .expect("quic client config"),
+        ));
+        let mut client_endpoint =
+            quinn::Endpoint::client("0.0.0.0:0".parse().unwrap()).expect("client endpoint");
+        client_endpoint.set_default_client_config(client_quic_config);
+
+        // Attempt to connect: MUST fail because server cert does not match attacker cert
+        let connecting = client_endpoint
+            .connect(server_addr, "localhost")
+            .expect("connect call must not error on addr format");
+
+        let connect_result = timeout(std::time::Duration::from_secs(5), connecting).await;
+
+        // Either the timeout fires or the connection fails — both prove MITM rejection
+        match connect_result {
+            Ok(Ok(_conn)) => {
+                panic!("MITM connection must NOT succeed: wrong certificate was accepted")
+            }
+            Ok(Err(_)) => {
+                // Expected: handshake failed because server cert is not trusted
+            }
+            Err(_timeout) => {
+                // Also acceptable: connection timed out waiting for handshake
+            }
+        }
+
+        client_endpoint.close(0u32.into(), b"done");
+        let _ = server_handle.await;
+    }
+
+    /// Legitimate connection test: a QUIC client trusting the SERVER cert must
+    /// complete the handshake successfully.
+    #[tokio::test]
+    async fn test_quic_legitimate_connection_succeeds() {
+        use tokio::time::timeout;
+
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
+        // Generate ONE cert/key pair used by both server and client trust store
+        let (cert_der, key_der) = gen_test_cert();
+
+        // Create server endpoint with this cert
+        let server_config =
+            quinn::ServerConfig::with_single_cert(vec![cert_der.clone()], key_der.into())
+                .expect("server config must be valid");
+        let server_endpoint =
+            quinn::Endpoint::server(server_config, "127.0.0.1:0".parse().unwrap())
+                .expect("server endpoint must bind");
+        let server_addr = server_endpoint
+            .local_addr()
+            .expect("server must have local addr");
+
+        // Spawn server: accepts one connection
+        let server_handle = tokio::spawn(async move {
+            if let Some(incoming) = server_endpoint.accept().await {
+                match incoming.await {
+                    Ok(_conn) => {} // handshake succeeded on server side
+                    Err(_e) => {}   // server side error is ok if client also errors
+                }
+            }
+        });
+
+        // Create client that trusts the SAME cert the server uses
+        let verifier = Arc::new(HardwareBackedVerifier::new(vec![cert_der.to_vec()]));
+        let client_tls = rustls::ClientConfig::builder()
+            .dangerous()
+            .with_custom_certificate_verifier(verifier)
+            .with_no_client_auth();
+        let client_quic_config = quinn::ClientConfig::new(Arc::new(
+            quinn::crypto::rustls::QuicClientConfig::try_from(client_tls)
+                .expect("quic client config"),
+        ));
+        let mut client_endpoint =
+            quinn::Endpoint::client("0.0.0.0:0".parse().unwrap()).expect("client endpoint");
+        client_endpoint.set_default_client_config(client_quic_config);
+
+        // Connect and complete the handshake — must succeed
+        let connect_result = timeout(
+            std::time::Duration::from_secs(5),
+            client_endpoint
+                .connect(server_addr, "localhost")
+                .expect("connect call must not error on addr format"),
+        )
+        .await;
+
+        let connection = connect_result
+            .expect("legitimate connection must not time out")
+            .expect("legitimate connection must succeed: valid cert must be accepted");
+
+        assert!(
+            !connection.remote_address().ip().is_unspecified(),
+            "connected endpoint must have a remote address"
+        );
+
+        // Clean up
+        connection.close(0u32.into(), b"done");
+        client_endpoint.close(0u32.into(), b"done");
+        let _ = server_handle.await;
+    }
 }
