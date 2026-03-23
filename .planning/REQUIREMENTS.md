@@ -9,8 +9,8 @@ Requirements for critical security fixes. Each maps to roadmap phases.
 
 ### Transport Security
 
-- [ ] **TSEC-01**: QUIC `HardwareBackedVerifier` performs actual TLS signature verification instead of returning unconditional `HandshakeSignatureValid::assertion()`
-- [ ] **TSEC-02**: MITM attack against QUIC TLS handshake is rejected (test proves verification catches bad signatures)
+- [x] **TSEC-01**: QUIC `HardwareBackedVerifier` performs actual TLS signature verification instead of returning unconditional `HandshakeSignatureValid::assertion()`
+- [x] **TSEC-02**: MITM attack against QUIC TLS handshake is rejected (test proves verification catches bad signatures)
 
 ### Platform HTTP
 
@@ -59,8 +59,8 @@ Deferred P1 findings — tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TSEC-01 | Phase 54 | Pending |
-| TSEC-02 | Phase 54 | Pending |
+| TSEC-01 | Phase 54 | Complete |
+| TSEC-02 | Phase 54 | Complete |
 | HTTP-01 | Phase 55 | Pending |
 | HTTP-02 | Phase 55 | Pending |
 | HTTP-03 | Phase 55 | Pending |

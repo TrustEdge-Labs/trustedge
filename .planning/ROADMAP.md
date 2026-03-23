@@ -83,7 +83,7 @@ Addressed all P1/P2 findings from the code & security review. Custom base64 repl
 
 ### v2.5 Critical Security Fixes (Phases 54-56) — Active
 
-- [ ] **Phase 54: Transport Security** - Fix QUIC TLS certificate verification no-op (MITM vulnerability)
+- [x] **Phase 54: Transport Security** - Fix QUIC TLS certificate verification no-op (MITM vulnerability) (completed 2026-03-23)
 - [ ] **Phase 55: Platform HTTP Hardening** - Body size limit, rate limiting, and configurable JWKS signing key
 - [ ] **Phase 56: WASM Fix** - Fix double-decrypt bug in trst-wasm browser verification
 
@@ -98,9 +98,9 @@ Addressed all P1/P2 findings from the code & security review. Custom base64 repl
   2. `HardwareBackedVerifier::verify_tls12_signature` and `verify_tls13_signature` perform actual cryptographic verification using the provided certificate and message/signature inputs
   3. A MITM test proves that substituting a different certificate causes the handshake to fail
   4. Legitimate QUIC connections with a valid certificate continue to succeed
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 54-01-PLAN.md — Fix signature verification, gate dev mode, unit + integration tests
+- [x] 54-01-PLAN.md — Fix signature verification, gate dev mode, unit + integration tests
 
 ### Phase 55: Platform HTTP Hardening
 **Goal**: The HTTP platform endpoints are protected against body-flood DoS, verify-loop CPU abuse, and plaintext key leakage
@@ -129,7 +129,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 54. Transport Security | 0/1 | Planning complete | - |
+| 54. Transport Security | 1/1 | Complete   | 2026-03-23 |
 | 55. Platform HTTP Hardening | 0/? | Not started | - |
 | 56. WASM Fix | 0/? | Not started | - |
 
