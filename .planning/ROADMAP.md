@@ -98,7 +98,9 @@ Addressed all P1/P2 findings from the code & security review. Custom base64 repl
   2. `HardwareBackedVerifier::verify_tls12_signature` and `verify_tls13_signature` perform actual cryptographic verification using the provided certificate and message/signature inputs
   3. A MITM test proves that substituting a different certificate causes the handshake to fail
   4. Legitimate QUIC connections with a valid certificate continue to succeed
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 54-01-PLAN.md — Fix signature verification, gate dev mode, unit + integration tests
 
 ### Phase 55: Platform HTTP Hardening
 **Goal**: The HTTP platform endpoints are protected against body-flood DoS, verify-loop CPU abuse, and plaintext key leakage
@@ -127,9 +129,9 @@ Addressed all P1/P2 findings from the code & security review. Custom base64 repl
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 54. Transport Security | 0/? | Not started | - |
+| 54. Transport Security | 0/1 | Planning complete | - |
 | 55. Platform HTTP Hardening | 0/? | Not started | - |
 | 56. WASM Fix | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-03-22 after v2.5 roadmap created*
+*Last updated: 2026-03-22 after Phase 54 planning complete*
