@@ -125,7 +125,9 @@ Plans:
   1. The trst-wasm `decrypt` path calls `.decrypt()` exactly once per ciphertext chunk
   2. An end-to-end WASM test wraps an archive, passes it through the browser WASM bindings, and verifies the recovered data matches the original input
   3. The previously failing browser verification path now returns the correct plaintext without corruption
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 56-01-PLAN.md — Fix double-decrypt bug, add aes-gcm/rand deps, wire crypto module, round-trip tests
 **UI hint**: no
 
 ## Progress
@@ -134,7 +136,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 54. Transport Security | 1/1 | Complete    | 2026-03-23 |
 | 55. Platform HTTP Hardening | 2/2 | Complete    | 2026-03-23 |
-| 56. WASM Fix | 0/? | Not started | - |
+| 56. WASM Fix | 0/1 | Not started | - |
 
 ---
-*Last updated: 2026-03-23 after Phase 55 planning complete*
+*Last updated: 2026-03-23 after Phase 56 planning complete*
