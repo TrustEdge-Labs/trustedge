@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: Critical Security Fixes
-status: defining_requirements
+status: roadmap_ready
 stopped_at: null
 last_updated: "2026-03-22T18:00:00.000Z"
-last_activity: 2026-03-22 — Milestone v2.5 started
+last_activity: 2026-03-22 — Roadmap created, Phase 54 is next
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -29,14 +29,20 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** v2.5 Critical Security Fixes — defining requirements
+**Current focus:** v2.5 Critical Security Fixes — Phase 54: Transport Security (next)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 54 (Transport Security) — Not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-22 — Milestone v2.5 started
+Status: Roadmap ready, awaiting phase planning
+Last activity: 2026-03-22 — Roadmap created (3 phases, 8 requirements mapped)
+
+```
+Progress: [                    ] 0%
+Phases:   0/3 complete
+Plans:    0/? complete
+```
 
 ## Performance Metrics
 
@@ -55,7 +61,8 @@ Last activity: 2026-03-22 — Milestone v2.5 started
 - v2.2: 3 phases, 5 plans
 - v2.3: 4 phases, 4 plans
 - v2.4: 2 phases, 3 plans
-- **Total: 53 phases, 91 plans**
+- v2.5: 3 phases, ? plans (in progress)
+- **Total to date: 53 phases shipped + 3 planned**
 
 ## Accumulated Context
 
@@ -80,8 +87,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: v2.4 milestone completed
+Stopped at: v2.5 roadmap created
 Resume file: None
 
 ---
-*Last updated: 2026-03-22 after v2.5 milestone started*
+*Last updated: 2026-03-22 after v2.5 roadmap created*

@@ -24,6 +24,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v2.2 Security Remediation** - Phases 45-47 (shipped 2026-03-19)
 - ✅ **v2.3 Security Testing** - Phases 48-51 (shipped 2026-03-21)
 - ✅ **v2.4 Security Review Remediation** - Phases 52-53 (shipped 2026-03-22)
+- 🔄 **v2.5 Critical Security Fixes** - Phases 54-56 (active)
 
 ## Phases
 
@@ -80,5 +81,55 @@ Addressed all P1/P2 findings from the code & security review. Custom base64 repl
 
 </details>
 
+### v2.5 Critical Security Fixes (Phases 54-56) — Active
+
+- [ ] **Phase 54: Transport Security** - Fix QUIC TLS certificate verification no-op (MITM vulnerability)
+- [ ] **Phase 55: Platform HTTP Hardening** - Body size limit, rate limiting, and configurable JWKS signing key
+- [ ] **Phase 56: WASM Fix** - Fix double-decrypt bug in trst-wasm browser verification
+
+## Phase Details
+
+### Phase 54: Transport Security
+**Goal**: QUIC connections verify server certificates cryptographically — no MITM attack possible
+**Depends on**: Nothing (independent fix)
+**Requirements**: TSEC-01, TSEC-02
+**Success Criteria** (what must be TRUE):
+  1. A QUIC connection attempt with a forged or self-signed certificate (not matching the trusted root) is rejected with a TLS error
+  2. `HardwareBackedVerifier::verify_tls12_signature` and `verify_tls13_signature` perform actual cryptographic verification using the provided certificate and message/signature inputs
+  3. A MITM test proves that substituting a different certificate causes the handshake to fail
+  4. Legitimate QUIC connections with a valid certificate continue to succeed
+**Plans**: TBD
+
+### Phase 55: Platform HTTP Hardening
+**Goal**: The HTTP platform endpoints are protected against body-flood DoS, verify-loop CPU abuse, and plaintext key leakage
+**Depends on**: Nothing (independent fix)
+**Requirements**: HTTP-01, HTTP-02, HTTP-03, HTTP-04
+**Success Criteria** (what must be TRUE):
+  1. A POST to `/v1/verify` with a body exceeding the configured limit (1-10 MB) receives a 413 response without OOM risk
+  2. Repeated rapid calls to `/v1/verify` beyond the rate limit receive a 429 response
+  3. The JWKS signing key path is read from an environment variable, not hardcoded to `target/dev/`
+  4. No unencrypted signing key file appears under `target/dev/` or any build-artifact directory during server startup
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 56: WASM Fix
+**Goal**: Browser-based archive verification decrypts data correctly — no double-decrypt corruption
+**Depends on**: Nothing (independent fix)
+**Requirements**: WASM-01, WASM-02
+**Success Criteria** (what must be TRUE):
+  1. The trst-wasm `decrypt` path calls `.decrypt()` exactly once per ciphertext chunk
+  2. An end-to-end WASM test wraps an archive, passes it through the browser WASM bindings, and verifies the recovered data matches the original input
+  3. The previously failing browser verification path now returns the correct plaintext without corruption
+**Plans**: TBD
+**UI hint**: no
+
+## Progress
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 54. Transport Security | 0/? | Not started | - |
+| 55. Platform HTTP Hardening | 0/? | Not started | - |
+| 56. WASM Fix | 0/? | Not started | - |
+
 ---
-*Last updated: 2026-03-22 after v2.4 milestone*
+*Last updated: 2026-03-22 after v2.5 roadmap created*

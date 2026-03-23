@@ -59,20 +59,20 @@ Deferred P1 findings — tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TSEC-01 | — | Pending |
-| TSEC-02 | — | Pending |
-| HTTP-01 | — | Pending |
-| HTTP-02 | — | Pending |
-| HTTP-03 | — | Pending |
-| HTTP-04 | — | Pending |
-| WASM-01 | — | Pending |
-| WASM-02 | — | Pending |
+| TSEC-01 | Phase 54 | Pending |
+| TSEC-02 | Phase 54 | Pending |
+| HTTP-01 | Phase 55 | Pending |
+| HTTP-02 | Phase 55 | Pending |
+| HTTP-03 | Phase 55 | Pending |
+| HTTP-04 | Phase 55 | Pending |
+| WASM-01 | Phase 56 | Pending |
+| WASM-02 | Phase 56 | Pending |
 
 **Coverage:**
 - v2.5 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8 ⚠️
+- Mapped to phases: 8
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-22*
-*Last updated: 2026-03-22 after initial definition*
+*Last updated: 2026-03-22 after roadmap creation (traceability complete)*
