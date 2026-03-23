@@ -770,6 +770,133 @@ mod http_tests {
 
         Ok(())
     }
+
+    // -----------------------------------------------------------------------
+    // Test 10: Body limit — POST /v1/verify with >2 MB body returns 413.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn test_body_limit_413() {
+        let app = create_test_app().await;
+        // Build a body larger than the 2 MB RequestBodyLimitLayer
+        let large_body = "x".repeat(3 * 1024 * 1024);
+        let body = format!(
+            r#"{{"manifest":{{"data":"{}"}}, "segments":[], "device_pub":"ed25519:test"}}"#,
+            large_body
+        );
+        let req = Request::builder()
+            .method("POST")
+            .uri("/v1/verify")
+            .header(CONTENT_TYPE, "application/json")
+            .body(Body::from(body))
+            .unwrap();
+        let resp = app.oneshot(req).await.unwrap();
+        assert_eq!(
+            resp.status(),
+            413,
+            "oversized body (>2 MB) must return 413 Payload Too Large"
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 11: Body under limit — POST /v1/verify with <2 MB body is not 413.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn test_body_under_limit_not_413() {
+        let app = create_test_app().await;
+        // Small valid-ish body — server will return 400 (bad payload) but NOT 413.
+        let body = r#"{"manifest":{"data":"small"}, "segments":[], "device_pub":"ed25519:test"}"#;
+        let req = Request::builder()
+            .method("POST")
+            .uri("/v1/verify")
+            .header(CONTENT_TYPE, "application/json")
+            .body(Body::from(body))
+            .unwrap();
+        let resp = app.oneshot(req).await.unwrap();
+        assert_ne!(
+            resp.status(),
+            413,
+            "normal-sized body (<2 MB) must not return 413"
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 12: Rate limit — rapid calls to /v1/verify return 429.
+    //
+    // Sets RATE_LIMIT_RPS=2 so a burst of 20 requests should trigger 429.
+    // The middleware falls back to 127.0.0.1 when ConnectInfo is absent
+    // (oneshot test path), so all requests share the same bucket.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn test_rate_limit_429() {
+        // Set a very low rate limit so we can quickly exhaust it.
+        // Safety: tests run sequentially per test binary; this env var is read
+        // at router construction time, so we set it before creating the app.
+        unsafe {
+            std::env::set_var("RATE_LIMIT_RPS", "2");
+        }
+        let app = create_router(make_state());
+        // Restore default so other tests are unaffected.
+        unsafe {
+            std::env::remove_var("RATE_LIMIT_RPS");
+        }
+
+        let mut got_429 = false;
+        for _ in 0..20 {
+            let fresh_app = app.clone();
+            let req = Request::builder()
+                .method("POST")
+                .uri("/v1/verify")
+                .header(CONTENT_TYPE, "application/json")
+                .body(Body::from(r#"{"manifest":{},"segments":[],"device_pub":"ed25519:x"}"#))
+                .unwrap();
+            let resp = fresh_app.oneshot(req).await.unwrap();
+            if resp.status() == 429 {
+                got_429 = true;
+                break;
+            }
+        }
+        assert!(
+            got_429,
+            "rapid calls to /v1/verify must eventually return 429 Too Many Requests"
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 13: Healthz is never rate-limited.
+    //
+    // Sets RATE_LIMIT_RPS=1 and sends 20 GET /healthz requests.
+    // All must return 200 — the rate limiter only applies to /v1/verify.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn test_healthz_not_rate_limited() {
+        unsafe {
+            std::env::set_var("RATE_LIMIT_RPS", "1");
+        }
+        let app = create_router(make_state());
+        unsafe {
+            std::env::remove_var("RATE_LIMIT_RPS");
+        }
+
+        for i in 0..20 {
+            let fresh_app = app.clone();
+            let req = Request::builder()
+                .uri("/healthz")
+                .body(Body::empty())
+                .unwrap();
+            let resp = fresh_app.oneshot(req).await.unwrap();
+            assert_eq!(
+                resp.status(),
+                200,
+                "GET /healthz request {} must not be rate-limited (expected 200, got {})",
+                i + 1,
+                resp.status()
+            );
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -937,6 +1064,134 @@ fn test_key_manager_creation_and_jwks() -> Result<()> {
     assert_eq!(key["crv"], "Ed25519");
     assert_eq!(key["alg"], "EdDSA");
     assert_eq!(key["kid"], kid);
+
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// JWKS key path configuration tests
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_jwks_key_path_custom() -> Result<()> {
+    // Create a unique temp directory for this test
+    let dir = std::env::temp_dir().join(format!(
+        "trustedge_test_{}",
+        uuid::Uuid::new_v4().simple()
+    ));
+    std::fs::create_dir_all(&dir)?;
+    let key_path = dir.join("signing_key.json");
+
+    let km = KeyManager::new_with_path(&key_path.to_string_lossy())?;
+
+    // Signing key file must exist at the specified path
+    assert!(
+        key_path.exists(),
+        "Signing key file must exist at the specified path"
+    );
+
+    // jwks.json must be co-located in the same directory
+    let jwks_path = dir.join("jwks.json");
+    assert!(
+        jwks_path.exists(),
+        "jwks.json must exist in the same directory as the signing key"
+    );
+
+    // KeyManager must load successfully (kid non-empty)
+    assert!(!km.current_kid().is_empty(), "kid must be non-empty");
+
+    // Cleanup
+    std::fs::remove_dir_all(&dir).ok();
+
+    Ok(())
+}
+
+#[test]
+fn test_jwks_default_not_target_dev() -> Result<()> {
+    // Clear JWKS_KEY_PATH to ensure default behavior
+    std::env::remove_var("JWKS_KEY_PATH");
+
+    // The default path must be in the system temp dir, not target/dev/
+    let expected_default = std::env::temp_dir()
+        .join("trustedge_signing_key.json")
+        .to_string_lossy()
+        .into_owned();
+
+    let _km = KeyManager::new()?;
+
+    // Verify the signing key was written to temp dir, not target/dev/
+    assert!(
+        std::path::Path::new(&expected_default).exists(),
+        "Default signing key must be written to temp dir: {}",
+        expected_default
+    );
+
+    // The default path must not contain "target/dev"
+    assert!(
+        !expected_default.contains("target/dev"),
+        "Default key path must not contain target/dev, got: {}",
+        expected_default
+    );
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn test_signing_key_permissions() -> Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+
+    let dir = std::env::temp_dir().join(format!(
+        "trustedge_perm_test_{}",
+        uuid::Uuid::new_v4().simple()
+    ));
+    std::fs::create_dir_all(&dir)?;
+    let key_path = dir.join("signing_key.json");
+
+    let _km = KeyManager::new_with_path(&key_path.to_string_lossy())?;
+
+    let metadata = std::fs::metadata(&key_path)?;
+    let mode = metadata.permissions().mode() & 0o777;
+    assert_eq!(
+        mode, 0o600,
+        "Signing key must have 0600 permissions, got {:o}",
+        mode
+    );
+
+    // Cleanup
+    std::fs::remove_dir_all(&dir).ok();
+
+    Ok(())
+}
+
+#[test]
+fn test_jwks_colocated_with_signing_key() -> Result<()> {
+    let dir = std::env::temp_dir().join(format!(
+        "trustedge_colocate_test_{}",
+        uuid::Uuid::new_v4().simple()
+    ));
+    std::fs::create_dir_all(&dir)?;
+    let key_path = dir.join("signing_key.json");
+
+    let _km = KeyManager::new_with_path(&key_path.to_string_lossy())?;
+
+    // jwks.json must be in the same directory as the signing key
+    let expected_jwks = dir.join("jwks.json");
+    assert!(
+        expected_jwks.exists(),
+        "jwks.json must be co-located with the signing key in the same directory"
+    );
+
+    // Verify that jwks.json is parseable JSON with a keys array
+    let content = std::fs::read_to_string(&expected_jwks)?;
+    let jwks: serde_json::Value = serde_json::from_str(&content)?;
+    assert!(
+        jwks.get("keys").is_some(),
+        "jwks.json must contain a keys array"
+    );
+
+    // Cleanup
+    std::fs::remove_dir_all(&dir).ok();
 
     Ok(())
 }
