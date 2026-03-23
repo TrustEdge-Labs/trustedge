@@ -150,6 +150,10 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ QUIC HardwareBackedVerifier performs actual TLS signature verification (delegated to rustls crypto provider) — v2.5 Phase 54
 - ✓ accept_any_hardware() dev mode gated behind insecure-tls compile-time feature flag — v2.5 Phase 54
 - ✓ MITM rejection tests: forged signature rejection (TLS 1.2/1.3), valid signature acceptance, QUIC connection with wrong cert rejected — v2.5 Phase 54
+- ✓ 2 MB global RequestBodyLimitLayer on all platform HTTP routes (DoS prevention) — v2.5 Phase 55
+- ✓ Per-IP rate limiting on /v1/verify via governor (configurable RATE_LIMIT_RPS, default 10/sec) — v2.5 Phase 55
+- ✓ JWKS signing key path configurable via JWKS_KEY_PATH env var, defaults to temp dir (not target/dev/) — v2.5 Phase 55
+- ✓ Signing key file gets 0600 Unix permissions, zero target/dev/ references remain — v2.5 Phase 55
 
 ## Current Milestone: v2.5 Critical Security Fixes
 
@@ -335,4 +339,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 after Phase 54 Transport Security complete*
+*Last updated: 2026-03-23 after Phase 55 Platform HTTP Hardening complete*
