@@ -84,7 +84,7 @@ Addressed all P1/P2 findings from the code & security review. Custom base64 repl
 ### v2.5 Critical Security Fixes (Phases 54-56) — Active
 
 - [x] **Phase 54: Transport Security** - Fix QUIC TLS certificate verification no-op (MITM vulnerability) (completed 2026-03-23)
-- [ ] **Phase 55: Platform HTTP Hardening** - Body size limit, rate limiting, and configurable JWKS signing key
+- [x] **Phase 55: Platform HTTP Hardening** - Body size limit, rate limiting, and configurable JWKS signing key (completed 2026-03-23)
 - [ ] **Phase 56: WASM Fix** - Fix double-decrypt bug in trst-wasm browser verification
 
 ## Phase Details
@@ -111,10 +111,10 @@ Plans:
   2. Repeated rapid calls to `/v1/verify` beyond the rate limit receive a 429 response
   3. The JWKS signing key path is read from an environment variable, not hardcoded to `target/dev/`
   4. No unencrypted signing key file appears under `target/dev/` or any build-artifact directory during server startup
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 55-01-PLAN.md — Body size limit (RequestBodyLimitLayer) and per-IP rate limiting (governor) on /v1/verify
-- [ ] 55-02-PLAN.md — JWKS signing key path configuration via env var, 0600 permissions, remove target/dev/ hardcoding
+- [x] 55-02-PLAN.md — JWKS signing key path configuration via env var, 0600 permissions, remove target/dev/ hardcoding
 **UI hint**: no
 
 ### Phase 56: WASM Fix
@@ -133,7 +133,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 54. Transport Security | 1/1 | Complete    | 2026-03-23 |
-| 55. Platform HTTP Hardening | 1/2 | In Progress|  |
+| 55. Platform HTTP Hardening | 2/2 | Complete   | 2026-03-23 |
 | 56. WASM Fix | 0/? | Not started | - |
 
 ---

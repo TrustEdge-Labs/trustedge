@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: Critical Security Fixes
-status: Ready to execute
-stopped_at: Completed 55-platform-http-hardening/55-01-PLAN.md
-last_updated: "2026-03-23T15:49:27.584Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 55-platform-http-hardening 55-02-PLAN.md
+last_updated: "2026-03-23T16:19:56.816Z"
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 <!--
@@ -63,6 +63,8 @@ Cleared — see PROJECT.md Key Decisions table for full history.
 - [Phase 54-transport-security]: Delegate verify_tls12/13_signature to rustls::crypto free functions; gate accept_any_hardware() behind insecure-tls feature
 - [Phase 55-01]: Rate limiter applied via nested sub-router route_layer — only /v1/verify throttled, healthz/jwks unthrottled
 - [Phase 55-01]: governor with dashmap feature for keyed per-IP rate limiter; ConnectInfo falls back to 127.0.0.1 for test-safe middleware
+- [Phase 55-platform-http-hardening]: JWKS_KEY_PATH env var controls signing key location (temp dir default, not target/dev/)
+- [Phase 55-platform-http-hardening]: KeyManager stores key_path as struct field for use in all save/rotate methods without arg passing
 
 ### Pending Todos
 
@@ -79,11 +81,12 @@ None.
 | 260322-jgi | Review and update out-of-date markdown documentation files in repo root and docs/ directory | 2026-03-22 | d4a7f41 | [260322-jgi-review-and-update-out-of-date-markdown-d](./quick/260322-jgi-review-and-update-out-of-date-markdown-d/) |
 | Phase 54-transport-security P01 | 42m | 2 tasks | 2 files |
 | Phase 55-platform-http-hardening P01 | 10min | 2 tasks | 6 files |
+| Phase 55-platform-http-hardening P02 | 525694min | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-03-23T15:49:27.582Z
-Stopped at: Completed 55-platform-http-hardening/55-01-PLAN.md
+Last session: 2026-03-23T16:19:56.814Z
+Stopped at: Completed 55-platform-http-hardening 55-02-PLAN.md
 Resume file: None
 
 ---

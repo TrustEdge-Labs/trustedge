@@ -16,8 +16,8 @@ Requirements for critical security fixes. Each maps to roadmap phases.
 
 - [x] **HTTP-01**: `/v1/verify` endpoint enforces a request body size limit (1-10 MB) via `RequestBodyLimitLayer`
 - [x] **HTTP-02**: HTTP endpoints enforce rate limiting to prevent CPU-exhaustion abuse of BLAKE3+Ed25519 verify
-- [ ] **HTTP-03**: JWKS signing key path is configurable via environment variable (not hardcoded to `target/dev/`)
-- [ ] **HTTP-04**: JWKS signing key is not persisted as unencrypted plaintext in a build-artifact directory
+- [x] **HTTP-03**: JWKS signing key path is configurable via environment variable (not hardcoded to `target/dev/`)
+- [x] **HTTP-04**: JWKS signing key is not persisted as unencrypted plaintext in a build-artifact directory
 
 ### WASM
 
@@ -63,8 +63,8 @@ Deferred P1 findings — tracked but not in current roadmap.
 | TSEC-02 | Phase 54 | Complete |
 | HTTP-01 | Phase 55 | Complete |
 | HTTP-02 | Phase 55 | Complete |
-| HTTP-03 | Phase 55 | Pending |
-| HTTP-04 | Phase 55 | Pending |
+| HTTP-03 | Phase 55 | Complete |
+| HTTP-04 | Phase 55 | Complete |
 | WASM-01 | Phase 56 | Pending |
 | WASM-02 | Phase 56 | Pending |
 
