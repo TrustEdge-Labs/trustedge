@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.5
 milestone_name: Critical Security Fixes
-status: Ready to plan
-stopped_at: Phase 55 context gathered
-last_updated: "2026-03-23T13:51:54.212Z"
+status: Ready to execute
+stopped_at: Completed 55-platform-http-hardening/55-01-PLAN.md
+last_updated: "2026-03-23T15:49:27.584Z"
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  total_plans: 3
+  completed_plans: 2
 ---
 
 <!--
@@ -26,12 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 54 — transport-security
+**Current focus:** Phase 55 — platform-http-hardening
 
 ## Current Position
 
-Phase: 55
-Plan: Not started
+Phase: 55 (platform-http-hardening) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -61,6 +61,8 @@ Plan: Not started
 Cleared — see PROJECT.md Key Decisions table for full history.
 
 - [Phase 54-transport-security]: Delegate verify_tls12/13_signature to rustls::crypto free functions; gate accept_any_hardware() behind insecure-tls feature
+- [Phase 55-01]: Rate limiter applied via nested sub-router route_layer — only /v1/verify throttled, healthz/jwks unthrottled
+- [Phase 55-01]: governor with dashmap feature for keyed per-IP rate limiter; ConnectInfo falls back to 127.0.0.1 for test-safe middleware
 
 ### Pending Todos
 
@@ -76,12 +78,13 @@ None.
 |---|-------------|------|--------|-----------|
 | 260322-jgi | Review and update out-of-date markdown documentation files in repo root and docs/ directory | 2026-03-22 | d4a7f41 | [260322-jgi-review-and-update-out-of-date-markdown-d](./quick/260322-jgi-review-and-update-out-of-date-markdown-d/) |
 | Phase 54-transport-security P01 | 42m | 2 tasks | 2 files |
+| Phase 55-platform-http-hardening P01 | 10min | 2 tasks | 6 files |
 
 ## Session Continuity
 
-Last session: 2026-03-23T13:51:54.208Z
-Stopped at: Phase 55 context gathered
-Resume file: .planning/phases/55-platform-http-hardening/55-CONTEXT.md
+Last session: 2026-03-23T15:49:27.582Z
+Stopped at: Completed 55-platform-http-hardening/55-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-22 after v2.5 roadmap created*

@@ -111,9 +111,9 @@ Plans:
   2. Repeated rapid calls to `/v1/verify` beyond the rate limit receive a 429 response
   3. The JWKS signing key path is read from an environment variable, not hardcoded to `target/dev/`
   4. No unencrypted signing key file appears under `target/dev/` or any build-artifact directory during server startup
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 55-01-PLAN.md — Body size limit (RequestBodyLimitLayer) and per-IP rate limiting (governor) on /v1/verify
+- [x] 55-01-PLAN.md — Body size limit (RequestBodyLimitLayer) and per-IP rate limiting (governor) on /v1/verify
 - [ ] 55-02-PLAN.md — JWKS signing key path configuration via env var, 0600 permissions, remove target/dev/ hardcoding
 **UI hint**: no
 
@@ -133,7 +133,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 54. Transport Security | 1/1 | Complete    | 2026-03-23 |
-| 55. Platform HTTP Hardening | 0/2 | Planned | - |
+| 55. Platform HTTP Hardening | 1/2 | In Progress|  |
 | 56. WASM Fix | 0/? | Not started | - |
 
 ---
