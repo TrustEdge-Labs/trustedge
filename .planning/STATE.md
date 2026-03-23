@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: between_milestones
-stopped_at: v2.4 Security Review Remediation shipped
-last_updated: "2026-03-22T15:00:00.000Z"
-last_activity: 2026-03-22 — Completed quick task 260322-jgi
+milestone: v2.5
+milestone_name: Critical Security Fixes
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-03-22T18:00:00.000Z"
+last_activity: 2026-03-22 — Milestone v2.5 started
 progress:
   total_phases: 0
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
-  percent: 100
+  percent: 0
 ---
 
 <!--
@@ -29,13 +29,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Planning next milestone
+**Current focus:** v2.5 Critical Security Fixes — defining requirements
 
 ## Current Position
 
-Phase: Between milestones (v2.4 shipped, next milestone TBD)
-Status: Ready for `/gsd:new-milestone`
-Last activity: 2026-03-22 - Completed quick task 260322-jgi: Review and update out-of-date markdown documentation files in repo root and docs/ directory
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-22 — Milestone v2.5 started
 
 ## Performance Metrics
 
@@ -83,4 +84,4 @@ Stopped at: v2.4 milestone completed
 Resume file: None
 
 ---
-*Last updated: 2026-03-22 after v2.4 milestone completion*
+*Last updated: 2026-03-22 after v2.5 milestone started*

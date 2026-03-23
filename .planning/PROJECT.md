@@ -148,9 +148,20 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ Nonce construction guards against chunk index overflow (2^24 limit) — v2.4 Phase 52
 - ✓ Error path tests: key file truncation/corruption, sensor metadata validation, auth clock skew rejection (14 tests) — v2.4 Phase 53
 
+## Current Milestone: v2.5 Critical Security Fixes
+
+**Goal:** Fix 5 actively broken or exploitable vulnerabilities that block production deployment.
+
+**Target features:**
+- Fix TLS signature verification no-op in QUIC HardwareBackedVerifier (MITM vulnerability)
+- Add request body size limit on /v1/verify (OOM/DoS prevention)
+- Make JWKS signing key path configurable, stop persisting plaintext to target/dev/
+- Add rate limiting on HTTP endpoints (CPU-intensive verify abuse prevention)
+- Fix double .decrypt() call in trst-wasm (browser verification broken)
+
 ### Active
 
-(No active requirements — v2.4 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
+(Requirements will be defined via milestone requirements phase)
 
 ### Deferred
 
@@ -321,4 +332,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-22 after v2.4 milestone*
+*Last updated: 2026-03-22 after v2.5 milestone started*
