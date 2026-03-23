@@ -23,6 +23,8 @@ use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 // Import canonical manifest types from trst-protocols
 use trustedge_trst_protocols::TrstManifest;
 
+pub mod crypto;
+
 // Initialize panic hook for better error messages in debug
 #[wasm_bindgen(start)]
 pub fn main() {
