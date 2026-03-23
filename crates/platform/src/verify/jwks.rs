@@ -115,9 +115,8 @@ impl KeyManager {
         {
             use std::os::unix::fs::PermissionsExt;
             let perms = std::fs::Permissions::from_mode(0o600);
-            std::fs::set_permissions(&self.key_path, perms).with_context(|| {
-                format!("Failed to set permissions on {}", self.key_path)
-            })?;
+            std::fs::set_permissions(&self.key_path, perms)
+                .with_context(|| format!("Failed to set permissions on {}", self.key_path))?;
         }
 
         Ok(())

@@ -38,8 +38,7 @@ impl RateLimitState {
     /// Governor defaults burst capacity to the quota replenishment rate,
     /// which means a client can burst up to `rps` requests before being throttled.
     pub fn new(rps: u32) -> Self {
-        let quota =
-            Quota::per_second(NonZeroU32::new(rps).expect("rps must be greater than zero"));
+        let quota = Quota::per_second(NonZeroU32::new(rps).expect("rps must be greater than zero"));
         let limiter = Arc::new(RateLimiter::keyed(quota));
         Self { limiter }
     }
