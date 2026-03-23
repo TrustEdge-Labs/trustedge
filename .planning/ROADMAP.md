@@ -133,7 +133,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 54. Transport Security | 1/1 | Complete    | 2026-03-23 |
-| 55. Platform HTTP Hardening | 2/2 | Complete   | 2026-03-23 |
+| 55. Platform HTTP Hardening | 2/2 | Complete    | 2026-03-23 |
 | 56. WASM Fix | 0/? | Not started | - |
 
 ---
