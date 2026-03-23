@@ -147,6 +147,9 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ PBKDF2 iteration count versioned in encrypted key metadata — v2.4 Phase 52
 - ✓ Nonce construction guards against chunk index overflow (2^24 limit) — v2.4 Phase 52
 - ✓ Error path tests: key file truncation/corruption, sensor metadata validation, auth clock skew rejection (14 tests) — v2.4 Phase 53
+- ✓ QUIC HardwareBackedVerifier performs actual TLS signature verification (delegated to rustls crypto provider) — v2.5 Phase 54
+- ✓ accept_any_hardware() dev mode gated behind insecure-tls compile-time feature flag — v2.5 Phase 54
+- ✓ MITM rejection tests: forged signature rejection (TLS 1.2/1.3), valid signature acceptance, QUIC connection with wrong cert rejected — v2.5 Phase 54
 
 ## Current Milestone: v2.5 Critical Security Fixes
 
@@ -332,4 +335,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-22 after v2.5 milestone started*
+*Last updated: 2026-03-23 after Phase 54 Transport Security complete*
