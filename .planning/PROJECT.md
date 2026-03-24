@@ -159,6 +159,8 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ import_secret_encrypted() rejects key files with < 600k PBKDF2 iterations — v2.6 Phase 57
 - ✓ /v1/verify works in postgres mode without auth (OrgContext optional, tenant-agnostic fallback) — v2.6 Phase 58
 - ✓ CORS origins configurable via CORS_ORIGINS env var (comma-separated, localhost fallback) — v2.6 Phase 58
+- ✓ trustedge CLI requires --key-out or --show-key for encryption (no key leak to stderr) — v2.6 Phase 59
+- ✓ nginx TLS termination via SSL_CERT_PATH/SSL_KEY_PATH env vars, port 443 exposed — v2.6 Phase 59
 
 ## Current Milestone: v2.6 Security Hardening
 
@@ -354,4 +356,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after Phase 58 Platform Fixes complete*
+*Last updated: 2026-03-24 after Phase 59 CLI & Deploy Hardening complete*
