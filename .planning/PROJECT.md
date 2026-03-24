@@ -16,11 +16,20 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
+## Current Milestone: v2.7 CI & Config Security
+
+**Goal:** Fix all 7 P0 security review findings — CI supply chain hardening, credential hygiene, and error information leakage.
+
+**Target features:**
+- SHA-pin all GitHub Actions across 4 workflows + replace archived `actions-rs/toolchain` + remove `curl | sh` wasm-pack install
+- Require explicit `DATABASE_URL` in release builds (no hardcoded fallback credentials)
+- Remove PostgreSQL host port binding in docker-compose (internal network only)
+- Sanitize crypto error responses to clients (generic message + server-side logging)
+- Reject placeholder JWT secret in CA config outside tests
+
 ## Current State
 
-Shipped v2.4 Security Review Remediation. All P1/P2 findings from the code & security review addressed: custom base64 replaced with standard crate, encrypted key file format versioned, auth timestamp check made unidirectional, envelope panic paths eliminated, key files get 0600 Unix permissions, nonce overflow guarded. 14 new error path tests added. 406 tests pass across workspace (up from 392 pre-v2.4).
-
-The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack, and demo remain current from v2.0-v2.1. All cryptographic fixes from v2.2 (OAEP-SHA256, v1 removal, PBKDF2 minimums, encrypted keys) are validated by the v2.3 security test suite.
+Shipped v2.6 Security Hardening. All 12 findings from the second security review fully addressed across v2.5 (P0) and v2.6 (P1). Key material zeroized on drop for all sensitive structs. PBKDF2 import validation enforced at 600k. Platform verify endpoint works in postgres mode. CORS configurable. CLI no longer leaks keys. nginx supports TLS. Dashboard bundle contains no API credentials.
 
 ## Requirements
 
@@ -165,7 +174,12 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 
 ### Active
 
-(No active requirements — v2.6 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
+- [ ] SHA-pin all GitHub Actions and remove `curl | sh` wasm-pack install
+- [ ] Replace archived `actions-rs/toolchain` with `dtolnay/rust-toolchain`
+- [ ] Require explicit `DATABASE_URL` in release builds
+- [ ] Remove PostgreSQL host port binding in docker-compose
+- [ ] Sanitize crypto error responses (generic to clients, details server-side)
+- [ ] Reject placeholder JWT secret in CA config outside tests
 
 ### Deferred
 
@@ -351,4 +365,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after v2.6 milestone*
+*Last updated: 2026-03-24 after v2.7 milestone started*
