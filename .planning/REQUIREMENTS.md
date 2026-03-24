@@ -23,7 +23,7 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 
 ### Deploy
 
-- [ ] **DEPL-01**: nginx configuration supports TLS termination (HTTPS on port 443) with configurable certificate paths
+- [x] **DEPL-01**: nginx configuration supports TLS termination (HTTPS on port 443) with configurable certificate paths
 
 ### Dashboard
 
@@ -47,7 +47,7 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 | PLAT-01 | Phase 58 | Complete |
 | PLAT-02 | Phase 58 | Complete |
 | CLI-01 | Phase 59 | Complete |
-| DEPL-01 | Phase 59 | Pending |
+| DEPL-01 | Phase 59 | Complete |
 | DASH-01 | Phase 60 | Pending |
 
 **Coverage:**
