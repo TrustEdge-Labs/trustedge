@@ -124,7 +124,9 @@ pub async fn verify_handler(
     );
 
     if org_ctx.is_none() {
-        tracing::debug!("verify_handler: no OrgContext present — operating in tenant-agnostic mode");
+        tracing::debug!(
+            "verify_handler: no OrgContext present — operating in tenant-agnostic mode"
+        );
     }
 
     validate_verify_request_full(&request).map_err(|e| (StatusCode::BAD_REQUEST, Json(e)))?;
@@ -189,7 +191,10 @@ pub async fn verify_handler(
         }
     });
 
-    let org_id_for_db = org_ctx.as_ref().map(|e| e.org_id).unwrap_or_else(uuid::Uuid::nil);
+    let org_id_for_db = org_ctx
+        .as_ref()
+        .map(|e| e.org_id)
+        .unwrap_or_else(uuid::Uuid::nil);
 
     let verification_id_uuid = crate::database::create_verification(
         &state.db_pool,
