@@ -74,12 +74,28 @@ pub fn create_router(state: AppState) -> Router {
         use super::handlers::{get_receipt_handler, register_device_handler};
         use axum::middleware;
 
-        // Dashboard dev origins — restrict to Content-Type, Authorization, Accept
+        // Read CORS allowed origins from CORS_ORIGINS env var (comma-separated).
+        // Falls back to localhost:3000,localhost:8080 when not set (dev default).
+        let cors_origins_raw = std::env::var("CORS_ORIGINS")
+            .unwrap_or_else(|_| "http://localhost:3000,http://localhost:8080".to_string());
+
+        let allowed_origins: Vec<axum::http::HeaderValue> = cors_origins_raw
+            .split(',')
+            .map(|s| s.trim())
+            .filter(|s| !s.is_empty())
+            .filter_map(|s| {
+                s.parse::<axum::http::HeaderValue>()
+                    .map_err(|_| {
+                        tracing::warn!("CORS_ORIGINS: skipping invalid entry {:?}", s);
+                    })
+                    .ok()
+            })
+            .collect();
+
+        tracing::info!("CORS allowed origins: {:?}", allowed_origins);
+
         let cors = CorsLayer::new()
-            .allow_origin([
-                "http://localhost:3000".parse().expect("valid origin"),
-                "http://localhost:8080".parse().expect("valid origin"),
-            ])
+            .allow_origin(tower_http::cors::AllowOrigin::list(allowed_origins))
             .allow_methods([axum::http::Method::GET, axum::http::Method::POST])
             .allow_headers([
                 axum::http::header::CONTENT_TYPE,
