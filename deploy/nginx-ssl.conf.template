@@ -1,0 +1,30 @@
+server {
+    listen 443 ssl;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    ssl_certificate     ${SSL_CERT_PATH};
+    ssl_certificate_key ${SSL_KEY_PATH};
+
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    # SPA fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache static assets aggressively
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Health check endpoint
+    location /healthz {
+        access_log off;
+        return 200 "ok\n";
+        add_header Content-Type text/plain;
+    }
+}
