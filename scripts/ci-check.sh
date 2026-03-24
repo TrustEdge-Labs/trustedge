@@ -298,6 +298,22 @@ if [ "$SECRET_STRUCTS_OK" = true ]; then
     pass "No forbidden derives on secret-holding structs; all have [REDACTED] Debug impls"
 fi
 
+# ── Step 12: Dashboard bundle credential check ──────────────────────
+step "Step 12: Dashboard bundle credential check"
+if [ -d "web/dashboard" ] && command -v node &> /dev/null; then
+    if (cd web/dashboard && npm install --silent 2>/dev/null && npm run build --silent 2>/dev/null); then
+        if grep -r "VITE_API_KEY" web/dashboard/build/ 2>/dev/null; then
+            fail "VITE_API_KEY found in dashboard bundle — credential leak detected"
+        else
+            pass "No API credentials in dashboard bundle"
+        fi
+    else
+        warn "Dashboard build failed — skipping bundle credential check"
+    fi
+else
+    skip "node not available or web/dashboard not present — skipping bundle check"
+fi
+
 # ── Summary ─────────────────────────────────────────────────────────
 echo
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
