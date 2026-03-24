@@ -1,78 +1,60 @@
-# Requirements: TrustEdge v2.5
+# Requirements: TrustEdge v2.6
 
-**Defined:** 2026-03-22
+**Defined:** 2026-03-23
 **Core Value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## v2.5 Requirements
+## v2.6 Requirements
 
-Requirements for critical security fixes. Each maps to roadmap phases.
+Requirements for P1 security hardening. Each maps to roadmap phases.
 
-### Transport Security
+### Core Crypto
 
-- [x] **TSEC-01**: QUIC `HardwareBackedVerifier` performs actual TLS signature verification instead of returning unconditional `HandshakeSignatureValid::assertion()`
-- [x] **TSEC-02**: MITM attack against QUIC TLS handshake is rejected (test proves verification catches bad signatures)
+- [ ] **CORE-01**: `PrivateKey` (asymmetric.rs), `SessionInfo.session_key` (auth.rs), `ClientAuthResult.session_key` (auth.rs), and `SymmetricKey` (hybrid.rs) implement `Zeroize` and `ZeroizeOnDrop`
+- [ ] **CORE-02**: `import_secret_encrypted()` rejects key files with PBKDF2 iteration count below 300,000
 
-### Platform HTTP
+### Platform
 
-- [x] **HTTP-01**: `/v1/verify` endpoint enforces a request body size limit (1-10 MB) via `RequestBodyLimitLayer`
-- [x] **HTTP-02**: HTTP endpoints enforce rate limiting to prevent CPU-exhaustion abuse of BLAKE3+Ed25519 verify
-- [x] **HTTP-03**: JWKS signing key path is configurable via environment variable (not hardcoded to `target/dev/`)
-- [x] **HTTP-04**: JWKS signing key is not persisted as unencrypted plaintext in a build-artifact directory
+- [ ] **PLAT-01**: `/v1/verify` handler works correctly in postgres mode without requiring `OrgContext` from auth middleware
+- [ ] **PLAT-02**: CORS allowed origins are configurable via `CORS_ORIGINS` environment variable (not hardcoded to localhost)
 
-### WASM
+### CLI
 
-- [x] **WASM-01**: `trst-wasm` decrypt logic calls `.decrypt()` exactly once per ciphertext (double-decrypt bug fixed)
-- [x] **WASM-02**: Browser-based archive verification completes successfully (test proves end-to-end WASM verify works)
+- [ ] **CLI-01**: `trustedge-cli` does not print encryption key to stderr unless `--show-key` flag is explicitly provided
 
-## Future Requirements (v2.6)
+### Deploy
 
-Deferred P1 findings — tracked but not in current roadmap.
+- [ ] **DEPL-01**: nginx configuration supports TLS termination (HTTPS on port 443) with configurable certificate paths
 
-### Core Hardening
+### Dashboard
 
-- **CORE-01**: Missing zeroization on 4 key-holding structs (PrivateKey, SessionInfo.session_key, ClientAuthResult.session_key, SymmetricKey)
-- **CORE-02**: Minimum PBKDF2 iteration count enforced on encrypted key import
-
-### Platform Hardening
-
-- **PLAT-01**: `/v1/verify` works correctly in postgres mode (OrgContext extraction fixed)
-- **PLAT-02**: CORS origins configurable via environment variable (not hardcoded localhost)
-
-### CLI Hardening
-
-- **CLI-01**: AES-256 key not printed to stderr without explicit `--show-key` flag
-
-### Deploy Hardening
-
-- **DEPL-01**: TLS termination in deploy stack (nginx HTTPS, encrypted Bearer tokens)
-- **DEPL-02**: API key not exposed in dashboard client-side bundle
+- [ ] **DASH-01**: Dashboard does not embed `VITE_API_KEY` in the client-side JavaScript bundle; API authentication uses a server-proxied approach or is removed
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Full mTLS client certificate auth | Out of proportion for current threat model — P0 TLS fix is sufficient |
-| WAF/DDoS protection | Infrastructure-level concern, not application code |
-| Key rotation automation | Good practice but not a P0 vulnerability |
+| mTLS client certificates | Infrastructure-level, not application code — separate initiative |
+| Key rotation automation | Good practice but not a P1 vulnerability |
+| WAF/DDoS protection | Infrastructure concern beyond application hardening |
+| Full OAuth/OIDC for dashboard | Over-engineered for current deployment model |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TSEC-01 | Phase 54 | Complete |
-| TSEC-02 | Phase 54 | Complete |
-| HTTP-01 | Phase 55 | Complete |
-| HTTP-02 | Phase 55 | Complete |
-| HTTP-03 | Phase 55 | Complete |
-| HTTP-04 | Phase 55 | Complete |
-| WASM-01 | Phase 56 | Complete |
-| WASM-02 | Phase 56 | Complete |
+| CORE-01 | — | Pending |
+| CORE-02 | — | Pending |
+| PLAT-01 | — | Pending |
+| PLAT-02 | — | Pending |
+| CLI-01 | — | Pending |
+| DEPL-01 | — | Pending |
+| DASH-01 | — | Pending |
 
 **Coverage:**
-- v2.5 requirements: 8 total
-- Mapped to phases: 8
-- Unmapped: 0 ✓
+- v2.6 requirements: 7 total
+- Mapped to phases: 0
+- Unmapped: 7 ⚠️
 
 ---
-*Requirements defined: 2026-03-22*
-*Last updated: 2026-03-22 after roadmap creation (traceability complete)*
+*Requirements defined: 2026-03-23*
+*Last updated: 2026-03-23 after initial definition*
