@@ -14,8 +14,8 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 
 ### Platform
 
-- [ ] **PLAT-01**: `/v1/verify` handler works correctly in postgres mode without requiring `OrgContext` from auth middleware
-- [ ] **PLAT-02**: CORS allowed origins are configurable via `CORS_ORIGINS` environment variable (not hardcoded to localhost)
+- [x] **PLAT-01**: `/v1/verify` handler works correctly in postgres mode without requiring `OrgContext` from auth middleware
+- [x] **PLAT-02**: CORS allowed origins are configurable via `CORS_ORIGINS` environment variable (not hardcoded to localhost)
 
 ### CLI
 
@@ -44,8 +44,8 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 |-------------|-------|--------|
 | CORE-01 | Phase 57 | Complete |
 | CORE-02 | Phase 57 | Complete |
-| PLAT-01 | Phase 58 | Pending |
-| PLAT-02 | Phase 58 | Pending |
+| PLAT-01 | Phase 58 | Complete |
+| PLAT-02 | Phase 58 | Complete |
 | CLI-01 | Phase 59 | Pending |
 | DEPL-01 | Phase 59 | Pending |
 | DASH-01 | Phase 60 | Pending |

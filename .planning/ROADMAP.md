@@ -94,7 +94,7 @@ Fixed 5 P0 security findings: QUIC TLS MITM vulnerability closed (real signature
 ### v2.6 Security Hardening (Phases 57-60) — Active
 
 - [x] **Phase 57: Core Crypto Hardening** - Zeroize key-holding structs and enforce PBKDF2 import minimum (completed 2026-03-24)
-- [ ] **Phase 58: Platform Fixes** - Fix postgres verify handler and make CORS origins configurable
+- [x] **Phase 58: Platform Fixes** - Fix postgres verify handler and make CORS origins configurable (completed 2026-03-24)
 - [ ] **Phase 59: CLI & Deploy Hardening** - Suppress key stderr output and add nginx TLS termination
 - [ ] **Phase 60: Dashboard Security** - Remove client-side API key from bundle
 
@@ -124,7 +124,7 @@ Plans:
   4. The existing HTTP verify integration tests continue to pass
 **Plans**: 1 plan
 Plans:
-- [ ] 58-01-PLAN.md — Make OrgContext optional in postgres verify_handler + read CORS origins from CORS_ORIGINS env var
+- [x] 58-01-PLAN.md — Make OrgContext optional in postgres verify_handler + read CORS origins from CORS_ORIGINS env var
 
 ### Phase 59: CLI & Deploy Hardening
 **Goal**: The CLI never leaks key material to stderr in normal operation and the Docker deployment stack supports HTTPS
@@ -153,7 +153,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 57. Core Crypto Hardening | 1/1 | Complete    | 2026-03-24 |
-| 58. Platform Fixes | 0/1 | Planned     | - |
+| 58. Platform Fixes | 1/1 | Complete   | 2026-03-24 |
 | 59. CLI & Deploy Hardening | 0/? | Not started | - |
 | 60. Dashboard Security | 0/? | Not started | - |
 
