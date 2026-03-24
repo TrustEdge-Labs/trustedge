@@ -1,5 +1,19 @@
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 
+## v2.6 Security Hardening (Shipped: 2026-03-24)
+
+**Phases completed:** 4 phases, 5 plans, 9 tasks
+
+**Key accomplishments:**
+
+- Zeroize-on-drop added to four key-holding structs (PrivateKey, ClientAuthResult, SessionInfo, SymmetricKey) and 600k PBKDF2 minimum enforced at import boundary in import_secret_encrypted()
+- Optional OrgContext in postgres verify_handler via Option<Extension<OrgContext>>, and env-driven CORS origins via CORS_ORIGINS fallback to localhost pair
+- Removed unconditional AES-256 key stderr leak; replaced with three-way gate: --key-out writes silently, --show-key prints to stderr, neither causes actionable error
+- Conditional HTTPS termination added to the nginx dashboard container via envsubst template and docker-entrypoint.sh; HTTP port 80 unchanged; port 443 opt-in when SSL_CERT_PATH and SSL_KEY_PATH are set
+- Removed VITE_API_KEY from SvelteKit dashboard bundle: config, api client, and two protected-endpoint pages replaced; CI bundle grep guard added
+
+---
+
 ## v2.5 Critical Security Fixes (Shipped: 2026-03-23)
 
 **Phases completed:** 3 phases, 4 plans, 8 tasks

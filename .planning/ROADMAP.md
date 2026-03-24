@@ -25,7 +25,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v2.3 Security Testing** - Phases 48-51 (shipped 2026-03-21)
 - ✅ **v2.4 Security Review Remediation** - Phases 52-53 (shipped 2026-03-22)
 - ✅ **v2.5 Critical Security Fixes** - Phases 54-56 (shipped 2026-03-23)
-- 🔄 **v2.6 Security Hardening** - Phases 57-60 (active)
+- ✅ **v2.6 Security Hardening** - Phases 57-60 (shipped 2026-03-24)
 
 ## Phases
 
@@ -91,75 +91,14 @@ Fixed 5 P0 security findings: QUIC TLS MITM vulnerability closed (real signature
 
 </details>
 
-### v2.6 Security Hardening (Phases 57-60) — Active
+<details>
+<summary>v2.6 Security Hardening (Phases 57-60) - SHIPPED 2026-03-24</summary>
 
-- [x] **Phase 57: Core Crypto Hardening** - Zeroize key-holding structs and enforce PBKDF2 import minimum (completed 2026-03-24)
-- [x] **Phase 58: Platform Fixes** - Fix postgres verify handler and make CORS origins configurable (completed 2026-03-24)
-- [x] **Phase 59: CLI & Deploy Hardening** - Suppress key stderr output and add nginx TLS termination (completed 2026-03-24)
-- [x] **Phase 60: Dashboard Security** - Remove client-side API key from bundle (completed 2026-03-24)
+Addressed 7 P1 security hardening findings: Zeroize on 4 key structs, 600k PBKDF2 import minimum, postgres verify fix, configurable CORS, CLI key leak prevention, nginx TLS termination, dashboard API key removed from bundle. 4 phases, 5 plans, 7/7 requirements complete, 39 commits.
 
-## Phase Details
+**See:** `.planning/milestones/v2.6-ROADMAP.md` for full phase details.
 
-### Phase 57: Core Crypto Hardening
-**Goal**: Sensitive key material is zeroed from memory when dropped and weak key imports are rejected at the boundary
-**Depends on**: Nothing (first phase of v2.6)
-**Requirements**: CORE-01, CORE-02
-**Success Criteria** (what must be TRUE):
-  1. Dropping a `PrivateKey`, `SessionInfo`, `ClientAuthResult`, or `SymmetricKey` instance causes its key bytes to be overwritten in memory (Zeroize + ZeroizeOnDrop implemented)
-  2. Calling `import_secret_encrypted()` with a key file containing fewer than 600,000 PBKDF2 iterations returns an error — the key is never loaded
-  3. Calling `import_secret_encrypted()` with a key file containing 600,000 or more iterations succeeds as before
-  4. All existing tests continue to pass after the zeroize additions
-**Plans**: 1 plan
-Plans:
-- [x] 57-01-PLAN.md — Add Zeroize/Drop to 4 key-holding structs + enforce 600k PBKDF2 minimum in import_secret_encrypted
-
-### Phase 58: Platform Fixes
-**Goal**: The platform verification endpoint works correctly in postgres mode and CORS policy is configurable for production deployments
-**Depends on**: Phase 57
-**Requirements**: PLAT-01, PLAT-02
-**Success Criteria** (what must be TRUE):
-  1. A POST to `/v1/verify` in postgres mode succeeds and returns a receipt without requiring `OrgContext` to be injected by auth middleware
-  2. Setting `CORS_ORIGINS=https://app.example.com` causes the platform to allow that origin and reject unlisted origins
-  3. Without `CORS_ORIGINS` set, the platform falls back to a safe default (same-origin / localhost only)
-  4. The existing HTTP verify integration tests continue to pass
-**Plans**: 1 plan
-Plans:
-- [x] 58-01-PLAN.md — Make OrgContext optional in postgres verify_handler + read CORS origins from CORS_ORIGINS env var
-
-### Phase 59: CLI & Deploy Hardening
-**Goal**: The CLI never leaks key material to stderr in normal operation and the Docker deployment stack supports HTTPS
-**Depends on**: Phase 57
-**Requirements**: CLI-01, DEPL-01
-**Success Criteria** (what must be TRUE):
-  1. Running `trustedge` (without `--show-key`) produces no AES key output on stderr
-  2. Running `trustedge --show-key` displays the key on stderr as before
-  3. The nginx configuration in the Docker stack accepts HTTPS connections on port 443 when certificate paths are configured via environment variables
-  4. HTTP on port 80 continues to work (or redirects to HTTPS) in the Docker stack
-**Plans**: 2 plans
-Plans:
-- [x] 59-01-PLAN.md — Add --show-key flag + key loss prevention to trustedge-cli
-- [x] 59-02-PLAN.md — Add nginx TLS template, docker-entrypoint script, and wire into Dockerfile/compose/.env.example
-
-### Phase 60: Dashboard Security
-**Goal**: The dashboard JavaScript bundle contains no embedded API credentials; authentication to the platform is not exposed client-side
-**Depends on**: Phase 58
-**Requirements**: DASH-01
-**Success Criteria** (what must be TRUE):
-  1. Building the dashboard with `npm run build` produces no bundle file containing the string `VITE_API_KEY` as a value (the key is not embedded)
-  2. The dashboard can still communicate with the platform API after the change (either via proxy, token removal, or equivalent)
-  3. CI or a build-time check catches any future re-introduction of a client-side API key in the bundle
-**Plans**: 1 plan
-Plans:
-- [x] 60-01-PLAN.md — Remove VITE_API_KEY from config/api/pages + replace protected-endpoint pages with notices + add CI bundle guard
-
-## Progress Table
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 57. Core Crypto Hardening | 1/1 | Complete    | 2026-03-24 |
-| 58. Platform Fixes | 1/1 | Complete    | 2026-03-24 |
-| 59. CLI & Deploy Hardening | 2/2 | Complete    | 2026-03-24 |
-| 60. Dashboard Security | 1/1 | Complete    | 2026-03-24 |
+</details>
 
 ---
-*Last updated: 2026-03-24 after phase 60 planned*
+*Last updated: 2026-03-24 after v2.6 milestone*

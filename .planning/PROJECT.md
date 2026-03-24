@@ -163,22 +163,9 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ nginx TLS termination via SSL_CERT_PATH/SSL_KEY_PATH env vars, port 443 exposed — v2.6 Phase 59
 - ✓ VITE_API_KEY removed from dashboard bundle, protected pages replaced with admin notices, CI guard added — v2.6 Phase 60
 
-## Current Milestone: v2.6 Security Hardening
-
-**Goal:** Address 7 P1 security hardening findings for production readiness.
-
-**Target features:**
-- Add Zeroize/ZeroizeOnDrop to 4 key-holding structs
-- Enforce minimum PBKDF2 iteration count on encrypted key import
-- Fix /v1/verify in postgres mode (OrgContext extraction)
-- Stop printing AES-256 key to stderr
-- Make CORS origins configurable via environment variable
-- Add TLS termination to deploy stack
-- Remove API key from dashboard client-side bundle
-
 ### Active
 
-(Requirements will be defined via milestone requirements phase)
+(No active requirements — v2.6 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -210,10 +197,11 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - **v2.3 Security Testing** — 31 security tests across 4 threat model categories, archive integrity, nonce/key derivation, key file protection, receipt binding
 - **v2.4 Security Review Remediation** — Custom base64 replaced, key format versioned, timestamp replay fixed, envelope panics eliminated, key file permissions enforced, nonce overflow guarded, 14 error path tests
 - **v2.5 Critical Security Fixes** — QUIC TLS MITM vulnerability closed, 2 MB body limit + per-IP rate limiting on platform, JWKS key path configurable (no more target/dev/), WASM double-decrypt bug fixed
+- **v2.6 Security Hardening** — Zeroize on 4 key structs, 600k PBKDF2 import minimum, postgres verify fix, configurable CORS, CLI key leak prevention, nginx TLS, dashboard API key removed
 
 ## Current State
 
-Shipped v2.5 Critical Security Fixes. All 5 P0 findings from the second security review addressed: QUIC TLS MITM vulnerability closed (real signature verification via rustls provider), HTTP endpoints hardened (2 MB body limit, per-IP rate limiting via governor), JWKS signing key no longer persisted as plaintext to target/dev/ (configurable via JWKS_KEY_PATH env var, 0600 permissions), WASM double-decrypt bug fixed and crypto module wired into build.
+Shipped v2.6 Security Hardening. All 12 findings from the second security review fully addressed across v2.5 (P0) and v2.6 (P1). Key material zeroized on drop for all sensitive structs. PBKDF2 import validation enforced at 600k. Platform verify endpoint works in postgres mode. CORS configurable. CLI no longer leaks keys. nginx supports TLS. Dashboard bundle contains no API credentials.
 
 ## Context
 
@@ -223,7 +211,7 @@ TrustEdge-Labs GitHub org has exactly 3 repos: trustedge (main workspace), trust
 Full data lifecycle: `trst keygen` (passphrase-encrypted keys) → `trst wrap` (encrypt + sign) → `trst verify` (validate) → `trst unwrap` (verify + decrypt).
 Device keys encrypted at rest: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM). `--unencrypted` escape for CI.
 RSA uses OAEP-SHA256 exclusively (PKCS#1 v1.5 eliminated). v1 envelope format removed entirely (v2-only).
-PBKDF2 minimum 300k iterations enforced at builder + backend levels.
+PBKDF2 minimum 600k iterations enforced at builder, backend, and import levels.
 Platform HTTP: 2 MB global body limit, per-IP rate limiting on /v1/verify (governor, configurable RATE_LIMIT_RPS, default 10/sec).
 JWKS signing key path configurable via JWKS_KEY_PATH env var; defaults to temp dir; 0600 Unix permissions.
 QUIC HardwareBackedVerifier performs real TLS signature verification; accept_any_hardware() gated behind insecure-tls.
@@ -237,6 +225,12 @@ Envelope `beneficiary()`/`issuer()` return `Result<VerifyingKey>` — no panic p
 ProfileMetadata enum: CamVideo, Sensor, Audio, Log, Generic (untagged serde, unique-field discrimination).
 Docker Compose stack starts platform-server (Rust 1.88, auto-migration), postgres, and dashboard (nginx static). Zero-config.
 Demo script auto-detects docker/local mode and YubiKey hardware.
+Zeroize/Drop on PrivateKey, SessionInfo, ClientAuthResult, SymmetricKey — key material zeroed on drop.
+CORS configurable via CORS_ORIGINS env var (comma-separated, localhost fallback for postgres builds).
+CLI requires --key-out or --show-key for encryption — no key leak to stderr.
+nginx supports conditional TLS via SSL_CERT_PATH/SSL_KEY_PATH env vars (port 443 opt-in).
+Dashboard bundle contains no API credentials; CI Step 12 greps bundle to prevent re-introduction.
+/v1/verify works in postgres mode without auth (OrgContext optional, tenant-agnostic fallback).
 CI uses `--workspace` for root workspace. YubiKey feature validated unconditionally. cargo-audit + TODO hygiene enforced.
 
 ## Constraints
@@ -357,4 +351,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after Phase 60 Dashboard Security complete — v2.6 milestone complete*
+*Last updated: 2026-03-24 after v2.6 milestone*
