@@ -135,7 +135,10 @@ Plans:
   2. Running `trustedge --show-key` displays the key on stderr as before
   3. The nginx configuration in the Docker stack accepts HTTPS connections on port 443 when certificate paths are configured via environment variables
   4. HTTP on port 80 continues to work (or redirects to HTTPS) in the Docker stack
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 59-01-PLAN.md — Add --show-key flag + key loss prevention to trustedge-cli
+- [ ] 59-02-PLAN.md — Add nginx TLS template, docker-entrypoint script, and wire into Dockerfile/compose/.env.example
 
 ### Phase 60: Dashboard Security
 **Goal**: The dashboard JavaScript bundle contains no embedded API credentials; authentication to the platform is not exposed client-side
@@ -154,8 +157,8 @@ Plans:
 |-------|----------------|--------|-----------|
 | 57. Core Crypto Hardening | 1/1 | Complete    | 2026-03-24 |
 | 58. Platform Fixes | 1/1 | Complete    | 2026-03-24 |
-| 59. CLI & Deploy Hardening | 0/? | Not started | - |
+| 59. CLI & Deploy Hardening | 0/2 | Not started | - |
 | 60. Dashboard Security | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-03-24 after phase 58 planned*
+*Last updated: 2026-03-24 after phase 59 planned*
