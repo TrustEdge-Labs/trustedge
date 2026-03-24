@@ -11,6 +11,7 @@ use crate::backends::AsymmetricAlgorithm;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use zeroize::Zeroize;
 
 pub use crate::error::AsymmetricError;
 
@@ -26,14 +27,22 @@ pub struct PublicKey {
 }
 
 /// A private key for asymmetric cryptography
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Zeroize)]
 pub struct PrivateKey {
     /// The algorithm used for this key
+    #[zeroize(skip)]
     pub algorithm: AsymmetricAlgorithm,
     /// The raw key bytes (sensitive data)
     pub key_bytes: Vec<u8>,
     /// Optional key identifier for lookups
+    #[zeroize(skip)]
     pub key_id: Option<String>,
+}
+
+impl Drop for PrivateKey {
+    fn drop(&mut self) {
+        self.key_bytes.zeroize();
+    }
 }
 
 /// A key pair containing both public and private keys

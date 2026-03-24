@@ -324,32 +324,53 @@ fn derive_session_key(
 }
 
 /// Result of a successful client authentication handshake
+#[derive(Zeroize)]
 pub struct ClientAuthResult {
     /// Session ID assigned by the server
+    #[zeroize(skip)]
     pub session_id: [u8; SESSION_ID_SIZE],
     /// Server's certificate (for identity verification)
+    #[zeroize(skip)]
     pub server_certificate: ServerCertificate,
     /// Shared session encryption key derived from ECDH
     pub session_key: [u8; 32],
 }
 
+impl Drop for ClientAuthResult {
+    fn drop(&mut self) {
+        self.session_key.zeroize();
+    }
+}
+
 /// Active session information
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Zeroize)]
 pub struct SessionInfo {
     /// Unique session identifier
+    #[zeroize(skip)]
     pub session_id: [u8; SESSION_ID_SIZE],
     /// Client's public key
+    #[zeroize(skip)]
     pub client_public_key: [u8; 32],
     /// Client identity (if provided)
+    #[zeroize(skip)]
     pub client_identity: Option<String>,
     /// Session creation timestamp
+    #[zeroize(skip)]
     pub created_at: u64,
     /// Session expiration timestamp
+    #[zeroize(skip)]
     pub expires_at: u64,
     /// Whether the session is authenticated
+    #[zeroize(skip)]
     pub authenticated: bool,
     /// Shared session encryption key derived from ECDH (zeroized on drop)
     pub session_key: [u8; 32],
+}
+
+impl Drop for SessionInfo {
+    fn drop(&mut self) {
+        self.session_key.zeroize();
+    }
 }
 
 impl SessionInfo {

@@ -11,6 +11,7 @@ use crate::asymmetric::{decrypt_key_asymmetric, encrypt_key_asymmetric, PrivateK
 use crate::format::AeadAlgorithm;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use zeroize::Zeroize;
 
 /// Errors that can occur during hybrid encryption operations
 #[derive(Debug, thiserror::Error)]
@@ -35,8 +36,14 @@ pub enum HybridEncryptionError {
 }
 
 /// A symmetric encryption key
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Zeroize)]
 pub struct SymmetricKey([u8; 32]);
+
+impl Drop for SymmetricKey {
+    fn drop(&mut self) {
+        self.0.zeroize();
+    }
+}
 
 impl SymmetricKey {
     /// Generate a new random symmetric key
