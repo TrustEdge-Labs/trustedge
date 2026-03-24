@@ -109,7 +109,9 @@ Fixed 5 P0 security findings: QUIC TLS MITM vulnerability closed (real signature
   2. Calling `import_secret_encrypted()` with a key file containing fewer than 300,000 PBKDF2 iterations returns an error — the key is never loaded
   3. Calling `import_secret_encrypted()` with a key file containing 300,000 or more iterations succeeds as before
   4. All existing tests continue to pass after the zeroize additions
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 57-01-PLAN.md — Add Zeroize/Drop to 4 key-holding structs + enforce 600k PBKDF2 minimum in import_secret_encrypted
 
 ### Phase 58: Platform Fixes
 **Goal**: The platform verification endpoint works correctly in postgres mode and CORS policy is configurable for production deployments
@@ -148,10 +150,10 @@ Fixed 5 P0 security findings: QUIC TLS MITM vulnerability closed (real signature
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 57. Core Crypto Hardening | 0/? | Not started | - |
+| 57. Core Crypto Hardening | 0/1 | Planned | - |
 | 58. Platform Fixes | 0/? | Not started | - |
 | 59. CLI & Deploy Hardening | 0/? | Not started | - |
 | 60. Dashboard Security | 0/? | Not started | - |
 
 ---
-*Last updated: 2026-03-23 after v2.6 roadmap created*
+*Last updated: 2026-03-23 after phase 57 planned*
