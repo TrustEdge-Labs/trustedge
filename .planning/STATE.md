@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Security Hardening
-status: Ready to plan
-stopped_at: Phase 60 context gathered
-last_updated: "2026-03-24T14:29:53.421Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 60-01-PLAN.md
+last_updated: "2026-03-24T14:56:32.306Z"
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 4
+  total_plans: 5
+  completed_plans: 5
 ---
 
 <!--
@@ -26,12 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 59 — cli-deploy-hardening
+**Current focus:** Phase 60 — dashboard-security
 
 ## Current Position
 
-Phase: 60
-Plan: Not started
+Phase: 60 (dashboard-security) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ Cleared — see PROJECT.md Key Decisions table for full history.
 - [Phase 58-platform-fixes]: CORS_ORIGINS env var: comma-separated origins, fallback localhost:3000,localhost:8080; AllowOrigin::list() for Vec<HeaderValue>
 - [Phase 59-cli-deploy-hardening]: Three-way key output gate in trustedge CLI: --key-out writes silently, --show-key prints to stderr, neither => actionable bail! error (CLI-01)
 - [Phase 59-cli-deploy-hardening]: envsubst + shell entrypoint pattern for conditional nginx TLS: docker-entrypoint.sh generates ssl.conf only when SSL_CERT_PATH and SSL_KEY_PATH are set; HTTP port 80 unchanged
+- [Phase 60-dashboard-security]: Dashboard accesses public endpoints only — no Bearer token needed in client bundle (DASH-01)
 
 ### Pending Todos
 
@@ -96,12 +97,13 @@ None.
 | Phase 58-platform-fixes P01 | 15 | 2 tasks | 2 files |
 | Phase 59 P01 | 5 | 1 tasks | 1 files |
 | Phase 59-cli-deploy-hardening P02 | 5 | 2 tasks | 5 files |
+| Phase 60-dashboard-security P01 | 2 | 2 tasks | 7 files |
 
 ## Session Continuity
 
-Last session: 2026-03-24T14:29:53.418Z
-Stopped at: Phase 60 context gathered
-Resume file: .planning/phases/60-dashboard-security/60-CONTEXT.md
+Last session: 2026-03-24T14:56:32.302Z
+Stopped at: Completed 60-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-23 after v2.6 roadmap created*

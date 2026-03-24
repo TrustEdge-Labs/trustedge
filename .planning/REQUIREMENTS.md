@@ -27,7 +27,7 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 
 ### Dashboard
 
-- [ ] **DASH-01**: Dashboard does not embed `VITE_API_KEY` in the client-side JavaScript bundle; API authentication uses a server-proxied approach or is removed
+- [x] **DASH-01**: Dashboard does not embed `VITE_API_KEY` in the client-side JavaScript bundle; API authentication uses a server-proxied approach or is removed
 
 ## Out of Scope
 
@@ -48,7 +48,7 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 | PLAT-02 | Phase 58 | Complete |
 | CLI-01 | Phase 59 | Complete |
 | DEPL-01 | Phase 59 | Complete |
-| DASH-01 | Phase 60 | Pending |
+| DASH-01 | Phase 60 | Complete |
 
 **Coverage:**
 - v2.6 requirements: 7 total

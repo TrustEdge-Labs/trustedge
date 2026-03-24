@@ -96,7 +96,7 @@ Fixed 5 P0 security findings: QUIC TLS MITM vulnerability closed (real signature
 - [x] **Phase 57: Core Crypto Hardening** - Zeroize key-holding structs and enforce PBKDF2 import minimum (completed 2026-03-24)
 - [x] **Phase 58: Platform Fixes** - Fix postgres verify handler and make CORS origins configurable (completed 2026-03-24)
 - [x] **Phase 59: CLI & Deploy Hardening** - Suppress key stderr output and add nginx TLS termination (completed 2026-03-24)
-- [ ] **Phase 60: Dashboard Security** - Remove client-side API key from bundle
+- [x] **Phase 60: Dashboard Security** - Remove client-side API key from bundle (completed 2026-03-24)
 
 ## Phase Details
 
@@ -150,7 +150,7 @@ Plans:
   3. CI or a build-time check catches any future re-introduction of a client-side API key in the bundle
 **Plans**: 1 plan
 Plans:
-- [ ] 60-01-PLAN.md — Remove VITE_API_KEY from config/api/pages + replace protected-endpoint pages with notices + add CI bundle guard
+- [x] 60-01-PLAN.md — Remove VITE_API_KEY from config/api/pages + replace protected-endpoint pages with notices + add CI bundle guard
 
 ## Progress Table
 
@@ -159,7 +159,7 @@ Plans:
 | 57. Core Crypto Hardening | 1/1 | Complete    | 2026-03-24 |
 | 58. Platform Fixes | 1/1 | Complete    | 2026-03-24 |
 | 59. CLI & Deploy Hardening | 2/2 | Complete    | 2026-03-24 |
-| 60. Dashboard Security | 0/1 | Not started | - |
+| 60. Dashboard Security | 1/1 | Complete   | 2026-03-24 |
 
 ---
 *Last updated: 2026-03-24 after phase 60 planned*
