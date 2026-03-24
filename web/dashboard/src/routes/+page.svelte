@@ -1,14 +1,3 @@
-<script lang="ts">
-	import { onMount } from 'svelte';
-	import { config } from '$lib/config';
-
-	let apiConfigured = $state(false);
-
-	onMount(() => {
-		apiConfigured = !!config.apiKey;
-	});
-</script>
-
 <svelte:head>
 	<title>TrustEdge Dashboard</title>
 </svelte:head>
@@ -16,14 +5,6 @@
 <div class="card">
 	<h1>TrustEdge Dashboard</h1>
 	<p>Welcome to the TrustEdge organization dashboard. Monitor receipts, manage devices, and track verification status.</p>
-
-	{#if !apiConfigured}
-		<div class="error-banner">
-			<strong>Configuration Required:</strong> Please set your API key in <code>.env.local</code>
-			<br>
-			<small>Add: <code>VITE_API_KEY=your-api-key-here</code></small>
-		</div>
-	{/if}
 
 	<div class="quick-links">
 		<a href="/receipts" class="btn btn-primary">View Receipts</a>

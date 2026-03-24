@@ -8,11 +8,9 @@ export interface ApiError {
 
 export class ApiClient {
 	private baseUrl: string;
-	private apiKey: string;
 
 	constructor() {
 		this.baseUrl = config.apiBase;
-		this.apiKey = config.apiKey;
 	}
 
 	private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -20,7 +18,6 @@ export class ApiClient {
 
 		const headers = {
 			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${this.apiKey}`,
 			...options.headers
 		};
 
@@ -37,7 +34,7 @@ export class ApiClient {
 				};
 
 				if (response.status === 401) {
-					error.message = 'Invalid API key or unauthorized access';
+					error.message = 'Unauthorized — protected endpoint not accessible from dashboard';
 					error.code = 'UNAUTHORIZED';
 				} else if (response.status === 429) {
 					error.message = 'Rate limit exceeded';
