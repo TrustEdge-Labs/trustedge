@@ -2,15 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Security Hardening
-status: "Roadmap approved, ready for `/gsd:plan-phase 57`"
-stopped_at: Phase 57 context gathered
-last_updated: "2026-03-24T00:42:42.514Z"
-last_activity: 2026-03-23 — Roadmap created for v2.6 Security Hardening
+status: Phase complete — ready for verification
+stopped_at: Completed 57-core-crypto-hardening 57-01-PLAN.md
+last_updated: "2026-03-24T01:37:54.811Z"
 progress:
   total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
 ---
 
 <!--
@@ -27,14 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** v2.6 Security Hardening — Phase 57 (Core Crypto Hardening) ready to plan
+**Current focus:** Phase 57 — core-crypto-hardening
 
 ## Current Position
 
-Phase: 57 — Core Crypto Hardening (not started)
-Plan: —
-Status: Roadmap approved, ready for `/gsd:plan-phase 57`
-Last activity: 2026-03-23 — Roadmap created for v2.6 Security Hardening
+Phase: 57 (core-crypto-hardening) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -71,6 +68,8 @@ Cleared — see PROJECT.md Key Decisions table for full history.
 - [Phase 55-platform-http-hardening]: KeyManager stores key_path as struct field for use in all save/rotate methods without arg passing
 - [Phase 56-wasm-fix]: cfg(target_arch=wasm32) gates wasm-bindgen extern block; no-op console_log! fallback for native test compat
 - [Phase 56-wasm-fix]: Native test helpers (encrypt_native/decrypt_native with String errors) bypass JsValue non-unwinding panic on native targets
+- [Phase 57-core-crypto-hardening]: Use #[derive(Zeroize)] + manual impl Drop (not ZeroizeOnDrop) for key-holding structs that Clone — avoids derive conflict
+- [Phase 57-core-crypto-hardening]: PBKDF2 iteration guard placed immediately after parsing in import_secret_encrypted — fail early, before nonce length check
 
 ### Pending Todos
 
@@ -89,12 +88,13 @@ None.
 | Phase 55-platform-http-hardening P01 | 10min | 2 tasks | 6 files |
 | Phase 55-platform-http-hardening P02 | 525694min | 2 tasks | 4 files |
 | Phase 56-wasm-fix P01 | 525541min | 2 tasks | 3 files |
+| Phase 57-core-crypto-hardening P01 | 34 | 2 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: 2026-03-24T00:42:42.511Z
-Stopped at: Phase 57 context gathered
-Resume file: .planning/phases/57-core-crypto-hardening/57-CONTEXT.md
+Last session: 2026-03-24T01:37:54.808Z
+Stopped at: Completed 57-core-crypto-hardening 57-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-23 after v2.6 roadmap created*
