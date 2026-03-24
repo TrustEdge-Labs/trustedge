@@ -42,19 +42,19 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CORE-01 | — | Pending |
-| CORE-02 | — | Pending |
-| PLAT-01 | — | Pending |
-| PLAT-02 | — | Pending |
-| CLI-01 | — | Pending |
-| DEPL-01 | — | Pending |
-| DASH-01 | — | Pending |
+| CORE-01 | Phase 57 | Pending |
+| CORE-02 | Phase 57 | Pending |
+| PLAT-01 | Phase 58 | Pending |
+| PLAT-02 | Phase 58 | Pending |
+| CLI-01 | Phase 59 | Pending |
+| DEPL-01 | Phase 59 | Pending |
+| DASH-01 | Phase 60 | Pending |
 
 **Coverage:**
 - v2.6 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 ⚠️
+- Mapped to phases: 7
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-23*
-*Last updated: 2026-03-23 after initial definition*
+*Last updated: 2026-03-23 after roadmap created*

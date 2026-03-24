@@ -25,6 +25,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v2.3 Security Testing** - Phases 48-51 (shipped 2026-03-21)
 - ✅ **v2.4 Security Review Remediation** - Phases 52-53 (shipped 2026-03-22)
 - ✅ **v2.5 Critical Security Fixes** - Phases 54-56 (shipped 2026-03-23)
+- 🔄 **v2.6 Security Hardening** - Phases 57-60 (active)
 
 ## Phases
 
@@ -90,5 +91,67 @@ Fixed 5 P0 security findings: QUIC TLS MITM vulnerability closed (real signature
 
 </details>
 
+### v2.6 Security Hardening (Phases 57-60) — Active
+
+- [ ] **Phase 57: Core Crypto Hardening** - Zeroize key-holding structs and enforce PBKDF2 import minimum
+- [ ] **Phase 58: Platform Fixes** - Fix postgres verify handler and make CORS origins configurable
+- [ ] **Phase 59: CLI & Deploy Hardening** - Suppress key stderr output and add nginx TLS termination
+- [ ] **Phase 60: Dashboard Security** - Remove client-side API key from bundle
+
+## Phase Details
+
+### Phase 57: Core Crypto Hardening
+**Goal**: Sensitive key material is zeroed from memory when dropped and weak key imports are rejected at the boundary
+**Depends on**: Nothing (first phase of v2.6)
+**Requirements**: CORE-01, CORE-02
+**Success Criteria** (what must be TRUE):
+  1. Dropping a `PrivateKey`, `SessionInfo`, `ClientAuthResult`, or `SymmetricKey` instance causes its key bytes to be overwritten in memory (Zeroize + ZeroizeOnDrop implemented)
+  2. Calling `import_secret_encrypted()` with a key file containing fewer than 300,000 PBKDF2 iterations returns an error — the key is never loaded
+  3. Calling `import_secret_encrypted()` with a key file containing 300,000 or more iterations succeeds as before
+  4. All existing tests continue to pass after the zeroize additions
+**Plans**: TBD
+
+### Phase 58: Platform Fixes
+**Goal**: The platform verification endpoint works correctly in postgres mode and CORS policy is configurable for production deployments
+**Depends on**: Phase 57
+**Requirements**: PLAT-01, PLAT-02
+**Success Criteria** (what must be TRUE):
+  1. A POST to `/v1/verify` in postgres mode succeeds and returns a receipt without requiring `OrgContext` to be injected by auth middleware
+  2. Setting `CORS_ORIGINS=https://app.example.com` causes the platform to allow that origin and reject unlisted origins
+  3. Without `CORS_ORIGINS` set, the platform falls back to a safe default (same-origin / localhost only)
+  4. The existing HTTP verify integration tests continue to pass
+**Plans**: TBD
+
+### Phase 59: CLI & Deploy Hardening
+**Goal**: The CLI never leaks key material to stderr in normal operation and the Docker deployment stack supports HTTPS
+**Depends on**: Phase 57
+**Requirements**: CLI-01, DEPL-01
+**Success Criteria** (what must be TRUE):
+  1. Running `trustedge` (without `--show-key`) produces no AES key output on stderr
+  2. Running `trustedge --show-key` displays the key on stderr as before
+  3. The nginx configuration in the Docker stack accepts HTTPS connections on port 443 when certificate paths are configured via environment variables
+  4. HTTP on port 80 continues to work (or redirects to HTTPS) in the Docker stack
+**Plans**: TBD
+
+### Phase 60: Dashboard Security
+**Goal**: The dashboard JavaScript bundle contains no embedded API credentials; authentication to the platform is not exposed client-side
+**Depends on**: Phase 58
+**Requirements**: DASH-01
+**Success Criteria** (what must be TRUE):
+  1. Building the dashboard with `npm run build` produces no bundle file containing the string `VITE_API_KEY` as a value (the key is not embedded)
+  2. The dashboard can still communicate with the platform API after the change (either via proxy, token removal, or equivalent)
+  3. CI or a build-time check catches any future re-introduction of a client-side API key in the bundle
+**Plans**: TBD
+**UI hint**: yes
+
+## Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 57. Core Crypto Hardening | 0/? | Not started | - |
+| 58. Platform Fixes | 0/? | Not started | - |
+| 59. CLI & Deploy Hardening | 0/? | Not started | - |
+| 60. Dashboard Security | 0/? | Not started | - |
+
 ---
-*Last updated: 2026-03-23 after v2.5 milestone*
+*Last updated: 2026-03-23 after v2.6 roadmap created*
