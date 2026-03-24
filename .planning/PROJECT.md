@@ -155,6 +155,8 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ JWKS signing key path configurable via JWKS_KEY_PATH env var, defaults to temp dir (not target/dev/) — v2.5 Phase 55
 - ✓ Signing key file gets 0600 Unix permissions, zero target/dev/ references remain — v2.5 Phase 55
 - ✓ trst-wasm double .decrypt() bug fixed, crypto module wired into build, encrypt/decrypt round-trip tests — v2.5 Phase 56
+- ✓ Zeroize/Drop on PrivateKey, SessionInfo, ClientAuthResult, SymmetricKey — key material zeroed on drop — v2.6 Phase 57
+- ✓ import_secret_encrypted() rejects key files with < 600k PBKDF2 iterations — v2.6 Phase 57
 
 ## Current Milestone: v2.6 Security Hardening
 
@@ -350,4 +352,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 after v2.6 milestone started*
+*Last updated: 2026-03-24 after Phase 57 Core Crypto Hardening complete*
