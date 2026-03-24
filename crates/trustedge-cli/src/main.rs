@@ -231,6 +231,10 @@ struct Args {
     /// Enable verbose output for format details
     #[arg(long)]
     verbose: bool,
+
+    /// Print the generated AES-256 encryption key to stderr (unsafe — prefer --key-out)
+    #[arg(long, default_value_t = false)]
+    show_key: bool,
 }
 
 /// Helpers
@@ -372,8 +376,13 @@ fn select_aes_key_with_backend(args: &Args, mode: Mode) -> Result<[u8; 32]> {
             OsRng.fill_bytes(&mut kb);
             if let Some(p) = &args.key_out {
                 std::fs::write(p, hex::encode(kb)).context("write key_out")?;
+            } else if args.show_key {
+                eprintln!("AES-256 key (hex) = {}", hex::encode(kb));
             } else {
-                eprintln!("NOTE (demo): AES-256 key (hex) = {}", hex::encode(kb));
+                anyhow::bail!(
+                    "encryption key not saved: specify --key-out <file> to write the key to a file, \
+                     or --show-key to display it on stderr"
+                );
             }
             Ok(kb)
         }
