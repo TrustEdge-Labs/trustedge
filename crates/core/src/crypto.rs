@@ -771,8 +771,8 @@ mod tests {
     fn test_encrypted_key_rejects_low_iterations() {
         // Build a synthetic key file with below-minimum iterations.
         // We manually construct the file format to bypass export_secret_encrypted.
-        use aes_gcm::{Aes256Gcm, KeyInit, Nonce as AesGcmNonce};
         use aes_gcm::aead::Aead;
+        use aes_gcm::{Aes256Gcm, KeyInit, Nonce as AesGcmNonce};
         use pbkdf2::pbkdf2_hmac;
         use sha2::Sha256;
 
@@ -783,7 +783,12 @@ mod tests {
         let plaintext = [3u8; 32];
 
         let mut derived_key = [0u8; 32];
-        pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), &salt, low_iterations, &mut derived_key);
+        pbkdf2_hmac::<Sha256>(
+            passphrase.as_bytes(),
+            &salt,
+            low_iterations,
+            &mut derived_key,
+        );
 
         let cipher = Aes256Gcm::new_from_slice(&derived_key).unwrap();
         let nonce = AesGcmNonce::from_slice(&nonce_bytes);
@@ -799,7 +804,10 @@ mod tests {
         file_data.extend_from_slice(&ciphertext);
 
         let result = DeviceKeypair::import_secret_encrypted(&file_data, passphrase);
-        assert!(result.is_err(), "Should reject key file with low iteration count");
+        assert!(
+            result.is_err(),
+            "Should reject key file with low iteration count"
+        );
         let err_msg = result.err().unwrap().to_string();
         assert!(
             err_msg.contains("299999") || err_msg.contains("minimum"),
