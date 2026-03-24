@@ -19,16 +19,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build workspace
 cargo build --workspace --release
 
-# Test entire workspace (265+ tests)
+# Test entire workspace (423+ tests)
 cargo test --workspace
 
 # Test specific crates
-cargo test -p trustedge-types                     # Shared wire types (18 tests)
-cargo test -p trustedge-core --lib                # Core cryptography (160 tests)
-cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
-cargo test -p trustedge-platform --lib            # Platform unit tests (12 tests)
+cargo test -p trustedge-types                     # Shared wire types (12 tests)
+cargo test -p trustedge-core --lib                # Core cryptography (184 tests)
+cargo test -p trustedge-trst-cli --test acceptance # Archive validation (28 tests)
+cargo test -p trustedge-platform --lib            # Platform unit tests (18 tests)
 cargo test -p trustedge-platform --test verify_integration           # Verify integration (5 tests)
-cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (7 tests)
+cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (22 tests)
 
 # Run a single test
 cargo test -p trustedge-core test_name -- --nocapture

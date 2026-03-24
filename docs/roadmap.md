@@ -11,21 +11,21 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ---
 
-## Current Status (v2.4)
+## Current Status (v2.6)
 
-TrustEdge v2.4 is a **security-hardened, fully tested platform** with:
+TrustEdge v2.6 is a **security-hardened, production-ready platform** with:
 
 - ✅ **Data-Agnostic Archives**: .trst format with generic, cam.video, sensor, audio, and log profiles
 - ✅ **Full Data Lifecycle**: `trst keygen` → `trst wrap` → `trst verify` → `trst unwrap`
 - ✅ **Strong Cryptography**: AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, HKDF-SHA256, RSA OAEP-SHA256
-- ✅ **Encrypted Keys at Rest**: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM), 0600 permissions
+- ✅ **Encrypted Keys at Rest**: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM), 0600 permissions, zeroize-on-drop
 - ✅ **YubiKey Hardware Signing**: PIV ECDSA P-256 via `trst wrap --backend yubikey`
-- ✅ **Platform Service**: Axum HTTP verification server with PostgreSQL multi-tenant backend
-- ✅ **Docker Deployment**: One-command `docker compose up` with auto-migration
-- ✅ **SvelteKit Dashboard**: Device management and receipt viewing
-- ✅ **Browser Verification**: WASM-based .trst archive verification
-- ✅ **Security Validated**: 45 security tests across archive integrity, key protection, nonce uniqueness, error paths
-- ✅ **406 Tests**: Across 9 workspace crates, 14 milestones shipped (v1.0-v2.4)
+- ✅ **Platform Service**: Axum HTTP verification with PostgreSQL backend, 2 MB body limit, per-IP rate limiting, configurable CORS
+- ✅ **Docker Deployment**: One-command `docker compose up` with auto-migration, optional TLS termination
+- ✅ **SvelteKit Dashboard**: Verification status and receipt viewing (no client-side credentials)
+- ✅ **Browser Verification**: WASM-based .trst archive verification with working decrypt
+- ✅ **QUIC TLS Verified**: Real signature verification in HardwareBackedVerifier (MITM-proof)
+- ✅ **Security Validated**: 423 tests across 9 workspace crates, 16 milestones shipped (v1.0-v2.6)
 
 ---
 
