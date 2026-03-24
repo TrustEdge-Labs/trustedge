@@ -156,9 +156,22 @@ The full data lifecycle (wrap/unwrap), YubiKey CLI, named profiles, Docker stack
 - ✓ Signing key file gets 0600 Unix permissions, zero target/dev/ references remain — v2.5 Phase 55
 - ✓ trst-wasm double .decrypt() bug fixed, crypto module wired into build, encrypt/decrypt round-trip tests — v2.5 Phase 56
 
+## Current Milestone: v2.6 Security Hardening
+
+**Goal:** Address 7 P1 security hardening findings for production readiness.
+
+**Target features:**
+- Add Zeroize/ZeroizeOnDrop to 4 key-holding structs
+- Enforce minimum PBKDF2 iteration count on encrypted key import
+- Fix /v1/verify in postgres mode (OrgContext extraction)
+- Stop printing AES-256 key to stderr
+- Make CORS origins configurable via environment variable
+- Add TLS termination to deploy stack
+- Remove API key from dashboard client-side bundle
+
 ### Active
 
-(No active requirements — v2.5 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
+(Requirements will be defined via milestone requirements phase)
 
 ### Deferred
 
@@ -337,4 +350,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 after v2.5 milestone*
+*Last updated: 2026-03-23 after v2.6 milestone started*

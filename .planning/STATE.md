@@ -1,15 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.5
-milestone_name: Critical Security Fixes
-status: v2.5 milestone complete
-stopped_at: Completed 56-wasm-fix 56-01-PLAN.md
-last_updated: "2026-03-23T23:03:19.064Z"
+milestone: v2.6
+milestone_name: Security Hardening
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-03-23T23:30:00.000Z"
+last_activity: 2026-03-23 — Milestone v2.6 started
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 <!--
@@ -26,12 +28,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 56 — wasm-fix
+**Current focus:** v2.6 Security Hardening — defining requirements
 
 ## Current Position
 
-Phase: 56
-Plan: Not started
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-23 — Milestone v2.6 started
 
 ## Performance Metrics
 
