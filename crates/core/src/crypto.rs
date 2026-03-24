@@ -235,6 +235,13 @@ impl DeviceKeypair {
             .ok_or_else(|| CryptoError::InvalidKeyFormat("Missing iterations".into()))?
             as u32;
 
+        if iterations < PBKDF2_MIN_ITERATIONS {
+            return Err(CryptoError::InvalidKeyFormat(format!(
+                "Key file uses {} PBKDF2 iterations, minimum is {}",
+                iterations, PBKDF2_MIN_ITERATIONS
+            )));
+        }
+
         if nonce_bytes.len() != 12 {
             return Err(CryptoError::InvalidKeyFormat(
                 "Nonce must be 12 bytes".into(),
@@ -757,6 +764,46 @@ mod tests {
         assert!(
             result.is_err(),
             "Wrong passphrase must return Err, not Ok with garbage data"
+        );
+    }
+
+    #[test]
+    fn test_encrypted_key_rejects_low_iterations() {
+        // Build a synthetic key file with below-minimum iterations.
+        // We manually construct the file format to bypass export_secret_encrypted.
+        use aes_gcm::{Aes256Gcm, KeyInit, Nonce as AesGcmNonce};
+        use aes_gcm::aead::Aead;
+        use pbkdf2::pbkdf2_hmac;
+        use sha2::Sha256;
+
+        let passphrase = "test";
+        let low_iterations: u32 = 299_999;
+        let salt = [1u8; 16];
+        let nonce_bytes = [2u8; 12];
+        let plaintext = [3u8; 32];
+
+        let mut derived_key = [0u8; 32];
+        pbkdf2_hmac::<Sha256>(passphrase.as_bytes(), &salt, low_iterations, &mut derived_key);
+
+        let cipher = Aes256Gcm::new_from_slice(&derived_key).unwrap();
+        let nonce = AesGcmNonce::from_slice(&nonce_bytes);
+        let ciphertext = cipher.encrypt(nonce, plaintext.as_ref()).unwrap();
+
+        let meta = serde_json::json!({
+            "salt": BASE64.encode(salt),
+            "nonce": BASE64.encode(nonce_bytes),
+            "iterations": low_iterations,
+        });
+
+        let mut file_data = format!("TRUSTEDGE-KEY-V1\n{}\n", meta).into_bytes();
+        file_data.extend_from_slice(&ciphertext);
+
+        let result = DeviceKeypair::import_secret_encrypted(&file_data, passphrase);
+        assert!(result.is_err(), "Should reject key file with low iteration count");
+        let err_msg = result.err().unwrap().to_string();
+        assert!(
+            err_msg.contains("299999") || err_msg.contains("minimum"),
+            "Error should mention the iteration count or minimum: {err_msg}"
         );
     }
 
