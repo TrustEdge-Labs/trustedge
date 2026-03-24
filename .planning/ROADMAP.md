@@ -148,8 +148,9 @@ Plans:
   1. Building the dashboard with `npm run build` produces no bundle file containing the string `VITE_API_KEY` as a value (the key is not embedded)
   2. The dashboard can still communicate with the platform API after the change (either via proxy, token removal, or equivalent)
   3. CI or a build-time check catches any future re-introduction of a client-side API key in the bundle
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 1 plan
+Plans:
+- [ ] 60-01-PLAN.md — Remove VITE_API_KEY from config/api/pages + replace protected-endpoint pages with notices + add CI bundle guard
 
 ## Progress Table
 
@@ -158,7 +159,7 @@ Plans:
 | 57. Core Crypto Hardening | 1/1 | Complete    | 2026-03-24 |
 | 58. Platform Fixes | 1/1 | Complete    | 2026-03-24 |
 | 59. CLI & Deploy Hardening | 2/2 | Complete    | 2026-03-24 |
-| 60. Dashboard Security | 0/? | Not started | - |
+| 60. Dashboard Security | 0/1 | Not started | - |
 
 ---
-*Last updated: 2026-03-24 after phase 59 planned*
+*Last updated: 2026-03-24 after phase 60 planned*
