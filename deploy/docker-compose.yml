@@ -56,6 +56,14 @@ services:
         VITE_API_BASE: http://localhost:3001
     ports:
       - "8080:80"
+      - "8443:443"
+    environment:
+      # TLS termination: set these to enable HTTPS on port 8443
+      # SSL_CERT_PATH: /certs/server.crt
+      # SSL_KEY_PATH: /certs/server.key
+    volumes:
+      # Mount your TLS certificates directory when using HTTPS:
+      # - /path/to/your/certs:/certs:ro
     depends_on:
       platform-server:
         condition: service_healthy

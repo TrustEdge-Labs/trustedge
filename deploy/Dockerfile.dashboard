@@ -38,10 +38,17 @@ RUN rm /etc/nginx/conf.d/default.conf
 # Copy custom nginx config
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy TLS template and entrypoint (used when SSL_CERT_PATH / SSL_KEY_PATH are set)
+COPY deploy/nginx-ssl.conf.template /etc/nginx/conf.d/nginx-ssl.conf.template
+COPY deploy/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Copy static build output from builder
 COPY --from=builder /app/build /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 80 443
 
 HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
     CMD wget -qO- http://localhost/healthz || exit 1
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
