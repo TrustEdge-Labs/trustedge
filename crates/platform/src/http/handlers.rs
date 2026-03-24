@@ -115,7 +115,7 @@ pub async fn verify_handler(
 #[cfg(feature = "postgres")]
 pub async fn verify_handler(
     State(state): State<AppState>,
-    axum::extract::Extension(org_ctx): axum::extract::Extension<crate::http::auth::OrgContext>,
+    org_ctx: Option<axum::extract::Extension<crate::http::auth::OrgContext>>,
     Json(request): Json<VerifyRequest>,
 ) -> Result<Json<VerifyResponse>, (StatusCode, Json<ValidationError>)> {
     info!(
@@ -123,22 +123,30 @@ pub async fn verify_handler(
         request.device_pub
     );
 
+    if org_ctx.is_none() {
+        tracing::debug!("verify_handler: no OrgContext present — operating in tenant-agnostic mode");
+    }
+
     validate_verify_request_full(&request).map_err(|e| (StatusCode::BAD_REQUEST, Json(e)))?;
 
     // Look up device record if device_id option was provided
     let device_id = if let Some(ref options) = request.options {
         if let Some(ref device_id_str) = options.device_id {
-            crate::database::get_device(&state.db_pool, org_ctx.org_id, device_id_str)
-                .await
-                .map_err(|_| {
-                    (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        Json(ValidationError::new(
-                            "database_error",
-                            "Failed to query device",
-                        )),
-                    )
-                })?
+            if let Some(ref ctx) = org_ctx {
+                crate::database::get_device(&state.db_pool, ctx.org_id, device_id_str)
+                    .await
+                    .map_err(|_| {
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            Json(ValidationError::new(
+                                "database_error",
+                                "Failed to query device",
+                            )),
+                        )
+                    })?
+            } else {
+                None
+            }
         } else {
             None
         }
@@ -181,9 +189,11 @@ pub async fn verify_handler(
         }
     });
 
+    let org_id_for_db = org_ctx.as_ref().map(|e| e.org_id).unwrap_or_else(uuid::Uuid::nil);
+
     let verification_id_uuid = crate::database::create_verification(
         &state.db_pool,
-        org_ctx.org_id,
+        org_id_for_db,
         device_id,
         &manifest_digest_sha256,
         &result_for_db,
