@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.6
 milestone_name: Security Hardening
-status: Ready to plan
-stopped_at: Phase 59 context gathered
-last_updated: "2026-03-24T13:36:16.263Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 59-01-PLAN.md
+last_updated: "2026-03-24T13:58:32.842Z"
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
 ---
 
 <!--
@@ -26,12 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-22)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 58 — platform-fixes
+**Current focus:** Phase 59 — cli-deploy-hardening
 
 ## Current Position
 
-Phase: 59
-Plan: Not started
+Phase: 59 (cli-deploy-hardening) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -72,6 +72,8 @@ Cleared — see PROJECT.md Key Decisions table for full history.
 - [Phase 57-core-crypto-hardening]: PBKDF2 iteration guard placed immediately after parsing in import_secret_encrypted — fail early, before nonce length check
 - [Phase 58-platform-fixes]: Option<Extension<OrgContext>> for public verify route — uuid::Uuid::nil() sentinel org_id for tenant-agnostic DB ops
 - [Phase 58-platform-fixes]: CORS_ORIGINS env var: comma-separated origins, fallback localhost:3000,localhost:8080; AllowOrigin::list() for Vec<HeaderValue>
+- [Phase 59-cli-deploy-hardening]: Three-way key output gate in trustedge CLI: --key-out writes silently, --show-key prints to stderr, neither => actionable bail! error (CLI-01)
+- [Phase 59-cli-deploy-hardening]: envsubst + shell entrypoint pattern for conditional nginx TLS: docker-entrypoint.sh generates ssl.conf only when SSL_CERT_PATH and SSL_KEY_PATH are set; HTTP port 80 unchanged
 
 ### Pending Todos
 
@@ -92,12 +94,14 @@ None.
 | Phase 56-wasm-fix P01 | 525541min | 2 tasks | 3 files |
 | Phase 57-core-crypto-hardening P01 | 34 | 2 tasks | 4 files |
 | Phase 58-platform-fixes P01 | 15 | 2 tasks | 2 files |
+| Phase 59 P01 | 5 | 1 tasks | 1 files |
+| Phase 59-cli-deploy-hardening P02 | 5 | 2 tasks | 5 files |
 
 ## Session Continuity
 
-Last session: 2026-03-24T13:36:16.259Z
-Stopped at: Phase 59 context gathered
-Resume file: .planning/phases/59-cli-deploy-hardening/59-CONTEXT.md
+Last session: 2026-03-24T13:58:20.258Z
+Stopped at: Completed 59-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-23 after v2.6 roadmap created*

@@ -95,7 +95,7 @@ Fixed 5 P0 security findings: QUIC TLS MITM vulnerability closed (real signature
 
 - [x] **Phase 57: Core Crypto Hardening** - Zeroize key-holding structs and enforce PBKDF2 import minimum (completed 2026-03-24)
 - [x] **Phase 58: Platform Fixes** - Fix postgres verify handler and make CORS origins configurable (completed 2026-03-24)
-- [ ] **Phase 59: CLI & Deploy Hardening** - Suppress key stderr output and add nginx TLS termination
+- [x] **Phase 59: CLI & Deploy Hardening** - Suppress key stderr output and add nginx TLS termination (completed 2026-03-24)
 - [ ] **Phase 60: Dashboard Security** - Remove client-side API key from bundle
 
 ## Phase Details
@@ -137,8 +137,8 @@ Plans:
   4. HTTP on port 80 continues to work (or redirects to HTTPS) in the Docker stack
 **Plans**: 2 plans
 Plans:
-- [ ] 59-01-PLAN.md — Add --show-key flag + key loss prevention to trustedge-cli
-- [ ] 59-02-PLAN.md — Add nginx TLS template, docker-entrypoint script, and wire into Dockerfile/compose/.env.example
+- [x] 59-01-PLAN.md — Add --show-key flag + key loss prevention to trustedge-cli
+- [x] 59-02-PLAN.md — Add nginx TLS template, docker-entrypoint script, and wire into Dockerfile/compose/.env.example
 
 ### Phase 60: Dashboard Security
 **Goal**: The dashboard JavaScript bundle contains no embedded API credentials; authentication to the platform is not exposed client-side
@@ -157,7 +157,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 57. Core Crypto Hardening | 1/1 | Complete    | 2026-03-24 |
 | 58. Platform Fixes | 1/1 | Complete    | 2026-03-24 |
-| 59. CLI & Deploy Hardening | 0/2 | Not started | - |
+| 59. CLI & Deploy Hardening | 2/2 | Complete   | 2026-03-24 |
 | 60. Dashboard Security | 0/? | Not started | - |
 
 ---

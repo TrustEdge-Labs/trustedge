@@ -19,7 +19,7 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 
 ### CLI
 
-- [ ] **CLI-01**: `trustedge-cli` does not print encryption key to stderr unless `--show-key` flag is explicitly provided
+- [x] **CLI-01**: `trustedge-cli` does not print encryption key to stderr unless `--show-key` flag is explicitly provided
 
 ### Deploy
 
@@ -46,7 +46,7 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 | CORE-02 | Phase 57 | Complete |
 | PLAT-01 | Phase 58 | Complete |
 | PLAT-02 | Phase 58 | Complete |
-| CLI-01 | Phase 59 | Pending |
+| CLI-01 | Phase 59 | Complete |
 | DEPL-01 | Phase 59 | Pending |
 | DASH-01 | Phase 60 | Pending |
 
