@@ -10,7 +10,7 @@ Requirements for P1 security hardening. Each maps to roadmap phases.
 ### Core Crypto
 
 - [ ] **CORE-01**: `PrivateKey` (asymmetric.rs), `SessionInfo.session_key` (auth.rs), `ClientAuthResult.session_key` (auth.rs), and `SymmetricKey` (hybrid.rs) implement `Zeroize` and `ZeroizeOnDrop`
-- [ ] **CORE-02**: `import_secret_encrypted()` rejects key files with PBKDF2 iteration count below 300,000
+- [ ] **CORE-02**: `import_secret_encrypted()` rejects key files with PBKDF2 iteration count below 600,000
 
 ### Platform
 

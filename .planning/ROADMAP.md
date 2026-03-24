@@ -106,8 +106,8 @@ Fixed 5 P0 security findings: QUIC TLS MITM vulnerability closed (real signature
 **Requirements**: CORE-01, CORE-02
 **Success Criteria** (what must be TRUE):
   1. Dropping a `PrivateKey`, `SessionInfo`, `ClientAuthResult`, or `SymmetricKey` instance causes its key bytes to be overwritten in memory (Zeroize + ZeroizeOnDrop implemented)
-  2. Calling `import_secret_encrypted()` with a key file containing fewer than 300,000 PBKDF2 iterations returns an error — the key is never loaded
-  3. Calling `import_secret_encrypted()` with a key file containing 300,000 or more iterations succeeds as before
+  2. Calling `import_secret_encrypted()` with a key file containing fewer than 600,000 PBKDF2 iterations returns an error — the key is never loaded
+  3. Calling `import_secret_encrypted()` with a key file containing 600,000 or more iterations succeeds as before
   4. All existing tests continue to pass after the zeroize additions
 **Plans**: 1 plan
 Plans:
