@@ -16,8 +16,8 @@ Requirements for milestone v2.8 High Priority Hardening. Each maps to roadmap ph
 
 ### Platform HTTP
 
-- [ ] **HTTP-01**: Rate limiter parses X-Forwarded-For from trusted proxies for per-client rate limiting behind reverse proxies
-- [ ] **HTTP-02**: 429 responses include Retry-After header per RFC 6585
+- [x] **HTTP-01**: Rate limiter parses X-Forwarded-For from trusted proxies for per-client rate limiting behind reverse proxies
+- [x] **HTTP-02**: 429 responses include Retry-After header per RFC 6585
 
 ### Key Material Safety
 
@@ -54,8 +54,8 @@ None — all findings addressed in this milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HTTP-01 | Phase 64 | Pending |
-| HTTP-02 | Phase 64 | Pending |
+| HTTP-01 | Phase 64 | Complete |
+| HTTP-02 | Phase 64 | Complete |
 | KEY-01 | Phase 65 | Pending |
 | KEY-02 | Phase 65 | Pending |
 | CRYPT-01 | Phase 66 | Pending |
