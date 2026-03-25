@@ -899,6 +899,150 @@ mod http_tests {
             );
         }
     }
+
+    // -----------------------------------------------------------------------
+    // Test 14: SEC-ERRH — verify error response does not leak library detail.
+    //
+    // A manifest without a signature field triggers the verify_to_report Err
+    // path (verify_signature returns Err when signature is missing). The
+    // response body must contain only the generic category message and must NOT
+    // contain any library error strings.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn test_verify_error_does_not_leak_library_detail() -> Result<()> {
+        let app = create_test_app().await;
+
+        // A manifest with no "signature" field at all triggers an Err return
+        // from verify_signature (not just a passed=false result), which causes
+        // the handler to return HTTP 400 with the generic error message.
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let verifying_key = signing_key.verifying_key();
+
+        let manifest_no_sig = serde_json::json!({
+            "version": "1.0",
+            "segments": 1,
+            "device_id": "test-device"
+            // no "signature" field — triggers Err("Missing signature in manifest")
+        });
+
+        let device_pub = format!("ed25519:{}", BASE64.encode(verifying_key.as_bytes()));
+
+        let body = serde_json::to_vec(&serde_json::json!({
+            "device_pub": device_pub,
+            "manifest": manifest_no_sig,
+            "segments": [
+                {
+                    "index": 0,
+                    "hash": "b3:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                }
+            ]
+        }))
+        .unwrap();
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/verify")
+                    .header(CONTENT_TYPE, "application/json")
+                    .body(Body::from(body))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        // Must return a client error (400) — the verification error path.
+        assert_eq!(
+            response.status(),
+            axum::http::StatusCode::BAD_REQUEST,
+            "manifest missing signature field must return HTTP 400"
+        );
+
+        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let body_json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+
+        // The detail field must contain only the generic category message, no
+        // library internals like "Missing signature in manifest".
+        assert_eq!(
+            body_json["detail"],
+            "Cryptographic verification failed",
+            "error detail must be the exact generic message with no library internals"
+        );
+
+        // Convert body to string and assert no library error substrings are present.
+        let body_str = std::str::from_utf8(&body_bytes).unwrap();
+        for forbidden in &[
+            "SignatureError",
+            "InvalidSignature",
+            "base64",
+            "decode error",
+            "verification equation",
+            "invalid length",
+            "Missing signature",
+            "anyhow",
+        ] {
+            assert!(
+                !body_str.contains(forbidden),
+                "response body must not contain library detail substring '{}'",
+                forbidden
+            );
+        }
+
+        Ok(())
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 15: SEC-ERRH regression — success path is unaffected by sanitization.
+    //
+    // A valid signed manifest still returns HTTP 200 with
+    // signature_verification.passed == true. Sanitization must not break the
+    // success path.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn test_verify_success_unaffected_by_sanitization() -> Result<()> {
+        let app = create_test_app().await;
+
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let (signed_manifest, device_pub) = build_signed_manifest(&signing_key);
+        let body_bytes = build_verify_body(&signed_manifest, &device_pub, false);
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/v1/verify")
+                    .header(CONTENT_TYPE, "application/json")
+                    .body(Body::from(body_bytes))
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            response.status(),
+            axum::http::StatusCode::OK,
+            "success path must still return HTTP 200 after error sanitization"
+        );
+
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let resp: serde_json::Value = serde_json::from_slice(&body).unwrap();
+
+        assert!(
+            resp["result"]["signature_verification"]["passed"]
+                .as_bool()
+                .unwrap_or(false),
+            "signature_verification must pass for a correctly signed manifest"
+        );
+
+        Ok(())
+    }
+
 }
 
 // ---------------------------------------------------------------------------
