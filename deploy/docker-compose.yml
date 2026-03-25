@@ -19,8 +19,8 @@ services:
       POSTGRES_DB: trustedge
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # No host port exposed — database is internal to the Docker network.
+    # For direct access: docker compose exec postgres psql -U trustedge
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U trustedge"]
       interval: 5s
