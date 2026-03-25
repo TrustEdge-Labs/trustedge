@@ -967,8 +967,7 @@ mod http_tests {
         // The detail field must contain only the generic category message, no
         // library internals like "Missing signature in manifest".
         assert_eq!(
-            body_json["detail"],
-            "Cryptographic verification failed",
+            body_json["detail"], "Cryptographic verification failed",
             "error detail must be the exact generic message with no library internals"
         );
 
@@ -1042,7 +1041,6 @@ mod http_tests {
 
         Ok(())
     }
-
 }
 
 // ---------------------------------------------------------------------------
