@@ -61,7 +61,9 @@ Plans:
   1. After trst wrap auto-generates a key file, the file's Unix permissions are 0600 (matching keygen behavior)
   2. Attempting to serialize a PrivateKey value (via serde_json::to_string or equivalent) either fails to compile or produces no key material output
   3. A test verifies the 0600 permission is set on the auto-generated key path
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 65-01-PLAN.md — Key file permissions and PrivateKey serde removal
 
 ### Phase 66: Crypto & CLI Hardening
 **Goal**: NetworkChunk construction requires an explicit nonce, process exits in the CLI surface proper errors, and chunk sizes are bounded
@@ -92,6 +94,6 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 64. Platform HTTP Hardening | 1/1 | Complete    | 2026-03-25 |
-| 65. Key Material Safety | 0/TBD | Not started | - |
+| 65. Key Material Safety | 0/1 | Not started | - |
 | 66. Crypto & CLI Hardening | 0/TBD | Not started | - |
 | 67. Deployment Security | 0/TBD | Not started | - |
