@@ -21,7 +21,7 @@ Requirements for milestone v2.7 CI & Config Security. Each maps to roadmap phase
 
 ### Error Handling
 
-- [ ] **ERRH-01**: Crypto verification error responses return generic message to clients; raw library errors logged server-side only
+- [x] **ERRH-01**: Crypto verification error responses return generic message to clients; raw library errors logged server-side only
 
 ## Future Requirements
 
@@ -45,7 +45,7 @@ None — all findings addressed in this milestone.
 | CONF-01 | Phase 62 | Complete |
 | CONF-02 | Phase 62 | Complete |
 | CONF-03 | Phase 62 | Complete |
-| ERRH-01 | Phase 63 | Pending |
+| ERRH-01 | Phase 63 | Complete |
 
 **Coverage:**
 - v2.7 requirements: 7 total
