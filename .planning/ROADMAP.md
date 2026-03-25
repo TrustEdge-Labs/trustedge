@@ -132,7 +132,9 @@ Plans:
   1. The platform server fails to start in release builds when DATABASE_URL is not explicitly set (no hardcoded credential fallback)
   2. docker-compose.yml does not expose the postgres port to the host; the database is reachable only from containers on the internal network
   3. `CAConfig::default()` (or equivalent) panics or returns an error when the placeholder value `"your-secret-key"` is used as the JWT secret outside of test code
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 62-01-PLAN.md — Gate DATABASE_URL fallback, remove postgres host port, reject placeholder JWT secret
 
 ### Phase 63: Error Response Sanitization
 **Goal**: Crypto verification errors never leak raw library error messages to API clients — clients receive a generic message, full details are logged server-side
@@ -142,15 +144,17 @@ Plans:
   1. A request that fails signature or integrity verification receives a generic error response (e.g., "verification failed") with no internal library detail
   2. The full error detail (library message, error chain) appears in server-side logs for the same failed request
   3. A successful verification response is unaffected by the sanitization change
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 62-01-PLAN.md — Gate DATABASE_URL fallback, remove postgres host port, reject placeholder JWT secret
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 61. CI Supply Chain Hardening | v2.7 | 1/1 | Complete    | 2026-03-25 |
-| 62. Config & Credential Hygiene | v2.7 | 0/TBD | Not started | - |
+| 62. Config & Credential Hygiene | v2.7 | 0/1 | Planned | - |
 | 63. Error Response Sanitization | v2.7 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-03-24 after Phase 61 planned (1 plan)*
+*Last updated: 2026-03-25 after Phase 62 planned (1 plan)*
