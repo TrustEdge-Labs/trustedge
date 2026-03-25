@@ -146,7 +146,7 @@ Plans:
   3. A successful verification response is unaffected by the sanitization change
 **Plans:** 1 plan
 Plans:
-- [ ] 62-01-PLAN.md — Gate DATABASE_URL fallback, remove postgres host port, reject placeholder JWT secret
+- [ ] 63-01-PLAN.md — Sanitize error responses and add integration tests proving no library detail leakage
 
 ## Progress
 
@@ -154,7 +154,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 61. CI Supply Chain Hardening | v2.7 | 1/1 | Complete    | 2026-03-25 |
 | 62. Config & Credential Hygiene | v2.7 | 1/1 | Complete    | 2026-03-25 |
-| 63. Error Response Sanitization | v2.7 | 0/TBD | Not started | - |
+| 63. Error Response Sanitization | v2.7 | 0/1 | Not started | - |
 
 ---
-*Last updated: 2026-03-25 after Phase 62 planned (1 plan)*
+*Last updated: 2026-03-25 after Phase 63 planned (1 plan)*
