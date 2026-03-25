@@ -1041,6 +1041,160 @@ mod http_tests {
 
         Ok(())
     }
+
+    // -----------------------------------------------------------------------
+    // Test 16: HTTP-02 — 429 response includes Retry-After: 1 header.
+    //
+    // Sets RATE_LIMIT_RPS=1 so the burst quota is exhausted quickly.
+    // The first 429 response must carry `retry-after: 1`.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn test_rate_limit_retry_after() {
+        unsafe {
+            std::env::set_var("RATE_LIMIT_RPS", "1");
+        }
+        let app = create_router(make_state());
+        unsafe {
+            std::env::remove_var("RATE_LIMIT_RPS");
+        }
+
+        let mut retry_after_value: Option<String> = None;
+
+        for _ in 0..20 {
+            let fresh_app = app.clone();
+            let req = Request::builder()
+                .method("POST")
+                .uri("/v1/verify")
+                .header(CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    r#"{"manifest":{},"segments":[],"device_pub":"ed25519:x"}"#,
+                ))
+                .unwrap();
+            let resp = fresh_app.oneshot(req).await.unwrap();
+            if resp.status() == 429 {
+                retry_after_value = resp
+                    .headers()
+                    .get("retry-after")
+                    .and_then(|v| v.to_str().ok())
+                    .map(|s| s.to_string());
+                break;
+            }
+        }
+
+        let value =
+            retry_after_value.expect("rapid calls to /v1/verify must eventually return 429");
+        assert_eq!(
+            value, "1",
+            "429 response must include Retry-After: 1 header (RFC 6585)"
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 17: HTTP-01 — X-Forwarded-For is respected when peer is trusted.
+    //
+    // Sets TRUSTED_PROXIES="127.0.0.1/32" (oneshot tests appear as 127.0.0.1).
+    // Rate limit is per-forwarded-IP, so two different XFF values have
+    // independent buckets. First batch should 429; second batch with a
+    // different forwarded IP should still 200.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn test_rate_limit_xff_trusted_proxy() {
+        unsafe {
+            std::env::set_var("RATE_LIMIT_RPS", "2");
+            std::env::set_var("TRUSTED_PROXIES", "127.0.0.1/32");
+        }
+        let app = create_router(make_state());
+        unsafe {
+            std::env::remove_var("RATE_LIMIT_RPS");
+            std::env::remove_var("TRUSTED_PROXIES");
+        }
+
+        // Exhaust the bucket for forwarded IP 10.99.99.1
+        let mut got_429_for_first_ip = false;
+        for _ in 0..20 {
+            let req = Request::builder()
+                .method("POST")
+                .uri("/v1/verify")
+                .header(CONTENT_TYPE, "application/json")
+                .header("x-forwarded-for", "10.99.99.1")
+                .body(Body::from(
+                    r#"{"manifest":{},"segments":[],"device_pub":"ed25519:x"}"#,
+                ))
+                .unwrap();
+            let resp = app.clone().oneshot(req).await.unwrap();
+            if resp.status() == 429 {
+                got_429_for_first_ip = true;
+                break;
+            }
+        }
+        assert!(
+            got_429_for_first_ip,
+            "forwarded IP 10.99.99.1 must eventually be rate-limited"
+        );
+
+        // A different forwarded IP (10.99.99.2) must have its own fresh bucket.
+        let req = Request::builder()
+            .method("POST")
+            .uri("/v1/verify")
+            .header(CONTENT_TYPE, "application/json")
+            .header("x-forwarded-for", "10.99.99.2")
+            .body(Body::from(
+                r#"{"manifest":{},"segments":[],"device_pub":"ed25519:x"}"#,
+            ))
+            .unwrap();
+        let resp = app.clone().oneshot(req).await.unwrap();
+        assert_ne!(
+            resp.status(),
+            429,
+            "forwarded IP 10.99.99.2 must not be rate-limited (independent bucket)"
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 18: X-Forwarded-For is ignored when no trusted proxies are set.
+    //
+    // Sets TRUSTED_PROXIES="" (empty) and RATE_LIMIT_RPS=2.
+    // All requests appear as 127.0.0.1 (oneshot fallback) regardless of the
+    // X-Forwarded-For header, so they share the same bucket and 429 is hit.
+    // -----------------------------------------------------------------------
+
+    #[tokio::test]
+    async fn test_rate_limit_xff_untrusted_proxy() {
+        unsafe {
+            std::env::set_var("RATE_LIMIT_RPS", "2");
+            std::env::set_var("TRUSTED_PROXIES", "");
+        }
+        let app = create_router(make_state());
+        unsafe {
+            std::env::remove_var("RATE_LIMIT_RPS");
+            std::env::remove_var("TRUSTED_PROXIES");
+        }
+
+        // All requests share the 127.0.0.1 peer bucket (XFF is ignored)
+        let mut got_429 = false;
+        for _ in 0..20 {
+            let req = Request::builder()
+                .method("POST")
+                .uri("/v1/verify")
+                .header(CONTENT_TYPE, "application/json")
+                .header("x-forwarded-for", "10.99.99.1")
+                .body(Body::from(
+                    r#"{"manifest":{},"segments":[],"device_pub":"ed25519:x"}"#,
+                ))
+                .unwrap();
+            let resp = app.clone().oneshot(req).await.unwrap();
+            if resp.status() == 429 {
+                got_429 = true;
+                break;
+            }
+        }
+        assert!(
+            got_429,
+            "with no trusted proxies, peer IP 127.0.0.1 must be rate-limited regardless of XFF"
+        );
+    }
 }
 
 // ---------------------------------------------------------------------------

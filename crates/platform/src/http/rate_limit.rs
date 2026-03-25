@@ -85,9 +85,7 @@ pub fn extract_client_ip(
         return peer_ip;
     }
 
-    let peer_is_trusted = trusted_proxies
-        .iter()
-        .any(|cidr| cidr.contains(&peer_ip));
+    let peer_is_trusted = trusted_proxies.iter().any(|cidr| cidr.contains(&peer_ip));
 
     // Rule 2: peer is not a trusted proxy — ignore X-Forwarded-For.
     if !peer_is_trusted {
