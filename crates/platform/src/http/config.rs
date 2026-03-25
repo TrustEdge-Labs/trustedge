@@ -57,8 +57,6 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_database_url_error_message_exists() {
         // Verify the release-mode error message is present in the source.
