@@ -9,9 +9,9 @@ Requirements for milestone v2.7 CI & Config Security. Each maps to roadmap phase
 
 ### CI Supply Chain
 
-- [ ] **CISC-01**: CI installs wasm-pack without `curl | sh` (use cargo-install or pre-built binary with checksum verification)
-- [ ] **CISC-02**: All GitHub Actions in all 4 workflows are pinned to full commit SHAs (not tags)
-- [ ] **CISC-03**: `actions-rs/toolchain@v1` replaced with `dtolnay/rust-toolchain` in wasm-tests.yml
+- [x] **CISC-01**: CI installs wasm-pack without `curl | sh` (use cargo-install or pre-built binary with checksum verification)
+- [x] **CISC-02**: All GitHub Actions in all 4 workflows are pinned to full commit SHAs (not tags)
+- [x] **CISC-03**: `actions-rs/toolchain@v1` replaced with `dtolnay/rust-toolchain` in wasm-tests.yml
 
 ### Config & Credentials
 
@@ -39,9 +39,9 @@ None — all findings addressed in this milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CISC-01 | Phase 61 | Pending |
-| CISC-02 | Phase 61 | Pending |
-| CISC-03 | Phase 61 | Pending |
+| CISC-01 | Phase 61 | Complete |
+| CISC-02 | Phase 61 | Complete |
+| CISC-03 | Phase 61 | Complete |
 | CONF-01 | Phase 62 | Pending |
 | CONF-02 | Phase 62 | Pending |
 | CONF-03 | Phase 62 | Pending |

@@ -148,7 +148,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 61. CI Supply Chain Hardening | v2.7 | 1/1 | Complete   | 2026-03-25 |
+| 61. CI Supply Chain Hardening | v2.7 | 1/1 | Complete    | 2026-03-25 |
 | 62. Config & Credential Hygiene | v2.7 | 0/TBD | Not started | - |
 | 63. Error Response Sanitization | v2.7 | 0/TBD | Not started | - |
 
