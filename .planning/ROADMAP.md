@@ -120,7 +120,9 @@ Addressed 7 P1 security hardening findings: Zeroize on 4 key structs, 600k PBKDF
   2. wasm-pack is installed without `curl | sh` (uses cargo-binstall, cargo install, or pre-built binary with checksum)
   3. `actions-rs/toolchain` is absent from all workflow files; `dtolnay/rust-toolchain` is used in its place
   4. CI passes after all workflow changes
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 61-01-PLAN.md — SHA-pin all actions, replace curl-pipe wasm-pack installer, replace actions-rs/toolchain
 
 ### Phase 62: Config & Credential Hygiene
 **Goal**: Production deployments cannot start with hardcoded or placeholder credentials — database URL requires explicit config, postgres is not exposed to the host network, and the CA service rejects its default placeholder JWT secret
@@ -146,9 +148,9 @@ Addressed 7 P1 security hardening findings: Zeroize on 4 key structs, 600k PBKDF
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 61. CI Supply Chain Hardening | v2.7 | 0/TBD | Not started | - |
+| 61. CI Supply Chain Hardening | v2.7 | 0/1 | Planning | - |
 | 62. Config & Credential Hygiene | v2.7 | 0/TBD | Not started | - |
 | 63. Error Response Sanitization | v2.7 | 0/TBD | Not started | - |
 
 ---
-*Last updated: 2026-03-24 after v2.7 roadmap created*
+*Last updated: 2026-03-24 after Phase 61 planned (1 plan)*
