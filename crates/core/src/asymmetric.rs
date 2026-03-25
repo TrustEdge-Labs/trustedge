@@ -27,16 +27,16 @@ pub struct PublicKey {
 }
 
 /// A private key for asymmetric cryptography
-#[derive(Clone, Serialize, Deserialize, Zeroize)]
+#[derive(Clone, Zeroize)]
 pub struct PrivateKey {
     /// The algorithm used for this key
     #[zeroize(skip)]
-    pub algorithm: AsymmetricAlgorithm,
-    /// The raw key bytes (sensitive data)
-    pub key_bytes: Vec<u8>,
+    pub(crate) algorithm: AsymmetricAlgorithm,
+    /// The raw key bytes (sensitive data) — not pub to prevent accidental serialization
+    pub(crate) key_bytes: Vec<u8>,
     /// Optional key identifier for lookups
     #[zeroize(skip)]
-    pub key_id: Option<String>,
+    pub(crate) key_id: Option<String>,
 }
 
 impl Drop for PrivateKey {
@@ -135,15 +135,6 @@ impl PrivateKey {
         &self.key_bytes
     }
 
-    /// Serialize to bytes (encrypted storage recommended)
-    pub fn to_bytes(&self) -> Result<Vec<u8>> {
-        bincode::serialize(self).context("Failed to serialize private key")
-    }
-
-    /// Deserialize from bytes
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
-        bincode::deserialize(bytes).context("Failed to deserialize private key")
-    }
 }
 
 impl KeyPair {
@@ -369,7 +360,7 @@ impl fmt::Debug for KeyPair {
             .field("public", &self.public)
             .field(
                 "private",
-                &format!("[PrivateKey: {} bytes]", self.private.key_bytes.len()),
+                &format!("[PrivateKey: {} bytes]", self.private.as_bytes().len()),
             )
             .finish()
     }
@@ -387,7 +378,7 @@ mod tests {
         assert_eq!(keypair.public.algorithm, AsymmetricAlgorithm::Ed25519);
         assert_eq!(keypair.private.algorithm, AsymmetricAlgorithm::Ed25519);
         assert_eq!(keypair.public.key_bytes.len(), 32);
-        assert_eq!(keypair.private.key_bytes.len(), 32);
+        assert_eq!(keypair.private.as_bytes().len(), 32);
     }
 
     #[test]
@@ -397,7 +388,7 @@ mod tests {
 
         assert_eq!(keypair.public.algorithm, AsymmetricAlgorithm::EcdsaP256);
         assert_eq!(keypair.private.algorithm, AsymmetricAlgorithm::EcdsaP256);
-        assert_eq!(keypair.private.key_bytes.len(), 32); // P-256 private key
+        assert_eq!(keypair.private.as_bytes().len(), 32); // P-256 private key
     }
 
     #[test]
@@ -408,7 +399,7 @@ mod tests {
         assert_eq!(keypair.public.algorithm, AsymmetricAlgorithm::Rsa2048);
         assert_eq!(keypair.private.algorithm, AsymmetricAlgorithm::Rsa2048);
         assert!(keypair.public.key_bytes.len() > 200); // RSA public key DER
-        assert!(keypair.private.key_bytes.len() > 1000); // RSA private key DER
+        assert!(keypair.private.as_bytes().len() > 1000); // RSA private key DER
     }
 
     #[test]
