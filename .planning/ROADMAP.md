@@ -105,7 +105,7 @@ Addressed 7 P1 security hardening findings: Zeroize on 4 key structs, 600k PBKDF
 
 **Milestone Goal:** Fix all 7 P0 security review findings — CI supply chain hardening, credential hygiene, and error information leakage.
 
-- [ ] **Phase 61: CI Supply Chain Hardening** - SHA-pin all GitHub Actions, remove curl-pipe installer, replace archived toolchain action
+- [x] **Phase 61: CI Supply Chain Hardening** - SHA-pin all GitHub Actions, remove curl-pipe installer, replace archived toolchain action (completed 2026-03-25)
 - [ ] **Phase 62: Config & Credential Hygiene** - Require explicit DATABASE_URL in release builds, remove postgres host port, reject placeholder JWT secret
 - [ ] **Phase 63: Error Response Sanitization** - Return generic crypto error messages to clients; log details server-side only
 
@@ -120,9 +120,9 @@ Addressed 7 P1 security hardening findings: Zeroize on 4 key structs, 600k PBKDF
   2. wasm-pack is installed without `curl | sh` (uses cargo-binstall, cargo install, or pre-built binary with checksum)
   3. `actions-rs/toolchain` is absent from all workflow files; `dtolnay/rust-toolchain` is used in its place
   4. CI passes after all workflow changes
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 61-01-PLAN.md — SHA-pin all actions, replace curl-pipe wasm-pack installer, replace actions-rs/toolchain
+- [x] 61-01-PLAN.md — SHA-pin all actions, replace curl-pipe wasm-pack installer, replace actions-rs/toolchain
 
 ### Phase 62: Config & Credential Hygiene
 **Goal**: Production deployments cannot start with hardcoded or placeholder credentials — database URL requires explicit config, postgres is not exposed to the host network, and the CA service rejects its default placeholder JWT secret
@@ -148,7 +148,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 61. CI Supply Chain Hardening | v2.7 | 0/1 | Planning | - |
+| 61. CI Supply Chain Hardening | v2.7 | 1/1 | Complete   | 2026-03-25 |
 | 62. Config & Credential Hygiene | v2.7 | 0/TBD | Not started | - |
 | 63. Error Response Sanitization | v2.7 | 0/TBD | Not started | - |
 

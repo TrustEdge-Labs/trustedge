@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.7
 milestone_name: CI & Config Security
-status: planning
-stopped_at: Phase 61 context gathered
-last_updated: "2026-03-25T01:43:46.454Z"
-last_activity: 2026-03-24 — v2.7 roadmap created (3 phases, 7 requirements mapped)
+status: Phase complete — ready for verification
+stopped_at: Completed 61-01-PLAN.md
+last_updated: "2026-03-25T02:56:16.799Z"
 progress:
   total_phases: 3
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
 ---
 
 <!--
@@ -28,16 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 61 — CI Supply Chain Hardening
+**Current focus:** Phase 61 — ci-supply-chain-hardening
 
 ## Current Position
 
-Phase: 61 of 63 (CI Supply Chain Hardening)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-24 — v2.7 roadmap created (3 phases, 7 requirements mapped)
-
-Progress: [░░░░░░░░░░] 0% (v2.7 milestone)
+Phase: 61 (ci-supply-chain-hardening) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -70,6 +64,8 @@ Recent decisions affecting current work:
 
 - [v2.6 Phase 60]: CI bundle grep guard pattern — reuse for any new CI enforcement in Phase 61
 - [v2.5 Phase 55]: Env-var config pattern (JWKS_KEY_PATH) — follow for DATABASE_URL enforcement in Phase 62
+- [Phase 61]: Use taiki-e/install-action + cargo binstall for wasm-pack — verifiable SHA-pinned binary install replaces curl|sh
+- [Phase 61]: All SHA pins include version comments for human readability alongside machine-enforceable full SHAs
 
 ### Pending Todos
 
@@ -81,9 +77,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T01:43:46.451Z
-Stopped at: Phase 61 context gathered
-Resume file: .planning/phases/61-ci-supply-chain-hardening/61-CONTEXT.md
+Last session: 2026-03-25T02:56:16.795Z
+Stopped at: Completed 61-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-24 after v2.7 roadmap created*
