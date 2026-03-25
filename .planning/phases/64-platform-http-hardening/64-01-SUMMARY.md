@@ -109,6 +109,15 @@ When unset or empty, prior behavior is preserved (peer IP only).
 - All 27 integration tests green; CI passes for platform crate
 - Ready for remaining phase 64 plans
 
+## Self-Check: PASSED
+
+- `crates/platform/src/http/rate_limit.rs` — FOUND
+- `crates/platform/src/http/router.rs` — FOUND
+- `.planning/phases/64-platform-http-hardening/64-01-SUMMARY.md` — FOUND
+- Commit `8453de3` — FOUND (feat: Task 1)
+- Commit `7c55c7d` — FOUND (test: Task 2)
+- All acceptance criteria patterns verified (trusted_proxies, extract_client_ip, retry-after, TRUSTED_PROXIES, ipnet)
+
 ---
 *Phase: 64-platform-http-hardening*
 *Completed: 2026-03-25*
