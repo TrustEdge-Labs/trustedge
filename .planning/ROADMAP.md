@@ -49,7 +49,9 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
   1. A request arriving with X-Forwarded-For from a configured trusted proxy is rate-limited against the forwarded client IP, not the proxy IP
   2. When a client is rate-limited, the 429 response includes a Retry-After header with a positive integer value
   3. A test or integration check proves both behaviors — trusted-proxy IP extraction and Retry-After header presence
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 64-01-PLAN.md — Proxy-aware rate limiting with Retry-After header
 
 ### Phase 65: Key Material Safety
 **Goal**: Key files created by trst wrap have restrictive permissions and PrivateKey cannot be accidentally serialized to JSON or other formats
@@ -89,7 +91,7 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 64. Platform HTTP Hardening | 0/TBD | Not started | - |
+| 64. Platform HTTP Hardening | 0/1 | Not started | - |
 | 65. Key Material Safety | 0/TBD | Not started | - |
 | 66. Crypto & CLI Hardening | 0/TBD | Not started | - |
 | 67. Deployment Security | 0/TBD | Not started | - |
