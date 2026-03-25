@@ -31,19 +31,17 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
       with:
-        toolchain: stable
-        target: wasm32-unknown-unknown
-        override: true
+        targets: wasm32-unknown-unknown
 
+    - name: Install cargo-binstall
+      uses: taiki-e/install-action@0863870cb2b3e98da71d6f925d05ecf26c4b96c1 # cargo-binstall
     - name: Install wasm-pack
-      run: |
-        curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      run: cargo binstall wasm-pack --no-confirm
 
     - name: Build trustedge-wasm and check size
       run: |
@@ -79,19 +77,17 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
       with:
-        toolchain: stable
-        target: wasm32-unknown-unknown
-        override: true
+        targets: wasm32-unknown-unknown
 
+    - name: Install cargo-binstall
+      uses: taiki-e/install-action@0863870cb2b3e98da71d6f925d05ecf26c4b96c1 # cargo-binstall
     - name: Install wasm-pack
-      run: |
-        curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      run: cargo binstall wasm-pack --no-confirm
 
     - name: Build and verify WASM package
       run: |
