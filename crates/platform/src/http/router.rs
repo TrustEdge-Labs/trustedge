@@ -56,7 +56,14 @@ pub fn create_router(state: AppState) -> Router {
         .ok()
         .and_then(|s| s.parse::<u32>().ok())
         .unwrap_or(10);
-    let rl_state = RateLimitState::new(rps);
+    let trusted_proxies: Vec<ipnet::IpNet> = std::env::var("TRUSTED_PROXIES")
+        .unwrap_or_default()
+        .split(',')
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .filter_map(|s| s.parse::<ipnet::IpNet>().ok())
+        .collect();
+    let rl_state = RateLimitState::new(rps, trusted_proxies);
 
     // Rate-limited verify sub-router — only /v1/verify is throttled.
     let verify_router = Router::new()
