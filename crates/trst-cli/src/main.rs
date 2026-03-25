@@ -1133,8 +1133,9 @@ fn load_or_generate_keypair(
             #[cfg(unix)]
             {
                 let perms = std::fs::Permissions::from_mode(0o600);
-                std::fs::set_permissions(&secret_path, perms)
-                    .with_context(|| format!("Failed to set permissions on {}", secret_path.display()))?;
+                std::fs::set_permissions(&secret_path, perms).with_context(|| {
+                    format!("Failed to set permissions on {}", secret_path.display())
+                })?;
             }
             #[cfg(not(unix))]
             {

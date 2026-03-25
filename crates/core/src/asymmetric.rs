@@ -134,7 +134,6 @@ impl PrivateKey {
     pub fn as_bytes(&self) -> &[u8] {
         &self.key_bytes
     }
-
 }
 
 impl KeyPair {
