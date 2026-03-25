@@ -29,7 +29,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-v2.7 Phase 62 (Config & Credential Hygiene) complete. DATABASE_URL fallback gated behind debug_assertions (release builds fail without explicit config). PostgreSQL port removed from docker-compose host binding. CAConfigBuilder::build() panics on placeholder JWT secret outside tests. Phase 63 (Error Response Sanitization) remains.
+v2.7 CI & Config Security milestone complete. All 7 P0 findings from third security review addressed: CI supply chain hardened (SHA-pinned actions, no curl|sh, no archived actions), credential hygiene enforced (DATABASE_URL required in release, postgres internal-only, placeholder JWT rejected), and crypto error responses sanitized (generic messages to clients, full detail in server logs only). 3 phases, 3 plans, 7 requirements.
 
 ## Requirements
 
@@ -179,9 +179,11 @@ v2.7 Phase 62 (Config & Credential Hygiene) complete. DATABASE_URL fallback gate
 - ✓ PostgreSQL port removed from docker-compose host binding (internal network only) — v2.7 Phase 62
 - ✓ CAConfigBuilder::build() rejects placeholder JWT secret outside tests — v2.7 Phase 62
 
+- ✓ Crypto error responses sanitized — generic messages to clients, full detail in server-side logs only — v2.7 Phase 63
+
 ### Active
 
-- [ ] Sanitize crypto error responses (generic to clients, details server-side)
+(No active requirements — v2.7 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -367,4 +369,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after v2.7 Phase 62 complete*
+*Last updated: 2026-03-25 after v2.7 milestone complete*
