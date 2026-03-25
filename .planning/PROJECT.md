@@ -32,7 +32,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-v2.8 Phase 64 (Platform HTTP Hardening) complete. Rate limiter parses X-Forwarded-For from TRUSTED_PROXIES CIDRs, 429 responses include Retry-After: 1. 9 new tests. Phases 65-67 remain.
+v2.8 Phase 65 (Key Material Safety) complete. Auto-generated wrap key files get 0600 permissions. PrivateKey serde derives removed, key_bytes restricted to pub(crate). Phases 66-67 remain.
 
 ## Requirements
 
