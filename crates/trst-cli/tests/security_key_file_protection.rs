@@ -9,14 +9,80 @@
 //! Security tests for TRUSTEDGE-KEY-V1 encrypted key format — covers threat model T3 (key protection).
 //!
 //! Tests are organized by requirement:
+//!   KEY-01: Auto-generated key files from trst wrap have 0600 Unix permissions
 //!   SEC-08: Truncated encrypted key files are rejected with explicit errors (no panic, no partial key)
 //!   SEC-09: Corrupted JSON headers in encrypted key files produce clear parse errors
 //!   SEC-10: Wrong passphrase on a valid encrypted key file returns a clear authentication error
 //!   SEC-11: Additional truncation points (single-byte ciphertext, GCM tag boundary)
 //!   SEC-12: Corrupted JSON fields (version type, iterations type, nonce base64, salt length, unknown fields)
 
+// Allow deprecated cargo_bin usage - the replacement cargo_bin_cmd! macro
+// is not yet stable across all assert_cmd versions
+#![allow(deprecated)]
+
+use assert_cmd::prelude::*;
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
+use std::fs;
+use std::path::PathBuf;
+use std::process::Command;
+use tempfile::TempDir;
 use trustedge_core::{CryptoError, DeviceKeypair};
+
+// ---------------------------------------------------------------------------
+// KEY-01: Auto-generated wrap key file permissions
+// ---------------------------------------------------------------------------
+
+/// KEY-01: After `trst wrap --unencrypted` auto-generates a keypair, the secret key
+/// file (`device.key`) must have Unix mode 0600 (owner-read/write only).
+///
+/// This prevents world-readable key files created by the default umask.
+#[cfg(unix)]
+#[test]
+fn test_wrap_autogen_key_permissions_0600() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let tempdir = TempDir::new().expect("failed to create tempdir");
+
+    // Write a small dummy input file
+    let input_path = tempdir.path().join("input.bin");
+    let data: Vec<u8> = (0..1024).map(|i| (i % 251) as u8).collect();
+    fs::write(&input_path, &data).expect("failed to write input");
+
+    let archive_path = tempdir.path().join("archive.trst");
+
+    // Run trst wrap without --device-key so it auto-generates the keypair
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "wrap",
+            "--in",
+            input_path.to_str().unwrap(),
+            "--out",
+            archive_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .success();
+
+    // Check that device.key exists and has mode 0600
+    let key_path: PathBuf = tempdir.path().join("device.key");
+    assert!(key_path.exists(), "device.key was not created");
+
+    let metadata = fs::metadata(&key_path).expect("failed to stat device.key");
+    let mode = metadata.permissions().mode();
+    // 0o100600 = regular file (0o100000) | owner rw (0o600)
+    assert_eq!(
+        mode & 0o777,
+        0o600,
+        "device.key must have mode 0600, got mode {:o}",
+        mode & 0o777
+    );
+
+    // Public key should exist but NOT have restricted permissions (no assertion on pub key mode)
+    let pub_path: PathBuf = tempdir.path().join("device.pub");
+    assert!(pub_path.exists(), "device.pub was not created");
+}
 
 // ---------------------------------------------------------------------------
 // Test helpers

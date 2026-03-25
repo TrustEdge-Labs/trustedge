@@ -1129,6 +1129,20 @@ fn load_or_generate_keypair(
                 let public_string = device_keypair.public.clone();
                 fs::write(&public_path, format!("{public_string}\n"))?;
             }
+            // Set secret key file to owner-only permissions (0600)
+            #[cfg(unix)]
+            {
+                let perms = std::fs::Permissions::from_mode(0o600);
+                std::fs::set_permissions(&secret_path, perms)
+                    .with_context(|| format!("Failed to set permissions on {}", secret_path.display()))?;
+            }
+            #[cfg(not(unix))]
+            {
+                eprintln!(
+                    "Warning: Unable to restrict key file permissions on this platform. Manually restrict access to {}",
+                    secret_path.display()
+                );
+            }
             Ok((device_keypair, secret_path, public_path, true))
         }
     }
