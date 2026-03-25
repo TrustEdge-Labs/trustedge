@@ -39,19 +39,19 @@ None — all findings addressed in this milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CISC-01 | TBD | Pending |
-| CISC-02 | TBD | Pending |
-| CISC-03 | TBD | Pending |
-| CONF-01 | TBD | Pending |
-| CONF-02 | TBD | Pending |
-| CONF-03 | TBD | Pending |
-| ERRH-01 | TBD | Pending |
+| CISC-01 | Phase 61 | Pending |
+| CISC-02 | Phase 61 | Pending |
+| CISC-03 | Phase 61 | Pending |
+| CONF-01 | Phase 62 | Pending |
+| CONF-02 | Phase 62 | Pending |
+| CONF-03 | Phase 62 | Pending |
+| ERRH-01 | Phase 63 | Pending |
 
 **Coverage:**
 - v2.7 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 (pending roadmap)
+- Mapped to phases: 7
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-24*
-*Last updated: 2026-03-24 after initial definition*
+*Last updated: 2026-03-24 after roadmap created (all 7 requirements mapped)*

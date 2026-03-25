@@ -26,6 +26,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v2.4 Security Review Remediation** - Phases 52-53 (shipped 2026-03-22)
 - ✅ **v2.5 Critical Security Fixes** - Phases 54-56 (shipped 2026-03-23)
 - ✅ **v2.6 Security Hardening** - Phases 57-60 (shipped 2026-03-24)
+- 🚧 **v2.7 CI & Config Security** - Phases 61-63 (in progress)
 
 ## Phases
 
@@ -100,5 +101,54 @@ Addressed 7 P1 security hardening findings: Zeroize on 4 key structs, 600k PBKDF
 
 </details>
 
+### v2.7 CI & Config Security (In Progress)
+
+**Milestone Goal:** Fix all 7 P0 security review findings — CI supply chain hardening, credential hygiene, and error information leakage.
+
+- [ ] **Phase 61: CI Supply Chain Hardening** - SHA-pin all GitHub Actions, remove curl-pipe installer, replace archived toolchain action
+- [ ] **Phase 62: Config & Credential Hygiene** - Require explicit DATABASE_URL in release builds, remove postgres host port, reject placeholder JWT secret
+- [ ] **Phase 63: Error Response Sanitization** - Return generic crypto error messages to clients; log details server-side only
+
+## Phase Details
+
+### Phase 61: CI Supply Chain Hardening
+**Goal**: CI workflows are protected against supply chain attacks — no unpinned action tags, no shell-pipe installers, no archived third-party actions
+**Depends on**: Phase 60 (v2.6 complete)
+**Requirements**: CISC-01, CISC-02, CISC-03
+**Success Criteria** (what must be TRUE):
+  1. All GitHub Actions across all 4 workflow files reference full commit SHAs, not mutable tags
+  2. wasm-pack is installed without `curl | sh` (uses cargo-binstall, cargo install, or pre-built binary with checksum)
+  3. `actions-rs/toolchain` is absent from all workflow files; `dtolnay/rust-toolchain` is used in its place
+  4. CI passes after all workflow changes
+**Plans**: TBD
+
+### Phase 62: Config & Credential Hygiene
+**Goal**: Production deployments cannot start with hardcoded or placeholder credentials — database URL requires explicit config, postgres is not exposed to the host network, and the CA service rejects its default placeholder JWT secret
+**Depends on**: Phase 60 (v2.6 complete)
+**Requirements**: CONF-01, CONF-02, CONF-03
+**Success Criteria** (what must be TRUE):
+  1. The platform server fails to start in release builds when DATABASE_URL is not explicitly set (no hardcoded credential fallback)
+  2. docker-compose.yml does not expose the postgres port to the host; the database is reachable only from containers on the internal network
+  3. `CAConfig::default()` (or equivalent) panics or returns an error when the placeholder value `"your-secret-key"` is used as the JWT secret outside of test code
+**Plans**: TBD
+
+### Phase 63: Error Response Sanitization
+**Goal**: Crypto verification errors never leak raw library error messages to API clients — clients receive a generic message, full details are logged server-side
+**Depends on**: Phase 62
+**Requirements**: ERRH-01
+**Success Criteria** (what must be TRUE):
+  1. A request that fails signature or integrity verification receives a generic error response (e.g., "verification failed") with no internal library detail
+  2. The full error detail (library message, error chain) appears in server-side logs for the same failed request
+  3. A successful verification response is unaffected by the sanitization change
+**Plans**: TBD
+
+## Progress
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 61. CI Supply Chain Hardening | v2.7 | 0/TBD | Not started | - |
+| 62. Config & Credential Hygiene | v2.7 | 0/TBD | Not started | - |
+| 63. Error Response Sanitization | v2.7 | 0/TBD | Not started | - |
+
 ---
-*Last updated: 2026-03-24 after v2.6 milestone*
+*Last updated: 2026-03-24 after v2.7 roadmap created*
