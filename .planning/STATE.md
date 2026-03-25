@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.7
-milestone_name: CI & Config Security
-status: v2.7 milestone complete
-stopped_at: Completed 63-01-PLAN.md
-last_updated: "2026-03-25T13:19:18.528Z"
+milestone: v2.8
+milestone_name: High Priority Hardening
+status: Defining requirements
+stopped_at: null
+last_updated: "2026-03-25T18:00:00.000Z"
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 3
-  completed_plans: 3
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 <!--
@@ -23,15 +23,17 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-24)
+See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 63 — error-response-sanitization
+**Current focus:** Defining requirements for v2.8
 
 ## Current Position
 
-Phase: 63
-Plan: Not started
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-25 — Milestone v2.8 started
 
 ## Performance Metrics
 
@@ -53,22 +55,14 @@ Plan: Not started
 - v2.4: 2 phases, 3 plans
 - v2.5: 3 phases, 4 plans
 - v2.6: 4 phases, 5 plans
-- **Total shipped: 60 phases, 91 plans**
+- v2.7: 3 phases, 3 plans
+- **Total shipped: 63 phases, 94 plans**
 
 ## Accumulated Context
 
 ### Decisions
 
 Cleared — see PROJECT.md Key Decisions table for full history.
-Recent decisions affecting current work:
-
-- [v2.6 Phase 60]: CI bundle grep guard pattern — reuse for any new CI enforcement in Phase 61
-- [v2.5 Phase 55]: Env-var config pattern (JWKS_KEY_PATH) — follow for DATABASE_URL enforcement in Phase 62
-- [Phase 61]: Use taiki-e/install-action + cargo binstall for wasm-pack — verifiable SHA-pinned binary install replaces curl|sh
-- [Phase 61]: All SHA pins include version comments for human readability alongside machine-enforceable full SHAs
-- [Phase 62-config-credential-hygiene]: cfg!(debug_assertions) gates DATABASE_URL fallback: release builds require explicit config, debug builds keep dev default
-- [Phase 62-config-credential-hygiene]: cfg!(test) guards CAConfigBuilder::build() panic: test builds allow placeholder JWT secret, production panics immediately
-- [Phase 63-error-response-sanitization]: Replace format!() error strings with static generic messages at all crypto error sites; full detail retained in warn!() logs
 
 ### Pending Todos
 
@@ -80,9 +74,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T13:06:43.909Z
-Stopped at: Completed 63-01-PLAN.md
+Last session: 2026-03-25
+Stopped at: Milestone v2.8 started — defining requirements
 Resume file: None
 
 ---
-*Last updated: 2026-03-24 after v2.7 roadmap created*
+*Last updated: 2026-03-25 after v2.8 milestone started*

@@ -16,9 +16,23 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
+## Current Milestone: v2.8 High Priority Hardening
+
+**Goal:** Fix 9 P1 security review findings — rate limiter proxy awareness, key material safety, nonce construction, CLI hardening, and deployment security.
+
+**Target features:**
+- Rate limiter parses X-Forwarded-For from trusted proxies + Retry-After header on 429s
+- Auto-generated key files in `trst wrap` get 0600 permissions
+- Remove Serialize/Deserialize from PrivateKey (or make key_bytes private)
+- NetworkChunk::new() requires nonce parameter (no zero-nonce default)
+- Replace process::exit() with proper error returns in trst-cli (11 call sites)
+- Chunk-size upper bound (256 MB ceiling) in trst-cli wrap
+- Dashboard nginx runs as non-root user
+- CI bundle credential guard added to GitHub Actions workflow
+
 ## Current State
 
-v2.7 CI & Config Security milestone complete. All 7 P0 findings from third security review addressed: CI supply chain hardened (SHA-pinned actions, no curl|sh, no archived actions), credential hygiene enforced (DATABASE_URL required in release, postgres internal-only, placeholder JWT rejected), and crypto error responses sanitized (generic messages to clients, full detail in server logs only). 3 phases, 3 plans, 7 requirements.
+Shipped v2.7 CI & Config Security. All 7 P0 findings from third security review addressed. CI supply chain hardened, credential hygiene enforced, error responses sanitized.
 
 ## Requirements
 
@@ -172,7 +186,15 @@ v2.7 CI & Config Security milestone complete. All 7 P0 findings from third secur
 
 ### Active
 
-(No active requirements — v2.7 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
+- [ ] Rate limiter parses X-Forwarded-For from trusted proxies
+- [ ] 429 responses include Retry-After header
+- [ ] Auto-generated key files in `trst wrap` get 0600 permissions
+- [ ] PrivateKey serde derives removed or key_bytes made private
+- [ ] NetworkChunk::new() requires nonce parameter
+- [ ] process::exit() replaced with error returns in trst-cli
+- [ ] Chunk-size upper bound enforced in trst-cli wrap
+- [ ] Dashboard nginx runs as non-root
+- [ ] CI bundle credential guard in GitHub Actions workflow
 
 ### Deferred
 
@@ -359,4 +381,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after v2.7 milestone*
+*Last updated: 2026-03-25 after v2.8 milestone started*
