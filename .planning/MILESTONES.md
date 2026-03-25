@@ -1,5 +1,16 @@
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 
+## v2.7 CI & Config Security (Shipped: 2026-03-25)
+
+**Phases completed:** 3 phases, 3 plans, 5 tasks
+
+**Key accomplishments:**
+
+- DATABASE_URL release enforcement via cfg!(debug_assertions), postgres host port removed from docker-compose, and CAConfigBuilder::build() panics on placeholder JWT secret outside test builds
+- Closed security Finding 6: four format!() calls leaking raw crypto error strings replaced with static generic messages; integration test proves no library detail reaches HTTP clients
+
+---
+
 ## v2.6 Security Hardening (Shipped: 2026-03-24)
 
 **Phases completed:** 4 phases, 5 plans, 9 tasks

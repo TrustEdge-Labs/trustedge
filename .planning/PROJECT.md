@@ -16,17 +16,6 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## Current Milestone: v2.7 CI & Config Security
-
-**Goal:** Fix all 7 P0 security review findings — CI supply chain hardening, credential hygiene, and error information leakage.
-
-**Target features:**
-- SHA-pin all GitHub Actions across 4 workflows + replace archived `actions-rs/toolchain` + remove `curl | sh` wasm-pack install
-- Require explicit `DATABASE_URL` in release builds (no hardcoded fallback credentials)
-- Remove PostgreSQL host port binding in docker-compose (internal network only)
-- Sanitize crypto error responses to clients (generic message + server-side logging)
-- Reject placeholder JWT secret in CA config outside tests
-
 ## Current State
 
 v2.7 CI & Config Security milestone complete. All 7 P0 findings from third security review addressed: CI supply chain hardened (SHA-pinned actions, no curl|sh, no archived actions), credential hygiene enforced (DATABASE_URL required in release, postgres internal-only, placeholder JWT rejected), and crypto error responses sanitized (generic messages to clients, full detail in server logs only). 3 phases, 3 plans, 7 requirements.
@@ -216,10 +205,11 @@ v2.7 CI & Config Security milestone complete. All 7 P0 findings from third secur
 - **v2.4 Security Review Remediation** — Custom base64 replaced, key format versioned, timestamp replay fixed, envelope panics eliminated, key file permissions enforced, nonce overflow guarded, 14 error path tests
 - **v2.5 Critical Security Fixes** — QUIC TLS MITM vulnerability closed, 2 MB body limit + per-IP rate limiting on platform, JWKS key path configurable (no more target/dev/), WASM double-decrypt bug fixed
 - **v2.6 Security Hardening** — Zeroize on 4 key structs, 600k PBKDF2 import minimum, postgres verify fix, configurable CORS, CLI key leak prevention, nginx TLS, dashboard API key removed
+- **v2.7 CI & Config Security** — SHA-pinned all GitHub Actions, curl|sh removed, actions-rs replaced, DATABASE_URL required in release, postgres internal-only, placeholder JWT rejected, crypto errors sanitized
 
 ## Current State
 
-Shipped v2.6 Security Hardening. All 12 findings from the second security review fully addressed across v2.5 (P0) and v2.6 (P1). Key material zeroized on drop for all sensitive structs. PBKDF2 import validation enforced at 600k. Platform verify endpoint works in postgres mode. CORS configurable. CLI no longer leaks keys. nginx supports TLS. Dashboard bundle contains no API credentials.
+Shipped v2.7 CI & Config Security. All 7 P0 findings from third security review addressed: CI supply chain hardened (SHA-pinned actions across 4 workflows, cargo-binstall for wasm-pack, archived actions-rs replaced), credential hygiene enforced (DATABASE_URL required in release builds, postgres port internal-only, CAConfig rejects placeholder JWT), error responses sanitized (generic messages to clients, full detail in server logs). 3 phases, 3 plans, 7 requirements, 22 commits.
 
 ## Context
 
@@ -369,4 +359,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after v2.7 milestone complete*
+*Last updated: 2026-03-25 after v2.7 milestone*
