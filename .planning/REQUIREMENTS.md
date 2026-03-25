@@ -21,8 +21,8 @@ Requirements for milestone v2.8 High Priority Hardening. Each maps to roadmap ph
 
 ### Key Material Safety
 
-- [ ] **KEY-01**: Auto-generated key files in `trst wrap` get 0600 Unix permissions (matching `keygen` behavior)
-- [ ] **KEY-02**: PrivateKey serde derives removed or key_bytes field made private to prevent accidental serialization
+- [x] **KEY-01**: Auto-generated key files in `trst wrap` get 0600 Unix permissions (matching `keygen` behavior)
+- [x] **KEY-02**: PrivateKey serde derives removed or key_bytes field made private to prevent accidental serialization
 
 ### Crypto Construction
 
@@ -56,8 +56,8 @@ None — all findings addressed in this milestone.
 |-------------|-------|--------|
 | HTTP-01 | Phase 64 | Complete |
 | HTTP-02 | Phase 64 | Complete |
-| KEY-01 | Phase 65 | Pending |
-| KEY-02 | Phase 65 | Pending |
+| KEY-01 | Phase 65 | Complete |
+| KEY-02 | Phase 65 | Complete |
 | CRYPT-01 | Phase 66 | Pending |
 | CLI-01 | Phase 66 | Pending |
 | CLI-02 | Phase 66 | Pending |

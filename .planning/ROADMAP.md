@@ -35,7 +35,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 **Milestone Goal:** Fix 9 P1 security review findings across rate limiting proxy awareness, key material safety, nonce construction, CLI hardening, and deployment security.
 
 - [x] **Phase 64: Platform HTTP Hardening** - Rate limiter reads real client IP from X-Forwarded-For behind trusted proxies; 429 responses include Retry-After header (completed 2026-03-25)
-- [ ] **Phase 65: Key Material Safety** - Auto-generated key files get 0600 permissions; PrivateKey serde derives removed to prevent accidental serialization
+- [x] **Phase 65: Key Material Safety** - Auto-generated key files get 0600 permissions; PrivateKey serde derives removed to prevent accidental serialization (completed 2026-03-25)
 - [ ] **Phase 66: Crypto & CLI Hardening** - NetworkChunk::new() requires mandatory nonce; process::exit() replaced with error returns; chunk-size ceiling enforced
 - [ ] **Phase 67: Deployment Security** - Dashboard nginx runs as non-root; CI workflow guards against credential leakage in bundles
 
@@ -63,7 +63,7 @@ Plans:
   3. A test verifies the 0600 permission is set on the auto-generated key path
 **Plans**: 1 plan
 Plans:
-- [ ] 65-01-PLAN.md — Key file permissions and PrivateKey serde removal
+- [x] 65-01-PLAN.md — Key file permissions and PrivateKey serde removal
 
 ### Phase 66: Crypto & CLI Hardening
 **Goal**: NetworkChunk construction requires an explicit nonce, process exits in the CLI surface proper errors, and chunk sizes are bounded
@@ -94,6 +94,6 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 64. Platform HTTP Hardening | 1/1 | Complete    | 2026-03-25 |
-| 65. Key Material Safety | 0/1 | Not started | - |
+| 65. Key Material Safety | 1/1 | Complete   | 2026-03-25 |
 | 66. Crypto & CLI Hardening | 0/TBD | Not started | - |
 | 67. Deployment Security | 0/TBD | Not started | - |

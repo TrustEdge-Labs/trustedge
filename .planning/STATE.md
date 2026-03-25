@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.8
 milestone_name: High Priority Hardening
-status: Ready to plan
-stopped_at: Phase 65 context gathered
-last_updated: "2026-03-25T22:41:24.105Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 65-01-PLAN.md
+last_updated: "2026-03-25T23:00:50.465Z"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
 ---
 
 <!--
@@ -26,12 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 64 — platform-http-hardening
+**Current focus:** Phase 65 — key-material-safety
 
 ## Current Position
 
-Phase: 65
-Plan: Not started
+Phase: 65 (key-material-safety) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Plan: Not started
 Cleared — see PROJECT.md Key Decisions table for full history.
 
 - [Phase 64-platform-http-hardening]: Use ipnet crate for CIDR containment; return Response from middleware for Retry-After header on 429; TRUSTED_PROXIES env var for proxy config
+- [Phase 65-key-material-safety]: Restrict all PrivateKey fields (algorithm, key_bytes, key_id) to pub(crate) for consistent visibility hardening; use as_bytes() accessor throughout
 
 ### Pending Todos
 
@@ -74,9 +75,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T22:41:24.102Z
-Stopped at: Phase 65 context gathered
-Resume file: .planning/phases/65-key-material-safety/65-CONTEXT.md
+Last session: 2026-03-25T23:00:50.463Z
+Stopped at: Completed 65-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-25 after v2.8 roadmap created*
