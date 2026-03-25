@@ -29,7 +29,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-v2.7 Phase 61 (CI Supply Chain Hardening) complete. All 4 GitHub Actions workflow files hardened: every third-party action pinned to full commit SHAs with version comments, `curl | sh` wasm-pack installer replaced with cargo-binstall via taiki-e/install-action, archived actions-rs/toolchain replaced with dtolnay/rust-toolchain. Zero unpinned tag references remain. Phases 62-63 remain.
+v2.7 Phase 62 (Config & Credential Hygiene) complete. DATABASE_URL fallback gated behind debug_assertions (release builds fail without explicit config). PostgreSQL port removed from docker-compose host binding. CAConfigBuilder::build() panics on placeholder JWT secret outside tests. Phase 63 (Error Response Sanitization) remains.
 
 ## Requirements
 
@@ -175,12 +175,13 @@ v2.7 Phase 61 (CI Supply Chain Hardening) complete. All 4 GitHub Actions workflo
 - ✓ `curl | sh` wasm-pack installer replaced with cargo-binstall via taiki-e/install-action — v2.7 Phase 61
 - ✓ Archived `actions-rs/toolchain` replaced with `dtolnay/rust-toolchain` in wasm-tests.yml — v2.7 Phase 61
 
+- ✓ DATABASE_URL fallback gated behind debug_assertions — release builds require explicit config — v2.7 Phase 62
+- ✓ PostgreSQL port removed from docker-compose host binding (internal network only) — v2.7 Phase 62
+- ✓ CAConfigBuilder::build() rejects placeholder JWT secret outside tests — v2.7 Phase 62
+
 ### Active
 
-- [ ] Require explicit `DATABASE_URL` in release builds
-- [ ] Remove PostgreSQL host port binding in docker-compose
 - [ ] Sanitize crypto error responses (generic to clients, details server-side)
-- [ ] Reject placeholder JWT secret in CA config outside tests
 
 ### Deferred
 
@@ -366,4 +367,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after v2.7 Phase 61 complete*
+*Last updated: 2026-03-25 after v2.7 Phase 62 complete*
