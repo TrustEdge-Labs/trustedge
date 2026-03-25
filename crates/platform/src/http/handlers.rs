@@ -83,7 +83,7 @@ pub async fn verify_handler(
                 StatusCode::BAD_REQUEST,
                 Json(ValidationError::new(
                     "verification_failed",
-                    &format!("Cryptographic verification failed: {}", e),
+                    "Cryptographic verification failed",
                 )),
             ));
         }
@@ -165,7 +165,7 @@ pub async fn verify_handler(
                 StatusCode::BAD_REQUEST,
                 Json(ValidationError::new(
                     "verification_failed",
-                    &format!("Cryptographic verification failed: {}", e),
+                    "Cryptographic verification failed",
                 )),
             ));
         }
@@ -270,7 +270,7 @@ pub async fn verify_handler(
                         StatusCode::INTERNAL_SERVER_ERROR,
                         Json(ValidationError::new(
                             "receipt_signing_failed",
-                            &format!("Failed to sign receipt: {}", e),
+                            "Receipt generation failed",
                         )),
                     ));
                 }

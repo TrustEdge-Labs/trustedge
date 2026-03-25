@@ -10,6 +10,7 @@
 
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use tracing::warn;
 
 use super::engine::{receipt_from_report, SegmentDigest, VerifyReport};
 use super::jwks::KeyManager;
@@ -152,10 +153,13 @@ pub async fn build_receipt_if_requested(
 
     match sign_receipt_jws(&receipt_obj, keys).await {
         Ok(jws) => Ok(Some(jws)),
-        Err(e) => Err(ValidationError::new(
-            "receipt_signing_failed",
-            &format!("Failed to sign receipt: {}", e),
-        )),
+        Err(e) => {
+            warn!("Failed to sign receipt: {}", e);
+            Err(ValidationError::new(
+                "receipt_signing_failed",
+                "Receipt generation failed",
+            ))
+        }
     }
 }
 
