@@ -1,3 +1,10 @@
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+
 # Requirements: TrustEdge
 
 **Defined:** 2026-03-25
@@ -47,21 +54,21 @@ None — all findings addressed in this milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HTTP-01 | TBD | Pending |
-| HTTP-02 | TBD | Pending |
-| KEY-01 | TBD | Pending |
-| KEY-02 | TBD | Pending |
-| CRYPT-01 | TBD | Pending |
-| CLI-01 | TBD | Pending |
-| CLI-02 | TBD | Pending |
-| DEPL-01 | TBD | Pending |
-| DEPL-02 | TBD | Pending |
+| HTTP-01 | Phase 64 | Pending |
+| HTTP-02 | Phase 64 | Pending |
+| KEY-01 | Phase 65 | Pending |
+| KEY-02 | Phase 65 | Pending |
+| CRYPT-01 | Phase 66 | Pending |
+| CLI-01 | Phase 66 | Pending |
+| CLI-02 | Phase 66 | Pending |
+| DEPL-01 | Phase 67 | Pending |
+| DEPL-02 | Phase 67 | Pending |
 
 **Coverage:**
 - v2.8 requirements: 9 total
-- Mapped to phases: 0
-- Unmapped: 9 (pending roadmap)
+- Mapped to phases: 9
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-25*
-*Last updated: 2026-03-25 after initial definition*
+*Last updated: 2026-03-25 after roadmap created*
