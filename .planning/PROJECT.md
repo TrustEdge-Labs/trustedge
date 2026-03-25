@@ -29,7 +29,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-Shipped v2.6 Security Hardening. All 12 findings from the second security review fully addressed across v2.5 (P0) and v2.6 (P1). Key material zeroized on drop for all sensitive structs. PBKDF2 import validation enforced at 600k. Platform verify endpoint works in postgres mode. CORS configurable. CLI no longer leaks keys. nginx supports TLS. Dashboard bundle contains no API credentials.
+v2.7 Phase 61 (CI Supply Chain Hardening) complete. All 4 GitHub Actions workflow files hardened: every third-party action pinned to full commit SHAs with version comments, `curl | sh` wasm-pack installer replaced with cargo-binstall via taiki-e/install-action, archived actions-rs/toolchain replaced with dtolnay/rust-toolchain. Zero unpinned tag references remain. Phases 62-63 remain.
 
 ## Requirements
 
@@ -171,11 +171,12 @@ Shipped v2.6 Security Hardening. All 12 findings from the second security review
 - ✓ trustedge CLI requires --key-out or --show-key for encryption (no key leak to stderr) — v2.6 Phase 59
 - ✓ nginx TLS termination via SSL_CERT_PATH/SSL_KEY_PATH env vars, port 443 exposed — v2.6 Phase 59
 - ✓ VITE_API_KEY removed from dashboard bundle, protected pages replaced with admin notices, CI guard added — v2.6 Phase 60
+- ✓ All GitHub Actions SHA-pinned to full commit SHAs with version comments across all 4 workflows — v2.7 Phase 61
+- ✓ `curl | sh` wasm-pack installer replaced with cargo-binstall via taiki-e/install-action — v2.7 Phase 61
+- ✓ Archived `actions-rs/toolchain` replaced with `dtolnay/rust-toolchain` in wasm-tests.yml — v2.7 Phase 61
 
 ### Active
 
-- [ ] SHA-pin all GitHub Actions and remove `curl | sh` wasm-pack install
-- [ ] Replace archived `actions-rs/toolchain` with `dtolnay/rust-toolchain`
 - [ ] Require explicit `DATABASE_URL` in release builds
 - [ ] Remove PostgreSQL host port binding in docker-compose
 - [ ] Sanitize crypto error responses (generic to clients, details server-side)
@@ -365,4 +366,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after v2.7 milestone started*
+*Last updated: 2026-03-25 after v2.7 Phase 61 complete*
