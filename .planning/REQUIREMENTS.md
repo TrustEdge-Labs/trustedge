@@ -15,9 +15,9 @@ Requirements for milestone v2.7 CI & Config Security. Each maps to roadmap phase
 
 ### Config & Credentials
 
-- [ ] **CONF-01**: `DATABASE_URL` has no hardcoded credential fallback in release builds (require explicit config)
-- [ ] **CONF-02**: PostgreSQL port not exposed to host in docker-compose (internal network only)
-- [ ] **CONF-03**: `CAConfig::default()` rejects placeholder JWT secret outside tests (panic or error if `"your-secret-key"` used in non-test code)
+- [x] **CONF-01**: `DATABASE_URL` has no hardcoded credential fallback in release builds (require explicit config)
+- [x] **CONF-02**: PostgreSQL port not exposed to host in docker-compose (internal network only)
+- [x] **CONF-03**: `CAConfig::default()` rejects placeholder JWT secret outside tests (panic or error if `"your-secret-key"` used in non-test code)
 
 ### Error Handling
 
@@ -42,9 +42,9 @@ None — all findings addressed in this milestone.
 | CISC-01 | Phase 61 | Complete |
 | CISC-02 | Phase 61 | Complete |
 | CISC-03 | Phase 61 | Complete |
-| CONF-01 | Phase 62 | Pending |
-| CONF-02 | Phase 62 | Pending |
-| CONF-03 | Phase 62 | Pending |
+| CONF-01 | Phase 62 | Complete |
+| CONF-02 | Phase 62 | Complete |
+| CONF-03 | Phase 62 | Complete |
 | ERRH-01 | Phase 63 | Pending |
 
 **Coverage:**

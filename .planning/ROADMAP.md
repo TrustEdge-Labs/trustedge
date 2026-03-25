@@ -106,7 +106,7 @@ Addressed 7 P1 security hardening findings: Zeroize on 4 key structs, 600k PBKDF
 **Milestone Goal:** Fix all 7 P0 security review findings — CI supply chain hardening, credential hygiene, and error information leakage.
 
 - [x] **Phase 61: CI Supply Chain Hardening** - SHA-pin all GitHub Actions, remove curl-pipe installer, replace archived toolchain action (completed 2026-03-25)
-- [ ] **Phase 62: Config & Credential Hygiene** - Require explicit DATABASE_URL in release builds, remove postgres host port, reject placeholder JWT secret
+- [x] **Phase 62: Config & Credential Hygiene** - Require explicit DATABASE_URL in release builds, remove postgres host port, reject placeholder JWT secret (completed 2026-03-25)
 - [ ] **Phase 63: Error Response Sanitization** - Return generic crypto error messages to clients; log details server-side only
 
 ## Phase Details
@@ -132,9 +132,9 @@ Plans:
   1. The platform server fails to start in release builds when DATABASE_URL is not explicitly set (no hardcoded credential fallback)
   2. docker-compose.yml does not expose the postgres port to the host; the database is reachable only from containers on the internal network
   3. `CAConfig::default()` (or equivalent) panics or returns an error when the placeholder value `"your-secret-key"` is used as the JWT secret outside of test code
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 62-01-PLAN.md — Gate DATABASE_URL fallback, remove postgres host port, reject placeholder JWT secret
+- [x] 62-01-PLAN.md — Gate DATABASE_URL fallback, remove postgres host port, reject placeholder JWT secret
 
 ### Phase 63: Error Response Sanitization
 **Goal**: Crypto verification errors never leak raw library error messages to API clients — clients receive a generic message, full details are logged server-side
@@ -153,7 +153,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 61. CI Supply Chain Hardening | v2.7 | 1/1 | Complete    | 2026-03-25 |
-| 62. Config & Credential Hygiene | v2.7 | 0/1 | Planned | - |
+| 62. Config & Credential Hygiene | v2.7 | 1/1 | Complete   | 2026-03-25 |
 | 63. Error Response Sanitization | v2.7 | 0/TBD | Not started | - |
 
 ---
