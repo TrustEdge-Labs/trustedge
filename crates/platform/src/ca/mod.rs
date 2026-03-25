@@ -151,6 +151,12 @@ impl CAConfigBuilder {
     }
 
     pub fn build(self) -> CAConfig {
+        if self.jwt_secret == "your-secret-key" && !cfg!(test) {
+            panic!(
+                "CAConfig: placeholder JWT secret 'your-secret-key' must not be used outside tests. \
+                 Set a real secret via CAConfigBuilder::jwt_secret()."
+            );
+        }
         CAConfig {
             database_url: self.database_url,
             jwt_secret: Secret::new(self.jwt_secret),
@@ -168,14 +174,16 @@ mod tests {
 
     #[test]
     fn test_caconfig_debug_redacts_jwt_secret() {
-        let config = CAConfig::default();
+        let config = CAConfig::builder()
+            .jwt_secret("test-jwt-secret-do-not-use-in-prod".to_string())
+            .build();
         let debug_output = format!("{:?}", config);
         assert!(
             debug_output.contains("[REDACTED]"),
             "Debug output must contain [REDACTED], got: {debug_output}"
         );
         assert!(
-            !debug_output.contains("your-secret-key"),
+            !debug_output.contains("test-jwt-secret-do-not-use-in-prod"),
             "Debug output must NOT contain the actual JWT secret, got: {debug_output}"
         );
     }
@@ -194,10 +202,20 @@ mod tests {
 
     #[test]
     fn test_caconfig_builder_defaults() {
+        // In test builds, cfg!(test) allows the placeholder through build()
         let config = CAConfig::builder().build();
         assert_eq!(config.jwt_secret(), "your-secret-key");
         assert_eq!(config.ca_country, "US");
         assert_eq!(config.certificate_validity_days, 365);
+    }
+
+    #[test]
+    fn test_placeholder_jwt_secret_guard_exists() {
+        let source = include_str!("mod.rs");
+        assert!(
+            source.contains("placeholder JWT secret"),
+            "build() must contain the placeholder JWT secret guard"
+        );
     }
 
     #[test]
