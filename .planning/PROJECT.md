@@ -32,7 +32,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-Shipped v2.7 CI & Config Security. All 7 P0 findings from third security review addressed. CI supply chain hardened, credential hygiene enforced, error responses sanitized.
+v2.8 Phase 64 (Platform HTTP Hardening) complete. Rate limiter parses X-Forwarded-For from TRUSTED_PROXIES CIDRs, 429 responses include Retry-After: 1. 9 new tests. Phases 65-67 remain.
 
 ## Requirements
 
