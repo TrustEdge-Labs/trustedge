@@ -21,7 +21,9 @@
   1. Attempting to use CAConfig::default() in a non-test build either panics at construction or the Default impl no longer exists — a misconfigured server cannot start silently with a placeholder JWT secret
   2. SoftwareHsmConfig constructed with the "changeme123!" passphrase panics (or is rejected at build time) outside of `#[cfg(test)]` contexts — the demo credential cannot silently protect production keys
   3. The CI test suite continues to compile and pass, confirming test builds are unaffected by the guards
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 68-01-PLAN.md — Remove Default impls from CAConfig and SoftwareHsmConfig, add test helpers
 
 ### Phase 69: Code Quality
 **Goal**: The regex hot-path is compile-once and operator-visible warnings accompany insecure CLI usage
@@ -48,6 +50,6 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 68. Insecure Defaults | 0/TBD | Not started | - |
+| 68. Insecure Defaults | 0/1 | Not started | - |
 | 69. Code Quality | 0/TBD | Not started | - |
 | 70. Deployment Hardening | 0/TBD | Not started | - |
