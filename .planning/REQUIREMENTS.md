@@ -41,19 +41,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DFLT-01 | — | Pending |
-| DFLT-02 | — | Pending |
-| QUAL-01 | — | Pending |
-| QUAL-02 | — | Pending |
-| DEPL-01 | — | Pending |
-| DEPL-02 | — | Pending |
-| DEPL-03 | — | Pending |
+| DFLT-01 | Phase 68 | Pending |
+| DFLT-02 | Phase 68 | Pending |
+| QUAL-01 | Phase 69 | Pending |
+| QUAL-02 | Phase 69 | Pending |
+| DEPL-01 | Phase 70 | Pending |
+| DEPL-02 | Phase 70 | Pending |
+| DEPL-03 | Phase 70 | Pending |
 
 **Coverage:**
 - v2.9 requirements: 7 total
-- Mapped to phases: 0
-- Unmapped: 7 ⚠️
+- Mapped to phases: 7
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-26*
-*Last updated: 2026-03-26 after initial definition*
+*Last updated: 2026-03-26 after roadmap creation*

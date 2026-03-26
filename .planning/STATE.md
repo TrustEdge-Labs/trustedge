@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: Security Review P2 Remediation
-status: Defining requirements
+status: Ready to plan
 stopped_at: null
 last_updated: "2026-03-26"
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -26,14 +26,16 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Defining requirements for v2.9
+**Current focus:** Phase 68 — Insecure Defaults
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-26 — Milestone v2.9 started
+Phase: 68 of 70 (Insecure Defaults)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-03-26 — Roadmap created for v2.9 (3 phases, 7 requirements)
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -59,11 +61,16 @@ Last activity: 2026-03-26 — Milestone v2.9 started
 - v2.8: 4 phases, 5 plans
 - **Total shipped: 67 phases, 100 plans**
 
+**v2.9 this milestone:**
+- Plans completed: 0
+- Phases complete: 0 of 3
+
 ## Accumulated Context
 
 ### Decisions
 
-Cleared — see PROJECT.md Key Decisions table for full history.
+- v2.9 scope: 7 targeted P2 remediation findings only — insecure defaults, code quality, deployment hardening. No new features.
+- Phase 68: Choose between removing Default impl vs. runtime panic guard for CAConfig/SoftwareHsmConfig — keep test ergonomics intact.
 
 ### Pending Todos
 
@@ -76,8 +83,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-26
-Stopped at: Milestone v2.9 started
+Stopped at: Roadmap created — ready to plan Phase 68
 Resume file: None
 
 ---
-*Last updated: 2026-03-26 after v2.9 milestone started*
+*Last updated: 2026-03-26 after v2.9 roadmap created*
