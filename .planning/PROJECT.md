@@ -183,6 +183,9 @@ Shipped v2.8 High Priority Hardening. All 9 P1 findings from third security revi
 - ✓ CAConfig::default() removed — placeholder JWT secret cannot bypass builder guard — v2.9 Phase 68
 - ✓ SoftwareHsmConfig::default() removed — demo passphrase cannot silently reach production — v2.9 Phase 68
 
+- ✓ Regex in validate_segment_hashes() compiled once via LazyLock (no per-request allocation) — v2.9 Phase 69
+- ✓ trst-cli emits ⚠ stderr warning when --unencrypted flag is used — v2.9 Phase 69
+
 ### Active
 
 ## Current Milestone: v2.9 Security Review P2 Remediation
@@ -380,4 +383,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 after Phase 68 complete*
+*Last updated: 2026-03-26 after Phase 69 complete*
