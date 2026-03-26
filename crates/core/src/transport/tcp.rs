@@ -302,7 +302,7 @@ mod tests {
         let test_data = b"TCP framing test data";
         let manifest = r#"{"sequence":2,"transport":"tcp","length":21}"#.as_bytes().to_vec();
 
-        let chunk = NetworkChunk::new(2, test_data.to_vec(), manifest);
+        let chunk = NetworkChunk::new(2, test_data.to_vec(), manifest, [1u8; crate::NONCE_LEN]);
         assert_eq!(chunk.sequence, 2);
         assert_eq!(chunk.data, test_data);
 
@@ -362,7 +362,7 @@ mod tests {
         )
         .into_bytes();
 
-        let chunk = NetworkChunk::new(3, large_data.clone(), manifest);
+        let chunk = NetworkChunk::new(3, large_data.clone(), manifest, [1u8; crate::NONCE_LEN]);
         assert_eq!(chunk.sequence, 3);
         assert_eq!(chunk.data.len(), 64 * 1024);
 

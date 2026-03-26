@@ -369,7 +369,7 @@ impl Envelope {
         let signed_manifest_bytes =
             bincode::serialize(&signed_manifest).context("Failed to serialize signed manifest")?;
 
-        Ok(NetworkChunk::new_with_nonce(
+        Ok(NetworkChunk::new(
             sequence,
             ciphertext,
             signed_manifest_bytes,

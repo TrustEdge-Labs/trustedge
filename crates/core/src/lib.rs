@@ -206,24 +206,10 @@ pub struct NetworkChunk {
 }
 
 impl NetworkChunk {
-    /// Creates a new `NetworkChunk` with the given sequence number, encrypted data, and manifest.
-    /// The nonce is set to zero and should be set explicitly after creation.
-    pub fn new(seq: u64, encrypted_data: Vec<u8>, manifest_bytes: Vec<u8>) -> Self {
-        let timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs();
-        Self {
-            sequence: seq,
-            data: encrypted_data,
-            manifest: manifest_bytes,
-            nonce: [0; NONCE_LEN], // Default nonce - should be set explicitly
-            timestamp,
-        }
-    }
-
     /// Creates a new `NetworkChunk` with the given sequence number, encrypted data, manifest, and explicit nonce.
-    pub fn new_with_nonce(
+    ///
+    /// Callers must supply a real nonce — there is no zero-nonce default.
+    pub fn new(
         seq: u64,
         encrypted_data: Vec<u8>,
         manifest_bytes: Vec<u8>,

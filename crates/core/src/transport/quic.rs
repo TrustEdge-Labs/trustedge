@@ -808,7 +808,7 @@ mod tests {
         let test_data = b"QUIC transport test data";
         let manifest = r#"{"sequence":1,"algorithm":"AES-256-GCM"}"#.as_bytes().to_vec();
 
-        let chunk = NetworkChunk::new(1, test_data.to_vec(), manifest);
+        let chunk = NetworkChunk::new(1, test_data.to_vec(), manifest, [1u8; crate::NONCE_LEN]);
         assert_eq!(chunk.sequence, 1);
         assert_eq!(chunk.data, test_data);
 
