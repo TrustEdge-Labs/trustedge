@@ -92,10 +92,15 @@ pub async fn verify_handler(
     let verification_id = format!("v_{}", uuid::Uuid::new_v4().simple());
 
     let keys = state.keys.read().await;
-    let receipt =
-        build_receipt_if_requested(&request, &report, &keys, compute_manifest_digest_blake3)
-            .await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(e)))?;
+    let receipt = build_receipt_if_requested(
+        &request,
+        &report,
+        &keys,
+        compute_manifest_digest_blake3,
+        state.receipt_ttl_secs,
+    )
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(e)))?;
 
     Ok(Json(VerifyResponse {
         verification_id,
@@ -242,7 +247,7 @@ pub async fn verify_handler(
                 &report.metadata.chain_tip,
             );
 
-            match sign_receipt_jws(&receipt_obj, &keys).await {
+            match sign_receipt_jws(&receipt_obj, &keys, state.receipt_ttl_secs).await {
                 Ok(jws) => {
                     // Store receipt in DB
                     match crate::database::create_receipt(
@@ -382,6 +387,7 @@ pub fn create_test_app(pool: sqlx::PgPool) -> axum::Router {
     let state = AppState {
         db_pool: pool,
         keys,
+        receipt_ttl_secs: 3600,
     };
 
     // Delegate to create_router so middleware stack is identical to production

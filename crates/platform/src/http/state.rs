@@ -25,4 +25,5 @@ pub struct AppState {
     #[cfg(feature = "postgres")]
     pub db_pool: sqlx::PgPool,
     pub keys: Arc<RwLock<KeyManager>>,
+    pub receipt_ttl_secs: u64,
 }

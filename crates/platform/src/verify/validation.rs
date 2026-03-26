@@ -127,6 +127,7 @@ pub async fn build_receipt_if_requested(
     report: &VerifyReport,
     keys: &KeyManager,
     manifest_digest_fn: impl Fn(&serde_json::Value) -> String,
+    receipt_ttl_secs: u64,
 ) -> Result<Option<String>, ValidationError> {
     let options = match &request.options {
         Some(opts) => opts,
@@ -154,7 +155,7 @@ pub async fn build_receipt_if_requested(
         &report.metadata.chain_tip,
     );
 
-    match sign_receipt_jws(&receipt_obj, keys).await {
+    match sign_receipt_jws(&receipt_obj, keys, receipt_ttl_secs).await {
         Ok(jws) => Ok(Some(jws)),
         Err(e) => {
             warn!("Failed to sign receipt: {}", e);

@@ -41,6 +41,7 @@ mod http_tests {
         let key_manager = KeyManager::new().unwrap();
         AppState {
             keys: Arc::new(RwLock::new(key_manager)),
+            receipt_ttl_secs: 3600,
         }
     }
 

@@ -24,9 +24,13 @@ struct JwsPayload {
     receipt: ReceiptClaims,
 }
 
-pub async fn sign_receipt_jws(receipt: &ReceiptClaims, key_manager: &KeyManager) -> Result<String> {
+pub async fn sign_receipt_jws(
+    receipt: &ReceiptClaims,
+    key_manager: &KeyManager,
+    ttl_secs: u64,
+) -> Result<String> {
     let now = chrono::Utc::now().timestamp();
-    let exp = now + 3600; // 1 hour expiration
+    let exp = now + ttl_secs as i64;
 
     let payload = JwsPayload {
         iss: "trustedge-verify-service".to_string(),

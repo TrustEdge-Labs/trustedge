@@ -21,6 +21,7 @@ pub struct Config {
     pub database_url: String,
     pub jwt_audience: String,
     pub port: u16,
+    pub receipt_ttl_secs: u64,
 }
 
 impl Config {
@@ -41,16 +42,24 @@ impl Config {
         let jwt_audience =
             env::var("JWT_AUDIENCE").unwrap_or_else(|_| "trustedge-platform".to_string());
 
-        let port = env::var("PORT")
-            .unwrap_or_else(|_| "3001".to_string())
-            .parse()
-            .unwrap_or(3001);
+        let port = match env::var("PORT") {
+            Ok(val) => val.parse::<u16>().map_err(|_| {
+                anyhow::anyhow!("PORT env var '{}' is not a valid port number", val)
+            })?,
+            Err(_) => 3001,
+        };
+
+        let receipt_ttl_secs = env::var("RECEIPT_TTL_SECS")
+            .unwrap_or_else(|_| "3600".to_string())
+            .parse::<u64>()
+            .map_err(|_| anyhow::anyhow!("RECEIPT_TTL_SECS must be a valid integer"))?;
 
         Ok(Config {
             #[cfg(feature = "postgres")]
             database_url,
             jwt_audience,
             port,
+            receipt_ttl_secs,
         })
     }
 }
@@ -68,6 +77,30 @@ mod tests {
         assert!(
             source.contains(msg),
             "config.rs must contain the release-mode DATABASE_URL error message"
+        );
+    }
+
+    #[test]
+    fn test_receipt_ttl_default() {
+        // Verify the default TTL constant is present in the source.
+        let source = include_str!("config.rs");
+        assert!(
+            source.contains("RECEIPT_TTL_SECS"),
+            "config.rs must contain RECEIPT_TTL_SECS env var parsing"
+        );
+        assert!(
+            source.contains("receipt_ttl_secs"),
+            "config.rs must contain receipt_ttl_secs field"
+        );
+    }
+
+    #[test]
+    fn test_port_error_message_exists() {
+        // Verify the PORT error message is present in the source.
+        let source = include_str!("config.rs");
+        assert!(
+            source.contains("is not a valid port number"),
+            "config.rs must contain the PORT error message"
         );
     }
 }

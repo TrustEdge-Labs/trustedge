@@ -69,6 +69,7 @@ async fn serve() -> Result<()> {
     );
     tracing::info!("Port: {}", config.port);
     tracing::info!("Mode: {}", mode);
+    tracing::info!("Receipt TTL: {}s", config.receipt_ttl_secs);
     let jwks_key_path = std::env::var("JWKS_KEY_PATH").unwrap_or_else(|_| {
         std::env::temp_dir()
             .join("trustedge_signing_key.json")
@@ -89,11 +90,18 @@ async fn serve() -> Result<()> {
     #[cfg(feature = "postgres")]
     let state = {
         let db_pool = create_connection_pool(&config.database_url).await?;
-        AppState { keys, db_pool }
+        AppState {
+            keys,
+            db_pool,
+            receipt_ttl_secs: config.receipt_ttl_secs,
+        }
     };
 
     #[cfg(not(feature = "postgres"))]
-    let state = AppState { keys };
+    let state = AppState {
+        keys,
+        receipt_ttl_secs: config.receipt_ttl_secs,
+    };
 
     let router = create_router(state);
 
