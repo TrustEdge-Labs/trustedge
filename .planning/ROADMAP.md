@@ -55,4 +55,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 68. Insecure Defaults | 0/1 | Complete    | 2026-03-26 |
 | 69. Code Quality | 1/1 | Complete    | 2026-03-26 |
-| 70. Deployment Hardening | 1/1 | Complete   | 2026-03-26 |
+| 70. Deployment Hardening | 1/1 | Complete    | 2026-03-26 |
