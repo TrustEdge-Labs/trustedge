@@ -182,7 +182,18 @@ Shipped v2.8 High Priority Hardening. All 9 P1 findings from third security revi
 
 ### Active
 
-(No active requirements — v2.8 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
+## Current Milestone: v2.9 Security Review P2 Remediation
+
+**Goal:** Address remaining medium and low priority findings from the security review before production deployment.
+
+**Target features:**
+- Fix `CAConfig::default()` bypassing builder's placeholder guard (Medium)
+- Fix `SoftwareHsmConfig::default()` insecure passphrase (Medium)
+- Static regex compilation in validation via LazyLock (Low)
+- `--unencrypted` runtime warning in trst-cli (Low)
+- Add `permissions` block to wasm-tests.yml (Low)
+- Add security headers to nginx config (Low)
+- Add HSTS and HTTP-to-HTTPS redirect for TLS deployments (Low)
 
 ### Deferred
 
@@ -366,4 +377,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 after v2.8 milestone*
+*Last updated: 2026-03-26 after v2.9 milestone started*
