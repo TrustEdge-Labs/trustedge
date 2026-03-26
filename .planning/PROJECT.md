@@ -186,6 +186,10 @@ Shipped v2.8 High Priority Hardening. All 9 P1 findings from third security revi
 - ✓ Regex in validate_segment_hashes() compiled once via LazyLock (no per-request allocation) — v2.9 Phase 69
 - ✓ trst-cli emits ⚠ stderr warning when --unencrypted flag is used — v2.9 Phase 69
 
+- ✓ wasm-tests.yml has explicit permissions: contents: read (least-privilege CI) — v2.9 Phase 70
+- ✓ nginx.conf includes X-Content-Type-Options, X-Frame-Options, Referrer-Policy, CSP headers — v2.9 Phase 70
+- ✓ nginx-ssl.conf.template has HSTS header and HTTP-to-HTTPS 301 redirect with /healthz passthrough — v2.9 Phase 70
+
 ### Active
 
 ## Current Milestone: v2.9 Security Review P2 Remediation
@@ -383,4 +387,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 after Phase 69 complete*
+*Last updated: 2026-03-26 after Phase 70 complete (v2.9 milestone complete)*
