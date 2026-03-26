@@ -79,6 +79,24 @@ jobs:
           done
           [ "$ok" = true ]
 
+      - name: Setup Node.js for dashboard checks
+        if: hashFiles('web/dashboard/package.json') != ''
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '20'
+
+      - name: Dashboard bundle credential guard
+        if: hashFiles('web/dashboard/package.json') != ''
+        run: |
+          cd web/dashboard
+          npm ci --ignore-scripts
+          npm run build
+          if grep -r "VITE_API_KEY" build/ 2>/dev/null; then
+            echo "::error::VITE_API_KEY found in dashboard bundle — credential leak detected"
+            exit 1
+          fi
+          echo "No API credentials in dashboard bundle"
+
   # ── Build + clippy + test (single compile) ──────────────────
   build-and-test:
     runs-on: ubuntu-latest
