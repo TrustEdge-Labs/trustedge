@@ -8,7 +8,7 @@
 ## Phases
 
 - [x] **Phase 68: Insecure Defaults** - Remove or guard dangerous default impls in CAConfig and SoftwareHsmConfig (completed 2026-03-26)
-- [ ] **Phase 69: Code Quality** - Compile regex once via LazyLock; emit --unencrypted security warning in trst-cli
+- [x] **Phase 69: Code Quality** - Compile regex once via LazyLock; emit --unencrypted security warning in trst-cli (completed 2026-03-26)
 - [ ] **Phase 70: Deployment Hardening** - Lock down CI workflow permissions, add missing HTTP security headers, enforce HSTS with HTTP redirect
 
 ## Phase Details
@@ -33,9 +33,9 @@ Plans:
   1. The regex used in validate_segment_hashes() is initialized exactly once via std::sync::LazyLock — no per-request allocation observable under profiling or code inspection
   2. Running `trst wrap --unencrypted` (or any trst-cli command with --unencrypted) prints a visible stderr warning describing the security implication before proceeding
   3. Existing acceptance tests continue to pass, confirming the warning does not break scripted usage
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 69-01-PLAN.md — LazyLock regex in validation.rs + stderr warning for --unencrypted in trst-cli
+- [x] 69-01-PLAN.md — LazyLock regex in validation.rs + stderr warning for --unencrypted in trst-cli
 
 ### Phase 70: Deployment Hardening
 **Goal**: CI workflows have least-privilege permissions and all nginx configs emit a complete set of defensive HTTP headers
@@ -53,5 +53,5 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 68. Insecure Defaults | 0/1 | Complete    | 2026-03-26 |
-| 69. Code Quality | 0/1 | Not started | - |
+| 69. Code Quality | 1/1 | Complete   | 2026-03-26 |
 | 70. Deployment Hardening | 0/TBD | Not started | - |

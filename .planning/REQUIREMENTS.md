@@ -14,8 +14,8 @@ Requirements for security review P2 remediation. Each maps to roadmap phases.
 
 ### Code Quality
 
-- [ ] **QUAL-01**: Regex in validate_segment_hashes() compiled once via std::sync::LazyLock, not per-request
-- [ ] **QUAL-02**: trst-cli emits stderr warning when --unencrypted flag is used, noting security implications
+- [x] **QUAL-01**: Regex in validate_segment_hashes() compiled once via std::sync::LazyLock, not per-request
+- [x] **QUAL-02**: trst-cli emits stderr warning when --unencrypted flag is used, noting security implications
 
 ### Deployment Hardening
 
@@ -43,8 +43,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | DFLT-01 | Phase 68 | Complete |
 | DFLT-02 | Phase 68 | Complete |
-| QUAL-01 | Phase 69 | Pending |
-| QUAL-02 | Phase 69 | Pending |
+| QUAL-01 | Phase 69 | Complete |
+| QUAL-02 | Phase 69 | Complete |
 | DEPL-01 | Phase 70 | Pending |
 | DEPL-02 | Phase 70 | Pending |
 | DEPL-03 | Phase 70 | Pending |
