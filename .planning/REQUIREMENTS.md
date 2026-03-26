@@ -30,8 +30,8 @@ Requirements for milestone v2.8 High Priority Hardening. Each maps to roadmap ph
 
 ### CLI Hardening
 
-- [ ] **CLI-01**: All process::exit() calls in trst-cli replaced with proper error returns (11 call sites)
-- [ ] **CLI-02**: --chunk-size in trst-cli wrap has upper bound (256 MB ceiling) with clear error
+- [x] **CLI-01**: All process::exit() calls in trst-cli replaced with proper error returns (11 call sites)
+- [x] **CLI-02**: --chunk-size in trst-cli wrap has upper bound (256 MB ceiling) with clear error
 
 ### Deployment
 
@@ -59,8 +59,8 @@ None — all findings addressed in this milestone.
 | KEY-01 | Phase 65 | Complete |
 | KEY-02 | Phase 65 | Complete |
 | CRYPT-01 | Phase 66 | Pending |
-| CLI-01 | Phase 66 | Pending |
-| CLI-02 | Phase 66 | Pending |
+| CLI-01 | Phase 66 | Complete |
+| CLI-02 | Phase 66 | Complete |
 | DEPL-01 | Phase 67 | Pending |
 | DEPL-02 | Phase 67 | Pending |
 

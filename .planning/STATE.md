@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.8
 milestone_name: High Priority Hardening
-status: Ready to plan
-stopped_at: Phase 66 context gathered
-last_updated: "2026-03-26T00:09:06.001Z"
+status: Executing Phase 66
+stopped_at: "Completed 66-02-PLAN.md"
+last_updated: "2026-03-26T00:37:31Z"
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
 ---
 
 <!--
@@ -26,12 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 65 — key-material-safety
+**Current focus:** Phase 66 — crypto-cli-hardening
 
 ## Current Position
 
-Phase: 66
-Plan: Not started
+Phase: 66 (crypto-cli-hardening) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Cleared — see PROJECT.md Key Decisions table for full history.
 
 - [Phase 64-platform-http-hardening]: Use ipnet crate for CIDR containment; return Response from middleware for Retry-After header on 429; TRUSTED_PROXIES env var for proxy config
 - [Phase 65-key-material-safety]: Restrict all PrivateKey fields (algorithm, key_bytes, key_id) to pub(crate) for consistent visibility hardening; use as_bytes() accessor throughout
+- [Phase 66-crypto-cli-hardening plan 02]: Use CliExitError struct (not anyhow context) to carry exit codes; manual bail! for chunk-size (clap range() not available for usize); preserve exit codes 10/11/12/14/1
 
 ### Pending Todos
 
@@ -75,9 +76,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T00:09:05.998Z
-Stopped at: Phase 66 context gathered
-Resume file: .planning/phases/66-crypto-cli-hardening/66-CONTEXT.md
+Last session: 2026-03-26T00:37:31Z
+Stopped at: Completed 66-02-PLAN.md
+Resume file: .planning/phases/66-crypto-cli-hardening/66-02-SUMMARY.md
 
 ---
 *Last updated: 2026-03-25 after v2.8 roadmap created*

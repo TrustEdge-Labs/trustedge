@@ -76,7 +76,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [ ] 66-01-PLAN.md — Mandatory nonce for NetworkChunk constructor
-- [ ] 66-02-PLAN.md — CLI process::exit removal and chunk-size ceiling
+- [x] 66-02-PLAN.md — CLI process::exit removal and chunk-size ceiling
 
 ### Phase 67: Deployment Security
 **Goal**: The dashboard container runs nginx as a non-root user and the CI workflow prevents credential leakage into production bundles
@@ -98,5 +98,5 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 |-------|----------------|--------|-----------|
 | 64. Platform HTTP Hardening | 1/1 | Complete    | 2026-03-25 |
 | 65. Key Material Safety | 1/1 | Complete    | 2026-03-25 |
-| 66. Crypto & CLI Hardening | 0/2 | Not started | - |
+| 66. Crypto & CLI Hardening | 1/2 | In Progress|  |
 | 67. Deployment Security | 0/TBD | Not started | - |
