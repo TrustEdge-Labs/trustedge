@@ -82,19 +82,6 @@ impl Clone for CAConfig {
     }
 }
 
-impl Default for CAConfig {
-    fn default() -> Self {
-        Self {
-            database_url: "postgresql://localhost/trustedge_ca".to_string(),
-            jwt_secret: Secret::new("your-secret-key".to_string()),
-            ca_name: "TrustEdge Enterprise CA".to_string(),
-            ca_organization: "TrustEdge Labs LLC".to_string(),
-            ca_country: "US".to_string(),
-            certificate_validity_days: 365,
-        }
-    }
-}
-
 /// Builder for `CAConfig`.
 pub struct CAConfigBuilder {
     database_url: String,
@@ -107,14 +94,13 @@ pub struct CAConfigBuilder {
 
 impl Default for CAConfigBuilder {
     fn default() -> Self {
-        let defaults = CAConfig::default();
         Self {
-            database_url: defaults.database_url,
-            jwt_secret: defaults.jwt_secret.expose_secret().clone(),
-            ca_name: defaults.ca_name,
-            ca_organization: defaults.ca_organization,
-            ca_country: defaults.ca_country,
-            certificate_validity_days: defaults.certificate_validity_days,
+            database_url: "postgresql://localhost/trustedge_ca".to_string(),
+            jwt_secret: "your-secret-key".to_string(),
+            ca_name: "TrustEdge Enterprise CA".to_string(),
+            ca_organization: "TrustEdge Labs LLC".to_string(),
+            ca_country: "US".to_string(),
+            certificate_validity_days: 365,
         }
     }
 }
@@ -165,6 +151,16 @@ impl CAConfigBuilder {
             ca_country: self.ca_country,
             certificate_validity_days: self.certificate_validity_days,
         }
+    }
+}
+
+#[cfg(test)]
+impl CAConfig {
+    /// Test-only constructor with explicit test secrets.
+    pub fn test_default() -> Self {
+        CAConfig::builder()
+            .jwt_secret("test-jwt-secret-do-not-use".to_string())
+            .build()
     }
 }
 
@@ -230,5 +226,13 @@ mod tests {
             !debug_output.contains("clone-secret"),
             "Cloned config debug must not expose secret, got: {debug_output}"
         );
+    }
+
+    #[test]
+    fn test_caconfig_test_default() {
+        let config = CAConfig::test_default();
+        assert_eq!(config.jwt_secret(), "test-jwt-secret-do-not-use");
+        assert_eq!(config.ca_country, "US");
+        assert_eq!(config.certificate_validity_days, 365);
     }
 }
