@@ -446,12 +446,7 @@ async fn send_encrypted_file(
             .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
 
         // Frame
-        let chunk = NetworkChunk::new(
-            sequence,
-            ciphertext,
-            bincode::serialize(&sm)?,
-            nonce_bytes,
-        );
+        let chunk = NetworkChunk::new(sequence, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
 
         // Send chunk with timeout
         timeout(CHUNK_SEND_TIMEOUT, send_chunk(stream, &chunk, verbose))
@@ -556,8 +551,7 @@ async fn send_encrypted_test_chunks(
             )
             .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
 
-        let chunk =
-            NetworkChunk::new(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
+        let chunk = NetworkChunk::new(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
 
         // Send chunk with timeout
         timeout(CHUNK_SEND_TIMEOUT, send_chunk(stream, &chunk, verbose))
@@ -755,8 +749,7 @@ async fn send_encrypted_test_chunks_hardened(
             )
             .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
 
-        let chunk =
-            NetworkChunk::new(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
+        let chunk = NetworkChunk::new(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
 
         // Send chunk with timeout using framed transport
         timeout(
@@ -870,8 +863,7 @@ async fn send_encrypted_file_hardened(
             .encrypt(nonce, Payload { msg: pt, aad: &aad })
             .map_err(|_| anyhow::anyhow!("AES-GCM encrypt failed"))?;
 
-        let chunk =
-            NetworkChunk::new(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
+        let chunk = NetworkChunk::new(seq, ciphertext, bincode::serialize(&sm)?, nonce_bytes);
 
         // Send chunk with timeout using framed transport
         timeout(
