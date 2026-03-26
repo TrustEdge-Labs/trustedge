@@ -11,7 +11,6 @@ use std::fs;
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
-use std::process;
 
 use base64::Engine as _;
 
@@ -44,6 +43,24 @@ use trustedge_core::backends::universal::{
 use trustedge_core::backends::yubikey::YubiKeyConfig;
 #[cfg(feature = "yubikey")]
 use trustedge_core::backends::YubiKeyBackend;
+
+/// Carries a specific exit code through the error propagation chain.
+/// This lets subcommands return `Result<()>` while preserving distinct exit codes
+/// (10=verify, 11=integrity, 12=signature, 14=chain, 1=general).
+/// Drop/Zeroize handlers run normally before `main()` calls `std::process::exit`.
+#[derive(Debug)]
+struct CliExitError {
+    code: i32,
+    message: String,
+}
+
+impl std::fmt::Display for CliExitError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl std::error::Error for CliExitError {}
 
 #[derive(Debug)]
 struct WrapResult {
@@ -306,10 +323,21 @@ fn pub_key_to_device_id(pub_key_str: &str) -> Result<String> {
 
 #[tokio::main]
 async fn main() {
-    if let Err(err) = run().await {
-        eprintln!("error: {err}");
-        process::exit(1);
-    }
+    // run() returns before std::process::exit, so all local variables (including key
+    // material protected by Zeroize) are dropped before the process terminates.
+    let code = match run().await {
+        Ok(()) => 0,
+        Err(e) => {
+            if let Some(cli_err) = e.downcast_ref::<CliExitError>() {
+                eprintln!("{}", cli_err.message);
+                cli_err.code
+            } else {
+                eprintln!("error: {e:#}");
+                1
+            }
+        }
+    };
+    std::process::exit(code);
 }
 
 async fn run() -> Result<()> {
@@ -385,6 +413,16 @@ fn handle_keygen(args: KeygenCmd) -> Result<()> {
 }
 
 fn handle_wrap(args: WrapCmd) -> Result<()> {
+    // Reject chunk sizes above 256 MB (268_435_456 bytes) to prevent memory exhaustion.
+    const MAX_CHUNK_SIZE: usize = 268_435_456;
+    if args.chunk_size > MAX_CHUNK_SIZE {
+        anyhow::bail!(
+            "--chunk-size must not exceed 256 MB ({} bytes), got {} bytes",
+            MAX_CHUNK_SIZE,
+            args.chunk_size
+        );
+    }
+
     // Validate backend-specific requirements up front
     if args.backend == "yubikey" && args.device_key.is_none() {
         anyhow::bail!(
@@ -793,7 +831,11 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
             };
 
             output_error(&args, &report, first_line)?;
-            process::exit(12);
+            return Err(CliExitError {
+                code: 12,
+                message: first_line.to_string(),
+            }
+            .into());
         }
     };
 
@@ -824,7 +866,11 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
             report.error = Some("Manifest missing signature".to_string());
             report.verify_time_ms = start_time.elapsed().as_millis() as u64;
             output_error(&args, &report, "Manifest missing signature")?;
-            process::exit(12);
+            return Err(CliExitError {
+                code: 12,
+                message: "Manifest missing signature".to_string(),
+            }
+            .into());
         }
     };
 
@@ -837,7 +883,11 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
             report.error = Some(format!("Canonical serialization failed: {}", e));
             report.verify_time_ms = start_time.elapsed().as_millis() as u64;
             output_error(&args, &report, "Internal canonicalization error")?;
-            process::exit(14);
+            return Err(CliExitError {
+                code: 14,
+                message: "Internal canonicalization error".to_string(),
+            }
+            .into());
         }
     };
 
@@ -871,7 +921,11 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
 
                     report.verify_time_ms = start_time.elapsed().as_millis() as u64;
                     output_continuity_error(&args, &report)?;
-                    process::exit(11);
+                    return Err(CliExitError {
+                        code: 11,
+                        message: "Continuity chain verification failed".to_string(),
+                    }
+                    .into());
                 }
             }
         }
@@ -881,7 +935,11 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
             report.error = Some("Signature verification failed".to_string());
             report.verify_time_ms = start_time.elapsed().as_millis() as u64;
             output_error(&args, &report, "Signature verification failed")?;
-            process::exit(10);
+            return Err(CliExitError {
+                code: 10,
+                message: "Signature verification failed".to_string(),
+            }
+            .into());
         }
         Err(e) => {
             report.signature = "fail".to_string();
@@ -889,7 +947,11 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
             report.error = Some(format!("Signature verification error: {}", e));
             report.verify_time_ms = start_time.elapsed().as_millis() as u64;
             output_error(&args, &report, "Signature verification failed")?;
-            process::exit(10);
+            return Err(CliExitError {
+                code: 10,
+                message: "Signature verification failed".to_string(),
+            }
+            .into());
         }
     }
 
@@ -929,14 +991,22 @@ fn handle_unwrap(args: UnwrapCmd) -> Result<()> {
     let sig_valid = verify_manifest(&device_keypair.public, &canonical_bytes, signature)?;
     if !sig_valid {
         eprintln!("Signature: FAIL");
-        process::exit(10);
+        return Err(CliExitError {
+            code: 10,
+            message: "Signature: FAIL".to_string(),
+        }
+        .into());
     }
     eprintln!("Signature: PASS");
 
     // Validate continuity chain
     if let Err(e) = validate_archive(&args.archive) {
         eprintln!("Continuity: FAIL ({})", e);
-        process::exit(11);
+        return Err(CliExitError {
+            code: 11,
+            message: format!("Continuity: FAIL ({})", e),
+        }
+        .into());
     }
     eprintln!("Continuity: PASS");
 
@@ -971,15 +1041,16 @@ fn handle_unwrap(args: UnwrapCmd) -> Result<()> {
         }
         let nonce: [u8; 24] = chunk_bytes[..24].try_into().unwrap();
         let ciphertext = &chunk_bytes[24..];
-        let plaintext = decrypt_segment(&encryption_key, &nonce, ciphertext, &aad)
-            .map_err(|e| {
-                eprintln!(
-                    "Decryption failed — wrong device key or corrupted archive: {}",
-                    e
-                );
-                process::exit(1);
-            })
-            .unwrap();
+        let plaintext =
+            decrypt_segment(&encryption_key, &nonce, ciphertext, &aad).map_err(|e| {
+                CliExitError {
+                    code: 1,
+                    message: format!(
+                        "Decryption failed — wrong device key or corrupted archive: {}",
+                        e
+                    ),
+                }
+            })?;
         output_data.extend_from_slice(&plaintext);
     }
 
@@ -1234,7 +1305,15 @@ async fn handle_emit_request(args: EmitRequestCmd) -> Result<()> {
                 status.canonical_reason().unwrap_or("")
             );
             eprintln!("{}", error_text);
-            process::exit(status.as_u16() as i32);
+            return Err(CliExitError {
+                code: status.as_u16() as i32,
+                message: format!(
+                    "HTTP {} {}",
+                    status.as_u16(),
+                    status.canonical_reason().unwrap_or("")
+                ),
+            }
+            .into());
         }
     }
 
