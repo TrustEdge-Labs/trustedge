@@ -29,7 +29,7 @@ async fn test_real_quic_data_transfer() -> Result<()> {
     // Create test data
     let test_data = b"real QUIC transport test data";
     let manifest = r#"{"sequence":1,"test":true,"transport":"quic"}"#.as_bytes().to_vec();
-    let _test_chunk = NetworkChunk::new(1, test_data.to_vec(), manifest);
+    let _test_chunk = NetworkChunk::new(1, test_data.to_vec(), manifest, [1u8; 12]);
 
     // Test QUIC transport creation
     let quic_result = TransportFactory::create_quic(config);
@@ -114,8 +114,12 @@ async fn test_concurrent_tcp_connections() -> Result<()> {
                     let manifest =
                         format!(r#"{{"sequence":{},"client_id":{}}}"#, client_id, client_id)
                             .into_bytes();
-                    let test_chunk =
-                        NetworkChunk::new(client_id as u64, test_data.into_bytes(), manifest);
+                    let test_chunk = NetworkChunk::new(
+                        client_id as u64,
+                        test_data.into_bytes(),
+                        manifest,
+                        [1u8; 12],
+                    );
 
                     // Try to send data (may fail if server closes connection quickly)
                     let _send_result = client_transport.send_chunk(&test_chunk).await;
@@ -158,7 +162,7 @@ async fn test_real_tcp_data_transfer() -> Result<()> {
     // Create test data
     let test_data = b"real transport test data";
     let manifest = r#"{"sequence":1,"test":true}"#.as_bytes().to_vec();
-    let test_chunk = NetworkChunk::new(1, test_data.to_vec(), manifest);
+    let test_chunk = NetworkChunk::new(1, test_data.to_vec(), manifest, [1u8; 12]);
 
     // Spawn server task
     let server_handle = tokio::spawn(async move {
@@ -224,7 +228,12 @@ async fn test_multi_chunk_data_transfer() -> Result<()> {
         )
         .into_bytes();
 
-        test_chunks.push(NetworkChunk::new(i + 1, chunk_data.into_bytes(), manifest));
+        test_chunks.push(NetworkChunk::new(
+            i + 1,
+            chunk_data.into_bytes(),
+            manifest,
+            [1u8; 12],
+        ));
     }
 
     let expected_chunk_count = test_chunks.len();
@@ -296,11 +305,11 @@ async fn test_real_tcp_bidirectional_communication() -> Result<()> {
     // Create test chunks
     let client_data = b"message from client";
     let client_manifest = r#"{"sequence":1,"sender":"client"}"#.as_bytes().to_vec();
-    let client_chunk = NetworkChunk::new(1, client_data.to_vec(), client_manifest);
+    let client_chunk = NetworkChunk::new(1, client_data.to_vec(), client_manifest, [1u8; 12]);
 
     let server_data = b"response from server";
     let server_manifest = r#"{"sequence":2,"sender":"server"}"#.as_bytes().to_vec();
-    let _server_chunk = NetworkChunk::new(2, server_data.to_vec(), server_manifest);
+    let _server_chunk = NetworkChunk::new(2, server_data.to_vec(), server_manifest, [1u8; 12]);
 
     // Spawn server task
     let _expected_client_chunk = client_chunk.clone();
@@ -386,7 +395,7 @@ async fn test_real_tcp_large_data_transfer() -> Result<()> {
     let manifest = r#"{"sequence":1,"size":"1MB","test":"large_transfer"}"#
         .as_bytes()
         .to_vec();
-    let large_chunk = NetworkChunk::new(1, large_data.clone(), manifest);
+    let large_chunk = NetworkChunk::new(1, large_data.clone(), manifest, [1u8; 12]);
 
     // Spawn server task
     let server_handle = tokio::spawn(async move {
@@ -440,7 +449,7 @@ async fn test_real_tcp_message_size_limits() -> Result<()> {
     // Create oversized data
     let oversized_data = vec![0xCD; 2048]; // 2KB > 1KB limit
     let manifest = r#"{"sequence":1,"test":"oversized"}"#.as_bytes().to_vec();
-    let oversized_chunk = NetworkChunk::new(1, oversized_data, manifest);
+    let oversized_chunk = NetworkChunk::new(1, oversized_data, manifest, [1u8; 12]);
 
     let transport = TransportFactory::create_tcp(config);
 
@@ -507,7 +516,12 @@ async fn test_real_network_chunk_serialization() -> Result<()> {
     .into_bytes();
 
     // Create chunk
-    let chunk = NetworkChunk::new(sequence, original_data.to_vec(), manifest.clone());
+    let chunk = NetworkChunk::new(
+        sequence,
+        original_data.to_vec(),
+        manifest.clone(),
+        [1u8; 12],
+    );
 
     // Test actual serialization/deserialization
     let serialized = bincode::serialize(&chunk)?;
@@ -566,7 +580,7 @@ async fn test_transport_data_integrity() -> Result<()> {
     .into_bytes();
 
     // Create chunk
-    let chunk = NetworkChunk::new(sequence, original_data.to_vec(), manifest);
+    let chunk = NetworkChunk::new(sequence, original_data.to_vec(), manifest, [1u8; 12]);
 
     // Verify integrity
     assert_eq!(chunk.data, original_data);
