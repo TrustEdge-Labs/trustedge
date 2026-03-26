@@ -36,7 +36,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 - [x] **Phase 64: Platform HTTP Hardening** - Rate limiter reads real client IP from X-Forwarded-For behind trusted proxies; 429 responses include Retry-After header (completed 2026-03-25)
 - [x] **Phase 65: Key Material Safety** - Auto-generated key files get 0600 permissions; PrivateKey serde derives removed to prevent accidental serialization (completed 2026-03-25)
-- [ ] **Phase 66: Crypto & CLI Hardening** - NetworkChunk::new() requires mandatory nonce; process::exit() replaced with error returns; chunk-size ceiling enforced
+- [x] **Phase 66: Crypto & CLI Hardening** - NetworkChunk::new() requires mandatory nonce; process::exit() replaced with error returns; chunk-size ceiling enforced (completed 2026-03-26)
 - [ ] **Phase 67: Deployment Security** - Dashboard nginx runs as non-root; CI workflow guards against credential leakage in bundles
 
 ## Phase Details
@@ -75,7 +75,7 @@ Plans:
   3. Passing --chunk-size with a value above 256 MB (268435456 bytes) to trst wrap produces a clear error message and non-zero exit, not a panic or silent truncation
 **Plans**: 2 plans
 Plans:
-- [ ] 66-01-PLAN.md — Mandatory nonce for NetworkChunk constructor
+- [x] 66-01-PLAN.md — Mandatory nonce for NetworkChunk constructor
 - [x] 66-02-PLAN.md — CLI process::exit removal and chunk-size ceiling
 
 ### Phase 67: Deployment Security
@@ -98,5 +98,5 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 |-------|----------------|--------|-----------|
 | 64. Platform HTTP Hardening | 1/1 | Complete    | 2026-03-25 |
 | 65. Key Material Safety | 1/1 | Complete    | 2026-03-25 |
-| 66. Crypto & CLI Hardening | 1/2 | In Progress|  |
+| 66. Crypto & CLI Hardening | 2/2 | Complete   | 2026-03-26 |
 | 67. Deployment Security | 0/TBD | Not started | - |

@@ -26,7 +26,7 @@ Requirements for milestone v2.8 High Priority Hardening. Each maps to roadmap ph
 
 ### Crypto Construction
 
-- [ ] **CRYPT-01**: NetworkChunk::new() requires nonce as mandatory parameter (no zero-nonce default)
+- [x] **CRYPT-01**: NetworkChunk::new() requires nonce as mandatory parameter (no zero-nonce default)
 
 ### CLI Hardening
 
@@ -58,7 +58,7 @@ None — all findings addressed in this milestone.
 | HTTP-02 | Phase 64 | Complete |
 | KEY-01 | Phase 65 | Complete |
 | KEY-02 | Phase 65 | Complete |
-| CRYPT-01 | Phase 66 | Pending |
+| CRYPT-01 | Phase 66 | Complete |
 | CLI-01 | Phase 66 | Complete |
 | CLI-02 | Phase 66 | Complete |
 | DEPL-01 | Phase 67 | Pending |

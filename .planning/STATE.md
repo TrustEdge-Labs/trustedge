@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.8
 milestone_name: High Priority Hardening
-status: Executing Phase 66
-stopped_at: "Completed 66-02-PLAN.md"
-last_updated: "2026-03-26T00:37:31Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 66-01-PLAN.md
+last_updated: "2026-03-26T00:55:10.516Z"
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 <!--
@@ -65,6 +65,7 @@ Cleared — see PROJECT.md Key Decisions table for full history.
 - [Phase 64-platform-http-hardening]: Use ipnet crate for CIDR containment; return Response from middleware for Retry-After header on 429; TRUSTED_PROXIES env var for proxy config
 - [Phase 65-key-material-safety]: Restrict all PrivateKey fields (algorithm, key_bytes, key_id) to pub(crate) for consistent visibility hardening; use as_bytes() accessor throughout
 - [Phase 66-crypto-cli-hardening plan 02]: Use CliExitError struct (not anyhow context) to carry exit codes; manual bail! for chunk-size (clap range() not available for usize); preserve exit codes 10/11/12/14/1
+- [Phase 66-crypto-cli-hardening]: Merge new_with_nonce() into new() to force compile-time error at all zero-nonce call sites
 
 ### Pending Todos
 
@@ -76,9 +77,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T00:37:31Z
-Stopped at: Completed 66-02-PLAN.md
-Resume file: .planning/phases/66-crypto-cli-hardening/66-02-SUMMARY.md
+Last session: 2026-03-26T00:55:10.513Z
+Stopped at: Completed 66-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-25 after v2.8 roadmap created*
