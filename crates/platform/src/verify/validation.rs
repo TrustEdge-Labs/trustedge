@@ -8,6 +8,8 @@
 
 //! Request validation for the verification service.
 
+use std::sync::LazyLock;
+
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
@@ -92,11 +94,12 @@ pub fn validate_verify_request_full(request: &VerifyRequest) -> Result<(), Valid
     Ok(())
 }
 
-pub fn validate_segment_hashes(segments: &[SegmentDigest]) -> Result<(), ValidationError> {
-    let hash_regex = Regex::new(r"^b3:[0-9a-f]{64}$").unwrap();
+static HASH_REGEX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^b3:[0-9a-f]{64}$").expect("HASH_REGEX compile"));
 
+pub fn validate_segment_hashes(segments: &[SegmentDigest]) -> Result<(), ValidationError> {
     for (i, segment) in segments.iter().enumerate() {
-        if !hash_regex.is_match(&segment.hash) {
+        if !HASH_REGEX.is_match(&segment.hash) {
             return Err(ValidationError::new(
                 "invalid_segments",
                 &format!(
