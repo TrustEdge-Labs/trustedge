@@ -51,7 +51,6 @@ pub async fn jwks_handler(State(state): State<AppState>) -> Json<Value> {
 pub async fn health_handler() -> Json<HealthResponse> {
     Json(HealthResponse {
         status: "OK".to_string(),
-        version: env!("CARGO_PKG_VERSION").to_string(),
         timestamp: Utc::now().to_rfc3339(),
     })
 }

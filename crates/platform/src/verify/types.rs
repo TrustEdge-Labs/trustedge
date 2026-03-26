@@ -42,6 +42,5 @@ pub struct VerifyResponse {
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct HealthResponse {
     pub status: String,
-    pub version: String,
     pub timestamp: String,
 }

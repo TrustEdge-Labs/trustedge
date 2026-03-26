@@ -125,7 +125,10 @@ mod http_tests {
         let body_json: serde_json::Value = serde_json::from_slice(&body).unwrap();
 
         assert_eq!(body_json["status"], "OK");
-        assert!(body_json.get("version").is_some());
+        assert!(
+            body_json.get("version").is_none(),
+            "healthz must not expose version"
+        );
         assert!(body_json.get("timestamp").is_some());
 
         Ok(())
