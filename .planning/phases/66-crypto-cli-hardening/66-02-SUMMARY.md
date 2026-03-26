@@ -109,6 +109,13 @@ None.
 - chunk-size bounded at 256 MB, preventing memory exhaustion on wrap
 - All acceptance tests pass
 
+## Self-Check: PASSED
+
+- FOUND: crates/trst-cli/src/main.rs
+- FOUND: .planning/phases/66-crypto-cli-hardening/66-02-SUMMARY.md
+- FOUND: commit 160064e (fix: replace process::exit())
+- FOUND: commit 2837fd1 (docs: metadata)
+
 ---
 *Phase: 66-crypto-cli-hardening*
 *Completed: 2026-03-26*
