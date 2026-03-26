@@ -19,9 +19,9 @@ Requirements for security review P2 remediation. Each maps to roadmap phases.
 
 ### Deployment Hardening
 
-- [ ] **DEPL-01**: wasm-tests.yml has explicit permissions: contents: read block matching ci.yml and semver.yml
-- [ ] **DEPL-02**: nginx.conf includes X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Content-Security-Policy headers
-- [ ] **DEPL-03**: nginx-ssl.conf.template adds Strict-Transport-Security header and redirects HTTP to HTTPS when TLS is enabled
+- [x] **DEPL-01**: wasm-tests.yml has explicit permissions: contents: read block matching ci.yml and semver.yml
+- [x] **DEPL-02**: nginx.conf includes X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Content-Security-Policy headers
+- [x] **DEPL-03**: nginx-ssl.conf.template adds Strict-Transport-Security header and redirects HTTP to HTTPS when TLS is enabled
 
 ## Future Requirements
 
@@ -45,9 +45,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DFLT-02 | Phase 68 | Complete |
 | QUAL-01 | Phase 69 | Complete |
 | QUAL-02 | Phase 69 | Complete |
-| DEPL-01 | Phase 70 | Pending |
-| DEPL-02 | Phase 70 | Pending |
-| DEPL-03 | Phase 70 | Pending |
+| DEPL-01 | Phase 70 | Complete |
+| DEPL-02 | Phase 70 | Complete |
+| DEPL-03 | Phase 70 | Complete |
 
 **Coverage:**
 - v2.9 requirements: 7 total

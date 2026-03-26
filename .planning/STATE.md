@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: Security Review P2 Remediation
-status: Ready to plan
-stopped_at: Phase 70 context gathered
-last_updated: "2026-03-26T20:10:15.322Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 70-01-PLAN.md
+last_updated: "2026-03-26T20:27:29.769Z"
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
 ---
 
 <!--
@@ -26,12 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 69 — code-quality
+**Current focus:** Phase 70 — deployment-hardening
 
 ## Current Position
 
-Phase: 70
-Plan: Not started
+Phase: 70 (deployment-hardening) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -71,6 +71,8 @@ Plan: Not started
 - [Phase 68]: Removed impl Default from CAConfig/SoftwareHsmConfig — placeholder credentials (JWT 'your-secret-key', passphrase 'changeme123\!') eliminated from production code paths; test_default() helpers added behind cfg(test)
 - [Phase 69-code-quality]: QUAL-01: HASH_REGEX static LazyLock<Regex> eliminates per-request Regex::new() allocation in validate_segment_hashes
 - [Phase 69-code-quality]: QUAL-02: warn_unencrypted() helper in trst-cli emits stderr warning for all three --unencrypted handlers
+- [Phase 70-deployment-hardening]: HSTS conservative: max-age=31536000 only, no includeSubDomains — avoids locking subdomains prematurely
+- [Phase 70-deployment-hardening]: HTTP redirect /healthz exception: docker-compose health probes on port 8080 must not be redirected to HTTPS
 
 ### Pending Todos
 
@@ -82,9 +84,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T20:10:15.319Z
-Stopped at: Phase 70 context gathered
-Resume file: .planning/phases/70-deployment-hardening/70-CONTEXT.md
+Last session: 2026-03-26T20:27:29.765Z
+Stopped at: Completed 70-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-26 after v2.9 roadmap created*
