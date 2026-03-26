@@ -86,8 +86,9 @@ Plans:
   1. The dashboard Docker image runs the nginx process as a non-root user (nginx-unprivileged base or explicit USER directive)
   2. The GitHub Actions ci.yml workflow includes a step that greps the dashboard build output for credential patterns and fails the build if any are found
   3. A docker inspect or image metadata check confirms no root-run nginx process in the container
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 1 plan
+Plans:
+- [ ] 67-01-PLAN.md — Non-root nginx and CI bundle credential guard
 
 ## Progress
 
@@ -99,4 +100,4 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 | 64. Platform HTTP Hardening | 1/1 | Complete    | 2026-03-25 |
 | 65. Key Material Safety | 1/1 | Complete    | 2026-03-25 |
 | 66. Crypto & CLI Hardening | 2/2 | Complete    | 2026-03-26 |
-| 67. Deployment Security | 0/TBD | Not started | - |
+| 67. Deployment Security | 0/1 | Not started | - |
