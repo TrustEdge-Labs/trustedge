@@ -80,16 +80,6 @@ impl fmt::Debug for SoftwareHsmConfig {
     }
 }
 
-impl Default for SoftwareHsmConfig {
-    fn default() -> Self {
-        Self {
-            key_store_path: PathBuf::from("./software_hsm_keys"),
-            default_passphrase: Secret::new("changeme123!".to_string()), // WARN: For demo only
-            metadata_file: PathBuf::from("./software_hsm_keys/metadata.json"),
-        }
-    }
-}
-
 impl SoftwareHsmConfig {
     /// Create a builder for `SoftwareHsmConfig`.
     pub fn builder() -> SoftwareHsmConfigBuilder {
@@ -101,6 +91,16 @@ impl SoftwareHsmConfig {
     /// The caller must not log or store the returned value.
     pub fn default_passphrase(&self) -> &str {
         self.default_passphrase.expose_secret().as_str()
+    }
+}
+
+#[cfg(test)]
+impl SoftwareHsmConfig {
+    /// Test-only constructor with explicit test passphrase.
+    pub fn test_default() -> Self {
+        SoftwareHsmConfig::builder()
+            .default_passphrase("test-passphrase-do-not-use".to_string())
+            .build()
     }
 }
 
@@ -182,12 +182,6 @@ pub struct SoftwareHsmBackend {
 }
 
 impl SoftwareHsmBackend {
-    /// Create a new Software HSM backend with default configuration
-    pub fn new() -> Result<Self> {
-        let config = SoftwareHsmConfig::default();
-        Self::with_config(config)
-    }
-
     /// Create a new Software HSM backend with custom configuration
     pub fn with_config(config: SoftwareHsmConfig) -> Result<Self> {
         // Ensure key store directory exists
@@ -750,9 +744,9 @@ mod tests {
     }
 
     #[test]
-    fn test_backend_creation_with_new() -> Result<()> {
-        // This will create in default directory, but should work
-        let backend = SoftwareHsmBackend::new();
+    fn test_backend_creation_with_test_default() -> Result<()> {
+        let config = SoftwareHsmConfig::test_default();
+        let backend = SoftwareHsmBackend::with_config(config);
         assert!(backend.is_ok());
         Ok(())
     }

@@ -50,8 +50,13 @@ impl UniversalBackendRegistry {
         }
 
         // Add Software HSM backend if available
-        if let Ok(software_hsm_backend) = SoftwareHsmBackend::new() {
-            registry.register_backend("software_hsm".to_string(), Box::new(software_hsm_backend));
+        {
+            let config = crate::backends::software_hsm::SoftwareHsmConfig::builder()
+                .default_passphrase("registry-auto-discovery".to_string())
+                .build();
+            if let Ok(software_hsm_backend) = SoftwareHsmBackend::with_config(config) {
+                registry.register_backend("software_hsm".to_string(), Box::new(software_hsm_backend));
+            }
         }
 
         // Add YubiKey backend if available (feature-gated)
