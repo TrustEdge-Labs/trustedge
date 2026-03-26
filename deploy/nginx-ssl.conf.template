@@ -10,6 +10,13 @@ server {
     ssl_protocols       TLSv1.2 TLSv1.3;
     ssl_ciphers         HIGH:!aNULL:!MD5;
 
+    # Security headers
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self'" always;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
     # SPA fallback
     location / {
         try_files $uri $uri/ /index.html;
@@ -26,5 +33,22 @@ server {
         access_log off;
         return 200 "ok\n";
         add_header Content-Type text/plain;
+    }
+}
+
+# HTTP-to-HTTPS redirect (active only when SSL is enabled)
+server {
+    listen 8080;
+    server_name _;
+
+    # Health check must not redirect -- docker-compose probes hit port 8080
+    location /healthz {
+        access_log off;
+        return 200 "ok\n";
+        add_header Content-Type text/plain;
+    }
+
+    location / {
+        return 301 https://$host:8443$request_uri;
     }
 }
