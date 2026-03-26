@@ -36,7 +36,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 **Milestone Goal:** Resolve remaining P2 security findings and prepare for official v3.0 signed release — configurable TTL, version fingerprint removal, crypto path hardening, deployment secrets, nginx header coverage, and documentation sweep.
 
-- [ ] **Phase 71: Platform Code Quality** - Make receipt TTL configurable, remove version fingerprint from healthz, and fail fast on invalid PORT
+- [x] **Phase 71: Platform Code Quality** - Make receipt TTL configurable, remove version fingerprint from healthz, and fail fast on invalid PORT (completed 2026-03-26)
 - [ ] **Phase 72: Core Crypto Hygiene** - Replace unwrap paths in production crypto code with explicit error handling
 - [ ] **Phase 73: Deployment Hardening** - Add missing nginx security headers and move Docker Compose secrets out of plaintext
 - [ ] **Phase 74: Release Documentation** - Update README and user-facing docs to reflect v3.0 state
@@ -53,7 +53,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
   3. Starting the server with `PORT=notanumber` prints a clear error message and exits non-zero instead of silently binding to 3001
 **Plans**: 1 plan
 Plans:
-- [ ] 71-01-PLAN.md — Configurable receipt TTL, clean healthz, strict PORT parsing
+- [x] 71-01-PLAN.md — Configurable receipt TTL, clean healthz, strict PORT parsing
 
 ### Phase 72: Core Crypto Hygiene
 **Goal**: Production crypto paths surface failures explicitly rather than silently swallowing errors
@@ -90,7 +90,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 71. Platform Code Quality | 0/1 | Not started | - |
+| 71. Platform Code Quality | 1/1 | Complete   | 2026-03-26 |
 | 72. Core Crypto Hygiene | 0/TBD | Not started | - |
 | 73. Deployment Hardening | 0/TBD | Not started | - |
 | 74. Release Documentation | 0/TBD | Not started | - |

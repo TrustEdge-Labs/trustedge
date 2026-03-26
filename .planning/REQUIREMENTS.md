@@ -16,9 +16,9 @@ Requirements for the final polish before official v3.0 signed release. Each maps
 
 ### Platform Code Quality
 
-- [ ] **PLAT-01**: JWS receipt TTL is configurable via `RECEIPT_TTL_SECS` env var (default 3600 seconds)
-- [ ] **PLAT-02**: `/healthz` response omits exact crate version for unauthenticated callers
-- [ ] **PLAT-03**: Invalid `PORT` env var causes startup failure with clear error message instead of silently defaulting to 3001
+- [x] **PLAT-01**: JWS receipt TTL is configurable via `RECEIPT_TTL_SECS` env var (default 3600 seconds)
+- [x] **PLAT-02**: `/healthz` response omits exact crate version for unauthenticated callers
+- [x] **PLAT-03**: Invalid `PORT` env var causes startup failure with clear error message instead of silently defaulting to 3001
 
 ### Core Crypto Hygiene
 
@@ -53,9 +53,9 @@ None — v3.0 is the release milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PLAT-01 | Phase 71 | Pending |
-| PLAT-02 | Phase 71 | Pending |
-| PLAT-03 | Phase 71 | Pending |
+| PLAT-01 | Phase 71 | Complete |
+| PLAT-02 | Phase 71 | Complete |
+| PLAT-03 | Phase 71 | Complete |
 | CORE-01 | Phase 72 | Pending |
 | CORE-02 | Phase 72 | Pending |
 | DEPL-01 | Phase 73 | Pending |
