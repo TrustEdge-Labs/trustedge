@@ -98,5 +98,5 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 |-------|----------------|--------|-----------|
 | 64. Platform HTTP Hardening | 1/1 | Complete    | 2026-03-25 |
 | 65. Key Material Safety | 1/1 | Complete    | 2026-03-25 |
-| 66. Crypto & CLI Hardening | 2/2 | Complete   | 2026-03-26 |
+| 66. Crypto & CLI Hardening | 2/2 | Complete    | 2026-03-26 |
 | 67. Deployment Security | 0/TBD | Not started | - |
