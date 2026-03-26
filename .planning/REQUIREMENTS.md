@@ -53,22 +53,22 @@ None — v3.0 is the release milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PLAT-01 | — | Pending |
-| PLAT-02 | — | Pending |
-| PLAT-03 | — | Pending |
-| CORE-01 | — | Pending |
-| CORE-02 | — | Pending |
-| DEPL-01 | — | Pending |
-| DEPL-02 | — | Pending |
-| DEPL-03 | — | Pending |
-| DOCS-01 | — | Pending |
-| DOCS-02 | — | Pending |
+| PLAT-01 | Phase 71 | Pending |
+| PLAT-02 | Phase 71 | Pending |
+| PLAT-03 | Phase 71 | Pending |
+| CORE-01 | Phase 72 | Pending |
+| CORE-02 | Phase 72 | Pending |
+| DEPL-01 | Phase 73 | Pending |
+| DEPL-02 | Phase 73 | Pending |
+| DEPL-03 | Phase 73 | Pending |
+| DOCS-01 | Phase 74 | Pending |
+| DOCS-02 | Phase 74 | Pending |
 
 **Coverage:**
 - v3.0 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10
+- Mapped to phases: 10
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-26*
-*Last updated: 2026-03-26 after initial definition*
+*Last updated: 2026-03-26 after roadmap creation*

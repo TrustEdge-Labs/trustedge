@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Release Polish
-status: Defining requirements
+status: Roadmap ready
 stopped_at: null
 last_updated: "2026-03-26T21:00:00.000Z"
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -26,14 +26,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Defining v3.0 requirements
+**Current focus:** v3.0 Release Polish — phases 71-74
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 71 (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-26 — Milestone v3.0 started
+Status: Roadmap ready, awaiting phase planning
+Last activity: 2026-03-26 — v3.0 roadmap created
 
 ## Performance Metrics
 
@@ -63,13 +63,16 @@ Last activity: 2026-03-26 — Milestone v3.0 started
 **v3.0 this milestone:**
 
 - Plans completed: 0
-- Phases complete: 0
+- Phases complete: 0/4
 
 ## Accumulated Context
 
 ### Decisions
 
-- v3.0 scope: 8 remaining P2 findings (finding #9 already resolved in v2.9). Final cleanup before official signed release.
+- v3.0 scope: 10 requirements across 4 categories (PLAT, CORE, DEPL, DOCS). Final polish before signed release.
+- Phase grouping: PLAT-01/02/03 → Phase 71, CORE-01/02 → Phase 72, DEPL-01/02/03 → Phase 73, DOCS-01/02 → Phase 74
+- Phase 73 and 72 can execute in parallel (both depend on Phase 71, neither depends on the other)
+- Phase 74 depends on Phase 73 (docs sweep happens last, after all fixes land)
 
 ### Pending Todos
 
@@ -82,8 +85,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-26
-Stopped at: Milestone v3.0 initialized
+Stopped at: Roadmap created, ready for `/gsd:plan-phase 71`
 Resume file: None
 
 ---
-*Last updated: 2026-03-26 after v3.0 milestone started*
+*Last updated: 2026-03-26 after v3.0 roadmap created*
