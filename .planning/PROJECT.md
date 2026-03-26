@@ -16,23 +16,9 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## Current Milestone: v2.8 High Priority Hardening
-
-**Goal:** Fix 9 P1 security review findings — rate limiter proxy awareness, key material safety, nonce construction, CLI hardening, and deployment security.
-
-**Target features:**
-- Rate limiter parses X-Forwarded-For from trusted proxies + Retry-After header on 429s
-- Auto-generated key files in `trst wrap` get 0600 permissions
-- Remove Serialize/Deserialize from PrivateKey (or make key_bytes private)
-- NetworkChunk::new() requires nonce parameter (no zero-nonce default)
-- Replace process::exit() with proper error returns in trst-cli (11 call sites)
-- Chunk-size upper bound (256 MB ceiling) in trst-cli wrap
-- Dashboard nginx runs as non-root user
-- CI bundle credential guard added to GitHub Actions workflow
-
 ## Current State
 
-v2.8 High Priority Hardening milestone complete. All 9 P1 findings addressed: proxy-aware rate limiting with Retry-After, key file permissions and PrivateKey serde removal, zero-nonce constructor eliminated, process::exit replaced with RAII-safe error propagation, chunk-size capped, nginx non-root, CI credential guard. 4 phases, 5 plans, 9 requirements.
+Shipped v2.8 High Priority Hardening. All 9 P1 findings from third security review addressed: proxy-aware rate limiting with X-Forwarded-For + Retry-After header, key file 0600 permissions on wrap auto-gen, PrivateKey serde removed + key_bytes restricted, zero-nonce NetworkChunk constructor eliminated, process::exit replaced with RAII-safe CliExitError propagation, chunk-size capped at 256 MB, nginx-unprivileged container, CI bundle credential guard in GitHub Actions.
 
 ## Requirements
 
@@ -184,17 +170,19 @@ v2.8 High Priority Hardening milestone complete. All 9 P1 findings addressed: pr
 
 - ✓ Crypto error responses sanitized — generic messages to clients, full detail in server-side logs only — v2.7 Phase 63
 
+- ✓ Rate limiter parses X-Forwarded-For from TRUSTED_PROXIES CIDRs — v2.8 Phase 64
+- ✓ 429 responses include Retry-After: 1 header — v2.8 Phase 64
+- ✓ Auto-generated key files in `trst wrap` get 0600 permissions — v2.8 Phase 65
+- ✓ PrivateKey serde derives removed, key_bytes restricted to pub(crate) — v2.8 Phase 65
+- ✓ NetworkChunk::new() requires explicit nonce parameter — v2.8 Phase 66
+- ✓ process::exit() replaced with CliExitError RAII-safe propagation — v2.8 Phase 66
+- ✓ Chunk-size upper bound enforced (256 MB) — v2.8 Phase 66
+- ✓ Dashboard nginx runs as non-root (nginx-unprivileged) — v2.8 Phase 67
+- ✓ CI bundle credential guard in GitHub Actions ci.yml — v2.8 Phase 67
+
 ### Active
 
-- [ ] Rate limiter parses X-Forwarded-For from trusted proxies
-- [ ] 429 responses include Retry-After header
-- [ ] Auto-generated key files in `trst wrap` get 0600 permissions
-- [ ] PrivateKey serde derives removed or key_bytes made private
-- [ ] NetworkChunk::new() requires nonce parameter
-- [ ] process::exit() replaced with error returns in trst-cli
-- [ ] Chunk-size upper bound enforced in trst-cli wrap
-- [ ] Dashboard nginx runs as non-root
-- [ ] CI bundle credential guard in GitHub Actions workflow
+(No active requirements — v2.8 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -228,10 +216,7 @@ v2.8 High Priority Hardening milestone complete. All 9 P1 findings addressed: pr
 - **v2.5 Critical Security Fixes** — QUIC TLS MITM vulnerability closed, 2 MB body limit + per-IP rate limiting on platform, JWKS key path configurable (no more target/dev/), WASM double-decrypt bug fixed
 - **v2.6 Security Hardening** — Zeroize on 4 key structs, 600k PBKDF2 import minimum, postgres verify fix, configurable CORS, CLI key leak prevention, nginx TLS, dashboard API key removed
 - **v2.7 CI & Config Security** — SHA-pinned all GitHub Actions, curl|sh removed, actions-rs replaced, DATABASE_URL required in release, postgres internal-only, placeholder JWT rejected, crypto errors sanitized
-
-## Current State
-
-Shipped v2.7 CI & Config Security. All 7 P0 findings from third security review addressed: CI supply chain hardened (SHA-pinned actions across 4 workflows, cargo-binstall for wasm-pack, archived actions-rs replaced), credential hygiene enforced (DATABASE_URL required in release builds, postgres port internal-only, CAConfig rejects placeholder JWT), error responses sanitized (generic messages to clients, full detail in server logs). 3 phases, 3 plans, 7 requirements, 22 commits.
+- **v2.8 High Priority Hardening** — Proxy-aware rate limiting + Retry-After, key file 0600 on wrap, PrivateKey serde removed, zero-nonce eliminated, RAII-safe CLI exits, chunk-size ceiling, nginx non-root, CI credential guard
 
 ## Context
 
@@ -381,4 +366,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after v2.8 milestone started*
+*Last updated: 2026-03-26 after v2.8 milestone*

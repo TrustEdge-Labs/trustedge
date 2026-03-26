@@ -1,5 +1,19 @@
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 
+## v2.8 High Priority Hardening (Shipped: 2026-03-26)
+
+**Phases completed:** 4 phases, 5 plans, 7 tasks
+
+**Key accomplishments:**
+
+- Proxy-aware per-client-IP rate limiting with TRUSTED_PROXIES CIDR config and RFC 6585 Retry-After: 1 header on 429 responses
+- One-liner:
+- NetworkChunk::new() now requires an explicit nonce parameter, eliminating the silent zero-nonce default that was a cryptographic hazard in AES-256-GCM usage
+- Replaced 10 process::exit() calls in trst-cli with CliExitError propagation, ensuring Zeroize Drop handlers run on key material before process exit, plus 256 MB ceiling on --chunk-size
+- One-liner:
+
+---
+
 ## v2.7 CI & Config Security (Shipped: 2026-03-25)
 
 **Phases completed:** 3 phases, 3 plans, 5 tasks
