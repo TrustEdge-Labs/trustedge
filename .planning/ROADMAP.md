@@ -45,8 +45,9 @@ Plans:
   1. wasm-tests.yml contains an explicit `permissions: contents: read` block at the workflow level, matching the pattern in ci.yml and semver.yml — visible in the YAML source
   2. The nginx.conf served by the dashboard container includes X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Content-Security-Policy response headers — verifiable with `curl -I`
   3. nginx-ssl.conf.template includes a Strict-Transport-Security header on the TLS vhost and an HTTP-to-HTTPS redirect on port 80 — verifiable by inspecting the template and confirmed by the existing SSL conditional entrypoint
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 1 plan
+Plans:
+- [ ] 70-01-PLAN.md — CI permissions, nginx security headers, HSTS + HTTP redirect
 
 ## Progress
 
@@ -54,4 +55,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 68. Insecure Defaults | 0/1 | Complete    | 2026-03-26 |
 | 69. Code Quality | 1/1 | Complete    | 2026-03-26 |
-| 70. Deployment Hardening | 0/TBD | Not started | - |
+| 70. Deployment Hardening | 0/1 | Not started | - |
