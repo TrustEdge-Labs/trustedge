@@ -55,8 +55,8 @@ services:
       args:
         VITE_API_BASE: http://localhost:3001
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "8080:8080"
+      - "8443:8443"
     environment:
       # TLS termination: set these to enable HTTPS on port 8443
       # SSL_CERT_PATH: /certs/server.crt
@@ -68,7 +68,7 @@ services:
       platform-server:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/healthz || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/healthz || exit 1"]
       interval: 10s
       timeout: 3s
       retries: 3
