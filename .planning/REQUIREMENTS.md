@@ -35,8 +35,8 @@ Requirements for milestone v2.8 High Priority Hardening. Each maps to roadmap ph
 
 ### Deployment
 
-- [ ] **DEPL-01**: Dashboard nginx runs as non-root user (nginx-unprivileged or USER directive)
-- [ ] **DEPL-02**: CI bundle credential guard (VITE_API_KEY grep) added to GitHub Actions ci.yml workflow
+- [x] **DEPL-01**: Dashboard nginx runs as non-root user (nginx-unprivileged or USER directive)
+- [x] **DEPL-02**: CI bundle credential guard (VITE_API_KEY grep) added to GitHub Actions ci.yml workflow
 
 ## Future Requirements
 
@@ -61,8 +61,8 @@ None — all findings addressed in this milestone.
 | CRYPT-01 | Phase 66 | Complete |
 | CLI-01 | Phase 66 | Complete |
 | CLI-02 | Phase 66 | Complete |
-| DEPL-01 | Phase 67 | Pending |
-| DEPL-02 | Phase 67 | Pending |
+| DEPL-01 | Phase 67 | Complete |
+| DEPL-02 | Phase 67 | Complete |
 
 **Coverage:**
 - v2.8 requirements: 9 total
