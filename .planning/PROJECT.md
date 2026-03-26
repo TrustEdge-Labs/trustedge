@@ -16,9 +16,18 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## Current State
+## Current Milestone: v3.0 Release Polish
 
-Shipped v2.9 Security Review P2 Remediation. All 7 P2 findings addressed: removed insecure Default impls from CAConfig and SoftwareHsmConfig (Medium), LazyLock regex in validation (Low), --unencrypted stderr warning in trst-cli (Low), least-privilege CI permissions on wasm-tests.yml (Low), security headers on nginx (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) (Low), HSTS + HTTP-to-HTTPS redirect on SSL template (Low).
+**Goal:** Resolve remaining P2 security findings and prepare for official v3.0 signed release.
+
+**Target features:**
+- Configurable JWS receipt TTL via env var (currently hardcoded 1h)
+- Remove version fingerprint from /healthz unauthenticated response
+- Eliminate unwrap()/unwrap_or_default() in production crypto paths
+- Fail or warn on invalid PORT env var instead of silent default
+- nginx security headers inherited in all location blocks (both configs)
+- CSP connect-src updated for dashboard API restoration
+- Docker Compose secrets instead of inline plaintext password
 
 ## Requirements
 
@@ -192,7 +201,14 @@ Shipped v2.9 Security Review P2 Remediation. All 7 P2 findings addressed: remove
 
 ### Active
 
-(No active requirements — v2.9 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
+- [ ] Configurable JWS receipt TTL via RECEIPT_TTL_SECS env var
+- [ ] /healthz version fingerprint removed from unauthenticated response
+- [ ] generate_aad() unwrap() replaced with .expect()
+- [ ] Envelope::hash() unwrap_or_default() replaced with proper error handling
+- [ ] Invalid PORT env var logs warning or fails instead of silent default
+- [ ] nginx security headers repeated in all location blocks (nginx.conf + nginx-ssl.conf.template)
+- [ ] CSP connect-src updated to allow configured API origin
+- [ ] Docker Compose uses secrets/env_file instead of inline plaintext password
 
 ### Deferred
 
@@ -377,4 +393,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 after v2.9 milestone*
+*Last updated: 2026-03-26 after v3.0 milestone started*

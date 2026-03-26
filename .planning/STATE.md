@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.9
-milestone_name: Security Review P2 Remediation
-status: v2.9 milestone complete
-stopped_at: Completed 70-01-PLAN.md
-last_updated: "2026-03-26T20:32:33.993Z"
+milestone: v3.0
+milestone_name: Release Polish
+status: Defining requirements
+stopped_at: null
+last_updated: "2026-03-26T21:00:00.000Z"
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 3
-  completed_plans: 3
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 <!--
@@ -26,12 +26,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 70 — deployment-hardening
+**Current focus:** Defining v3.0 requirements
 
 ## Current Position
 
-Phase: 70
-Plan: Not started
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-26 — Milestone v3.0 started
 
 ## Performance Metrics
 
@@ -55,24 +57,19 @@ Plan: Not started
 - v2.6: 4 phases, 5 plans
 - v2.7: 3 phases, 3 plans
 - v2.8: 4 phases, 5 plans
-- **Total shipped: 67 phases, 100 plans**
+- v2.9: 3 phases, 3 plans
+- **Total shipped: 70 phases, 103 plans**
 
-**v2.9 this milestone:**
+**v3.0 this milestone:**
 
 - Plans completed: 0
-- Phases complete: 0 of 3
+- Phases complete: 0
 
 ## Accumulated Context
 
 ### Decisions
 
-- v2.9 scope: 7 targeted P2 remediation findings only — insecure defaults, code quality, deployment hardening. No new features.
-- Phase 68: Choose between removing Default impl vs. runtime panic guard for CAConfig/SoftwareHsmConfig — keep test ergonomics intact.
-- [Phase 68]: Removed impl Default from CAConfig/SoftwareHsmConfig — placeholder credentials (JWT 'your-secret-key', passphrase 'changeme123\!') eliminated from production code paths; test_default() helpers added behind cfg(test)
-- [Phase 69-code-quality]: QUAL-01: HASH_REGEX static LazyLock<Regex> eliminates per-request Regex::new() allocation in validate_segment_hashes
-- [Phase 69-code-quality]: QUAL-02: warn_unencrypted() helper in trst-cli emits stderr warning for all three --unencrypted handlers
-- [Phase 70-deployment-hardening]: HSTS conservative: max-age=31536000 only, no includeSubDomains — avoids locking subdomains prematurely
-- [Phase 70-deployment-hardening]: HTTP redirect /healthz exception: docker-compose health probes on port 8080 must not be redirected to HTTPS
+- v3.0 scope: 8 remaining P2 findings (finding #9 already resolved in v2.9). Final cleanup before official signed release.
 
 ### Pending Todos
 
@@ -84,9 +81,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T20:27:29.765Z
-Stopped at: Completed 70-01-PLAN.md
+Last session: 2026-03-26
+Stopped at: Milestone v3.0 initialized
 Resume file: None
 
 ---
-*Last updated: 2026-03-26 after v2.9 roadmap created*
+*Last updated: 2026-03-26 after v3.0 milestone started*
