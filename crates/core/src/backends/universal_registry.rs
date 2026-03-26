@@ -55,7 +55,8 @@ impl UniversalBackendRegistry {
                 .default_passphrase("registry-auto-discovery".to_string())
                 .build();
             if let Ok(software_hsm_backend) = SoftwareHsmBackend::with_config(config) {
-                registry.register_backend("software_hsm".to_string(), Box::new(software_hsm_backend));
+                registry
+                    .register_backend("software_hsm".to_string(), Box::new(software_hsm_backend));
             }
         }
 
