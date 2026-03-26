@@ -16,7 +16,7 @@ async fn main() -> Result<()> {
     println!("● TrustEdge Transport Demo");
 
     // Create a sample NetworkChunk for testing
-    let test_chunk = NetworkChunk::new(1, b"Hello, TrustEdge!".to_vec(), b"manifest".to_vec());
+    let test_chunk = NetworkChunk::new(1, b"Hello, TrustEdge!".to_vec(), b"manifest".to_vec(), [1u8; 12]);
 
     println!(
         "● Created test chunk: sequence={}, data_len={}",
