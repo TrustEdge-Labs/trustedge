@@ -24,6 +24,9 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  contents: read
+
 jobs:
   wasm-size-check:
     name: WASM Size Check
