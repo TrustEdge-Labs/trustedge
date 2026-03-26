@@ -32,7 +32,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-v2.8 Phase 65 (Key Material Safety) complete. Auto-generated wrap key files get 0600 permissions. PrivateKey serde derives removed, key_bytes restricted to pub(crate). Phases 66-67 remain.
+v2.8 Phase 66 (Crypto & CLI Hardening) complete. Zero-nonce NetworkChunk constructor eliminated. All 11 process::exit() calls replaced with CliExitError propagation (RAII-safe). Chunk-size capped at 256 MB. Phase 67 remains.
 
 ## Requirements
 
