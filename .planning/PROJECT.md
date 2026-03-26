@@ -18,7 +18,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-Shipped v2.8 High Priority Hardening. All 9 P1 findings from third security review addressed: proxy-aware rate limiting with X-Forwarded-For + Retry-After header, key file 0600 permissions on wrap auto-gen, PrivateKey serde removed + key_bytes restricted, zero-nonce NetworkChunk constructor eliminated, process::exit replaced with RAII-safe CliExitError propagation, chunk-size capped at 256 MB, nginx-unprivileged container, CI bundle credential guard in GitHub Actions.
+Shipped v2.9 Security Review P2 Remediation. All 7 P2 findings addressed: removed insecure Default impls from CAConfig and SoftwareHsmConfig (Medium), LazyLock regex in validation (Low), --unencrypted stderr warning in trst-cli (Low), least-privilege CI permissions on wasm-tests.yml (Low), security headers on nginx (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) (Low), HSTS + HTTP-to-HTTPS redirect on SSL template (Low).
 
 ## Requirements
 
@@ -192,18 +192,7 @@ Shipped v2.8 High Priority Hardening. All 9 P1 findings from third security revi
 
 ### Active
 
-## Current Milestone: v2.9 Security Review P2 Remediation
-
-**Goal:** Address remaining medium and low priority findings from the security review before production deployment.
-
-**Target features:**
-- Fix `CAConfig::default()` bypassing builder's placeholder guard (Medium)
-- Fix `SoftwareHsmConfig::default()` insecure passphrase (Medium)
-- Static regex compilation in validation via LazyLock (Low)
-- `--unencrypted` runtime warning in trst-cli (Low)
-- Add `permissions` block to wasm-tests.yml (Low)
-- Add security headers to nginx config (Low)
-- Add HSTS and HTTP-to-HTTPS redirect for TLS deployments (Low)
+(No active requirements — v2.9 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -238,6 +227,7 @@ Shipped v2.8 High Priority Hardening. All 9 P1 findings from third security revi
 - **v2.6 Security Hardening** — Zeroize on 4 key structs, 600k PBKDF2 import minimum, postgres verify fix, configurable CORS, CLI key leak prevention, nginx TLS, dashboard API key removed
 - **v2.7 CI & Config Security** — SHA-pinned all GitHub Actions, curl|sh removed, actions-rs replaced, DATABASE_URL required in release, postgres internal-only, placeholder JWT rejected, crypto errors sanitized
 - **v2.8 High Priority Hardening** — Proxy-aware rate limiting + Retry-After, key file 0600 on wrap, PrivateKey serde removed, zero-nonce eliminated, RAII-safe CLI exits, chunk-size ceiling, nginx non-root, CI credential guard
+- **v2.9 Security Review P2 Remediation** — Insecure Default impls removed (CAConfig, SoftwareHsmConfig), LazyLock regex, --unencrypted warning, least-privilege CI, nginx security headers (CSP, HSTS, X-Frame, Referrer-Policy), HTTP-to-HTTPS redirect
 
 ## Context
 
@@ -387,4 +377,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 after Phase 70 complete (v2.9 milestone complete)*
+*Last updated: 2026-03-26 after v2.9 milestone*

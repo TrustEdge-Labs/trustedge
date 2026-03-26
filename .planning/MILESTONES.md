@@ -1,5 +1,35 @@
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 
+## v2.9 Security Review P2 Remediation (Shipped: 2026-03-26)
+
+**Phases completed:** 3 phases (68-70), 3 plans, 6 tasks
+**Timeline:** 1 day (2026-03-26)
+**Stats:** 27 files changed, 1,971 insertions, 69 deletions, 28 commits
+
+**Delivered:** Addressed all 7 P2 (medium/low priority) findings from the security review — removed insecure default configurations, improved code quality, and hardened deployment artifacts.
+
+**Key accomplishments:**
+
+- Removed `impl Default` from CAConfig and SoftwareHsmConfig — placeholder JWT secret and demo passphrase can no longer bypass builder guards; `#[cfg(test)] test_default()` preserves test ergonomics
+- Static `LazyLock<Regex>` replaces per-request `Regex::new()` in `validate_segment_hashes()` — zero per-request allocation
+- `--unencrypted` flag in trst-cli now emits visible ⚠ stderr security warning from all three subcommands (wrap, unwrap, keygen)
+- `wasm-tests.yml` has explicit `permissions: contents: read` matching ci.yml and semver.yml
+- nginx.conf and nginx-ssl.conf.template include X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Content-Security-Policy headers
+- nginx-ssl.conf.template adds HSTS (`max-age=31536000`) and HTTP-to-HTTPS 301 redirect with `/healthz` passthrough for docker-compose probes
+
+**Tech debt carried forward:**
+
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+
+**Git range:** v2.8..v2.9
+
+**Archives:**
+
+- `.planning/milestones/v2.9-ROADMAP.md`
+- `.planning/milestones/v2.9-REQUIREMENTS.md`
+
+---
+
 ## v2.8 High Priority Hardening (Shipped: 2026-03-26)
 
 **Phases completed:** 4 phases, 5 plans, 7 tasks
