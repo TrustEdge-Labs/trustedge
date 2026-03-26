@@ -37,7 +37,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - [x] **Phase 64: Platform HTTP Hardening** - Rate limiter reads real client IP from X-Forwarded-For behind trusted proxies; 429 responses include Retry-After header (completed 2026-03-25)
 - [x] **Phase 65: Key Material Safety** - Auto-generated key files get 0600 permissions; PrivateKey serde derives removed to prevent accidental serialization (completed 2026-03-25)
 - [x] **Phase 66: Crypto & CLI Hardening** - NetworkChunk::new() requires mandatory nonce; process::exit() replaced with error returns; chunk-size ceiling enforced (completed 2026-03-26)
-- [ ] **Phase 67: Deployment Security** - Dashboard nginx runs as non-root; CI workflow guards against credential leakage in bundles
+- [x] **Phase 67: Deployment Security** - Dashboard nginx runs as non-root; CI workflow guards against credential leakage in bundles (completed 2026-03-26)
 
 ## Phase Details
 
@@ -88,7 +88,7 @@ Plans:
   3. A docker inspect or image metadata check confirms no root-run nginx process in the container
 **Plans**: 1 plan
 Plans:
-- [ ] 67-01-PLAN.md — Non-root nginx and CI bundle credential guard
+- [x] 67-01-PLAN.md — Non-root nginx and CI bundle credential guard
 
 ## Progress
 
@@ -100,4 +100,4 @@ Phases execute in numeric order: 64 → 65 → 66 → 67
 | 64. Platform HTTP Hardening | 1/1 | Complete    | 2026-03-25 |
 | 65. Key Material Safety | 1/1 | Complete    | 2026-03-25 |
 | 66. Crypto & CLI Hardening | 2/2 | Complete    | 2026-03-26 |
-| 67. Deployment Security | 0/1 | Not started | - |
+| 67. Deployment Security | 1/1 | Complete   | 2026-03-26 |
