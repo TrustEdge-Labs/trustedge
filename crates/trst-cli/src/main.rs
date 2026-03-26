@@ -44,6 +44,11 @@ use trustedge_core::backends::yubikey::YubiKeyConfig;
 #[cfg(feature = "yubikey")]
 use trustedge_core::backends::YubiKeyBackend;
 
+/// Emit a security warning when --unencrypted is used.
+fn warn_unencrypted() {
+    eprintln!("\u{26A0} WARNING: --unencrypted generates/reads plaintext key files. Key material is NOT protected at rest. Use only for CI/automation.");
+}
+
 /// Carries a specific exit code through the error propagation chain.
 /// This lets subcommands return `Result<()>` while preserving distinct exit codes
 /// (10=verify, 11=integrity, 12=signature, 14=chain, 1=general).
@@ -352,6 +357,9 @@ async fn run() -> Result<()> {
 }
 
 fn handle_keygen(args: KeygenCmd) -> Result<()> {
+    if args.unencrypted {
+        warn_unencrypted();
+    }
     // Refuse to overwrite existing files
     if args.out_key.exists() {
         anyhow::bail!(
@@ -413,6 +421,9 @@ fn handle_keygen(args: KeygenCmd) -> Result<()> {
 }
 
 fn handle_wrap(args: WrapCmd) -> Result<()> {
+    if args.unencrypted {
+        warn_unencrypted();
+    }
     // Reject chunk sizes above 256 MB (268_435_456 bytes) to prevent memory exhaustion.
     const MAX_CHUNK_SIZE: usize = 268_435_456;
     if args.chunk_size > MAX_CHUNK_SIZE {
@@ -962,6 +973,9 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
 }
 
 fn handle_unwrap(args: UnwrapCmd) -> Result<()> {
+    if args.unencrypted {
+        warn_unencrypted();
+    }
     // Load device keypair from file
     let key_bytes = fs::read(&args.device_key)
         .with_context(|| format!("failed to read device key '{}'", args.device_key.display()))?;
