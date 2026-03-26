@@ -51,7 +51,9 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
   1. Setting `RECEIPT_TTL_SECS=7200` causes issued JWS receipts to expire 2 hours after issuance
   2. A `GET /healthz` request without authentication returns a response that omits the exact crate version string
   3. Starting the server with `PORT=notanumber` prints a clear error message and exits non-zero instead of silently binding to 3001
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 71-01-PLAN.md — Configurable receipt TTL, clean healthz, strict PORT parsing
 
 ### Phase 72: Core Crypto Hygiene
 **Goal**: Production crypto paths surface failures explicitly rather than silently swallowing errors
@@ -88,7 +90,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 71. Platform Code Quality | 0/TBD | Not started | - |
+| 71. Platform Code Quality | 0/1 | Not started | - |
 | 72. Core Crypto Hygiene | 0/TBD | Not started | - |
 | 73. Deployment Hardening | 0/TBD | Not started | - |
 | 74. Release Documentation | 0/TBD | Not started | - |
