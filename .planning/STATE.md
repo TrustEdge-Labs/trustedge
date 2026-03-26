@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.9
 milestone_name: Security Review P2 Remediation
-status: planning
-stopped_at: Phase 68 context gathered
-last_updated: "2026-03-26T12:33:06.376Z"
-last_activity: 2026-03-26 — Roadmap created for v2.9 (3 phases, 7 requirements)
+status: Ready to plan
+stopped_at: Completed 68-01-PLAN.md
+last_updated: "2026-03-26T14:58:31.506Z"
 progress:
   total_phases: 3
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
 ---
 
 <!--
@@ -28,16 +26,12 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 68 — Insecure Defaults
+**Current focus:** Phase 68 — insecure-defaults
 
 ## Current Position
 
-Phase: 68 of 70 (Insecure Defaults)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-26 — Roadmap created for v2.9 (3 phases, 7 requirements)
-
-Progress: [░░░░░░░░░░] 0%
+Phase: 69
+Plan: Not started
 
 ## Performance Metrics
 
@@ -74,6 +68,7 @@ Progress: [░░░░░░░░░░] 0%
 
 - v2.9 scope: 7 targeted P2 remediation findings only — insecure defaults, code quality, deployment hardening. No new features.
 - Phase 68: Choose between removing Default impl vs. runtime panic guard for CAConfig/SoftwareHsmConfig — keep test ergonomics intact.
+- [Phase 68]: Removed impl Default from CAConfig/SoftwareHsmConfig — placeholder credentials (JWT 'your-secret-key', passphrase 'changeme123\!') eliminated from production code paths; test_default() helpers added behind cfg(test)
 
 ### Pending Todos
 
@@ -85,9 +80,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T12:33:06.372Z
-Stopped at: Phase 68 context gathered
-Resume file: .planning/phases/68-insecure-defaults/68-CONTEXT.md
+Last session: 2026-03-26T14:46:20.948Z
+Stopped at: Completed 68-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-26 after v2.9 roadmap created*

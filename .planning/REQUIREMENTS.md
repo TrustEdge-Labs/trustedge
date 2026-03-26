@@ -9,8 +9,8 @@ Requirements for security review P2 remediation. Each maps to roadmap phases.
 
 ### Insecure Defaults
 
-- [ ] **DFLT-01**: CAConfig::default() cannot produce a usable config with placeholder JWT secret — either remove Default impl or add runtime guard
-- [ ] **DFLT-02**: SoftwareHsmConfig::default() cannot use "changeme123!" passphrase outside test builds — require explicit passphrase or panic on demo default
+- [x] **DFLT-01**: CAConfig::default() cannot produce a usable config with placeholder JWT secret — either remove Default impl or add runtime guard
+- [x] **DFLT-02**: SoftwareHsmConfig::default() cannot use "changeme123!" passphrase outside test builds — require explicit passphrase or panic on demo default
 
 ### Code Quality
 
@@ -41,8 +41,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DFLT-01 | Phase 68 | Pending |
-| DFLT-02 | Phase 68 | Pending |
+| DFLT-01 | Phase 68 | Complete |
+| DFLT-02 | Phase 68 | Complete |
 | QUAL-01 | Phase 69 | Pending |
 | QUAL-02 | Phase 69 | Pending |
 | DEPL-01 | Phase 70 | Pending |
