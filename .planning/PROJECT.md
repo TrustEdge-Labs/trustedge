@@ -32,7 +32,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-v2.8 Phase 66 (Crypto & CLI Hardening) complete. Zero-nonce NetworkChunk constructor eliminated. All 11 process::exit() calls replaced with CliExitError propagation (RAII-safe). Chunk-size capped at 256 MB. Phase 67 remains.
+v2.8 High Priority Hardening milestone complete. All 9 P1 findings addressed: proxy-aware rate limiting with Retry-After, key file permissions and PrivateKey serde removal, zero-nonce constructor eliminated, process::exit replaced with RAII-safe error propagation, chunk-size capped, nginx non-root, CI credential guard. 4 phases, 5 plans, 9 requirements.
 
 ## Requirements
 
