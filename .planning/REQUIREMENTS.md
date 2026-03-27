@@ -33,7 +33,7 @@ Requirements for the final polish before official v3.0 signed release. Each maps
 
 ### Release Documentation
 
-- [ ] **DOCS-01**: README reflects current feature set, CLI commands, architecture, and v3.0 state
+- [x] **DOCS-01**: README reflects current feature set, CLI commands, architecture, and v3.0 state
 - [ ] **DOCS-02**: User-facing documentation (docs/, CLAUDE.md CLI tables, demo instructions) is current and consistent with codebase
 
 ## Future Requirements
@@ -61,7 +61,7 @@ None — v3.0 is the release milestone.
 | DEPL-01 | Phase 73 | Complete |
 | DEPL-02 | Phase 73 | Complete |
 | DEPL-03 | Phase 73 | Complete |
-| DOCS-01 | Phase 74 | Pending |
+| DOCS-01 | Phase 74 | Complete |
 | DOCS-02 | Phase 74 | Pending |
 
 **Coverage:**
