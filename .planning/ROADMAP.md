@@ -95,5 +95,5 @@ Plans:
 |-------|----------------|--------|-----------|
 | 71. Platform Code Quality | 1/1 | Complete    | 2026-03-27 |
 | 72. Core Crypto Hygiene | 0/1 | Complete    | 2026-03-27 |
-| 73. Deployment Hardening | 1/1 | Complete   | 2026-03-27 |
+| 73. Deployment Hardening | 1/1 | Complete    | 2026-03-27 |
 | 74. Release Documentation | 0/TBD | Not started | - |
