@@ -237,7 +237,7 @@ pub fn assign_receipt(
     let amount = previous_receipt.amount;
 
     // Calculate the hash of the previous envelope to create the chain link
-    let prev_hash = previous_envelope.hash();
+    let prev_hash = previous_envelope.hash()?;
 
     // Create the new receipt that represents the assignment
     let assignment_receipt = OwnershipReceipt::new_assignment(
@@ -845,15 +845,15 @@ mod tests {
         assert!(envelope.verify(), "Envelope should verify");
 
         // Verify hash consistency
-        let hash1 = envelope.hash();
-        let hash2 = envelope.hash();
+        let hash1 = envelope.hash().unwrap();
+        let hash2 = envelope.hash().unwrap();
         assert_eq!(hash1, hash2, "Hash should be deterministic");
 
         // Create identical envelope and verify different hash
         let envelope2 = create_receipt(&alice_key, &bob_key.verifying_key(), 1000, None)
             .expect("Failed to create second receipt");
 
-        let hash3 = envelope2.hash();
+        let hash3 = envelope2.hash().unwrap();
         assert_ne!(
             hash1, hash3,
             "Different envelopes should have different hashes"
@@ -1015,8 +1015,8 @@ mod tests {
 
         // The envelopes should have different hashes
         assert_ne!(
-            envelope.hash(),
-            malicious_envelope.hash(),
+            envelope.hash().unwrap(),
+            malicious_envelope.hash().unwrap(),
             "Different envelopes should have different hashes"
         );
     }
@@ -1046,8 +1046,8 @@ mod tests {
 
         // Envelopes should have different hashes (preventing replay)
         assert_ne!(
-            envelope1.hash(),
-            envelope3.hash(),
+            envelope1.hash().unwrap(),
+            envelope3.hash().unwrap(),
             "Identical receipts should have different hashes"
         );
 
@@ -1106,7 +1106,7 @@ mod tests {
             &bob_key,
             &charlie_key.verifying_key(),
             original_amount * 2, // Double the amount
-            envelope1.hash(),
+            envelope1.hash().unwrap(),
             Some("Tampered assignment".to_string()),
         );
 
@@ -1131,8 +1131,8 @@ mod tests {
 
         // But it should have a different hash than the legitimate envelope
         assert_ne!(
-            envelope2.hash(),
-            tampered_envelope.hash(),
+            envelope2.hash().unwrap(),
+            tampered_envelope.hash().unwrap(),
             "Tampered envelope should have different hash"
         );
 
@@ -1234,8 +1234,8 @@ mod tests {
 
         // Envelopes should have different hashes (due to timestamps/nonces)
         assert_ne!(
-            envelope1.hash(),
-            envelope2.hash(),
+            envelope1.hash().unwrap(),
+            envelope2.hash().unwrap(),
             "Different envelopes should have different hashes"
         );
 

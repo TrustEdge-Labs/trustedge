@@ -256,9 +256,10 @@ impl Envelope {
     }
 
     /// Get the hash of this envelope for chaining purposes
-    pub fn hash(&self) -> [u8; 32] {
-        let envelope_bytes = bincode::serialize(self).unwrap_or_default();
-        *blake3::hash(&envelope_bytes).as_bytes()
+    pub fn hash(&self) -> Result<[u8; 32]> {
+        let envelope_bytes = bincode::serialize(self)
+            .map_err(|e| anyhow::anyhow!("Failed to serialize envelope for hashing: {e}"))?;
+        Ok(*blake3::hash(&envelope_bytes).as_bytes())
     }
 
     /// Get the beneficiary public key
@@ -692,11 +693,11 @@ mod tests {
             .expect("Failed to seal envelope2");
 
         // Different envelopes should have different hashes (due to random nonces)
-        assert_ne!(envelope1.hash(), envelope2.hash());
+        assert_ne!(envelope1.hash().unwrap(), envelope2.hash().unwrap());
 
         // Same envelope should have consistent hash
-        let hash1 = envelope1.hash();
-        let hash2 = envelope1.hash();
+        let hash1 = envelope1.hash().unwrap();
+        let hash2 = envelope1.hash().unwrap();
         assert_eq!(hash1, hash2);
     }
 
