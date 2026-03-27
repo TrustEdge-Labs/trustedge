@@ -55,7 +55,7 @@ fn main() -> Result<()> {
     println!("   ✔ Receipt created and secured in envelope");
     println!(
         "   ● Envelope hash: {}",
-        hex::encode(original_envelope.hash())
+        hex::encode(original_envelope.hash().unwrap())
     );
     println!("   ● Cryptographically signed by: Alice");
     println!("   ● Intended beneficiary: Bob");
@@ -90,13 +90,13 @@ fn main() -> Result<()> {
     println!("   ✔ Assignment created and secured in new envelope");
     println!(
         "   📦 New envelope hash: {}",
-        hex::encode(assignment_envelope.hash())
+        hex::encode(assignment_envelope.hash().unwrap())
     );
     println!("   ● Cryptographically signed by: Bob");
     println!("   ● New beneficiary: Charlie");
     println!(
         "   🔗 Links to previous envelope: {}",
-        hex::encode(original_envelope.hash())
+        hex::encode(original_envelope.hash().unwrap())
     );
     println!();
 
