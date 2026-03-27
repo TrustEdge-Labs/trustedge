@@ -20,7 +20,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 **Goal:** Resolve remaining P2 security findings and prepare for official v3.0 signed release.
 
-**Current State:** Phase 72 complete — crypto hygiene fixes (generate_aad expect, Envelope::hash Result).
+**Current State:** Phase 73 complete — deployment hardening (nginx headers, CSP, Docker env_file).
 
 **Target features:**
 - Configurable JWS receipt TTL via env var (currently hardcoded 1h)
@@ -207,6 +207,10 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 - ✓ generate_aad() uses .expect() instead of bare .unwrap() — v3.0 Phase 72
 - ✓ Envelope::hash() returns Result<[u8; 32]> instead of unwrap_or_default() — v3.0 Phase 72
+
+- ✓ nginx security headers repeated in all location blocks (nginx.conf + nginx-ssl.conf.template) — v3.0 Phase 73
+- ✓ CSP connect-src includes http://localhost:3001 for dashboard API calls — v3.0 Phase 73
+- ✓ Docker Compose credentials moved to env_file (no inline plaintext password) — v3.0 Phase 73
 
 ### Active
 
@@ -402,4 +406,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after Phase 72 complete*
+*Last updated: 2026-03-27 after Phase 73 complete*
