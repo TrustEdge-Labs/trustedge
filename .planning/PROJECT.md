@@ -20,6 +20,8 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 **Goal:** Resolve remaining P2 security findings and prepare for official v3.0 signed release.
 
+**Current State:** Phase 71 complete — receipt TTL configurable, healthz version removed, PORT validation strict.
+
 **Target features:**
 - Configurable JWS receipt TTL via env var (currently hardcoded 1h)
 - Remove version fingerprint from /healthz unauthenticated response
@@ -198,6 +200,10 @@ Prove that data from an edge device has not been tampered with — from capture 
 - ✓ wasm-tests.yml has explicit permissions: contents: read (least-privilege CI) — v2.9 Phase 70
 - ✓ nginx.conf includes X-Content-Type-Options, X-Frame-Options, Referrer-Policy, CSP headers — v2.9 Phase 70
 - ✓ nginx-ssl.conf.template has HSTS header and HTTP-to-HTTPS 301 redirect with /healthz passthrough — v2.9 Phase 70
+
+- ✓ JWS receipt TTL configurable via RECEIPT_TTL_SECS env var (default 3600s) — v3.0 Phase 71
+- ✓ /healthz response omits exact crate version (no version fingerprinting) — v3.0 Phase 71
+- ✓ Invalid PORT env var causes startup failure with clear error message — v3.0 Phase 71
 
 ### Active
 
@@ -393,4 +399,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 after v3.0 milestone started*
+*Last updated: 2026-03-27 after Phase 71 complete*
