@@ -20,7 +20,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 **Goal:** Resolve remaining P2 security findings and prepare for official v3.0 signed release.
 
-**Current State:** Phase 73 complete — deployment hardening (nginx headers, CSP, Docker env_file).
+**Current State:** All 4 phases complete. Ready for v3.0 signed release.
 
 **Target features:**
 - Configurable JWS receipt TTL via env var (currently hardcoded 1h)
@@ -211,6 +211,10 @@ Prove that data from an edge device has not been tampered with — from capture 
 - ✓ nginx security headers repeated in all location blocks (nginx.conf + nginx-ssl.conf.template) — v3.0 Phase 73
 - ✓ CSP connect-src includes http://localhost:3001 for dashboard API calls — v3.0 Phase 73
 - ✓ Docker Compose credentials moved to env_file (no inline plaintext password) — v3.0 Phase 73
+
+- ✓ README updated for v3.0 (version badge, Docker quick-start with .env, security posture, test counts) — v3.0 Phase 74
+- ✓ CLAUDE.md updated (CLI binary table, feature flags, platform env vars, test counts, archive.rs) — v3.0 Phase 74
+- ✓ docs/ directory audited and updated (cli.md, architecture.md, testing.md, development.md) — v3.0 Phase 74
 
 ### Active
 
@@ -406,4 +410,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after Phase 73 complete*
+*Last updated: 2026-03-27 after v3.0 milestone complete*
