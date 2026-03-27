@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Release Polish
-status: executing
-stopped_at: Completed 74-01-PLAN.md
-last_updated: "2026-03-27T20:04:18.922Z"
+status: verifying
+stopped_at: Completed 74-02-PLAN.md
+last_updated: "2026-03-27T20:21:27.258Z"
 last_activity: 2026-03-27
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 <!--
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 Phase: 74 (release-documentation) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-03-27
 
 ## Performance Metrics
@@ -80,6 +80,7 @@ Last activity: 2026-03-27
 - [Phase 73]: HTTP redirect healthz uses minimal CSP (default-src 'self' only) since it serves no JS; connect-src not applicable
 - [Phase 73]: Docker Compose: env_file for secrets (POSTGRES_PASSWORD, DATABASE_URL); non-secret config stays inline in environment: block
 - [Phase 74]: demo.sh already accurate for v3.0; README and .env.example were the only files needing updates
+- [Phase 74]: manifest.rs does not exist in crates/core/src/; archive.rs is the correct core module; canonical manifest types live in trustedge-trst-protocols
 
 ### Pending Todos
 
@@ -91,8 +92,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T20:04:18.919Z
-Stopped at: Completed 74-01-PLAN.md
+Last session: 2026-03-27T20:21:27.256Z
+Stopped at: Completed 74-02-PLAN.md
 Resume file: None
 
 ---
