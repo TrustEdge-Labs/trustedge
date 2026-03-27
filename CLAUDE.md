@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build workspace
 cargo build --workspace --release
 
-# Test entire workspace (423+ tests)
+# Test entire workspace (406+ tests)
 cargo test --workspace
 
 # Test specific crates
@@ -27,8 +27,8 @@ cargo test -p trustedge-types                     # Shared wire types (12 tests)
 cargo test -p trustedge-core --lib                # Core cryptography (184 tests)
 cargo test -p trustedge-trst-cli --test acceptance # Archive validation (28 tests)
 cargo test -p trustedge-platform --lib            # Platform unit tests (18 tests)
-cargo test -p trustedge-platform --test verify_integration           # Verify integration (5 tests)
-cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (22 tests)
+cargo test -p trustedge-platform --test verify_integration           # Verify integration (9 tests)
+cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (27 tests)
 
 # Run a single test
 cargo test -p trustedge-core test_name -- --nocapture
@@ -90,7 +90,7 @@ TrustEdge is a Cargo workspace with 9 crates under `crates/` (plus `examples/cam
 | `envelope.rs` | **Core envelope format** - Ed25519 signed, AES-256-GCM encrypted chunks (used by receipts, attestation) |
 | `crypto.rs` | XChaCha20-Poly1305 encryption, Ed25519 signing |
 | `chain.rs` | BLAKE3-based continuity chain with genesis seed |
-| `manifest.rs` | Canonical JSON serialization for cam.video profile |
+| `archive.rs` | .trst archive read/write and validation |
 | `auth.rs` | Ed25519 mutual authentication with X25519 ECDH session key derivation |
 | `audio.rs` | Live audio capture (feature-gated) |
 | `hybrid.rs` | RSA hybrid encryption (asymmetric operations) |
@@ -217,6 +217,9 @@ cargo run -p trustedge-trst-cli -- emit-request --archive archive.trst --device-
 |---------|---------|--------------|
 | `audio` | Live microphone capture | cpal (ALSA/CoreAudio/WASAPI) |
 | `yubikey` | Hardware security keys | yubikey, x509-cert, rcgen, der, spki, signature |
+| `git-attestation` | Git repository state attestation | git2 |
+| `keyring` | OS keyring integration for key storage | keyring |
+| `insecure-tls` | Skip TLS certificate verification (development only) | (no new deps) |
 
 ### trustedge-platform
 
@@ -231,14 +234,28 @@ cargo run -p trustedge-trst-cli -- emit-request --archive archive.trst --device-
 
 Default build has no features enabled for fast CI and maximum portability.
 
+## Platform Environment Variables
+
+The `trustedge-platform-server` binary reads configuration from environment variables (or a `.env` file via `dotenvy`):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3001` | HTTP server port. Must be a valid port number (0–65535); fails fast with error if invalid. |
+| `RECEIPT_TTL_SECS` | `3600` | Verification receipt TTL in seconds (1 hour). Must be a valid integer. |
+| `JWT_AUDIENCE` | `trustedge-platform` | Expected JWT audience claim for verification tokens. |
+| `DATABASE_URL` | (required in release) | PostgreSQL connection URL. Required in release builds; defaults to localhost in debug. Requires `postgres` feature. |
+
+See `deploy/.env.example` for the full template with all variables documented.
+
 ## CLI Binaries
 
 | Binary | Source | Purpose |
 |--------|--------|---------|
 | `trustedge` | `crates/trustedge-cli/src/main.rs` | Main envelope encryption CLI |
-| `trustedge-server` | `crates/core/src/bin/trustedge-server.rs` | Network server |
+| `trustedge-server` | `crates/core/src/bin/trustedge-server.rs` | Network server (TCP/QUIC transport) |
 | `trustedge-client` | `crates/core/src/bin/trustedge-client.rs` | Network client |
-| `trst` | `crates/trst-cli/src/main.rs` | Archive keygen/wrap/verify/emit-request CLI |
+| `trustedge-platform-server` | `crates/platform-server/src/main.rs` | Platform HTTP server (verify, JWKS, health endpoints) |
+| `trst` | `crates/trst-cli/src/main.rs` | Archive keygen/wrap/verify/unwrap/emit-request CLI |
 
 ## Common Tasks
 
