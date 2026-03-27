@@ -18,6 +18,175 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.0] - 2026-03-27
+
+### Official Signed Release
+
+First official signed release. All security review findings resolved, documentation current, deployment hardened.
+
+### Changed
+- **Configurable receipt TTL**: JWS verification receipts now use `RECEIPT_TTL_SECS` env var (default 3600s) instead of hardcoded 1 hour
+- **Strict PORT validation**: Invalid `PORT` env var now causes startup failure with clear error instead of silently defaulting to 3001
+- **Envelope::hash() returns Result**: Serialization failures propagate instead of silently hashing empty input via `unwrap_or_default()`
+- **generate_aad() uses .expect()**: Documents infallibility intent instead of bare `.unwrap()`
+- **Docker Compose credentials**: Moved from inline plaintext to `env_file: deploy/.env` with `.env.example` template
+
+### Security
+- `/healthz` no longer exposes exact crate version (prevents version fingerprinting)
+- nginx security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, CSP) now present in all location blocks, not just server level
+- CSP `connect-src` includes API origin for dashboard API calls
+- `deploy/.env` gitignored to prevent credential leaks
+
+### Documentation
+- README updated for v3.0 (version badge, Docker quick-start with `.env` step, security posture)
+- CLAUDE.md updated (CLI binary table with `trustedge-platform-server`, feature flags including `git-attestation`/`keyring`/`insecure-tls`, Platform Environment Variables section, corrected test counts)
+- docs/user/cli.md: all 5 `trst` subcommands documented including `keygen`, `unwrap`, `emit-request`; encrypted key files section added
+- docs/architecture.md: corrected Key Modules table (`archive.rs` replaces nonexistent `manifest.rs`)
+- docs/developer/testing.md: corrected test counts across all crates
+
+### Added
+- `deploy/.env.example` with all platform environment variables documented (PORT, RECEIPT_TTL_SECS, CORS_ORIGINS, JWKS_KEY_PATH, DATABASE_URL, POSTGRES_PASSWORD)
+
+---
+
+## [2.9.0] - 2026-03-26
+
+### Security Review P2 Remediation
+
+- Removed `impl Default` from `CAConfig` and `SoftwareHsmConfig` (placeholder credentials eliminated from production paths)
+- Static `LazyLock<Regex>` in `validate_segment_hashes()` (zero per-request allocation)
+- `--unencrypted` flag emits stderr security warning in all `trst` subcommands
+- `wasm-tests.yml` has explicit `permissions: contents: read` (least-privilege CI)
+- nginx security headers added at server level (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
+- HSTS and HTTP-to-HTTPS redirect in `nginx-ssl.conf.template`
+
+---
+
+## [2.8.0] - 2026-03-26
+
+### High Priority Hardening
+
+- Proxy-aware per-client-IP rate limiting with `TRUSTED_PROXIES` CIDR config
+- RFC 6585 `Retry-After: 1` header on 429 responses
+- `NetworkChunk::new()` requires explicit nonce parameter (zero-nonce default eliminated)
+- `process::exit()` replaced with `CliExitError` propagation (Zeroize Drop handlers run on key material)
+- 256 MB ceiling on `--chunk-size`
+- Dashboard nginx runs as non-root (`nginx-unprivileged`)
+- CI bundle credential guard in GitHub Actions
+
+---
+
+## [2.7.0] - 2026-03-25
+
+### CI & Config Security
+
+- All GitHub Actions SHA-pinned to full commit SHAs
+- `curl | sh` wasm-pack installer replaced with `cargo-binstall`
+- `DATABASE_URL` fallback gated behind `debug_assertions`
+- PostgreSQL port removed from docker-compose host binding
+- `CAConfigBuilder::build()` rejects placeholder JWT secret outside tests
+- Crypto error responses sanitized (generic messages to clients, full detail in server-side logs)
+
+---
+
+## [2.6.0] - 2026-03-24
+
+### Security Hardening
+
+- Zeroize-on-drop for `PrivateKey`, `ClientAuthResult`, `SessionInfo`, `SymmetricKey`
+- 600k PBKDF2 minimum enforced at import boundary
+- Optional `OrgContext` in postgres verify handler (tenant-agnostic fallback)
+- CORS origins configurable via `CORS_ORIGINS` env var
+- CLI requires `--key-out` or `--show-key` for encryption (no key leak to stderr)
+- Conditional HTTPS termination in nginx via `SSL_CERT_PATH`/`SSL_KEY_PATH`
+- `VITE_API_KEY` removed from dashboard bundle; CI guard prevents re-introduction
+
+---
+
+## [2.5.0] - 2026-03-23
+
+### Critical Security Fixes
+
+- QUIC `HardwareBackedVerifier` performs real TLS signature verification; `accept_any_hardware()` gated behind `insecure-tls`
+- 2 MB `RequestBodyLimitLayer` on all platform HTTP routes
+- Per-IP rate limiting on `/v1/verify` via `governor` (configurable `RATE_LIMIT_RPS`, default 10/sec)
+- JWKS signing key path configurable via `JWKS_KEY_PATH` env var with 0600 permissions
+- Fixed trst-wasm double-decrypt bug; crypto module wired into build
+
+---
+
+## [2.4.0] - 2026-03-22
+
+### Security Review Remediation
+
+- Custom base64 replaced with standard `base64` crate (23 call sites)
+- Auth timestamp check: asymmetric (5s future / 300s past tolerance)
+- `beneficiary()`/`issuer()` return `Result` instead of panicking
+- Key files get 0600 Unix permissions on generation
+- Encrypted key format includes `"version": 1` field
+- Nonce construction guards against chunk index overflow (2^24 limit)
+- 14 new error path tests
+
+---
+
+## [2.3.0] - 2026-03-21
+
+### Security Testing
+
+- 31 security tests across 4 threat model categories
+- Archive integrity: byte mutation, chunk injection, reordering, manifest modification
+- Nonce uniqueness and HKDF key-binding verification
+- Encrypted key file protection: truncation, corruption, wrong passphrase
+- Receipt binding and replay resistance tests
+
+---
+
+## [2.2.0] - 2026-03-19
+
+### Security Remediation
+
+- RSA OAEP-SHA256 replaces PKCS#1 v1.5 (RUSTSEC-2023-0071 fully resolved)
+- v1 envelope format removed entirely
+- PBKDF2 minimum 300k iterations enforced
+- Device keys encrypted at rest: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM)
+- `--unencrypted` escape hatch for CI/automation
+
+---
+
+## [2.1.0] - 2026-03-18
+
+### Data Lifecycle & Hardware Integration
+
+- `trst unwrap`: decrypt and recover original data (HKDF key derivation, verify-before-decrypt)
+- `trst wrap --backend yubikey`: ECDSA P-256 hardware signing via PIV slot 9c
+- Named archive profiles: sensor (with geo fields), audio, log
+- Multi-algorithm verify dispatch: Ed25519 + ECDSA P-256 prefix-based
+
+---
+
+## [2.0.0] - 2026-03-16
+
+### End-to-End Demo
+
+- Data-agnostic archive profiles (generic default, cam.video preserved)
+- Three-service Docker Compose stack (platform + postgres + dashboard) with auto-migration
+- `trst keygen` subcommand for Ed25519 device key pair generation
+- `scripts/demo.sh` showing full lifecycle (keygen, wrap, verify, receipt)
+- README rewritten: problem statement, 3-command quick start, 4 use cases
+
+### v1.1 through v1.8 (2026-02-11 to 2026-02-24)
+
+- **v1.1**: YubiKey backend rewritten from scratch (fail-closed, 487 lines)
+- **v1.2**: 2-tier crate classification, dependency audit, tiered CI
+- **v1.3**: Feature-gated heavy deps (git2, keyring), cargo-audit CI
+- **v1.4**: Secure-by-default QUIC TLS, dead code removal, TODO hygiene
+- **v1.5**: Platform consolidation (types crate, platform merge, 5 repos archived)
+- **v1.6**: Platform server binary, dashboard in monorepo, 11 repos deleted (3-repo org)
+- **v1.7**: Secret\<T\> zeroize wrapper, CORS hardening, 16 integration tests
+- **v1.8**: HKDF-SHA256 replaces PBKDF2 for envelope key derivation, versioned format
+
+---
+
 ## [1.0.0] - 2026-02-11
 
 ### 🎉 v1.0 Consolidation Milestone
@@ -208,7 +377,18 @@ All functionality remains available through `trustedge-core` with identical APIs
 
 ---
 
-[Unreleased]: https://github.com/TrustEdge-Labs/trustedge/compare/v1.0...HEAD
+[Unreleased]: https://github.com/TrustEdge-Labs/trustedge/compare/v3.0...HEAD
+[3.0.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.9...v3.0
+[2.9.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.8...v2.9
+[2.8.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.7...v2.8
+[2.7.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.6...v2.7
+[2.6.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.5...v2.6
+[2.5.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.4...v2.5
+[2.4.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.3...v2.4
+[2.3.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.2...v2.3
+[2.2.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.1...v2.2
+[2.1.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v2.0...v2.1
+[2.0.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v1.0...v2.0
 [1.0.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v0.3.0...v1.0
 [0.3.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/TrustEdge-Labs/trustedge/compare/v0.1.7...v0.2.0
