@@ -303,7 +303,7 @@ The test suite validates:
 - PostgreSQL backend (optional, requires postgres feature)
 
 **4. Archive Tests (trustedge-trst-cli)**
-- Acceptance tests: keygen, wrap, verify, unwrap operations (7 tests)
+- Acceptance tests: keygen, wrap, verify, unwrap operations (28 tests)
 - cam.video, sensor, and other profile validation
 
 **5. Type Tests (trustedge-types)**
@@ -321,10 +321,10 @@ cargo test --workspace -- --nocapture
 # Run specific crates
 cargo test -p trustedge-core --lib                # Core unit tests
 cargo test -p trustedge-types                     # Type tests (18)
-cargo test -p trustedge-trst-cli --test acceptance # Archive tests (7)
-cargo test -p trustedge-platform --lib            # Platform unit tests
-cargo test -p trustedge-platform --test verify_integration           # Verify integration (5)
-cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (7)
+cargo test -p trustedge-trst-cli --test acceptance # Archive tests (28)
+cargo test -p trustedge-platform --lib            # Platform unit tests (18)
+cargo test -p trustedge-platform --test verify_integration           # Verify integration (9)
+cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (27)
 
 # Run specific test modules within core
 cargo test -p trustedge-core --test roundtrip_integration
