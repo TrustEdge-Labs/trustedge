@@ -87,7 +87,10 @@ Plans:
   1. README quick-start commands run successfully against the current codebase without modification
   2. CLI command tables in CLAUDE.md match the actual binary flags and subcommands that exist in the codebase
   3. Demo script instructions produce the expected output when followed from a clean checkout
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 74-01-PLAN.md — Update README.md, demo script, and deploy env template for v3.0
+- [ ] 74-02-PLAN.md — Audit and update CLAUDE.md and docs/ directory for v3.0 accuracy
 
 ## Progress
 
@@ -96,4 +99,4 @@ Plans:
 | 71. Platform Code Quality | 1/1 | Complete    | 2026-03-27 |
 | 72. Core Crypto Hygiene | 0/1 | Complete    | 2026-03-27 |
 | 73. Deployment Hardening | 1/1 | Complete    | 2026-03-27 |
-| 74. Release Documentation | 0/TBD | Not started | - |
+| 74. Release Documentation | 0/2 | Not started | - |
