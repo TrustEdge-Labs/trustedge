@@ -27,9 +27,9 @@ Requirements for the final polish before official v3.0 signed release. Each maps
 
 ### Deployment Hardening
 
-- [ ] **DEPL-01**: nginx security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, CSP) are present in all location blocks in both `nginx.conf` and `nginx-ssl.conf.template`
-- [ ] **DEPL-02**: CSP `connect-src` directive includes the configured API origin (from `VITE_API_BASE`) so dashboard API calls are not blocked when re-enabled
-- [ ] **DEPL-03**: Docker Compose database credentials use `env_file` or Docker secrets instead of inline plaintext password
+- [x] **DEPL-01**: nginx security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, CSP) are present in all location blocks in both `nginx.conf` and `nginx-ssl.conf.template`
+- [x] **DEPL-02**: CSP `connect-src` directive includes the configured API origin (from `VITE_API_BASE`) so dashboard API calls are not blocked when re-enabled
+- [x] **DEPL-03**: Docker Compose database credentials use `env_file` or Docker secrets instead of inline plaintext password
 
 ### Release Documentation
 
@@ -58,9 +58,9 @@ None — v3.0 is the release milestone.
 | PLAT-03 | Phase 71 | Complete |
 | CORE-01 | Phase 72 | Pending |
 | CORE-02 | Phase 72 | Pending |
-| DEPL-01 | Phase 73 | Pending |
-| DEPL-02 | Phase 73 | Pending |
-| DEPL-03 | Phase 73 | Pending |
+| DEPL-01 | Phase 73 | Complete |
+| DEPL-02 | Phase 73 | Complete |
+| DEPL-03 | Phase 73 | Complete |
 | DOCS-01 | Phase 74 | Pending |
 | DOCS-02 | Phase 74 | Pending |
 

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Release Polish
-status: executing
-stopped_at: Phase 73 context gathered
-last_updated: "2026-03-27T18:48:32.714Z"
+status: verifying
+stopped_at: Completed 73-01-PLAN.md
+last_updated: "2026-03-27T19:19:37.154Z"
 last_activity: 2026-03-27
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
 ---
 
 <!--
@@ -27,13 +27,13 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 72 — core-crypto-hygiene
+**Current focus:** Phase 73 — deployment-hardening
 
 ## Current Position
 
-Phase: 73
-Plan: Not started
-Status: Executing Phase 72
+Phase: 73 (deployment-hardening) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
 Last activity: 2026-03-27
 
 ## Performance Metrics
@@ -77,6 +77,8 @@ Last activity: 2026-03-27
 - [Phase 71]: receipt_ttl_secs defaults to 3600, threaded Config -> AppState -> sign_receipt_jws
 - [Phase 71]: healthz returns only status and timestamp; no version fingerprinting
 - [Phase 71]: PORT parsing fails fast with clear error message when set to invalid value
+- [Phase 73]: HTTP redirect healthz uses minimal CSP (default-src 'self' only) since it serves no JS; connect-src not applicable
+- [Phase 73]: Docker Compose: env_file for secrets (POSTGRES_PASSWORD, DATABASE_URL); non-secret config stays inline in environment: block
 
 ### Pending Todos
 
@@ -88,9 +90,9 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T18:48:32.710Z
-Stopped at: Phase 73 context gathered
-Resume file: .planning/phases/73-deployment-hardening/73-CONTEXT.md
+Last session: 2026-03-27T19:19:37.151Z
+Stopped at: Completed 73-01-PLAN.md
+Resume file: None
 
 ---
 *Last updated: 2026-03-26 after v3.0 roadmap created*
