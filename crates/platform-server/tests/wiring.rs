@@ -78,26 +78,29 @@ async fn test_config_from_env_custom_port() {
     );
 }
 
-/// Config::from_env() falls back to port 3001 when PORT is not a valid number.
+/// Config::from_env() fails with a clear error when PORT is set but not a valid number.
 ///
-/// The implementation uses `.parse().unwrap_or(3001)`, so an invalid value
-/// (e.g. "not_a_number") silently falls back to the default port rather than
-/// returning an error. This is the most likely misconfiguration path in
-/// verify-only mode since there are no required env vars.
+/// If the user explicitly sets PORT, they intend a specific port. An invalid
+/// value (e.g. "not_a_number") should produce a clear error rather than
+/// silently falling back to 3001.
 #[tokio::test]
-async fn test_config_from_env_invalid_port_uses_default() {
+async fn test_config_from_env_invalid_port_fails() {
     let _guard = env_lock().lock().unwrap_or_else(|p| p.into_inner());
 
     std::env::set_var("PORT", "not_a_number");
 
-    let config = Config::from_env()
-        .expect("Config::from_env() should succeed even with an unparseable PORT value");
+    let result = Config::from_env();
 
     std::env::remove_var("PORT");
 
-    assert_eq!(
-        config.port, 3001,
-        "invalid PORT value should fall back to default port 3001"
+    assert!(
+        result.is_err(),
+        "Config::from_env() should fail when PORT is set to an invalid value"
+    );
+    let err_msg = result.unwrap_err().to_string();
+    assert!(
+        err_msg.contains("not_a_number"),
+        "error message should include the invalid PORT value, got: {err_msg}"
     );
 }
 
@@ -108,12 +111,13 @@ async fn test_config_from_env_invalid_port_uses_default() {
 /// AppState constructs successfully and the router responds to GET /healthz.
 ///
 /// Verifies the full wiring path: KeyManager::new() → AppState → create_router()
-/// → oneshot request → HTTP 200 with `{"status":"OK","version":...,"timestamp":...}`.
+/// → oneshot request → HTTP 200 with `{"status":"OK","timestamp":...}`.
 #[tokio::test]
 async fn test_appstate_construction_and_router_health() {
     let key_manager = KeyManager::new().expect("KeyManager::new() should succeed");
     let state = AppState {
         keys: Arc::new(RwLock::new(key_manager)),
+        receipt_ttl_secs: 3600,
     };
 
     let app = create_router(state);
@@ -145,8 +149,8 @@ async fn test_appstate_construction_and_router_health() {
         "health response body should contain status:OK"
     );
     assert!(
-        body_json.get("version").is_some(),
-        "health response should include a version field"
+        body_json.get("version").is_none(),
+        "health response should NOT include a version field"
     );
     assert!(
         body_json.get("timestamp").is_some(),
@@ -165,6 +169,7 @@ async fn test_router_verify_rejects_empty_body() {
     let key_manager = KeyManager::new().expect("KeyManager::new() should succeed");
     let state = AppState {
         keys: Arc::new(RwLock::new(key_manager)),
+        receipt_ttl_secs: 3600,
     };
 
     let app = create_router(state);
