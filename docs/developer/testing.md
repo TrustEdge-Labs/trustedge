@@ -31,7 +31,7 @@ TrustEdge employs a comprehensive 3-tier testing strategy:
 - **160+ Core Tests** (trustedge-core: envelope encryption, backends, transport, receipts, auth, attestation)
 - **19+ Platform Tests** (trustedge-platform: verification engine, HTTP, CORS, router parity)
 - **18 Type Tests** (trustedge-types: shared wire type validation)
-- **7 Archive Tests** (trustedge-trst-cli: acceptance tests for wrap/verify/keygen)
+- **28 Archive Tests** (trustedge-trst-cli: acceptance tests for wrap/verify/keygen/unwrap/emit-request)
 - **45+ Security Tests** (dedicated security coverage across v2.3–v2.4)
 - **100% Feature Coverage** (all major components tested)
 
@@ -44,7 +44,7 @@ TrustEdge employs a comprehensive 3-tier testing strategy:
 cargo test -p trustedge-types                     # Types (18 tests)
 cargo test -p trustedge-core --lib                # Core cryptography (160+ tests)
 cargo test -p trustedge-platform --lib            # Platform unit tests
-cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7 tests)
+cargo test -p trustedge-trst-cli --test acceptance # Archive validation (28 tests)
 
 # Full workspace
 cargo test --workspace

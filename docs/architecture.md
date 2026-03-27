@@ -80,7 +80,7 @@ trustedge/
 | `envelope.rs` | **Core envelope format** - Ed25519 signed, AES-256-GCM encrypted chunks (used by receipts, attestation) |
 | `crypto.rs` | XChaCha20-Poly1305 encryption, Ed25519 signing |
 | `chain.rs` | BLAKE3-based continuity chain with genesis seed |
-| `manifest.rs` | Canonical JSON serialization for cam.video profile |
+| `archive.rs` | .trst archive read/write and validation |
 | `auth.rs` | Ed25519 mutual authentication with X25519 ECDH session key derivation |
 | `audio.rs` | Live audio capture (feature-gated) |
 | `hybrid.rs` | RSA hybrid encryption (asymmetric operations) |

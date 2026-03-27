@@ -12,10 +12,14 @@ Complete command-line interface documentation for TrustEdge, covering both the c
 ## Table of Contents
 - [Overview](#overview)
 - [Archive System (.trst)](#archive-system-trst)
+  - [trst keygen - Generate Key Pair](#trst-keygen---generate-key-pair)
   - [trst wrap - Create Archives](#trst-wrap---create-archives)
   - [trst verify - Verify Archives](#trst-verify---verify-archives)
+  - [trst unwrap - Decrypt Archives](#trst-unwrap---decrypt-archives)
+  - [trst emit-request - Submit for Verification](#trst-emit-request---submit-for-verification)
+- [Encrypted Key Files](#encrypted-key-files)
 - [Core Encryption System](#core-encryption-system)
-  - [trustedge-core - Envelope Encryption](#trustedge-core---envelope-encryption)
+  - [trustedge - Envelope Encryption](#trustedge---envelope-encryption)
   - [Network Operations](#network-operations)
 - [Complete Workflows](#complete-workflows)
 - [Error Handling](#error-handling)
@@ -26,8 +30,8 @@ Complete command-line interface documentation for TrustEdge, covering both the c
 
 TrustEdge provides two complementary CLI tools:
 
-1. **`trst`** - .trst archive creation and verification system
-2. **`trustedge-core`** - Core envelope encryption and network operations
+1. **`trst`** - .trst archive creation, verification, and recovery system (keygen, wrap, verify, unwrap, emit-request)
+2. **`trustedge`** - Core envelope encryption and network operations
 
 Both tools are built after running `cargo build --workspace --release`.
 
@@ -36,6 +40,28 @@ Both tools are built after running `cargo build --workspace --release`.
 ## Archive System (.trst)
 
 The `trst` command provides secure archival capabilities with Ed25519 digital signatures and cryptographic chunk verification.
+
+### trst keygen - Generate Key Pair
+
+Generate a device Ed25519 signing key pair for archive signing.
+
+```bash
+trst keygen --out-key <KEY_PATH> --out-pub <PUB_PATH> [--unencrypted]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--out-key <PATH>` | Output path for the private key file |
+| `--out-pub <PATH>` | Output path for the public key file |
+| `--unencrypted` | Generate plaintext key (no passphrase). CI/automation only — see [Encrypted Key Files](#encrypted-key-files) |
+
+```bash
+# Generate encrypted key (passphrase prompted)
+trst keygen --out-key device.key --out-pub device.pub
+
+# Generate unencrypted key for CI/automation
+trst keygen --out-key device.key --out-pub device.pub --unencrypted
+```
 
 ### trst wrap - Create Archives
 
@@ -56,7 +82,7 @@ trst wrap --in <INPUT> --out <OUTPUT> [OPTIONS]
 
 | Option | Default | Description | Example |
 |--------|---------|-------------|---------|
-| `--profile <PROFILE>` | `cam.video` | Archive profile type | `--profile cam.video` |
+| `--profile <PROFILE>` | `generic` | Archive profile type: `generic`, `cam.video`, `sensor`, `audio`, `log` | `--profile cam.video` |
 | `--chunk-size <SIZE>` | `1048576` | Chunk size in bytes (1MB) | `--chunk-size 4096` |
 | `--chunk-seconds <SECONDS>` | `2` | Time duration per chunk | `--chunk-seconds 1.5` |
 
@@ -150,18 +176,77 @@ Continuity: PASS
 Segments: 16  Duration(s): 32.0  Chunk(s): 2.0
 ```
 
+### trst unwrap - Decrypt Archives
+
+Decrypt a .trst archive and recover the original data.
+
+```bash
+trst unwrap <ARCHIVE> --device-key <KEY_PATH> --out <OUTPUT> [--unencrypted]
+```
+
+| Argument | Description |
+|----------|-------------|
+| `<ARCHIVE>` | Path to .trst archive directory |
+| `--device-key <PATH>` | Path to device private key file |
+| `--out <PATH>` | Output path for recovered data |
+| `--unencrypted` | Read key without passphrase prompt (CI/automation only) |
+
+```bash
+# Recover data from an archive (passphrase prompted if key is encrypted)
+trst unwrap recording.trst --device-key device.key --out recovered.bin
+
+# Recover without passphrase (unencrypted key)
+trst unwrap recording.trst --device-key device.key --out recovered.bin --unencrypted
+```
+
+### trst emit-request - Submit for Verification
+
+Submit an archive to a TrustEdge platform server for remote verification.
+
+```bash
+trst emit-request --archive <PATH> --device-pub <KEY> --out <PATH> [--post <URL>]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--archive <PATH>` | Path to .trst archive directory |
+| `--device-pub <KEY>` | Device public key (ed25519: prefixed string) |
+| `--out <PATH>` | Output path for the JSON verification request |
+| `--post <URL>` | POST the request to this platform endpoint |
+
+```bash
+# Write request to file
+trst emit-request --archive archive.trst --device-pub device.pub --out request.json
+
+# Submit directly to platform server
+trst emit-request --archive archive.trst --device-pub device.pub --out request.json --post http://localhost:3001/v1/verify
+```
+
+---
+
+## Encrypted Key Files
+
+Device private keys are encrypted at rest using PBKDF2-HMAC-SHA256 (600k iterations) + AES-256-GCM (format: `TRUSTEDGE-KEY-V1`). A passphrase is prompted at runtime.
+
+For CI/automation where interactive prompts are not possible, use `--unencrypted`:
+- `trst keygen --unencrypted` — generates plaintext key file
+- `trst wrap --unencrypted` — reads key without passphrase prompt
+- `trst unwrap --unencrypted` — reads key without passphrase prompt
+
+**Production devices should always use encrypted key files.** The `--unencrypted` flag is an explicit escape hatch.
+
 ---
 
 ## Core Encryption System
 
-The `trustedge-core` command provides envelope encryption, key management, and network operations.
+The `trustedge` command provides envelope encryption, key management, and network operations.
 
-### trustedge-core - Envelope Encryption
+### trustedge - Envelope Encryption
 
 Encrypt and decrypt files using AES-256-GCM with metadata preservation.
 
 ```bash
-trustedge-core [OPTIONS]
+trustedge [OPTIONS]
 ```
 
 #### Core Operations
@@ -202,17 +287,17 @@ trustedge-core [OPTIONS]
 
 ```bash
 # Basic file encryption
-trustedge-core --input document.pdf --envelope encrypted.trst --key-out mykey.hex
+trustedge --input document.pdf --envelope encrypted.trst --key-out mykey.hex
 
 # Decrypt file
-trustedge-core --decrypt --input encrypted.trst --out recovered.pdf --key-hex $(cat mykey.hex)
+trustedge --decrypt --input encrypted.trst --out recovered.pdf --key-hex $(cat mykey.hex)
 
 # Encrypt with keyring
-trustedge-core --set-passphrase "my_secure_passphrase"
-trustedge-core --input file.txt --envelope file.trst --use-keyring --salt-hex "abcdef1234567890abcdef1234567890"
+trustedge --set-passphrase "my_secure_passphrase"
+trustedge --input file.txt --envelope file.trst --use-keyring --salt-hex "abcdef1234567890abcdef1234567890"
 
 # Inspect without decryption
-trustedge-core --input encrypted.trst --inspect
+trustedge --input encrypted.trst --inspect
 ```
 
 ### Network Operations
@@ -282,7 +367,7 @@ Combine envelope encryption with archive format:
 
 ```bash
 # Encrypt sensitive data
-trustedge-core --input sensitive.pdf --envelope encrypted.trst --key-out secret.key
+trustedge --input sensitive.pdf --envelope encrypted.trst --key-out secret.key
 
 # Archive the encrypted envelope
 trst wrap --in encrypted.trst --out archived.trst --profile data.secure
@@ -291,7 +376,7 @@ trst wrap --in encrypted.trst --out archived.trst --profile data.secure
 trst verify archived.trst --device-pub "$(cat device.pub)"
 
 # Recover data
-trustedge-core --decrypt --input encrypted.trst --out recovered.pdf --key-hex $(cat secret.key)
+trustedge --decrypt --input encrypted.trst --out recovered.pdf --key-hex $(cat secret.key)
 ```
 
 ### Network + Archive Pipeline
@@ -346,7 +431,7 @@ kill $SERVER_PID
 
 ```bash
 # Run with debug logging
-RUST_LOG=debug trustedge-core --input file.txt --envelope test.trst --key-out test.key 2>&1 | head -20
+RUST_LOG=debug trustedge --input file.txt --envelope test.trst --key-out test.key 2>&1 | head -20
 
 # Test archive validation
 cargo test -p trustedge-trst-cli --test acceptance -- --nocapture

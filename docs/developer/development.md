@@ -35,7 +35,7 @@ Development information, roadmap, and contribution guidelines for TrustEdge.
 - Milestone-based development tracking
 - All repository issues are listed here (whether on project board or not)
 
-**Development History**: TrustEdge has shipped through v2.4 with 53 phases across 14 milestones (v1.0–v2.4). See [CLAUDE.md](../../CLAUDE.md) for current build and test commands.
+**Development History**: TrustEdge has shipped through v3.0 with 70+ phases across 20 milestones (v1.0–v3.0). See [CLAUDE.md](../../CLAUDE.md) for current build and test commands.
 
 ### 🛠️ Project Management Tools
 
@@ -114,8 +114,8 @@ trustedge-core/
 **Platform Tests (19+):**
 - trustedge-platform: verification engine, HTTP round-trip, CORS, router parity
 
-**Archive Tests (7):**
-- trustedge-trst-cli: acceptance tests for wrap/verify/keygen operations
+**Archive Tests (28):**
+- trustedge-trst-cli: acceptance tests for wrap/verify/keygen/unwrap/emit-request operations
 
 **Type Tests (18):**
 - trustedge-types: shared wire type validation
@@ -131,7 +131,7 @@ trustedge-core/
 # Test by crate
 cargo test -p trustedge-core --lib                # Core (160+ tests)
 cargo test -p trustedge-platform --lib            # Platform unit tests
-cargo test -p trustedge-trst-cli --test acceptance # Archive validation (7)
+cargo test -p trustedge-trst-cli --test acceptance # Archive validation (28)
 cargo test -p trustedge-types                     # Types (18)
 
 # Hardware feature testing
