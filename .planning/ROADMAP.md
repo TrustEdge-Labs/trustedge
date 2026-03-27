@@ -75,8 +75,9 @@ Plans:
   1. A response from any nginx-proxied location block includes X-Content-Type-Options, X-Frame-Options, Referrer-Policy, and Content-Security-Policy headers in both `nginx.conf` and `nginx-ssl.conf.template`
   2. The CSP `connect-src` directive in the dashboard nginx config includes the configured API origin so dashboard API calls are not browser-blocked
   3. The Docker Compose file contains no inline plaintext database password — credentials are sourced from `env_file` or Docker secrets
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 1 plan
+Plans:
+- [ ] 73-01-PLAN.md — Fix nginx header inheritance in sub-locations and move Docker Compose credentials to env_file
 
 ### Phase 74: Release Documentation
 **Goal**: Documentation accurately reflects the v3.0 codebase so users and contributors have a reliable reference
@@ -94,5 +95,5 @@ Plans:
 |-------|----------------|--------|-----------|
 | 71. Platform Code Quality | 1/1 | Complete    | 2026-03-27 |
 | 72. Core Crypto Hygiene | 0/1 | Complete    | 2026-03-27 |
-| 73. Deployment Hardening | 0/TBD | Not started | - |
+| 73. Deployment Hardening | 0/1 | Not started | - |
 | 74. Release Documentation | 0/TBD | Not started | - |
