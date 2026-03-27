@@ -388,7 +388,9 @@ pub fn generate_aad(
     });
 
     // Use compact JSON representation for AAD
-    serde_json::to_string(&aad_json).unwrap().into_bytes()
+    serde_json::to_string(&aad_json)
+        .expect("AAD serialization is infallible")
+        .into_bytes()
 }
 
 /// Detect whether raw bytes represent an encrypted TrustEdge key file.
