@@ -63,7 +63,9 @@ Plans:
   1. `generate_aad()` uses `.expect("AAD serialization is infallible")` — the intent is documented, not hidden by a bare `.unwrap()`
   2. `Envelope::hash()` returns `Result` so callers receive an error instead of an empty-input hash when serialization fails
   3. `cargo clippy -- -D warnings` passes with no new suppressions added
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 72-01-PLAN.md — Replace unwrap/unwrap_or_default with expect and Result in crypto paths
 
 ### Phase 73: Deployment Hardening
 **Goal**: nginx configs apply security headers consistently and Docker Compose does not store database credentials in plaintext
@@ -91,6 +93,6 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 71. Platform Code Quality | 1/1 | Complete    | 2026-03-27 |
-| 72. Core Crypto Hygiene | 0/TBD | Not started | - |
+| 72. Core Crypto Hygiene | 0/1 | Not started | - |
 | 73. Deployment Hardening | 0/TBD | Not started | - |
 | 74. Release Documentation | 0/TBD | Not started | - |
