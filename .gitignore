@@ -44,3 +44,6 @@ verify_body.json
 
 # Demo script output
 demo-output/
+
+# Deploy credentials (never commit real .env)
+deploy/.env

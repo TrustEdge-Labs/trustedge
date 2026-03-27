@@ -5,17 +5,19 @@
 # TrustEdge Platform — Full Stack
 #
 # Starts postgres, platform-server, and dashboard with a single command.
-# No .env file needed — all defaults are inline for demo use.
+# Copy deploy/.env.example to deploy/.env before first run.
+# See deploy/.env.example for all available settings.
 #
 # Usage:
+#   cp deploy/.env.example deploy/.env
 #   docker compose -f deploy/docker-compose.yml up --build
 
 services:
   postgres:
     image: postgres:16-alpine
+    env_file: deploy/.env
     environment:
       POSTGRES_USER: trustedge
-      POSTGRES_PASSWORD: trustedge_dev
       POSTGRES_DB: trustedge
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -31,8 +33,8 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
+    env_file: deploy/.env
     environment:
-      DATABASE_URL: postgres://trustedge:trustedge_dev@postgres:5432/trustedge
       PORT: "3001"
     ports:
       - "3001:3001"
