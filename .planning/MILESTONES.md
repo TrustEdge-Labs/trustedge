@@ -1,5 +1,33 @@
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 
+## v3.0 Release Polish (Shipped: 2026-03-27)
+
+**Phases completed:** 4 phases (71-74), 5 plans, 8 tasks
+**Timeline:** 2 days (2026-03-26 → 2026-03-27)
+**Stats:** 51 files changed, 3,229 insertions, 132 deletions, 42 commits
+
+**Delivered:** Official signed release. Resolved all remaining P2 security findings, hardened deployment configs, and swept all documentation for v3.0 accuracy.
+
+**Key accomplishments:**
+
+- Configurable JWS receipt TTL via `RECEIPT_TTL_SECS` env var (default 3600s); `/healthz` no longer exposes crate version; invalid PORT fails fast with clear error
+- `generate_aad()` uses `.expect()` (documents infallible intent); `Envelope::hash()` returns `Result<[u8; 32]>` (eliminates silent empty-input hash)
+- nginx security headers repeated in all location blocks (both configs); CSP `connect-src` includes API origin; Docker Compose credentials moved to `env_file`
+- Full docs sweep: README v3.0 badge + Docker .env step, CLAUDE.md CLI tables + platform env vars, docs/user/cli.md with all 5 trst subcommands, architecture.md corrected
+
+**Tech debt carried forward:**
+
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+
+**Git range:** v2.9..v3.0
+
+**Archives:**
+
+- `.planning/milestones/v3.0-ROADMAP.md`
+- `.planning/milestones/v3.0-REQUIREMENTS.md`
+
+---
+
 ## v2.9 Security Review P2 Remediation (Shipped: 2026-03-26)
 
 **Phases completed:** 3 phases (68-70), 3 plans, 6 tasks

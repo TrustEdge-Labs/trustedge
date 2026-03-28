@@ -16,20 +16,9 @@ TrustEdge provides encryption, attestation, verification, and provenance for dat
 
 Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
 
-## Current Milestone: v3.0 Release Polish
+## Current State
 
-**Goal:** Resolve remaining P2 security findings and prepare for official v3.0 signed release.
-
-**Current State:** All 4 phases complete. Ready for v3.0 signed release.
-
-**Target features:**
-- Configurable JWS receipt TTL via env var (currently hardcoded 1h)
-- Remove version fingerprint from /healthz unauthenticated response
-- Eliminate unwrap()/unwrap_or_default() in production crypto paths
-- Fail or warn on invalid PORT env var instead of silent default
-- nginx security headers inherited in all location blocks (both configs)
-- CSP connect-src updated for dashboard API restoration
-- Docker Compose secrets instead of inline plaintext password
+Shipped v3.0 Release Polish — official signed release. All security review findings resolved (P0, P1, P2 — 15 findings across v2.4-v3.0). 406+ tests, zero clippy warnings, documentation current.
 
 ## Requirements
 
@@ -218,14 +207,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ### Active
 
-- [ ] Configurable JWS receipt TTL via RECEIPT_TTL_SECS env var
-- [ ] /healthz version fingerprint removed from unauthenticated response
-- [ ] generate_aad() unwrap() replaced with .expect()
-- [ ] Envelope::hash() unwrap_or_default() replaced with proper error handling
-- [ ] Invalid PORT env var logs warning or fails instead of silent default
-- [ ] nginx security headers repeated in all location blocks (nginx.conf + nginx-ssl.conf.template)
-- [ ] CSP connect-src updated to allow configured API origin
-- [ ] Docker Compose uses secrets/env_file instead of inline plaintext password
+(No active requirements — v3.0 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
 
 ### Deferred
 
@@ -261,6 +243,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 - **v2.7 CI & Config Security** — SHA-pinned all GitHub Actions, curl|sh removed, actions-rs replaced, DATABASE_URL required in release, postgres internal-only, placeholder JWT rejected, crypto errors sanitized
 - **v2.8 High Priority Hardening** — Proxy-aware rate limiting + Retry-After, key file 0600 on wrap, PrivateKey serde removed, zero-nonce eliminated, RAII-safe CLI exits, chunk-size ceiling, nginx non-root, CI credential guard
 - **v2.9 Security Review P2 Remediation** — Insecure Default impls removed (CAConfig, SoftwareHsmConfig), LazyLock regex, --unencrypted warning, least-privilege CI, nginx security headers (CSP, HSTS, X-Frame, Referrer-Policy), HTTP-to-HTTPS redirect
+- **v3.0 Release Polish** — Official signed release. Configurable receipt TTL, healthz version removed, strict PORT, crypto hygiene (expect + Result), nginx headers in all locations, Docker env_file, full docs sweep
 
 ## Context
 
@@ -410,4 +393,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after v3.0 milestone complete*
+*Last updated: 2026-03-27 after v3.0 milestone*
