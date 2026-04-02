@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: SBOM Attestation Wedge
 status: verifying
-stopped_at: Completed 75-01-PLAN.md
-last_updated: "2026-04-02T23:29:26.599Z"
-last_activity: 2026-04-02 -- Phase 76 execution started
+stopped_at: Completed 76-02-PLAN.md
+last_updated: "2026-04-02T23:34:45.256Z"
+last_activity: 2026-04-02
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 3
 ---
 
 <!--
@@ -55,9 +55,9 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 76 (cli-platform-endpoint) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 76
-Last activity: 2026-04-02 -- Phase 76 execution started
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-02
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -82,6 +82,8 @@ Progress: [░░░░░░░░░░] 0%
 - Phase 78 (landing page) touches trustedgelabs-website repo — separate from main monorepo
 - [Phase 75]: FORMAT_V1 = te-point-attestation-v1 as format discriminant for PointAttestation documents
 - [Phase 75]: Canonical bytes = clone struct, set signature=None, serde_json::to_string (stable struct field order)
+- [Phase 76-02]: POST /v1/verify-attestation uses String extractor (not Json<>) — attestation JSON has no Content-Type enforcement requirement
+- [Phase 76-02]: verify_attestation_handler has no feature gate — stateless, works identically with or without postgres
 
 ### Pending Todos
 
@@ -95,8 +97,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T02:55:40.499Z
-Stopped at: Completed 75-01-PLAN.md
+Last session: 2026-04-02T23:34:45.254Z
+Stopped at: Completed 76-02-PLAN.md
 Resume file: None
 
 ---

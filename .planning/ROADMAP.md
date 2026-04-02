@@ -47,7 +47,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 **Milestone Goal:** Deliver a lightweight, infrastructure-independent SBOM attestation capability — from core crypto format through CLI, platform endpoint, public verifier, and GitHub Action — so teams can prove software bill of materials integrity independent of their CI provider.
 
 - [x] **Phase 75: Core Attestation Library** - PointAttestation struct, signing, verification, and canonical serialization (completed 2026-04-02)
-- [ ] **Phase 76: CLI + Platform Endpoint** - `trst attest-sbom`, `trst verify-attestation`, and `POST /v1/verify-attestation`
+- [x] **Phase 76: CLI + Platform Endpoint** - `trst attest-sbom`, `trst verify-attestation`, and `POST /v1/verify-attestation` (completed 2026-04-02)
 - [ ] **Phase 77: Verify Page + Deployment + Demo** - Static HTML verifier, public deployment, and demo script
 - [ ] **Phase 78: Distribution** - Landing page, self-attestation in CI, third-party demo, GitHub Action
 
@@ -75,10 +75,10 @@ Plans:
   2. User can run `trst verify-attestation <attestation> --device-pub <pub>` and see a clear verified/failed result with relevant details (key, timestamp, hashes)
   3. Running `trst attest-sbom` against a 0-byte binary, a non-JSON SBOM, or a binary over 256 MB exits with a clear error message and non-zero exit code
   4. `POST /v1/verify-attestation` accepts an attestation document and returns a signed JWS receipt on success, or a structured error on failure
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 76-01-PLAN.md — CLI attest-sbom and verify-attestation subcommands with acceptance tests
-- [ ] 76-02-PLAN.md — Platform POST /v1/verify-attestation endpoint with integration tests
+- [x] 76-01-PLAN.md — CLI attest-sbom and verify-attestation subcommands with acceptance tests
+- [x] 76-02-PLAN.md — Platform POST /v1/verify-attestation endpoint with integration tests
 
 ### Phase 77: Verify Page + Deployment + Demo
 **Goal**: Anyone with a `.te-attestation.json` file can verify it in a browser via a public URL, and the full flow from keygen to verified receipt runs in under 60 seconds via a demo script.
@@ -108,6 +108,6 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 75. Core Attestation Library | v4.0 | 1/1 | Complete   | 2026-04-02 |
-| 76. CLI + Platform Endpoint | v4.0 | 0/2 | Planning complete | - |
+| 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete   | 2026-04-02 |
 | 77. Verify Page + Deployment + Demo | v4.0 | 0/? | Not started | - |
 | 78. Distribution | v4.0 | 0/? | Not started | - |

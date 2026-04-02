@@ -16,9 +16,9 @@ Requirements for SBOM Attestation Wedge milestone. Each maps to roadmap phases.
 
 ### Attestation Format
 
-- [ ] **ATTEST-01**: AttestationDocument struct with Ed25519 signing, BLAKE3 hashing, random nonce, and timestamp
-- [ ] **ATTEST-02**: Signature verification of attestation documents (validates signature, optionally checks hashes against provided files)
-- [ ] **ATTEST-03**: Canonical JSON serialization for deterministic signing (signature excluded from canonicalized payload)
+- [x] **ATTEST-01**: AttestationDocument struct with Ed25519 signing, BLAKE3 hashing, random nonce, and timestamp
+- [x] **ATTEST-02**: Signature verification of attestation documents (validates signature, optionally checks hashes against provided files)
+- [x] **ATTEST-03**: Canonical JSON serialization for deterministic signing (signature excluded from canonicalized payload)
 
 ### CLI
 
@@ -28,7 +28,7 @@ Requirements for SBOM Attestation Wedge milestone. Each maps to roadmap phases.
 
 ### Platform
 
-- [ ] **PLAT-01**: Platform exposes `POST /v1/verify-attestation` endpoint that verifies point attestations and returns a JWS receipt
+- [x] **PLAT-01**: Platform exposes `POST /v1/verify-attestation` endpoint that verifies point attestations and returns a JWS receipt
 - [ ] **PLAT-02**: Static HTML verification page accepts attestation upload, displays receipt with SBOM contents, binary hash, key, timestamp, and handles network errors/timeouts
 - [ ] **PLAT-03**: Verification page supports third-party flow: upload attestation + binary + public key for independent verification
 
@@ -82,13 +82,13 @@ Deferred to future milestones. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ATTEST-01 | Phase 75 | Pending |
-| ATTEST-02 | Phase 75 | Pending |
-| ATTEST-03 | Phase 75 | Pending |
+| ATTEST-01 | Phase 75 | Complete |
+| ATTEST-02 | Phase 75 | Complete |
+| ATTEST-03 | Phase 75 | Complete |
 | CLI-01 | Phase 76 | Pending |
 | CLI-02 | Phase 76 | Pending |
 | CLI-03 | Phase 76 | Pending |
-| PLAT-01 | Phase 76 | Pending |
+| PLAT-01 | Phase 76 | Complete |
 | PLAT-02 | Phase 77 | Pending |
 | PLAT-03 | Phase 77 | Pending |
 | DIST-01 | Phase 77 | Pending |
