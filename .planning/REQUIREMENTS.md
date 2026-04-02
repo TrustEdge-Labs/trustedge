@@ -82,27 +82,27 @@ Deferred to future milestones. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ATTEST-01 | Pending | Pending |
-| ATTEST-02 | Pending | Pending |
-| ATTEST-03 | Pending | Pending |
-| CLI-01 | Pending | Pending |
-| CLI-02 | Pending | Pending |
-| CLI-03 | Pending | Pending |
-| PLAT-01 | Pending | Pending |
-| PLAT-02 | Pending | Pending |
-| PLAT-03 | Pending | Pending |
-| DIST-01 | Pending | Pending |
-| DIST-02 | Pending | Pending |
-| DIST-03 | Pending | Pending |
-| DIST-04 | Pending | Pending |
-| DIST-05 | Pending | Pending |
-| CI-01 | Pending | Pending |
+| ATTEST-01 | Phase 75 | Pending |
+| ATTEST-02 | Phase 75 | Pending |
+| ATTEST-03 | Phase 75 | Pending |
+| CLI-01 | Phase 76 | Pending |
+| CLI-02 | Phase 76 | Pending |
+| CLI-03 | Phase 76 | Pending |
+| PLAT-01 | Phase 76 | Pending |
+| PLAT-02 | Phase 77 | Pending |
+| PLAT-03 | Phase 77 | Pending |
+| DIST-01 | Phase 77 | Pending |
+| DIST-02 | Phase 77 | Pending |
+| DIST-03 | Phase 78 | Pending |
+| DIST-04 | Phase 78 | Pending |
+| DIST-05 | Phase 78 | Pending |
+| CI-01 | Phase 78 | Pending |
 
 **Coverage:**
 - v4.0 requirements: 15 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 15 ⚠️
+- Mapped to phases: 15
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-01 after initial definition*
+*Last updated: 2026-04-01 after roadmap creation*
