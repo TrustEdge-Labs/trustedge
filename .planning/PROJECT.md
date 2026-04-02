@@ -207,7 +207,23 @@ Shipped v3.0 Release Polish — official signed release. All security review fin
 
 ### Active
 
-(No active requirements — v3.0 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
+(Requirements defined in REQUIREMENTS.md for v4.0)
+
+## Current Milestone: v4.0 SBOM Attestation Wedge
+
+**Goal:** Ship TrustEdge's first product wedge: a CLI + hosted verifier for cryptographically binding SBOMs to binary artifacts, targeting DevSecOps teams facing EU CRA compliance.
+
+**Target features:**
+- Lightweight point attestation format (`.te-attestation.json`) with Ed25519 signing, BLAKE3 hashing, random nonce
+- `trst attest-sbom` CLI command: CycloneDX JSON + binary → signed attestation document
+- `trst verify-attestation` CLI command: local verification of attestation documents
+- Platform `POST /v1/verify-attestation` endpoint with JWS receipt issuance
+- Static HTML verification page with error handling
+- Public deployment of platform server (in-memory backend, rate limited)
+- Demo script: 60-second keygen → attest → verify flow
+- Product landing page on trustedgelabs-website
+- Self-attestation on TrustEdge's own CI release builds
+- GitHub Action for CI integration (Phase 2)
 
 ### Deferred
 
@@ -393,4 +409,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after v3.0 milestone*
+*Last updated: 2026-04-01 — v4.0 milestone started*
