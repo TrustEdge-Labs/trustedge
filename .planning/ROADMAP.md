@@ -75,8 +75,10 @@ Plans:
   2. User can run `trst verify-attestation <attestation> --device-pub <pub>` and see a clear verified/failed result with relevant details (key, timestamp, hashes)
   3. Running `trst attest-sbom` against a 0-byte binary, a non-JSON SBOM, or a binary over 256 MB exits with a clear error message and non-zero exit code
   4. `POST /v1/verify-attestation` accepts an attestation document and returns a signed JWS receipt on success, or a structured error on failure
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 2 plans
+Plans:
+- [ ] 76-01-PLAN.md — CLI attest-sbom and verify-attestation subcommands with acceptance tests
+- [ ] 76-02-PLAN.md — Platform POST /v1/verify-attestation endpoint with integration tests
 
 ### Phase 77: Verify Page + Deployment + Demo
 **Goal**: Anyone with a `.te-attestation.json` file can verify it in a browser via a public URL, and the full flow from keygen to verified receipt runs in under 60 seconds via a demo script.
@@ -106,6 +108,6 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 75. Core Attestation Library | v4.0 | 1/1 | Complete   | 2026-04-02 |
-| 76. CLI + Platform Endpoint | v4.0 | 0/? | Not started | - |
+| 76. CLI + Platform Endpoint | v4.0 | 0/2 | Planning complete | - |
 | 77. Verify Page + Deployment + Demo | v4.0 | 0/? | Not started | - |
 | 78. Distribution | v4.0 | 0/? | Not started | - |
