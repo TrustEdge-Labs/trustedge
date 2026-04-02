@@ -249,7 +249,10 @@ pub async fn verify_attestation_handler(
                     warn!("Failed to sign attestation receipt: {}", e);
                     Err((
                         StatusCode::INTERNAL_SERVER_ERROR,
-                        Json(ValidationError::new("receipt_error", "Failed to sign receipt")),
+                        Json(ValidationError::new(
+                            "receipt_error",
+                            "Failed to sign receipt",
+                        )),
                     ))
                 }
                 Ok(jws_token) => {

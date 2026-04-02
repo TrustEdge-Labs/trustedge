@@ -79,6 +79,7 @@ rand = { workspace = true }
 ed25519-dalek = { workspace = true }
 anyhow = { workspace = true }
 base64 = "0.22"
+tempfile = "3"
 # HTTP integration test utilities
 axum = { workspace = true }
 tower = { workspace = true, features = ["util"] }

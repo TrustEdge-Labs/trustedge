@@ -1157,6 +1157,172 @@ mod http_tests {
     }
 
     // -----------------------------------------------------------------------
+    // Tests 19-23: POST /v1/verify-attestation — point attestation endpoint
+    // -----------------------------------------------------------------------
+
+    /// Build a signed PointAttestation JSON string for testing.
+    fn build_test_attestation() -> String {
+        let dir = tempfile::tempdir().unwrap();
+        let binary_path = dir.path().join("test.bin");
+        let sbom_path = dir.path().join("sbom.json");
+        std::fs::write(&binary_path, b"test binary content").unwrap();
+        std::fs::write(&sbom_path, r#"{"bomFormat":"CycloneDX","components":[]}"#).unwrap();
+
+        let keypair = trustedge_core::DeviceKeypair::generate().unwrap();
+        let attestation = trustedge_core::PointAttestation::create(
+            &binary_path,
+            "binary",
+            &sbom_path,
+            "sbom",
+            &keypair,
+        )
+        .unwrap();
+        attestation.to_json().unwrap()
+    }
+
+    #[tokio::test]
+    async fn test_verify_attestation_valid() {
+        let app = create_test_app().await;
+        let body = build_test_attestation();
+        let request = Request::builder()
+            .method("POST")
+            .uri("/v1/verify-attestation")
+            .header(CONTENT_TYPE, "text/plain")
+            .body(Body::from(body))
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), 200, "valid attestation must return 200");
+        let body_bytes = axum::body::to_bytes(response.into_body(), 1024 * 1024)
+            .await
+            .unwrap();
+        let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+        assert_eq!(json["status"], "verified", "status must be 'verified'");
+        assert!(
+            json["receipt"]
+                .as_str()
+                .map(|s| s.starts_with("ey"))
+                .unwrap_or(false),
+            "receipt must be a JWS token starting with 'ey'"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_verify_attestation_bad_signature() {
+        let app = create_test_app().await;
+        let body = build_test_attestation();
+        // Tamper with the nonce field by changing a character to break the signature
+        let tampered = body.replacen(r#""nonce": ""#, r#""nonce": "x"#, 1);
+        let request = Request::builder()
+            .method("POST")
+            .uri("/v1/verify-attestation")
+            .header(CONTENT_TYPE, "text/plain")
+            .body(Body::from(tampered))
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(
+            response.status(),
+            200,
+            "tampered attestation must return 200 (not error)"
+        );
+        let body_bytes = axum::body::to_bytes(response.into_body(), 1024 * 1024)
+            .await
+            .unwrap();
+        let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+        assert_eq!(
+            json["status"], "failed",
+            "tampered attestation must have status 'failed'"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_verify_attestation_malformed_json() {
+        let app = create_test_app().await;
+        let request = Request::builder()
+            .method("POST")
+            .uri("/v1/verify-attestation")
+            .header(CONTENT_TYPE, "text/plain")
+            .body(Body::from("not json at all"))
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), 400, "malformed body must return 400");
+        let body_bytes = axum::body::to_bytes(response.into_body(), 1024 * 1024)
+            .await
+            .unwrap();
+        let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+        assert_eq!(
+            json["error"], "invalid_attestation",
+            "malformed body error must be 'invalid_attestation'"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_verify_attestation_wrong_format() {
+        let app = create_test_app().await;
+        // Build a minimal JSON that parses as PointAttestation but with wrong format
+        let wrong_format_json = serde_json::json!({
+            "format": "wrong-format-v99",
+            "trustedge_version": "0.1.0",
+            "timestamp": "2025-01-01T00:00:00.000Z",
+            "nonce": "deadbeefdeadbeef",
+            "subject": {
+                "hash": "b3:0000000000000000000000000000000000000000000000000000000000000000",
+                "filename": "test.bin",
+                "label": "binary"
+            },
+            "evidence": {
+                "hash": "b3:0000000000000000000000000000000000000000000000000000000000000000",
+                "filename": "sbom.json",
+                "label": "sbom"
+            },
+            "public_key": "ed25519:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+            "signature": "ed25519:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+        });
+        let request = Request::builder()
+            .method("POST")
+            .uri("/v1/verify-attestation")
+            .header(CONTENT_TYPE, "text/plain")
+            .body(Body::from(
+                serde_json::to_string(&wrong_format_json).unwrap(),
+            ))
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), 400, "wrong format must return 400");
+        let body_bytes = axum::body::to_bytes(response.into_body(), 1024 * 1024)
+            .await
+            .unwrap();
+        let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+        assert_eq!(
+            json["error"], "invalid_format",
+            "wrong format error must be 'invalid_format'"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_verify_attestation_missing_signature() {
+        let app = create_test_app().await;
+        // Build valid attestation then remove the signature field
+        let body = build_test_attestation();
+        let mut parsed: serde_json::Value = serde_json::from_str(&body).unwrap();
+        parsed["signature"] = serde_json::Value::Null;
+        let request = Request::builder()
+            .method("POST")
+            .uri("/v1/verify-attestation")
+            .header(CONTENT_TYPE, "text/plain")
+            .body(Body::from(serde_json::to_string(&parsed).unwrap()))
+            .unwrap();
+        let response = app.oneshot(request).await.unwrap();
+        assert_eq!(response.status(), 400, "missing signature must return 400");
+        let body_bytes = axum::body::to_bytes(response.into_body(), 1024 * 1024)
+            .await
+            .unwrap();
+        let json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+        assert_eq!(
+            json["error"], "missing_signature",
+            "missing signature error must be 'missing_signature'"
+        );
+    }
+
+    // -----------------------------------------------------------------------
     // Test 18: X-Forwarded-For is ignored when no trusted proxies are set.
     //
     // Sets TRUSTED_PROXIES="" (empty) and RATE_LIMIT_RPS=2.
