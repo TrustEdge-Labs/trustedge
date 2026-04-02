@@ -10,6 +10,7 @@
 //!
 //! Routes:
 //!   POST  /v1/verify              — verify archive (always available)
+//!   POST  /v1/verify-attestation  — verify point attestation (always available)
 //!   POST  /v1/devices             — register device (postgres only)
 //!   GET   /v1/receipts/:id        — get receipt (postgres only)
 //!   GET   /.well-known/jwks.json  — local JWKS (no proxy)
@@ -22,7 +23,7 @@ use axum::{
 use tower_http::{cors::CorsLayer, limit::RequestBodyLimitLayer, trace::TraceLayer};
 
 use super::{
-    handlers::{health_handler, jwks_handler, verify_handler},
+    handlers::{health_handler, jwks_handler, verify_attestation_handler, verify_handler},
     rate_limit::{rate_limit_middleware, RateLimitState},
     state::AppState,
 };
@@ -65,9 +66,10 @@ pub fn create_router(state: AppState) -> Router {
         .collect();
     let rl_state = RateLimitState::new(rps, trusted_proxies);
 
-    // Rate-limited verify sub-router — only /v1/verify is throttled.
+    // Rate-limited verify sub-router — /v1/verify and /v1/verify-attestation are throttled.
     let verify_router = Router::new()
         .route("/v1/verify", post(verify_handler))
+        .route("/v1/verify-attestation", post(verify_attestation_handler))
         .route_layer(axum::middleware::from_fn_with_state(
             rl_state,
             rate_limit_middleware,

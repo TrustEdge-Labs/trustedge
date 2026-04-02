@@ -33,6 +33,12 @@ use crate::verify::validation::build_receipt_if_requested;
 #[cfg(feature = "postgres")]
 use crate::verify::{engine::receipt_from_report, signing::sign_receipt_jws};
 
+// sign_receipt_jws is needed for the attestation handler (always available)
+#[cfg(not(feature = "postgres"))]
+use crate::verify::signing::sign_receipt_jws;
+
+use trustedge_core::{point_attestation::FORMAT_V1, PointAttestation};
+
 use super::state::AppState;
 
 // ---------------------------------------------------------------------------
@@ -106,6 +112,163 @@ pub async fn verify_handler(
         result: report,
         receipt,
     }))
+}
+
+// ---------------------------------------------------------------------------
+// Attestation verification response type (no feature gate — always available)
+// ---------------------------------------------------------------------------
+
+/// Response from POST /v1/verify-attestation.
+#[derive(serde::Serialize)]
+pub struct VerifyAttestationResponse {
+    /// Verification outcome: `"verified"` or `"failed"`.
+    pub status: String,
+    /// JWS receipt token (only present when status is `"verified"`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub receipt: Option<String>,
+    /// Additional details about the verification result.
+    pub details: serde_json::Value,
+}
+
+/// POST /v1/verify-attestation — verify a point attestation document.
+///
+/// Accepts the attestation JSON document directly as the request body (per D-11).
+/// Extracts the embedded public key, verifies the signature, and returns a JWS receipt
+/// on success. No database interaction — works identically with or without postgres.
+pub async fn verify_attestation_handler(
+    State(state): State<AppState>,
+    body: String,
+) -> Result<Json<VerifyAttestationResponse>, (StatusCode, Json<ValidationError>)> {
+    // Parse the attestation document
+    let attestation = PointAttestation::from_json(&body).map_err(|e| {
+        warn!("Failed to parse attestation document: {}", e);
+        (
+            StatusCode::BAD_REQUEST,
+            Json(ValidationError::new(
+                "invalid_attestation",
+                "Failed to parse attestation document",
+            )),
+        )
+    })?;
+
+    // Validate format discriminant
+    if attestation.format != FORMAT_V1 {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(ValidationError::new(
+                "invalid_format",
+                "Expected format te-point-attestation-v1",
+            )),
+        ));
+    }
+
+    // Require signature field to be present
+    if attestation.signature.is_none() {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(ValidationError::new(
+                "missing_signature",
+                "Attestation document has no signature",
+            )),
+        ));
+    }
+
+    let device_pub = &attestation.public_key.clone();
+
+    // Verify the Ed25519 signature using the embedded public key
+    match attestation.verify_signature(device_pub) {
+        Err(e) => {
+            warn!("Attestation cryptographic verification error: {}", e);
+            // Return 200 with "failed" — do not leak internal error details
+            let details = serde_json::json!({
+                "reason": "Cryptographic verification failed",
+                "public_key": device_pub,
+                "timestamp": attestation.timestamp,
+            });
+            Ok(Json(VerifyAttestationResponse {
+                status: "failed".to_string(),
+                receipt: None,
+                details,
+            }))
+        }
+        Ok(false) => {
+            let details = serde_json::json!({
+                "reason": "Signature verification failed",
+                "public_key": device_pub,
+                "timestamp": attestation.timestamp,
+            });
+            Ok(Json(VerifyAttestationResponse {
+                status: "failed".to_string(),
+                receipt: None,
+                details,
+            }))
+        }
+        Ok(true) => {
+            // Signature valid — build JWS receipt
+            let verification_id = format!("va_{}", uuid::Uuid::new_v4().simple());
+
+            let manifest_digest = {
+                let canonical = attestation.canonical_bytes().unwrap_or_default();
+                let hash = trustedge_core::chain::segment_hash(&canonical);
+                format!("b3:{}", BASE64.encode(hash))
+            };
+
+            let now_rfc3339 = Utc::now().to_rfc3339();
+
+            let keys = state.keys.read().await;
+            let kid = keys.current_kid();
+
+            // Build ReceiptClaims minimally — point attestations don't have segments/chain
+            let receipt_claims = crate::verify::engine::ReceiptClaims {
+                verification_id,
+                device_id: device_pub.clone(),
+                manifest_digest,
+                chain_tip: "none".to_string(),
+                timestamp: now_rfc3339,
+                kid,
+                result: crate::verify::engine::VerifyReport {
+                    signature_verification: crate::verify::engine::VerificationResult {
+                        passed: true,
+                        error: None,
+                    },
+                    continuity_verification: crate::verify::engine::VerificationResult {
+                        passed: true,
+                        error: None,
+                    },
+                    metadata: crate::verify::engine::VerificationMetadata {
+                        total_segments: 0,
+                        verified_segments: 0,
+                        chain_tip: "none".to_string(),
+                        genesis_hash: "none".to_string(),
+                    },
+                },
+            };
+
+            match sign_receipt_jws(&receipt_claims, &keys, state.receipt_ttl_secs).await {
+                Err(e) => {
+                    warn!("Failed to sign attestation receipt: {}", e);
+                    Err((
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(ValidationError::new("receipt_error", "Failed to sign receipt")),
+                    ))
+                }
+                Ok(jws_token) => {
+                    let details = serde_json::json!({
+                        "subject_hash": attestation.subject.hash,
+                        "evidence_hash": attestation.evidence.hash,
+                        "public_key": device_pub,
+                        "timestamp": attestation.timestamp,
+                        "format": attestation.format,
+                    });
+                    Ok(Json(VerifyAttestationResponse {
+                        status: "verified".to_string(),
+                        receipt: Some(jws_token),
+                        details,
+                    }))
+                }
+            }
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
