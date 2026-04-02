@@ -26,8 +26,8 @@ use trustedge_core::{
     chain_next, decrypt_segment, derive_chunk_key, encrypt_segment, generate_aad, genesis,
     is_encrypted_key_file, read_archive, segment_hash, sign_manifest, validate_archive,
     verify_manifest, write_archive, AudioMetadata, CamVideoMetadata, ChunkInfo, DeviceInfo,
-    DeviceKeypair, GenericMetadata, LogMetadata, ProfileMetadata, SegmentInfo, SensorMetadata,
-    TrstManifest,
+    DeviceKeypair, GenericMetadata, LogMetadata, PointAttestation, ProfileMetadata, SegmentInfo,
+    SensorMetadata, TrstManifest,
 };
 // Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
 // SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
@@ -110,6 +110,8 @@ enum Commands {
     Unwrap(UnwrapCmd),
     EmitRequest(EmitRequestCmd),
     Keygen(KeygenCmd),
+    AttestSbom(AttestSbomCmd),
+    VerifyAttestation(VerifyAttestationCmd),
 }
 
 #[derive(Args, Debug)]
@@ -296,6 +298,34 @@ struct EmitRequestCmd {
     post: Option<String>,
 }
 
+#[derive(Args, Debug)]
+struct AttestSbomCmd {
+    #[arg(long, value_name = "PATH", help = "Path to binary artifact")]
+    binary: PathBuf,
+    #[arg(long, value_name = "PATH", help = "Path to CycloneDX JSON SBOM")]
+    sbom: PathBuf,
+    #[arg(long = "device-key", value_name = "PATH", help = "Path to device signing key file")]
+    device_key: PathBuf,
+    #[arg(long = "device-pub", value_name = "PATH", help = "Path to device public key file")]
+    device_pub: PathBuf,
+    #[arg(long, value_name = "PATH", help = "Output path [default: attestation.te-attestation.json]")]
+    out: Option<PathBuf>,
+    #[arg(long, help = "Use unencrypted key file (CI/automation only)")]
+    unencrypted: bool,
+}
+
+#[derive(Args, Debug)]
+struct VerifyAttestationCmd {
+    #[arg(value_name = "ATTESTATION", help = "Path to .te-attestation.json file")]
+    attestation: PathBuf,
+    #[arg(long = "device-pub", value_name = "KEY", help = "Public key (ed25519:... string or path to .pub file)")]
+    device_pub: String,
+    #[arg(long, value_name = "PATH", help = "Optional binary for hash verification")]
+    binary: Option<PathBuf>,
+    #[arg(long, value_name = "PATH", help = "Optional SBOM for hash verification")]
+    sbom: Option<PathBuf>,
+}
+
 fn generate_seeded_nonce24(rng: &mut dyn RngCore) -> [u8; 24] {
     let mut nonce = [0u8; 24];
     rng.fill_bytes(&mut nonce);
@@ -353,6 +383,8 @@ async fn run() -> Result<()> {
         Commands::Unwrap(args) => handle_unwrap(args),
         Commands::EmitRequest(args) => handle_emit_request(args).await,
         Commands::Keygen(args) => handle_keygen(args),
+        Commands::AttestSbom(args) => handle_attest_sbom(args),
+        Commands::VerifyAttestation(args) => handle_verify_attestation(args),
     }
 }
 
@@ -1332,4 +1364,172 @@ async fn handle_emit_request(args: EmitRequestCmd) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn handle_attest_sbom(args: AttestSbomCmd) -> Result<()> {
+    if args.unencrypted {
+        warn_unencrypted();
+    }
+
+    // Validate binary file
+    let binary_meta = fs::metadata(&args.binary)
+        .with_context(|| format!("Failed to read binary file: {}", args.binary.display()))?;
+    let binary_size = binary_meta.len();
+    if binary_size == 0 {
+        return Err(CliExitError {
+            code: 1,
+            message: "Error: binary file is empty (0 bytes)".to_string(),
+        }
+        .into());
+    }
+    const MAX_BINARY_SIZE: u64 = 256 * 1024 * 1024;
+    if binary_size > MAX_BINARY_SIZE {
+        return Err(CliExitError {
+            code: 1,
+            message: format!(
+                "Error: binary file exceeds 256 MB limit ({} bytes)",
+                binary_size
+            ),
+        }
+        .into());
+    }
+
+    // Validate SBOM is valid JSON
+    let sbom_content = fs::read_to_string(&args.sbom)
+        .with_context(|| format!("Failed to read SBOM file: {}", args.sbom.display()))?;
+    if serde_json::from_str::<serde_json::Value>(&sbom_content).is_err() {
+        return Err(CliExitError {
+            code: 1,
+            message: "Error: SBOM file is not valid JSON".to_string(),
+        }
+        .into());
+    }
+
+    // Load device keypair
+    let key_bytes = fs::read(&args.device_key)
+        .with_context(|| format!("failed to read device key '{}'", args.device_key.display()))?;
+    let device_keypair = if args.unencrypted {
+        let contents = String::from_utf8_lossy(&key_bytes).trim().to_string();
+        DeviceKeypair::import_secret(&contents)
+            .map_err(|e| anyhow::anyhow!("Failed to import key: {}", e))?
+    } else if is_encrypted_key_file(&key_bytes) {
+        let passphrase = rpassword::prompt_password("Enter passphrase for device key: ")
+            .context("Failed to read passphrase")?;
+        DeviceKeypair::import_secret_encrypted(&key_bytes, &passphrase)
+            .map_err(|e| anyhow::anyhow!("Failed to decrypt key: {}", e))?
+    } else {
+        anyhow::bail!("Key file is not encrypted. Use --unencrypted to bypass.");
+    };
+
+    // Create attestation
+    let attestation =
+        PointAttestation::create(&args.binary, "binary", &args.sbom, "sbom", &device_keypair)
+            .with_context(|| "Failed to create attestation")?;
+
+    // Serialize to JSON
+    let json = attestation
+        .to_json()
+        .with_context(|| "Failed to serialize attestation")?;
+
+    // Determine output path
+    let out_path = args
+        .out
+        .unwrap_or_else(|| PathBuf::from("attestation.te-attestation.json"));
+
+    // Write output file
+    fs::write(&out_path, &json)
+        .with_context(|| format!("Failed to write attestation: {}", out_path.display()))?;
+
+    // Set permissions to 0644 on Unix (public data, not secret)
+    #[cfg(unix)]
+    {
+        let perms = std::fs::Permissions::from_mode(0o644);
+        std::fs::set_permissions(&out_path, perms)
+            .with_context(|| format!("Failed to set permissions on {}", out_path.display()))?;
+    }
+
+    eprintln!("\u{2714} Attestation written to {}", out_path.display());
+    eprintln!("  Public key: {}", attestation.public_key);
+    eprintln!(
+        "  Subject:    {} ({})",
+        attestation.subject.hash, attestation.subject.filename
+    );
+    eprintln!(
+        "  Evidence:   {} ({})",
+        attestation.evidence.hash, attestation.evidence.filename
+    );
+
+    Ok(())
+}
+
+fn handle_verify_attestation(args: VerifyAttestationCmd) -> Result<()> {
+    // Read attestation file
+    let attestation_json = fs::read_to_string(&args.attestation)
+        .with_context(|| format!("Failed to read attestation: {}", args.attestation.display()))?;
+    let attestation = PointAttestation::from_json(&attestation_json)
+        .with_context(|| "Failed to parse attestation JSON")?;
+
+    // Resolve device public key: inline "ed25519:..." or file path
+    let device_pub = if args.device_pub.starts_with("ed25519:") {
+        args.device_pub.clone()
+    } else {
+        let content = fs::read_to_string(&args.device_pub)
+            .with_context(|| format!("Failed to read public key file: {}", args.device_pub))?;
+        content.trim().to_string()
+    };
+
+    // Verify signature
+    let sig_valid = attestation
+        .verify_signature(&device_pub)
+        .with_context(|| "Failed to verify signature")?;
+
+    // Optionally verify file hashes
+    if args.binary.is_some() || args.sbom.is_some() {
+        let binary_ref = args.binary.as_deref();
+        let sbom_ref = args.sbom.as_deref();
+        if let Err(e) = attestation.verify_file_hashes(binary_ref, sbom_ref) {
+            println!("Format:     {}", attestation.format);
+            println!("Public key: {}", attestation.public_key);
+            println!("Timestamp:  {}", attestation.timestamp);
+            println!(
+                "Subject:    {} ({})",
+                attestation.subject.hash, attestation.subject.filename
+            );
+            println!(
+                "Evidence:   {} ({})",
+                attestation.evidence.hash, attestation.evidence.filename
+            );
+            println!("Signature:  FAILED");
+            return Err(CliExitError {
+                code: 10,
+                message: format!("Hash mismatch: {}", e),
+            }
+            .into());
+        }
+    }
+
+    // Print human-readable result
+    println!("Format:     {}", attestation.format);
+    println!("Public key: {}", attestation.public_key);
+    println!("Timestamp:  {}", attestation.timestamp);
+    println!(
+        "Subject:    {} ({})",
+        attestation.subject.hash, attestation.subject.filename
+    );
+    println!(
+        "Evidence:   {} ({})",
+        attestation.evidence.hash, attestation.evidence.filename
+    );
+
+    if sig_valid {
+        println!("Signature:  VERIFIED");
+        Ok(())
+    } else {
+        println!("Signature:  FAILED");
+        Err(CliExitError {
+            code: 10,
+            message: "Signature verification failed".to_string(),
+        }
+        .into())
+    }
 }
