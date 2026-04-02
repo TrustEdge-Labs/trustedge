@@ -100,6 +100,7 @@ pub mod chain;
 pub mod crypto;
 pub mod envelope;
 pub mod error;
+pub mod point_attestation;
 pub mod format;
 pub mod hybrid;
 pub mod secret;
@@ -162,6 +163,7 @@ pub use ed25519_dalek::{SigningKey, VerifyingKey};
 pub use envelope::{Envelope, EnvelopeMetadata};
 pub use error::ManifestError; // ManifestError is re-exported from error.rs (which aliases ManifestFormatError)
 pub use error::{BackendError, TransportError, TrustEdgeError};
+pub use point_attestation::{ArtifactRef, PointAttestation, PointAttestationError};
 pub use format::*;
 pub use hybrid::{open_envelope, seal_for_recipient, HybridEncryptionError, SymmetricKey};
 pub use transport::{Transport, TransportConfig, TransportFactory};

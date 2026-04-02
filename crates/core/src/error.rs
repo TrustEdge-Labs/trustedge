@@ -10,11 +10,16 @@
 
 use thiserror::Error;
 
+use crate::point_attestation::PointAttestationError;
+
 /// Top-level unified error type for TrustEdge operations
 #[derive(Error, Debug)]
 pub enum TrustEdgeError {
     #[error("Cryptographic operation failed")]
     Crypto(#[from] CryptoError),
+
+    #[error("Point attestation error")]
+    PointAttestation(#[from] PointAttestationError),
 
     #[error("Backend operation failed")]
     Backend(#[from] BackendError),
