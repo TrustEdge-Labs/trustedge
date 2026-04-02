@@ -146,8 +146,7 @@ impl PointAttestation {
         OsRng.fill_bytes(&mut nonce_bytes);
         let nonce = hex::encode(nonce_bytes);
 
-        let timestamp = chrono::Utc::now()
-            .to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
+        let timestamp = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
 
         let mut attestation = PointAttestation {
             format: FORMAT_V1.to_string(),
@@ -246,8 +245,8 @@ impl PointAttestation {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::NamedTempFile;
     use std::io::Write as IoWrite;
+    use tempfile::NamedTempFile;
 
     fn make_temp_file(content: &[u8]) -> NamedTempFile {
         let mut f = NamedTempFile::new().expect("temp file");
@@ -265,18 +264,16 @@ mod tests {
         let subject = make_temp_file(b"subject content");
         let evidence = make_temp_file(b"evidence content");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         assert!(attest.signature.is_some());
         let sig = attest.signature.as_ref().unwrap();
-        assert!(sig.starts_with("ed25519:"), "sig should start with ed25519:");
+        assert!(
+            sig.starts_with("ed25519:"),
+            "sig should start with ed25519:"
+        );
     }
 
     #[test]
@@ -285,14 +282,9 @@ mod tests {
         let subject = make_temp_file(b"hello world");
         let evidence = make_temp_file(b"sbom data");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         let json = attest.to_json().expect("to_json");
         let loaded = PointAttestation::from_json(&json).expect("from_json");
@@ -307,14 +299,9 @@ mod tests {
         let subject = make_temp_file(b"hello world");
         let evidence = make_temp_file(b"sbom data");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         let valid = attest
             .verify_signature(&wrong_keypair.public)
@@ -328,14 +315,9 @@ mod tests {
         let subject = make_temp_file(b"original");
         let evidence = make_temp_file(b"evidence");
 
-        let mut attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let mut attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         // Tamper with a field
         attest.subject.label = "tampered".to_string();
@@ -350,14 +332,9 @@ mod tests {
         let subject = make_temp_file(b"data");
         let evidence = make_temp_file(b"evidence");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         let bytes1 = attest.canonical_bytes().expect("canonical 1");
         let bytes2 = attest.canonical_bytes().expect("canonical 2");
@@ -370,14 +347,9 @@ mod tests {
         let subject = make_temp_file(b"data");
         let evidence = make_temp_file(b"evidence");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         let canonical = attest.canonical_bytes().expect("canonical");
         let canonical_str = std::str::from_utf8(&canonical).expect("utf8");
@@ -404,16 +376,15 @@ mod tests {
         let subject = make_temp_file(b"data");
         let evidence = make_temp_file(b"evidence");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
-        assert_eq!(attest.nonce.len(), 32, "nonce should be 32 hex chars (16 bytes)");
+        assert_eq!(
+            attest.nonce.len(),
+            32,
+            "nonce should be 32 hex chars (16 bytes)"
+        );
         assert!(
             attest.nonce.chars().all(|c| c.is_ascii_hexdigit()),
             "nonce should be hex"
@@ -426,14 +397,9 @@ mod tests {
         let subject = make_temp_file(b"data");
         let evidence = make_temp_file(b"evidence");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         // ISO 8601 with Z suffix
         assert!(
@@ -461,14 +427,9 @@ mod tests {
         let subject = make_temp_file(b"data");
         let evidence = make_temp_file(b"evidence");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         assert_eq!(attest.format, FORMAT_V1);
         assert_eq!(attest.format, "te-point-attestation-v1");
@@ -480,14 +441,9 @@ mod tests {
         let subject = make_temp_file(b"subject bytes");
         let evidence = make_temp_file(b"evidence bytes");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         attest
             .verify_file_hashes(Some(subject.path()), Some(evidence.path()))
@@ -501,14 +457,9 @@ mod tests {
         let evidence = make_temp_file(b"evidence bytes");
         let wrong_file = make_temp_file(b"completely different content");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         let result = attest.verify_file_hashes(Some(wrong_file.path()), None);
         assert!(
@@ -523,14 +474,9 @@ mod tests {
         let subject = make_temp_file(b"subject only");
         let evidence = make_temp_file(b"evidence");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         // Only check subject, not evidence
         attest
@@ -544,14 +490,9 @@ mod tests {
         let subject = make_temp_file(b"subject");
         let evidence = make_temp_file(b"evidence only");
 
-        let attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         // Only check evidence, not subject
         attest
@@ -565,14 +506,9 @@ mod tests {
         let subject = make_temp_file(b"data");
         let evidence = make_temp_file(b"evidence");
 
-        let mut attest = PointAttestation::create(
-            subject.path(),
-            "binary",
-            evidence.path(),
-            "sbom",
-            &keypair,
-        )
-        .expect("create");
+        let mut attest =
+            PointAttestation::create(subject.path(), "binary", evidence.path(), "sbom", &keypair)
+                .expect("create");
 
         attest.signature = None;
         let result = attest.verify_signature(&keypair.public);
