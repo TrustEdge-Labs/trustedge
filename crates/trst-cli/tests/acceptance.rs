@@ -1104,3 +1104,381 @@ fn acceptance_verify_ecdsa_p256_wrong_key() {
         .failure()
         .stderr(contains("Signature verification failed"));
 }
+
+// ─── attest-sbom / verify-attestation acceptance tests ───────────────────────
+
+/// Create a test binary and SBOM in the given directory, returning (binary_path, sbom_path).
+fn write_attestation_inputs(dir: &Path) -> (PathBuf, PathBuf) {
+    let binary_path = dir.join("test-binary.bin");
+    fs::write(&binary_path, b"hello world binary content").unwrap();
+    let sbom_path = dir.join("sbom.json");
+    fs::write(
+        &sbom_path,
+        r#"{"bomFormat":"CycloneDX","specVersion":"1.4","components":[]}"#,
+    )
+    .unwrap();
+    (binary_path, sbom_path)
+}
+
+/// Generate a keypair via `trst keygen --unencrypted` in the given temp dir.
+/// Returns (key_path, pub_path).
+fn keygen_unencrypted(dir: &Path) -> (PathBuf, PathBuf) {
+    let key_path = dir.join("device.key");
+    let pub_path = dir.join("device.pub");
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(dir)
+        .args([
+            "keygen",
+            "--out-key",
+            key_path.to_str().unwrap(),
+            "--out-pub",
+            pub_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .success();
+    (key_path, pub_path)
+}
+
+#[test]
+fn test_attest_sbom_creates_attestation_file() {
+    let tempdir = TempDir::new().unwrap();
+    let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
+    let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
+    let out_path = tempdir.path().join("output.te-attestation.json");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "attest-sbom",
+            "--binary",
+            binary_path.to_str().unwrap(),
+            "--sbom",
+            sbom_path.to_str().unwrap(),
+            "--device-key",
+            key_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--out",
+            out_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .success();
+
+    assert!(out_path.exists(), "attestation output file should exist");
+    let contents = fs::read_to_string(&out_path).unwrap();
+    assert!(
+        contents.contains("te-point-attestation-v1"),
+        "attestation should contain format v1 string"
+    );
+    assert!(
+        contents.contains("ed25519:"),
+        "attestation should contain ed25519 public key"
+    );
+}
+
+#[test]
+fn test_attest_sbom_default_output_name() {
+    let tempdir = TempDir::new().unwrap();
+    let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
+    let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "attest-sbom",
+            "--binary",
+            binary_path.to_str().unwrap(),
+            "--sbom",
+            sbom_path.to_str().unwrap(),
+            "--device-key",
+            key_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .success();
+
+    let default_out = tempdir.path().join("attestation.te-attestation.json");
+    assert!(
+        default_out.exists(),
+        "default output file attestation.te-attestation.json should exist"
+    );
+}
+
+#[test]
+fn test_attest_sbom_rejects_zero_byte_binary() {
+    let tempdir = TempDir::new().unwrap();
+    let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
+
+    // Create empty (0-byte) binary
+    let empty_binary = tempdir.path().join("empty.bin");
+    fs::write(&empty_binary, b"").unwrap();
+    let sbom_path = tempdir.path().join("sbom.json");
+    fs::write(
+        &sbom_path,
+        r#"{"bomFormat":"CycloneDX","specVersion":"1.4","components":[]}"#,
+    )
+    .unwrap();
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "attest-sbom",
+            "--binary",
+            empty_binary.to_str().unwrap(),
+            "--sbom",
+            sbom_path.to_str().unwrap(),
+            "--device-key",
+            key_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicates::str::is_match("empty|0 bytes").unwrap());
+}
+
+#[test]
+fn test_attest_sbom_rejects_non_json_sbom() {
+    let tempdir = TempDir::new().unwrap();
+    let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
+
+    let binary_path = tempdir.path().join("test.bin");
+    fs::write(&binary_path, b"binary content").unwrap();
+    let bad_sbom = tempdir.path().join("bad.json");
+    fs::write(&bad_sbom, b"not json at all").unwrap();
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "attest-sbom",
+            "--binary",
+            binary_path.to_str().unwrap(),
+            "--sbom",
+            bad_sbom.to_str().unwrap(),
+            "--device-key",
+            key_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(contains("not valid JSON"));
+}
+
+#[test]
+fn test_attest_sbom_valid_inputs_succeed() {
+    // This test verifies the happy path and implicitly confirms that the
+    // 256 MB size check (via fs::metadata().len() comparison) does not
+    // fire on a small valid binary. The actual 256 MB rejection is verified
+    // by code inspection — creating a 256 MB temp file in CI is impractical.
+    let tempdir = TempDir::new().unwrap();
+    let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
+    let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
+    let out_path = tempdir.path().join("result.te-attestation.json");
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "attest-sbom",
+            "--binary",
+            binary_path.to_str().unwrap(),
+            "--sbom",
+            sbom_path.to_str().unwrap(),
+            "--device-key",
+            key_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--out",
+            out_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .success();
+
+    assert!(out_path.exists());
+}
+
+#[test]
+fn test_verify_attestation_success() {
+    let tempdir = TempDir::new().unwrap();
+    let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
+    let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
+    let out_path = tempdir.path().join("attest.te-attestation.json");
+
+    // Create attestation
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "attest-sbom",
+            "--binary",
+            binary_path.to_str().unwrap(),
+            "--sbom",
+            sbom_path.to_str().unwrap(),
+            "--device-key",
+            key_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--out",
+            out_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .success();
+
+    // Verify the attestation using pub file path
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "verify-attestation",
+            out_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success()
+        .stdout(contains("VERIFIED"));
+}
+
+#[test]
+fn test_verify_attestation_wrong_key_fails() {
+    let tempdir = TempDir::new().unwrap();
+    let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
+    let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
+    let out_path = tempdir.path().join("attest.te-attestation.json");
+
+    // Create attestation with first keypair
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "attest-sbom",
+            "--binary",
+            binary_path.to_str().unwrap(),
+            "--sbom",
+            sbom_path.to_str().unwrap(),
+            "--device-key",
+            key_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--out",
+            out_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .success();
+
+    // Generate a second keypair (different key)
+    let key2_path = tempdir.path().join("device2.key");
+    let pub2_path = tempdir.path().join("device2.pub");
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "keygen",
+            "--out-key",
+            key2_path.to_str().unwrap(),
+            "--out-pub",
+            pub2_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .success();
+
+    // Verify using wrong (second) keypair's public key — should fail with exit 10
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "verify-attestation",
+            out_path.to_str().unwrap(),
+            "--device-pub",
+            pub2_path.to_str().unwrap(),
+        ])
+        .assert()
+        .failure()
+        .code(10)
+        .stdout(contains("FAILED"));
+}
+
+#[test]
+fn test_verify_attestation_with_file_hashes() {
+    let tempdir = TempDir::new().unwrap();
+    let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
+    let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
+    let out_path = tempdir.path().join("attest.te-attestation.json");
+
+    // Create attestation
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "attest-sbom",
+            "--binary",
+            binary_path.to_str().unwrap(),
+            "--sbom",
+            sbom_path.to_str().unwrap(),
+            "--device-key",
+            key_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--out",
+            out_path.to_str().unwrap(),
+            "--unencrypted",
+        ])
+        .assert()
+        .success();
+
+    // Verify with correct binary and SBOM — should pass
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "verify-attestation",
+            out_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--binary",
+            binary_path.to_str().unwrap(),
+            "--sbom",
+            sbom_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success()
+        .stdout(contains("VERIFIED"));
+
+    // Modify binary, verify again — should fail with exit 10
+    fs::write(&binary_path, b"tampered binary content").unwrap();
+
+    Command::cargo_bin("trst")
+        .unwrap()
+        .current_dir(tempdir.path())
+        .args([
+            "verify-attestation",
+            out_path.to_str().unwrap(),
+            "--device-pub",
+            pub_path.to_str().unwrap(),
+            "--binary",
+            binary_path.to_str().unwrap(),
+            "--sbom",
+            sbom_path.to_str().unwrap(),
+        ])
+        .assert()
+        .failure()
+        .code(10);
+}

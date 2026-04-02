@@ -304,11 +304,23 @@ struct AttestSbomCmd {
     binary: PathBuf,
     #[arg(long, value_name = "PATH", help = "Path to CycloneDX JSON SBOM")]
     sbom: PathBuf,
-    #[arg(long = "device-key", value_name = "PATH", help = "Path to device signing key file")]
+    #[arg(
+        long = "device-key",
+        value_name = "PATH",
+        help = "Path to device signing key file"
+    )]
     device_key: PathBuf,
-    #[arg(long = "device-pub", value_name = "PATH", help = "Path to device public key file")]
+    #[arg(
+        long = "device-pub",
+        value_name = "PATH",
+        help = "Path to device public key file"
+    )]
     device_pub: PathBuf,
-    #[arg(long, value_name = "PATH", help = "Output path [default: attestation.te-attestation.json]")]
+    #[arg(
+        long,
+        value_name = "PATH",
+        help = "Output path [default: attestation.te-attestation.json]"
+    )]
     out: Option<PathBuf>,
     #[arg(long, help = "Use unencrypted key file (CI/automation only)")]
     unencrypted: bool,
@@ -318,11 +330,23 @@ struct AttestSbomCmd {
 struct VerifyAttestationCmd {
     #[arg(value_name = "ATTESTATION", help = "Path to .te-attestation.json file")]
     attestation: PathBuf,
-    #[arg(long = "device-pub", value_name = "KEY", help = "Public key (ed25519:... string or path to .pub file)")]
+    #[arg(
+        long = "device-pub",
+        value_name = "KEY",
+        help = "Public key (ed25519:... string or path to .pub file)"
+    )]
     device_pub: String,
-    #[arg(long, value_name = "PATH", help = "Optional binary for hash verification")]
+    #[arg(
+        long,
+        value_name = "PATH",
+        help = "Optional binary for hash verification"
+    )]
     binary: Option<PathBuf>,
-    #[arg(long, value_name = "PATH", help = "Optional SBOM for hash verification")]
+    #[arg(
+        long,
+        value_name = "PATH",
+        help = "Optional SBOM for hash verification"
+    )]
     sbom: Option<PathBuf>,
 }
 
