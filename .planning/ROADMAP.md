@@ -46,7 +46,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 
 **Milestone Goal:** Deliver a lightweight, infrastructure-independent SBOM attestation capability — from core crypto format through CLI, platform endpoint, public verifier, and GitHub Action — so teams can prove software bill of materials integrity independent of their CI provider.
 
-- [ ] **Phase 75: Core Attestation Library** - AttestationDocument struct, signing, verification, and canonical serialization
+- [ ] **Phase 75: Core Attestation Library** - PointAttestation struct, signing, verification, and canonical serialization
 - [ ] **Phase 76: CLI + Platform Endpoint** - `trst attest-sbom`, `trst verify-attestation`, and `POST /v1/verify-attestation`
 - [ ] **Phase 77: Verify Page + Deployment + Demo** - Static HTML verifier, public deployment, and demo script
 - [ ] **Phase 78: Distribution** - Landing page, self-attestation in CI, third-party demo, GitHub Action
@@ -54,15 +54,17 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 ## Phase Details
 
 ### Phase 75: Core Attestation Library
-**Goal**: The AttestationDocument type exists in trustedge-core with correct cryptographic properties — deterministic canonical serialization, Ed25519 signing, BLAKE3 hashing, random nonce, and timestamp — enabling everything else to be built on top of it.
+**Goal**: The PointAttestation type exists in trustedge-core with correct cryptographic properties — deterministic canonical serialization, Ed25519 signing, BLAKE3 hashing, random nonce, and timestamp — enabling everything else to be built on top of it.
 **Depends on**: Phase 74 (v3.0 complete)
 **Requirements**: ATTEST-01, ATTEST-02, ATTEST-03
 **Success Criteria** (what must be TRUE):
-  1. A developer can construct an AttestationDocument from a binary path and SBOM path and sign it with an Ed25519 key, producing a `.te-attestation.json` file
+  1. A developer can construct a PointAttestation from a binary path and SBOM path and sign it with an Ed25519 key, producing a `.te-attestation.json` file
   2. A developer can verify a `.te-attestation.json` file's signature using only the public key and get a clear pass/fail result
   3. Canonical JSON serialization is deterministic: signing the same inputs twice produces the same bytes to sign (signature excluded from payload)
   4. Verification optionally accepts the original binary and SBOM files and independently checks their BLAKE3 hashes match the attestation document
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 75-01-PLAN.md -- PointAttestation types, signing, verification, canonical serialization, and tests
 
 ### Phase 76: CLI + Platform Endpoint
 **Goal**: Users can create and verify attestations end-to-end from the command line, and the platform server exposes a network verification endpoint that returns a JWS receipt.
@@ -103,7 +105,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 75. Core Attestation Library | v4.0 | 0/? | Not started | - |
+| 75. Core Attestation Library | v4.0 | 0/1 | Planning complete | - |
 | 76. CLI + Platform Endpoint | v4.0 | 0/? | Not started | - |
 | 77. Verify Page + Deployment + Demo | v4.0 | 0/? | Not started | - |
 | 78. Distribution | v4.0 | 0/? | Not started | - |
