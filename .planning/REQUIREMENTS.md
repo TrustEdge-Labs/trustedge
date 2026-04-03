@@ -35,7 +35,7 @@ Requirements for SBOM Attestation Wedge milestone. Each maps to roadmap phases.
 ### Distribution
 
 - [ ] **DIST-01**: Platform server deployed to a public URL (in-memory backend, rate limited, ephemeral receipts)
-- [ ] **DIST-02**: Demo script runs end-to-end in under 60 seconds (keygen → attest-sbom → verify)
+- [x] **DIST-02**: Demo script runs end-to-end in under 60 seconds (keygen → attest-sbom → verify)
 - [ ] **DIST-03**: Product landing page on trustedgelabs-website with quick start, verifier link, and GitHub Action link
 - [ ] **DIST-04**: TrustEdge attests its own release builds in CI, with .te-attestation.json in GitHub Releases
 - [ ] **DIST-05**: Third-party attestation demo prepared for prospect conversations
@@ -92,7 +92,7 @@ Deferred to future milestones. Tracked but not in current roadmap.
 | PLAT-02 | Phase 77 | Pending |
 | PLAT-03 | Phase 77 | Pending |
 | DIST-01 | Phase 77 | Pending |
-| DIST-02 | Phase 77 | Pending |
+| DIST-02 | Phase 77 | Complete |
 | DIST-03 | Phase 78 | Pending |
 | DIST-04 | Phase 78 | Pending |
 | DIST-05 | Phase 78 | Pending |

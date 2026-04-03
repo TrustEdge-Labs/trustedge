@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: SBOM Attestation Wedge
 status: verifying
-stopped_at: Completed 76-02-PLAN.md
-last_updated: "2026-04-02T23:34:45.256Z"
-last_activity: 2026-04-02
+stopped_at: Completed 77-03-PLAN.md
+last_updated: "2026-04-03T11:28:43.973Z"
+last_activity: 2026-04-03
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
 ---
 
 <!--
@@ -50,14 +50,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 76 — cli-platform-endpoint
+**Current focus:** Phase 77 — verify-page-deployment-demo
 
 ## Current Position
 
-Phase: 76 (cli-platform-endpoint) — EXECUTING
-Plan: 2 of 2
+Phase: 77 (verify-page-deployment-demo) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-04-02
+Last activity: 2026-04-03
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -84,6 +84,7 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 75]: Canonical bytes = clone struct, set signature=None, serde_json::to_string (stable struct field order)
 - [Phase 76-02]: POST /v1/verify-attestation uses String extractor (not Json<>) — attestation JSON has no Content-Type enforcement requirement
 - [Phase 76-02]: verify_attestation_handler has no feature gate — stateless, works identically with or without postgres
+- [Phase 77]: Script does NOT auto-install syft — errors with install instructions (safer for production machines)
 
 ### Pending Todos
 
@@ -97,8 +98,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-02T23:34:45.254Z
-Stopped at: Completed 76-02-PLAN.md
+Last session: 2026-04-03T11:28:43.969Z
+Stopped at: Completed 77-03-PLAN.md
 Resume file: None
 
 ---
