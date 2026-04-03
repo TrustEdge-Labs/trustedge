@@ -167,3 +167,50 @@ jobs:
 
       - name: Security audit
         run: cargo audit
+
+  # ── Self-attestation (release tags only) ─────────────────────
+  self-attestation:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-and-test
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpcsclite-dev pkg-config pkgconf
+
+      - name: Build trst binary
+        run: cargo build -p trustedge-trst-cli --release --locked
+
+      - name: Install syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate ephemeral Ed25519 keypair
+        run: |
+          ./target/release/trst keygen \
+            --out-key ephemeral.key \
+            --out-pub ephemeral.pub \
+            --unencrypted
+
+      - name: Generate CycloneDX SBOM with syft
+        run: syft ./target/release/trst -o cyclonedx-json > trst-sbom.cdx.json
+
+      - name: Create SBOM attestation
+        run: |
+          ./target/release/trst attest-sbom \
+            --binary ./target/release/trst \
+            --sbom trst-sbom.cdx.json \
+            --device-key ephemeral.key \
+            --device-pub ephemeral.pub \
+            --out trst.te-attestation.json \
+            --unencrypted
+
+      - name: Upload attestation as release asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" trst.te-attestation.json --clobber
