@@ -48,7 +48,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 
 - [x] **Phase 75: Core Attestation Library** - PointAttestation struct, signing, verification, and canonical serialization (completed 2026-04-02)
 - [x] **Phase 76: CLI + Platform Endpoint** - `trst attest-sbom`, `trst verify-attestation`, and `POST /v1/verify-attestation` (completed 2026-04-02)
-- [ ] **Phase 77: Verify Page + Deployment + Demo** - Static HTML verifier, public deployment, and demo script
+- [x] **Phase 77: Verify Page + Deployment + Demo** - Static HTML verifier, public deployment, and demo script (completed 2026-04-03)
 - [ ] **Phase 78: Distribution** - Landing page, self-attestation in CI, third-party demo, GitHub Action
 
 ## Phase Details
@@ -89,10 +89,10 @@ Plans:
   2. The verify page handles network errors and timeouts with user-visible error messages (no silent failures or blank states)
   3. A user can upload an attestation document to the verify page and get independent third-party verification using the embedded public key (attestation documents are self-contained)
   4. Running `./scripts/demo-attestation.sh` completes keygen → attest-sbom → verify end-to-end in under 60 seconds with no manual steps
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
-- [ ] 77-01-PLAN.md — Static HTML verify page + platform route serving at GET /verify
-- [ ] 77-02-PLAN.md — DigitalOcean App Platform deployment configuration
+- [x] 77-01-PLAN.md — Static HTML verify page + platform route serving at GET /verify
+- [x] 77-02-PLAN.md — DigitalOcean App Platform deployment configuration
 - [x] 77-03-PLAN.md — End-to-end SBOM attestation demo script
 
 ### Phase 78: Distribution
@@ -112,5 +112,5 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 75. Core Attestation Library | v4.0 | 1/1 | Complete   | 2026-04-02 |
 | 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete   | 2026-04-02 |
-| 77. Verify Page + Deployment + Demo | v4.0 | 1/3 | In Progress|  |
+| 77. Verify Page + Deployment + Demo | v4.0 | 3/3 | Complete   | 2026-04-03 |
 | 78. Distribution | v4.0 | 0/? | Not started | - |

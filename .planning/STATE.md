@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: SBOM Attestation Wedge
 status: verifying
-stopped_at: Completed 77-03-PLAN.md
-last_updated: "2026-04-03T11:28:43.973Z"
+stopped_at: Completed 77-01-PLAN.md
+last_updated: "2026-04-03T11:29:29.721Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 6
 ---
 
 <!--
@@ -55,8 +55,8 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 77 (verify-page-deployment-demo) — EXECUTING
-Plan: 2 of 3
-Status: Ready to execute
+Plan: 3 of 3
+Status: Phase complete — ready for verification
 Last activity: 2026-04-03
 
 Progress: [░░░░░░░░░░] 0%
@@ -85,6 +85,8 @@ Progress: [░░░░░░░░░░] 0%
 - [Phase 76-02]: POST /v1/verify-attestation uses String extractor (not Json<>) — attestation JSON has no Content-Type enforcement requirement
 - [Phase 76-02]: verify_attestation_handler has no feature gate — stateless, works identically with or without postgres
 - [Phase 77]: Script does NOT auto-install syft — errors with install instructions (safer for production machines)
+- [Phase 77]: DigitalOcean verify-only deployment uses http feature only — stateless, no postgres, one-command deploy via doctl
+- [Phase 77]: include_str! embedding for verify page HTML — compiled into binary, no runtime file dependency
 
 ### Pending Todos
 
@@ -98,8 +100,8 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-03T11:28:43.969Z
-Stopped at: Completed 77-03-PLAN.md
+Last session: 2026-04-03T11:29:29.718Z
+Stopped at: Completed 77-01-PLAN.md
 Resume file: None
 
 ---
