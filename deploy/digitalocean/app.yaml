@@ -1,0 +1,36 @@
+# TrustEdge Verifier — DigitalOcean App Platform Spec
+#
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# MPL-2.0: https://mozilla.org/MPL/2.0/
+#
+# Deploy:
+#   doctl apps create --spec deploy/digitalocean/app.yaml
+#
+# Update spec on existing app:
+#   doctl apps update <app-id> --spec deploy/digitalocean/app.yaml
+
+name: trustedge-verifier
+services:
+  - name: platform
+    dockerfile_path: deploy/digitalocean/Dockerfile
+    source_dir: /
+    github:
+      repo: TrustEdge-Labs/trustedge
+      branch: main
+      deploy_on_push: true
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    http_port: 3001
+    health_check:
+      http_path: /healthz
+      initial_delay_seconds: 10
+      period_seconds: 30
+    envs:
+      - key: PORT
+        value: "3001"
+      - key: RECEIPT_TTL_SECS
+        value: "3600"
+      - key: RATE_LIMIT_RPS
+        value: "10"
+      - key: RUST_LOG
+        value: "info"
