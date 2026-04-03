@@ -20,6 +20,7 @@ pub mod handlers;
 pub mod rate_limit;
 pub mod router;
 pub mod state;
+pub mod static_files;
 
 pub use config::Config;
 pub use router::{build_base_router, create_router};

@@ -15,6 +15,7 @@
 //!   GET   /v1/receipts/:id        — get receipt (postgres only)
 //!   GET   /.well-known/jwks.json  — local JWKS (no proxy)
 //!   GET   /healthz                — health check
+//!   GET   /verify                 — self-contained attestation verifier HTML page
 
 use axum::{
     routing::{get, post},
@@ -26,6 +27,7 @@ use super::{
     handlers::{health_handler, jwks_handler, verify_attestation_handler, verify_handler},
     rate_limit::{rate_limit_middleware, RateLimitState},
     state::AppState,
+    static_files::verify_page_handler,
 };
 
 /// Build the base router with routes shared across all feature configurations.
@@ -40,6 +42,7 @@ pub fn build_base_router() -> Router<AppState> {
     Router::new()
         .route("/.well-known/jwks.json", get(jwks_handler))
         .route("/healthz", get(health_handler))
+        .route("/verify", get(verify_page_handler))
 }
 
 /// Compose the full Axum router for the TrustEdge Platform service.
