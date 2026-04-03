@@ -1,3 +1,11 @@
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+
+
 ---
 phase: 24-type-centralization
 verified: 2026-02-21T20:15:00Z

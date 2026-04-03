@@ -1,3 +1,11 @@
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+
+
 ---
 phase: 20-dead-code-removal
 verified: 2026-02-14T00:00:00Z

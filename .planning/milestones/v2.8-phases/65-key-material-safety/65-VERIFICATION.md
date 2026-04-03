@@ -1,3 +1,11 @@
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+
+
 ---
 phase: 65-key-material-safety
 verified: 2026-03-25T23:30:00Z

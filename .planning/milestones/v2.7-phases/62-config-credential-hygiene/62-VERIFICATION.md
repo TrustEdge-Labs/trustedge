@@ -1,3 +1,11 @@
+<!--
+Copyright (c) 2025 TRUSTEDGE LABS LLC
+MPL-2.0: https://mozilla.org/MPL/2.0/
+Project: trustedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/trustedge
+-->
+
+
 ---
 phase: 62-config-credential-hygiene
 verified: 2026-03-25T13:15:00Z
