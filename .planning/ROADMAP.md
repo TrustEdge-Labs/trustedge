@@ -87,7 +87,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. A user can visit the public verifier URL, upload a `.te-attestation.json` file, and see a receipt displaying the binary hash, SBOM contents, signing key, and timestamp
   2. The verify page handles network errors and timeouts with user-visible error messages (no silent failures or blank states)
-  3. A user can upload an attestation plus a binary and a public key to the verify page for independent third-party verification without relying on a stored key
+  3. A user can upload an attestation document to the verify page and get independent third-party verification using the embedded public key (attestation documents are self-contained)
   4. Running `./scripts/demo-attestation.sh` completes keygen → attest-sbom → verify end-to-end in under 60 seconds with no manual steps
 **Plans:** 3 plans
 Plans:

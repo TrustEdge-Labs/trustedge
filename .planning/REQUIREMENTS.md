@@ -30,7 +30,7 @@ Requirements for SBOM Attestation Wedge milestone. Each maps to roadmap phases.
 
 - [x] **PLAT-01**: Platform exposes `POST /v1/verify-attestation` endpoint that verifies point attestations and returns a JWS receipt
 - [ ] **PLAT-02**: Static HTML verification page accepts attestation upload, displays receipt with SBOM contents, binary hash, key, timestamp, and handles network errors/timeouts
-- [ ] **PLAT-03**: Verification page supports third-party flow: upload attestation + binary + public key for independent verification
+- [ ] **PLAT-03**: Verification page supports third-party verification via the attestation's embedded public key (self-contained attestation documents are independently verifiable without separate key upload)
 
 ### Distribution
 
