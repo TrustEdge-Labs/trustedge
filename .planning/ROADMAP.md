@@ -104,7 +104,10 @@ Plans:
   2. TrustEdge GitHub Releases include a `.te-attestation.json` alongside the release binary, generated automatically in CI
   3. A prospect can independently verify the TrustEdge self-attestation using only the public verifier URL and the release artifact — no TrustEdge infrastructure required
   4. A third-party project can add SBOM attestation to its release workflow with a single YAML snippet using `trustedge/attest-sbom-action@v1`
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 78-01-PLAN.md — Landing page content and third-party attestation guide
+- [ ] 78-02-PLAN.md — GitHub Action and CI self-attestation step
 
 ## Progress
 
@@ -113,4 +116,4 @@ Plans:
 | 75. Core Attestation Library | v4.0 | 1/1 | Complete   | 2026-04-02 |
 | 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete   | 2026-04-02 |
 | 77. Verify Page + Deployment + Demo | v4.0 | 3/3 | Complete   | 2026-04-03 |
-| 78. Distribution | v4.0 | 0/? | Not started | - |
+| 78. Distribution | v4.0 | 0/2 | Not started | - |
