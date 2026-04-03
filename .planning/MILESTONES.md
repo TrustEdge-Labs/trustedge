@@ -1,10 +1,42 @@
+## v4.0 SBOM Attestation Wedge (Shipped: 2026-04-03)
+
+**Phases completed:** 4 phases (75-78), 8 plans, 13 tasks
+**Timeline:** 3 days (2026-04-01 → 2026-04-03)
+**Stats:** 43 commits, 465 files changed, 10,869 insertions, 2,560 deletions, 471 tests
+
+**Delivered:** First product feature: lightweight point attestation format (.te-attestation.json) for cryptographically binding SBOMs to binary artifacts, with CLI, platform endpoint, public verifier, and GitHub Action.
+
+**Key accomplishments:**
+
+- `PointAttestation` type in trustedge-core (521 lines, 15 tests): generic subject/evidence binding with Ed25519 signing, BLAKE3 hashing, random nonce, canonical JSON
+- `trst attest-sbom` and `trst verify-attestation` CLI subcommands with input validation (0-byte, >256MB, non-JSON) and 8 acceptance tests
+- `POST /v1/verify-attestation` platform endpoint with JWS receipts, rate limiting, and 5 integration tests
+- Static HTML verify page served via `include_str!` at GET /verify with error/timeout handling
+- DigitalOcean App Platform deployment (GHCR image, stateless verify-only mode)
+- GitHub Action `TrustEdge-Labs/attest-sbom-action@v1` (composite, downloads pre-built binary)
+- CI self-attestation: ephemeral key per release, .te-attestation.json uploaded as release asset
+- Demo script (`scripts/demo-attestation.sh`) and third-party attestation guide
+
+**Tech debt carried forward:**
+
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+- `test_many_keys` reduced from 100 to 10 keys due to debug-mode P-256 slowness
+
+**Git range:** v3.0..v4.0
+
+**Archives:**
+
+- `.planning/milestones/v4.0-ROADMAP.md`
+- `.planning/milestones/v4.0-REQUIREMENTS.md`
+
+---
+
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
 Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
-
 
 ## v2.0 End-to-End Demo (Shipped: 2026-03-16)
 

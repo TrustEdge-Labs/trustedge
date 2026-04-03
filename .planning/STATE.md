@@ -4,7 +4,7 @@ milestone: v4.0
 milestone_name: SBOM Attestation Wedge
 status: verifying
 stopped_at: Completed 78-02-PLAN.md
-last_updated: "2026-04-03T14:05:01.452Z"
+last_updated: "2026-04-03T22:01:46.542Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 4

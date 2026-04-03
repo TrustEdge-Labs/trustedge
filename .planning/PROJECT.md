@@ -18,7 +18,7 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-Shipped v3.0 Release Polish — official signed release. All security review findings resolved (P0, P1, P2 — 15 findings across v2.4-v3.0). 406+ tests, zero clippy warnings, documentation current.
+Shipped v4.0 SBOM Attestation Wedge — first product feature. Lightweight point attestation format (.te-attestation.json) for cryptographically binding SBOMs to binary artifacts. CLI (attest-sbom, verify-attestation), platform endpoint (/v1/verify-attestation with JWS receipts), static HTML verifier, DigitalOcean deployment, GitHub Action, CI self-attestation. Public verifier live. 471 tests across 9 workspace crates.
 
 ## Requirements
 
@@ -205,11 +205,20 @@ Shipped v3.0 Release Polish — official signed release. All security review fin
 - ✓ CLAUDE.md updated (CLI binary table, feature flags, platform env vars, test counts, archive.rs) — v3.0 Phase 74
 - ✓ docs/ directory audited and updated (cli.md, architecture.md, testing.md, development.md) — v3.0 Phase 74
 
+- ✓ PointAttestation type with Ed25519 signing, BLAKE3 hashing, random nonce, canonical JSON serialization — v4.0 Phase 75
+- ✓ `trst attest-sbom` CLI: CycloneDX JSON + binary → .te-attestation.json with input validation — v4.0 Phase 76
+- ✓ `trst verify-attestation` CLI: local signature + optional hash verification, exit codes 0/1/10 — v4.0 Phase 76
+- ✓ `POST /v1/verify-attestation` platform endpoint with JWS receipts, rate limited — v4.0 Phase 76
+- ✓ Static HTML verify page at GET /verify served via include_str! with error/timeout handling — v4.0 Phase 77
+- ✓ DigitalOcean App Platform deployment (GHCR image, stateless verify-only mode) — v4.0 Phase 77
+- ✓ Demo script (scripts/demo-attestation.sh) runs keygen → attest → verify in under 60 seconds — v4.0 Phase 77
+- ✓ GitHub Action `TrustEdge-Labs/attest-sbom-action@v1` (composite, downloads pre-built binary) — v4.0 Phase 78
+- ✓ CI self-attestation with ephemeral keys, .te-attestation.json in GitHub Releases — v4.0 Phase 78
+- ✓ Product landing page content and third-party attestation guide — v4.0 Phase 78
+
 ### Active
 
-(Requirements defined in REQUIREMENTS.md for v4.0)
-
-## Current Milestone: v4.0 SBOM Attestation Wedge
+(No active requirements — v4.0 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
 
 **Goal:** Ship TrustEdge's first product wedge: a CLI + hosted verifier for cryptographically binding SBOMs to binary artifacts, targeting DevSecOps teams facing EU CRA compliance.
 
@@ -260,6 +269,7 @@ Shipped v3.0 Release Polish — official signed release. All security review fin
 - **v2.8 High Priority Hardening** — Proxy-aware rate limiting + Retry-After, key file 0600 on wrap, PrivateKey serde removed, zero-nonce eliminated, RAII-safe CLI exits, chunk-size ceiling, nginx non-root, CI credential guard
 - **v2.9 Security Review P2 Remediation** — Insecure Default impls removed (CAConfig, SoftwareHsmConfig), LazyLock regex, --unencrypted warning, least-privilege CI, nginx security headers (CSP, HSTS, X-Frame, Referrer-Policy), HTTP-to-HTTPS redirect
 - **v3.0 Release Polish** — Official signed release. Configurable receipt TTL, healthz version removed, strict PORT, crypto hygiene (expect + Result), nginx headers in all locations, Docker env_file, full docs sweep
+- **v4.0 SBOM Attestation Wedge** — First product feature. Point attestation format (.te-attestation.json), CLI (attest-sbom, verify-attestation), platform endpoint, HTML verifier, DO deployment, GitHub Action, CI self-attestation
 
 ## Context
 
@@ -409,4 +419,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-01 — v4.0 milestone started*
+*Last updated: 2026-04-03 after v4.0 milestone*
