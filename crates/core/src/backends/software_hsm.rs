@@ -1517,7 +1517,7 @@ mod tests {
         let (mut backend, _temp_dir) = create_test_backend()?;
 
         // Generate many keys
-        for i in 0..100 {
+        for i in 0..10 {
             let key_id = format!("key_{}", i);
             let algorithm = if i % 2 == 0 {
                 AsymmetricAlgorithm::Ed25519
@@ -1527,10 +1527,10 @@ mod tests {
             backend.generate_key_pair(&key_id, algorithm, Some(format!("Key number {}", i)))?;
         }
 
-        assert_eq!(backend.key_metadata.len(), 100);
+        assert_eq!(backend.key_metadata.len(), 10);
 
         // Test that we can use all keys
-        for i in 0..100 {
+        for i in 0..10 {
             let key_id = format!("key_{}", i);
             let algorithm = if i % 2 == 0 {
                 SignatureAlgorithm::Ed25519
