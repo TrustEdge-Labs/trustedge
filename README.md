@@ -9,21 +9,51 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-3.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v3.0)
+[![Version](https://img.shields.io/badge/version-4.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v4.0)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge
 
-Cryptographic provenance for edge device data.
+Cryptographic provenance for edge device data and software supply chains.
 
 ## Problem
 
-Edge devices generate data -- video, sensor readings, audio, logs -- but there is no way to
-prove that data has not been tampered with between capture and consumption. TrustEdge provides
-a cryptographic chain of custody: sign at the source, encrypt, wrap into a tamper-evident
-archive, verify with an independent service, and receive a cryptographic receipt as proof.
+Edge devices generate data, video, sensor readings, audio, logs, but there is no way to
+prove that data has not been tampered with between capture and consumption. Software teams
+generate SBOMs but can't cryptographically prove the SBOM matches the actual binary.
+TrustEdge provides cryptographic chain of custody: sign at the source, verify with an
+independent service, and receive a cryptographic receipt as proof.
 
-## Quick Start
+## Quick Start: SBOM Attestation
+
+Cryptographically bind an SBOM to a binary artifact and verify it:
+
+```bash
+# Generate a signing key
+trst keygen --out-key build.key --out-pub build.pub --unencrypted
+
+# Attest: bind SBOM to binary
+trst attest-sbom --binary target/release/myapp --sbom bom.cdx.json \
+  --device-key build.key --device-pub build.pub --out attestation.te-attestation.json
+
+# Verify locally
+trst verify-attestation attestation.te-attestation.json --device-pub "$(cat build.pub)"
+```
+
+Or use the [GitHub Action](https://github.com/TrustEdge-Labs/attest-sbom-action) for one-line CI integration:
+
+```yaml
+- uses: TrustEdge-Labs/attest-sbom-action@v1
+  with:
+    binary: target/release/myapp
+    sbom: bom.cdx.json
+```
+
+See the [third-party attestation guide](docs/third-party-attestation-guide.md) for complete manual and CI workflows.
+
+## Quick Start: Archive Verification
+
+For continuous data streams (video, audio, sensor data), use `.trst` archives:
 
 ```bash
 git clone https://github.com/TrustEdge-Labs/trustedge.git && cd trustedge
@@ -40,6 +70,22 @@ No Docker? Run `./scripts/demo.sh --local` with just Rust installed for local-on
 verification.
 
 ## Use Cases
+
+### Firmware SBOM Attestation
+
+An IoT manufacturer ships firmware updates and needs to prove the SBOM matches the actual
+binary for EU CRA compliance. TrustEdge cryptographically binds the two artifacts together.
+
+```bash
+trst attest-sbom --binary firmware-v2.3.bin --sbom firmware-v2.3.cdx.json \
+  --device-key build.key --device-pub build.pub --out firmware-v2.3.te-attestation.json
+trst verify-attestation firmware-v2.3.te-attestation.json --device-pub "$(cat build.pub)" \
+  --binary firmware-v2.3.bin --sbom firmware-v2.3.cdx.json
+```
+
+The `.te-attestation.json` is a lightweight JSON document with Ed25519 signature over
+BLAKE3 hashes of both files, a random nonce, and timestamp. Any third party can verify
+it using only the attestation document and the embedded public key.
 
 ### Drone Inspection
 
@@ -119,14 +165,23 @@ For cam.video-specific archives with frame rate and segment duration, see [examp
 
 ## How It Works
 
-**Security Posture (v3.0):** TrustEdge uses RSA OAEP-SHA256 for all asymmetric operations. Envelopes are v2-only format with HKDF-SHA256 key derivation. Device private keys are encrypted at rest using TRUSTEDGE-KEY-V1 format (PBKDF2-HMAC-SHA256 600k + AES-256-GCM, versioned metadata); a passphrase is prompted at runtime. Key-holding structs (`PrivateKey`, `SessionInfo`, `ClientAuthResult`, `SymmetricKey`) zeroize memory on drop. Auth timestamps use asymmetric validation (5s future / 300s past tolerance). Generated key files are restricted to owner-only permissions (0600) on Unix. Platform HTTP endpoints enforce a 2 MB body limit and per-IP rate limiting on `/v1/verify`. CORS origins are configurable via `CORS_ORIGINS` env var. JWKS signing key path is configurable via `JWKS_KEY_PATH` (no plaintext in build directories). Receipt TTL is configurable via `RECEIPT_TTL_SECS` (default 3600s). PORT parsing fails fast with a clear error on invalid values. nginx supports conditional TLS termination. The CLI requires `--show-key` or `--key-out` to display encryption keys. 406 tests across 9 workspace crates.
+**Security Posture (v4.0):** TrustEdge uses RSA OAEP-SHA256 for all asymmetric operations. Envelopes are v2-only format with HKDF-SHA256 key derivation. Point attestations use Ed25519 signing over BLAKE3 hashes with random nonces (`.te-attestation.json`). Device private keys are encrypted at rest using TRUSTEDGE-KEY-V1 format (PBKDF2-HMAC-SHA256 600k + AES-256-GCM, versioned metadata); a passphrase is prompted at runtime. Key-holding structs zeroize memory on drop. Platform HTTP endpoints enforce a 2 MB body limit and per-IP rate limiting on `/v1/verify` and `/v1/verify-attestation`. JWKS signing key path is configurable via `JWKS_KEY_PATH`. Receipt TTL is configurable via `RECEIPT_TTL_SECS` (default 3600s). 471 tests across 9 workspace crates.
 
-1. **Sign** -- Device generates an Ed25519 keypair (or uses YubiKey ECDSA P-256) and signs data at the point of capture; private keys are encrypted at rest with TRUSTEDGE-KEY-V1 format (PBKDF2 + AES-GCM), passphrase prompted at runtime
-2. **Encrypt** -- Data is chunked and each chunk is AES-256-GCM encrypted using HKDF-derived keys (v2 envelope format)
-3. **Wrap** -- Chunks, manifest, and signature are packaged into a `.trst` archive with a BLAKE3 continuity chain
-4. **Verify** -- An independent verification service checks the signature, chain integrity, and manifest
-5. **Unwrap** -- Original data is recovered after mandatory signature and chain verification
-6. **Receipt** -- A cryptographic receipt is issued proving the data was verified at a specific time
+**Two attestation modes:**
+
+**Point Attestation** (for single artifacts: SBOMs, firmware, documents):
+1. **Hash** -- BLAKE3 hash of the binary and SBOM (or any two artifacts)
+2. **Sign** -- Ed25519 signature over the hashes, timestamp, and random nonce
+3. **Verify** -- Any third party verifies using the embedded public key
+4. **Receipt** -- Platform issues a JWS receipt proving verification at a specific time
+
+**Stream Attestation** (for continuous data: video, audio, sensor readings):
+1. **Sign** -- Ed25519 keypair (or YubiKey ECDSA P-256) signs data at capture
+2. **Encrypt** -- Chunked AES-256-GCM encryption with HKDF-derived keys
+3. **Wrap** -- Chunks, manifest, and signature packaged into a `.trst` archive with BLAKE3 continuity chain
+4. **Verify** -- Independent verification service checks signature, chain integrity, and manifest
+5. **Unwrap** -- Original data recovered after mandatory signature and chain verification
+6. **Receipt** -- Cryptographic receipt proving verification at a specific time
 
 Hardware-backed signing is supported via YubiKey PIV (`trst wrap --backend yubikey`). See [docs/yubikey-guide.md](docs/yubikey-guide.md).
 

@@ -18,6 +18,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [4.0.0] - 2026-04-03
+
+### SBOM Attestation Wedge
+
+First product feature: cryptographically bind SBOMs to binary artifacts using a lightweight point attestation format, independent of any CI provider.
+
+### Added
+- **Point attestation format** (`.te-attestation.json`): Ed25519 signature over BLAKE3 hashes of two artifacts (subject + evidence), random nonce, ISO 8601 timestamp. Generic `subject`/`evidence` schema works for any artifact pair.
+- **`trst attest-sbom`**: CLI command to create attestation documents from a CycloneDX SBOM + binary artifact
+- **`trst verify-attestation`**: CLI command to verify attestation documents locally, with optional binary/SBOM hash checking
+- **`POST /v1/verify-attestation`**: Platform endpoint that verifies point attestations and returns JWS receipts
+- **Static HTML verify page**: Browser-based attestation verification at `GET /verify`, served from the platform binary via `include_str!`
+- **DigitalOcean App Platform deployment**: `deploy/digitalocean/` with Dockerfile (http-only, no postgres), app.yaml, and deployment guide
+- **`scripts/demo-attestation.sh`**: End-to-end SBOM attestation demo (keygen, syft SBOM, attest, verify) in under 60 seconds
+- **GitHub Action** (`actions/attest-sbom-action/`): Composite action for one-line CI integration, downloads pre-built `trst` binary
+- **CI self-attestation**: Release workflow generates `.te-attestation.json` alongside release binaries using ephemeral keys
+- **Product landing page content**: `docs/landing-page.md` with positioning, quick start, and differentiation
+- **Third-party attestation guide**: `docs/third-party-attestation-guide.md` with manual and CI workflows
+- `PointAttestation` and `ArtifactRef` types in `trustedge-core` (521 lines, 15 unit tests)
+- 8 CLI acceptance tests for attest-sbom/verify-attestation
+- 5 platform integration tests for /v1/verify-attestation
+- `PointAttestationError` enum integrated into `TrustEdgeError`
+
+### Changed
+- Platform router serves static verify page at `GET /verify`
+- CI workflow includes self-attestation job on release tags
+- Test count: 406 -> 471 across 9 workspace crates
+
+---
+
 ## [3.0.0] - 2026-03-27
 
 ### Official Signed Release

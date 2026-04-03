@@ -11,6 +11,9 @@ Complete command-line interface documentation for TrustEdge, covering both the c
 
 ## Table of Contents
 - [Overview](#overview)
+- [Point Attestation (.te-attestation.json)](#point-attestation-te-attestationjson)
+  - [trst attest-sbom - Create SBOM Attestation](#trst-attest-sbom---create-sbom-attestation)
+  - [trst verify-attestation - Verify Attestation](#trst-verify-attestation---verify-attestation)
 - [Archive System (.trst)](#archive-system-trst)
   - [trst keygen - Generate Key Pair](#trst-keygen---generate-key-pair)
   - [trst wrap - Create Archives](#trst-wrap---create-archives)
@@ -30,10 +33,95 @@ Complete command-line interface documentation for TrustEdge, covering both the c
 
 TrustEdge provides two complementary CLI tools:
 
-1. **`trst`** - .trst archive creation, verification, and recovery system (keygen, wrap, verify, unwrap, emit-request)
+1. **`trst`** - Archive + attestation CLI (keygen, wrap, verify, unwrap, emit-request, attest-sbom, verify-attestation)
 2. **`trustedge`** - Core envelope encryption and network operations
 
 Both tools are built after running `cargo build --workspace --release`.
+
+---
+
+## Point Attestation (.te-attestation.json)
+
+Point attestation creates a lightweight JSON document that cryptographically binds two artifacts together (e.g., an SBOM and a binary). The attestation is self-contained: it includes the Ed25519 signature, BLAKE3 hashes, a random nonce, and the signer's public key. Any third party can verify it without access to TrustEdge infrastructure.
+
+### trst attest-sbom - Create SBOM Attestation
+
+Bind a CycloneDX SBOM to a binary artifact and sign the binding with an Ed25519 key.
+
+```bash
+trst attest-sbom --binary <path> --sbom <path> \
+  --device-key <key-path> --device-pub <pub-path> \
+  --out <output-path>
+```
+
+**Arguments:**
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `--binary` | Yes | Path to the binary artifact (the subject) |
+| `--sbom` | Yes | Path to the CycloneDX JSON SBOM (the evidence) |
+| `--device-key` | Yes | Path to Ed25519 private key file |
+| `--device-pub` | Yes | Path to Ed25519 public key file |
+| `--out` | No | Output path (default: `attestation.te-attestation.json`) |
+| `--unencrypted` | No | Read key without passphrase prompt (for CI/automation) |
+
+**Input validation:**
+- Binary must not be empty (0 bytes)
+- Binary must not exceed 256 MB
+- SBOM must be valid JSON
+- Key file must exist and be readable
+
+**Output:** A `.te-attestation.json` file containing:
+- `format`: `"te-point-attestation-v1"`
+- `subject`: BLAKE3 hash, filename, and label ("binary") of the binary artifact
+- `evidence`: BLAKE3 hash, filename, and label ("sbom") of the SBOM
+- `signature`: Ed25519 signature over canonical JSON (signature field excluded)
+- `nonce`: 16 random bytes (hex-encoded) for replay prevention
+- `timestamp`: ISO 8601 timestamp
+- `public_key`: The signer's public key (embedded for self-contained verification)
+
+**Example:**
+
+```bash
+trst attest-sbom --binary target/release/myapp --sbom bom.cdx.json \
+  --device-key build.key --device-pub build.pub
+# Output: attestation.te-attestation.json
+```
+
+### trst verify-attestation - Verify Attestation
+
+Verify an attestation document's Ed25519 signature, with optional file hash checking.
+
+```bash
+trst verify-attestation <attestation-path> --device-pub <pub-key>
+```
+
+**Arguments:**
+
+| Flag | Required | Description |
+|------|----------|-------------|
+| `<attestation-path>` | Yes | Path to `.te-attestation.json` file |
+| `--device-pub` | Yes | Public key string (`ed25519:...`) or path to `.pub` file |
+| `--binary` | No | Path to binary file for hash verification |
+| `--sbom` | No | Path to SBOM file for hash verification |
+
+**Exit codes:**
+- `0` - Verification passed
+- `1` - General error (IO, JSON parsing, bad input)
+- `10` - Verification failed (invalid signature or hash mismatch)
+
+**Example:**
+
+```bash
+# Signature verification only
+trst verify-attestation attestation.te-attestation.json \
+  --device-pub "$(cat build.pub)"
+
+# Signature + file hash verification
+trst verify-attestation attestation.te-attestation.json \
+  --device-pub "$(cat build.pub)" \
+  --binary target/release/myapp --sbom bom.cdx.json
+```
 
 ---
 

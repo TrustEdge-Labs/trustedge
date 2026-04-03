@@ -19,13 +19,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build workspace
 cargo build --workspace --release
 
-# Test entire workspace (406+ tests)
+# Test entire workspace (471 tests)
 cargo test --workspace
 
 # Test specific crates
 cargo test -p trustedge-types                     # Shared wire types (12 tests)
-cargo test -p trustedge-core --lib                # Core cryptography (184 tests)
-cargo test -p trustedge-trst-cli --test acceptance # Archive validation (28 tests)
+cargo test -p trustedge-core --lib                # Core cryptography + attestation (199 tests)
+cargo test -p trustedge-trst-cli --test acceptance # Archive + attestation validation (36 tests)
 cargo test -p trustedge-platform --lib            # Platform unit tests (18 tests)
 cargo test -p trustedge-platform --test verify_integration           # Verify integration (9 tests)
 cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (27 tests)
@@ -92,6 +92,7 @@ TrustEdge is a Cargo workspace with 9 crates under `crates/` (plus `examples/cam
 | `chain.rs` | BLAKE3-based continuity chain with genesis seed |
 | `archive.rs` | .trst archive read/write and validation |
 | `auth.rs` | Ed25519 mutual authentication with X25519 ECDH session key derivation |
+| `point_attestation.rs` | **Point attestation format** - Ed25519 signed, BLAKE3 hashed binding of two artifacts (`.te-attestation.json`) |
 | `audio.rs` | Live audio capture (feature-gated) |
 | `hybrid.rs` | RSA hybrid encryption (asymmetric operations) |
 
@@ -167,6 +168,30 @@ For CI/automation where interactive prompts are not possible, use `--unencrypted
 
 Production devices should always use encrypted key files. The `--unencrypted` flag is an
 explicit escape hatch and is never the default.
+
+### Working with Point Attestations
+
+```bash
+# Generate a signing key (unencrypted for CI, encrypted by default for interactive use)
+cargo run -p trustedge-trst-cli -- keygen --out-key build.key --out-pub build.pub --unencrypted
+
+# Create SBOM attestation (binds SBOM to binary with Ed25519 signature)
+cargo run -p trustedge-trst-cli -- attest-sbom --binary target/release/trst --sbom bom.cdx.json \
+  --device-key build.key --device-pub build.pub --out attestation.te-attestation.json
+
+# Verify attestation locally
+cargo run -p trustedge-trst-cli -- verify-attestation attestation.te-attestation.json \
+  --device-pub "$(cat build.pub)"
+
+# Verify with file hash checking (confirms binary and SBOM match attestation)
+cargo run -p trustedge-trst-cli -- verify-attestation attestation.te-attestation.json \
+  --device-pub "$(cat build.pub)" --binary target/release/trst --sbom bom.cdx.json
+
+# Submit to platform server for verification receipt
+curl -X POST http://localhost:3001/v1/verify-attestation \
+  -H "Content-Type: application/json" \
+  -d @attestation.te-attestation.json
+```
 
 ### Working with Archives
 
@@ -254,8 +279,8 @@ See `deploy/.env.example` for the full template with all variables documented.
 | `trustedge` | `crates/trustedge-cli/src/main.rs` | Main envelope encryption CLI |
 | `trustedge-server` | `crates/core/src/bin/trustedge-server.rs` | Network server (TCP/QUIC transport) |
 | `trustedge-client` | `crates/core/src/bin/trustedge-client.rs` | Network client |
-| `trustedge-platform-server` | `crates/platform-server/src/main.rs` | Platform HTTP server (verify, JWKS, health endpoints) |
-| `trst` | `crates/trst-cli/src/main.rs` | Archive keygen/wrap/verify/unwrap/emit-request CLI |
+| `trustedge-platform-server` | `crates/platform-server/src/main.rs` | Platform HTTP server (verify, verify-attestation, JWKS, health, verify page) |
+| `trst` | `crates/trst-cli/src/main.rs` | Archive + attestation CLI (keygen/wrap/verify/unwrap/emit-request/attest-sbom/verify-attestation) |
 
 ## Common Tasks
 
