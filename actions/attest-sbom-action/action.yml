@@ -1,0 +1,79 @@
+# Copyright (c) 2025 TRUSTEDGE LABS LLC
+# MPL-2.0: https://mozilla.org/MPL/2.0/
+# Project: trustedge — Privacy and trust at the edge.
+
+name: 'TrustEdge SBOM Attestation'
+description: 'Attest a binary artifact with its CycloneDX SBOM using TrustEdge'
+
+inputs:
+  binary:
+    description: 'Path to the binary artifact to attest'
+    required: true
+  sbom:
+    description: 'Path to CycloneDX JSON SBOM file'
+    required: true
+  key:
+    description: 'Path to Ed25519 device key (generates ephemeral if not provided)'
+    required: false
+    default: ''
+  trst-version:
+    description: 'TrustEdge release version to download (e.g., v4.0.0)'
+    required: false
+    default: 'latest'
+
+outputs:
+  attestation-path:
+    description: 'Path to generated .te-attestation.json file'
+    value: ${{ steps.attest.outputs.attestation-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Download trst binary
+      shell: bash
+      run: |
+        VERSION="${{ inputs.trst-version }}"
+        if [ "$VERSION" = "latest" ]; then
+          URL="https://github.com/TrustEdge-Labs/trustedge/releases/latest/download/trst"
+        else
+          URL="https://github.com/TrustEdge-Labs/trustedge/releases/download/${VERSION}/trst"
+        fi
+        curl -fsSL "$URL" -o "${{ runner.temp }}/trst"
+        chmod +x "${{ runner.temp }}/trst"
+        echo "Downloaded trst from $URL"
+
+    - name: Generate ephemeral keypair (if no key provided)
+      shell: bash
+      if: inputs.key == ''
+      run: |
+        "${{ runner.temp }}/trst" keygen \
+          --out-key "${{ runner.temp }}/ephemeral.key" \
+          --out-pub "${{ runner.temp }}/ephemeral.pub" \
+          --unencrypted
+        echo "TRST_KEY=${{ runner.temp }}/ephemeral.key" >> "$GITHUB_ENV"
+        echo "TRST_PUB=${{ runner.temp }}/ephemeral.pub" >> "$GITHUB_ENV"
+
+    - name: Set provided key paths
+      shell: bash
+      if: inputs.key != ''
+      run: |
+        echo "TRST_KEY=${{ inputs.key }}" >> "$GITHUB_ENV"
+        PUB_PATH="${{ inputs.key }}"
+        PUB_PATH="${PUB_PATH%.key}.pub"
+        echo "TRST_PUB=${PUB_PATH}" >> "$GITHUB_ENV"
+
+    - name: Create SBOM attestation
+      id: attest
+      shell: bash
+      run: |
+        BINARY_NAME=$(basename "${{ inputs.binary }}")
+        OUT_PATH="${{ runner.temp }}/${BINARY_NAME}.te-attestation.json"
+        "${{ runner.temp }}/trst" attest-sbom \
+          --binary "${{ inputs.binary }}" \
+          --sbom "${{ inputs.sbom }}" \
+          --device-key "$TRST_KEY" \
+          --device-pub "$TRST_PUB" \
+          --out "$OUT_PATH" \
+          --unencrypted
+        echo "attestation-path=$OUT_PATH" >> "$GITHUB_OUTPUT"
+        echo "Created attestation: $OUT_PATH"
