@@ -49,7 +49,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 - [x] **Phase 75: Core Attestation Library** - PointAttestation struct, signing, verification, and canonical serialization (completed 2026-04-02)
 - [x] **Phase 76: CLI + Platform Endpoint** - `trst attest-sbom`, `trst verify-attestation`, and `POST /v1/verify-attestation` (completed 2026-04-02)
 - [x] **Phase 77: Verify Page + Deployment + Demo** - Static HTML verifier, public deployment, and demo script (completed 2026-04-03)
-- [ ] **Phase 78: Distribution** - Landing page, self-attestation in CI, third-party demo, GitHub Action
+- [x] **Phase 78: Distribution** - Landing page, self-attestation in CI, third-party demo, GitHub Action (completed 2026-04-03)
 
 ## Phase Details
 
@@ -104,10 +104,10 @@ Plans:
   2. TrustEdge GitHub Releases include a `.te-attestation.json` alongside the release binary, generated automatically in CI
   3. A prospect can independently verify the TrustEdge self-attestation using only the public verifier URL and the release artifact — no TrustEdge infrastructure required
   4. A third-party project can add SBOM attestation to its release workflow with a single YAML snippet using `trustedge/attest-sbom-action@v1`
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 78-01-PLAN.md — Landing page content and third-party attestation guide
-- [ ] 78-02-PLAN.md — GitHub Action and CI self-attestation step
+- [x] 78-02-PLAN.md — GitHub Action and CI self-attestation step
 
 ## Progress
 
@@ -116,4 +116,4 @@ Plans:
 | 75. Core Attestation Library | v4.0 | 1/1 | Complete   | 2026-04-02 |
 | 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete   | 2026-04-02 |
 | 77. Verify Page + Deployment + Demo | v4.0 | 3/3 | Complete   | 2026-04-03 |
-| 78. Distribution | v4.0 | 1/2 | In Progress|  |
+| 78. Distribution | v4.0 | 2/2 | Complete   | 2026-04-03 |
