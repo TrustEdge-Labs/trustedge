@@ -88,9 +88,12 @@ Plans:
   1. A user can visit the public verifier URL, upload a `.te-attestation.json` file, and see a receipt displaying the binary hash, SBOM contents, signing key, and timestamp
   2. The verify page handles network errors and timeouts with user-visible error messages (no silent failures or blank states)
   3. A user can upload an attestation plus a binary and a public key to the verify page for independent third-party verification without relying on a stored key
-  4. Running `./scripts/demo.sh` completes keygen → attest-sbom → verify end-to-end in under 60 seconds with no manual steps
-**Plans**: TBD
-**UI hint**: yes
+  4. Running `./scripts/demo-attestation.sh` completes keygen → attest-sbom → verify end-to-end in under 60 seconds with no manual steps
+**Plans:** 3 plans
+Plans:
+- [ ] 77-01-PLAN.md — Static HTML verify page + platform route serving at GET /verify
+- [ ] 77-02-PLAN.md — DigitalOcean App Platform deployment configuration
+- [ ] 77-03-PLAN.md — End-to-end SBOM attestation demo script
 
 ### Phase 78: Distribution
 **Goal**: TrustEdge's SBOM attestation capability is publicly reachable and self-demonstrating — the product landing page links to the verifier and GitHub Action, TrustEdge attests its own release builds, and a ready-to-use GitHub Action exists for one-line CI integration.
@@ -109,5 +112,5 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 75. Core Attestation Library | v4.0 | 1/1 | Complete   | 2026-04-02 |
 | 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete   | 2026-04-02 |
-| 77. Verify Page + Deployment + Demo | v4.0 | 0/? | Not started | - |
+| 77. Verify Page + Deployment + Demo | v4.0 | 0/3 | Planning complete | - |
 | 78. Distribution | v4.0 | 0/? | Not started | - |
