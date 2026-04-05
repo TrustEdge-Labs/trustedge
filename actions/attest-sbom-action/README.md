@@ -4,23 +4,18 @@
 
 ## Usage
 
-### Minimal example
+### Example 1: Ephemeral key (recommended for CI)
 
-```yaml
-- uses: TrustEdge-Labs/attest-sbom-action@v1
-  with:
-    binary: ./target/release/my-app
-    sbom: sbom.cdx.json
-```
-
-This downloads the latest `trst` binary, generates an ephemeral Ed25519 keypair, and
-creates a `.te-attestation.json` file that cryptographically links your binary to its SBOM.
-
-### Full example with all inputs
+The action generates a fresh Ed25519 keypair on every run — nothing is stored. The public
+key is embedded in the attestation file, so verification is self-contained.
 
 ```yaml
 - name: Generate SBOM
-  run: syft ./target/release/my-app -o cyclonedx-json > sbom.cdx.json
+  uses: anchore/sbom-action@v0
+  with:
+    path: ./target/release/my-app
+    output-file: sbom.cdx.json
+    upload-artifact: false
 
 - name: Attest SBOM
   id: attest
@@ -28,10 +23,34 @@ creates a `.te-attestation.json` file that cryptographically links your binary t
   with:
     binary: ./target/release/my-app
     sbom: sbom.cdx.json
-    key: ./device.key          # optional: use persistent device key
-    trst-version: 'v4.0.0'    # optional: pin to a specific version
+```
 
-- name: Upload attestation as release asset
+### Example 2: Persistent key (stored as GitHub Secret)
+
+Store your signing key as a GitHub Actions secret to maintain a stable device identity
+across builds — useful when you want attestations traceable to the same device over time.
+
+```yaml
+- name: Restore signing key
+  run: echo "${{ secrets.TRUSTEDGE_KEY }}" | base64 -d > build.key
+
+- name: Generate SBOM
+  uses: anchore/sbom-action@v0
+  with:
+    path: ./target/release/my-app
+    output-file: sbom.cdx.json
+    upload-artifact: false
+
+- name: Attest SBOM
+  id: attest
+  uses: TrustEdge-Labs/attest-sbom-action@v1
+  with:
+    binary: ./target/release/my-app
+    sbom: sbom.cdx.json
+    key: ./build.key
+    trst-version: 'v4.0.0'
+
+- name: Upload attestation
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   run: |
@@ -40,14 +59,19 @@ creates a `.te-attestation.json` file that cryptographically links your binary t
       --clobber
 ```
 
-### Upload as workflow artifact
+To generate a key for the `TRUSTEDGE_KEY` secret, run locally:
 
-```yaml
-- uses: actions/upload-artifact@v4
-  with:
-    name: attestation
-    path: ${{ steps.attest.outputs.attestation-path }}
+```bash
+trst keygen --out-key build.key --out-pub build.pub --unencrypted
+base64 -w0 build.key   # paste this as TRUSTEDGE_KEY secret
 ```
+
+## What you get
+
+The action writes a `.te-attestation.json` file to `$RUNNER_TEMP` and exposes its path
+via `steps.<id>.outputs.attestation-path`. This file is a local cryptographic proof — no
+network calls are made. To get a signed receipt from the TrustEdge platform, POST the
+file to your platform instance (optional follow-on step).
 
 ## Inputs
 
@@ -66,7 +90,7 @@ creates a `.te-attestation.json` file that cryptographically links your binary t
 
 ## How it works
 
-1. Downloads the `trst` binary from [TrustEdge-Labs/trustedge releases](https://github.com/TrustEdge-Labs/trustedge/releases).
+1. Downloads the `trst` binary from [TrustEdge-Labs/trustedge releases](https://github.com/TrustEdge-Labs/trustedge/releases) and verifies its SHA256 checksum (skips verification with a warning if no checksum file is present in the release).
 2. Generates an ephemeral Ed25519 keypair (unless you provide a persistent `key`).
 3. Runs `trst attest-sbom` to create a cryptographically signed attestation that binds:
    - The binary artifact (via BLAKE3 hash)
@@ -98,7 +122,7 @@ curl -X POST https://verify.trustedge.dev/v1/verify-attestation \
 - [TrustEdge repository](https://github.com/TrustEdge-Labs/trustedge)
 - [TrustEdge public verifier](https://verify.trustedge.dev)
 - [CycloneDX SBOM specification](https://cyclonedx.org/)
-- [syft SBOM generator](https://github.com/anchore/syft)
+- [anchore/sbom-action](https://github.com/anchore/sbom-action)
 
 ## License
 
