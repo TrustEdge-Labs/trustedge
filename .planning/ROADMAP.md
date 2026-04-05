@@ -78,7 +78,10 @@ Plans:
   2. The action downloads the `trst` binary from GitHub Releases and verifies its SHA256 checksum before executing — it does not bundle a binary
   3. A user can configure the action with `sbom-path`, `binary-path`, `key-path`, and `trustedge-version` inputs in their workflow YAML
   4. The action README shows two working usage examples: one using a persistent signing key (stored as a secret) and one using an ephemeral key generated per-run
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 80-01-PLAN.md — Enhance action.yml (SHA256 verification), polish README (two usage examples), create separate repo and tag v1/v1.0.0, submit Marketplace listing
 
 ### Phase 81: Demo GIF
 **Goal**: A developer landing on the TrustEdge README can immediately see what the product does — attest-sbom to verify-attestation — by watching an embedded GIF, without reading any prose.
@@ -112,6 +115,6 @@ Plans:
 | 77. Verify Page + Deployment + Demo | v4.0 | 3/3 | Complete | 2026-04-03 |
 | 78. Distribution | v4.0 | 2/2 | Complete | 2026-04-03 |
 | 79. Self-Attestation CI | v5.0 | 1/1 | Complete   | 2026-04-05 |
-| 80. GitHub Action Marketplace | v5.0 | 0/? | Not started | - |
+| 80. GitHub Action Marketplace | v5.0 | 0/1 | Not started | - |
 | 81. Demo GIF | v5.0 | 0/? | Not started | - |
 | 82. Product Landing Page | v5.0 | 0/? | Not started | - |
