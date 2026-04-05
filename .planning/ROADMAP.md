@@ -64,7 +64,10 @@ See `.planning/milestones/` for archived roadmaps and requirements.
   3. The CI job generates a fresh Ed25519 keypair on every run; no signing key is stored in GitHub Secrets or the repository
   4. The CI job uses a pinned `anchore/sbom-action@v0` to generate a CycloneDX SBOM that is bound to the release binary
   5. The te-prove design doc is accessible in `.planning/ideas/` for future reference
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 79-01-PLAN.md — Fix self-attestation CI job and archive te-prove design doc
 
 ### Phase 80: GitHub Action Marketplace
 **Goal**: Any project can add SBOM attestation to their CI with a single YAML snippet by installing `TrustEdge-Labs/attest-sbom-action@v1` from the GitHub Marketplace.
@@ -108,7 +111,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 | 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete | 2026-04-02 |
 | 77. Verify Page + Deployment + Demo | v4.0 | 3/3 | Complete | 2026-04-03 |
 | 78. Distribution | v4.0 | 2/2 | Complete | 2026-04-03 |
-| 79. Self-Attestation CI | v5.0 | 0/? | Not started | - |
+| 79. Self-Attestation CI | v5.0 | 0/1 | Not started | - |
 | 80. GitHub Action Marketplace | v5.0 | 0/? | Not started | - |
 | 81. Demo GIF | v5.0 | 0/? | Not started | - |
 | 82. Product Landing Page | v5.0 | 0/? | Not started | - |
