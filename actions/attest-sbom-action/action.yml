@@ -5,6 +5,10 @@
 name: 'TrustEdge SBOM Attestation'
 description: 'Attest a binary artifact with its CycloneDX SBOM using TrustEdge'
 
+branding:
+  icon: 'shield'
+  color: 'blue'
+
 inputs:
   binary:
     description: 'Path to the binary artifact to attest'
@@ -34,13 +38,28 @@ runs:
       run: |
         VERSION="${{ inputs.trst-version }}"
         if [ "$VERSION" = "latest" ]; then
-          URL="https://github.com/TrustEdge-Labs/trustedge/releases/latest/download/trst"
+          BASE_URL="https://github.com/TrustEdge-Labs/trustedge/releases/latest/download"
         else
-          URL="https://github.com/TrustEdge-Labs/trustedge/releases/download/${VERSION}/trst"
+          BASE_URL="https://github.com/TrustEdge-Labs/trustedge/releases/download/${VERSION}"
         fi
-        curl -fsSL "$URL" -o "${{ runner.temp }}/trst"
+
+        # Download binary
+        curl -fsSL "${BASE_URL}/trst" -o "${{ runner.temp }}/trst"
         chmod +x "${{ runner.temp }}/trst"
-        echo "Downloaded trst from $URL"
+
+        # Download and verify SHA256 checksum (per D-04: graceful degradation if not present)
+        if curl -fsSL "${BASE_URL}/trst.sha256" -o "${{ runner.temp }}/trst.sha256" 2>/dev/null; then
+          # The checksum file contains "HASH  filename" — extract just the hash
+          EXPECTED_HASH=$(awk '{print $1}' "${{ runner.temp }}/trst.sha256")
+          ACTUAL_HASH=$(sha256sum "${{ runner.temp }}/trst" | awk '{print $1}')
+          if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
+            echo "SHA256 mismatch: expected $EXPECTED_HASH, got $ACTUAL_HASH"
+            exit 1
+          fi
+          echo "SHA256 verified: $ACTUAL_HASH"
+        else
+          echo "Warning: No SHA256 checksum file found for this release. Skipping verification."
+        fi
 
     - name: Generate ephemeral keypair (if no key provided)
       shell: bash
