@@ -4,8 +4,8 @@ milestone: v5.0
 milestone_name: Portfolio Polish
 status: executing
 stopped_at: Phase 80 plans verified
-last_updated: "2026-04-05T14:34:44.541Z"
-last_activity: 2026-04-05 -- Phase 79 execution started
+last_updated: "2026-04-05T14:48:45.804Z"
+last_activity: 2026-04-05 -- Phase 80 execution started
 progress:
   total_phases: 4
   completed_phases: 1
@@ -28,14 +28,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 79 — self-attestation-ci
+**Current focus:** Phase 80 — github-action-marketplace
 
 ## Current Position
 
-Phase: 79 (self-attestation-ci) — EXECUTING
+Phase: 80 (github-action-marketplace) — EXECUTING
 Plan: 1 of 1
-Status: Executing Phase 79
-Last activity: 2026-04-05 -- Phase 79 execution started
+Status: Executing Phase 80
+Last activity: 2026-04-05 -- Phase 80 execution started
 
 ```
 v5.0 Progress: [ ] [ ] [ ] [ ]  0/4 phases
