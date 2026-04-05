@@ -69,24 +69,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CI-01 | TBD | Pending |
-| CI-02 | TBD | Pending |
-| CI-03 | TBD | Pending |
-| CI-04 | TBD | Pending |
-| DIST-01 | TBD | Pending |
-| DIST-02 | TBD | Pending |
-| DIST-03 | TBD | Pending |
-| DIST-04 | TBD | Pending |
-| VIS-01 | TBD | Pending |
-| VIS-02 | TBD | Pending |
-| VIS-03 | TBD | Pending |
-| HK-01 | TBD | Pending |
+| CI-01 | Phase 79 | Pending |
+| CI-02 | Phase 79 | Pending |
+| CI-03 | Phase 79 | Pending |
+| CI-04 | Phase 79 | Pending |
+| HK-01 | Phase 79 | Pending |
+| DIST-01 | Phase 80 | Pending |
+| DIST-02 | Phase 80 | Pending |
+| DIST-03 | Phase 80 | Pending |
+| DIST-04 | Phase 80 | Pending |
+| VIS-01 | Phase 81 | Pending |
+| VIS-03 | Phase 81 | Pending |
+| VIS-02 | Phase 82 | Pending |
 
 **Coverage:**
 - v5.0 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12 ⚠️
+- Mapped to phases: 12
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after initial definition*
+*Last updated: 2026-04-05 — traceability populated after roadmap creation*

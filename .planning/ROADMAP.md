@@ -29,91 +29,86 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v2.8 High Priority Hardening** - Phases 64-67 (shipped 2026-03-26)
 - ✅ **v2.9 Security Review P2 Remediation** - Phases 68-70 (shipped 2026-03-26)
 - ✅ **v3.0 Release Polish** - Phases 71-74 (shipped 2026-03-27)
-- 📋 **v4.0 SBOM Attestation Wedge** - Phases 75-78 (planned)
+- ✅ **v4.0 SBOM Attestation Wedge** - Phases 75-78 (shipped 2026-04-03)
+- 📋 **v5.0 Portfolio Polish** - Phases 79-82 (planned)
 
 ## Phases
 
 <details>
-<summary>✅ v1.0 through v3.0 (Phases 1-74) - SHIPPED</summary>
+<summary>✅ v1.0 through v4.0 (Phases 1-78) - SHIPPED</summary>
 
 See `.planning/milestones/` for archived roadmaps and requirements.
 
-**74 phases, 108 plans shipped across 20 milestones.**
+**78 phases, 116 plans shipped across 21 milestones.**
 
 </details>
 
-### 📋 v4.0 SBOM Attestation Wedge (Planned)
+### 📋 v5.0 Portfolio Polish (Planned)
 
-**Milestone Goal:** Deliver a lightweight, infrastructure-independent SBOM attestation capability — from core crypto format through CLI, platform endpoint, public verifier, and GitHub Action — so teams can prove software bill of materials integrity independent of their CI provider.
+**Milestone Goal:** Make the existing SBOM attestation work visible and discoverable — self-attesting CI releases, a published GitHub Action on the marketplace, a demo GIF embedded in the README, and a product landing page on trustedgelabs.com.
 
-- [x] **Phase 75: Core Attestation Library** - PointAttestation struct, signing, verification, and canonical serialization (completed 2026-04-02)
-- [x] **Phase 76: CLI + Platform Endpoint** - `trst attest-sbom`, `trst verify-attestation`, and `POST /v1/verify-attestation` (completed 2026-04-02)
-- [x] **Phase 77: Verify Page + Deployment + Demo** - Static HTML verifier, public deployment, and demo script (completed 2026-04-03)
-- [x] **Phase 78: Distribution** - Landing page, self-attestation in CI, third-party demo, GitHub Action (completed 2026-04-03)
+- [ ] **Phase 79: Self-Attestation CI** - Wire up end-to-end self-attestation in the CI release workflow and archive te-prove design doc
+- [ ] **Phase 80: GitHub Action Marketplace** - Publish `TrustEdge-Labs/attest-sbom-action@v1` to GitHub Marketplace as a standalone repo
+- [ ] **Phase 81: Demo GIF** - Record and embed demo GIF showing the full attest-sbom → verify-attestation flow in the README
+- [ ] **Phase 82: Product Landing Page** - Ship product landing page on trustedgelabs.com with quick start and verifier link
 
 ## Phase Details
 
-### Phase 75: Core Attestation Library
-**Goal**: The PointAttestation type exists in trustedge-core with correct cryptographic properties — deterministic canonical serialization, Ed25519 signing, BLAKE3 hashing, random nonce, and timestamp — enabling everything else to be built on top of it.
-**Depends on**: Phase 74 (v3.0 complete)
-**Requirements**: ATTEST-01, ATTEST-02, ATTEST-03
+### Phase 79: Self-Attestation CI
+**Goal**: Every TrustEdge GitHub release automatically attests its own binary, producing a `.te-attestation.json` and `build.pub` as downloadable release assets — with zero stored secrets.
+**Depends on**: Phase 78 (v4.0 complete)
+**Requirements**: CI-01, CI-02, CI-03, CI-04, HK-01
 **Success Criteria** (what must be TRUE):
-  1. A developer can construct a PointAttestation from a binary path and SBOM path and sign it with an Ed25519 key, producing a `.te-attestation.json` file
-  2. A developer can verify a `.te-attestation.json` file's signature using only the public key and get a clear pass/fail result
-  3. Canonical JSON serialization is deterministic: signing the same inputs twice produces the same bytes to sign (signature excluded from payload)
-  4. Verification optionally accepts the original binary and SBOM files and independently checks their BLAKE3 hashes match the attestation document
-**Plans:** 1/1 plans complete
-Plans:
-- [x] 75-01-PLAN.md -- PointAttestation types, signing, verification, canonical serialization, and tests
+  1. After a release is published, the GitHub release page shows `.te-attestation.json` and `build.pub` as attached assets
+  2. A user can download those assets and independently verify them with `trst verify-attestation` using the attached `build.pub` — no TrustEdge infrastructure needed
+  3. The CI job generates a fresh Ed25519 keypair on every run; no signing key is stored in GitHub Secrets or the repository
+  4. The CI job uses a pinned `anchore/sbom-action@v0` to generate a CycloneDX SBOM that is bound to the release binary
+  5. The te-prove design doc is accessible in `.planning/ideas/` for future reference
+**Plans**: TBD
 
-### Phase 76: CLI + Platform Endpoint
-**Goal**: Users can create and verify attestations end-to-end from the command line, and the platform server exposes a network verification endpoint that returns a JWS receipt.
-**Depends on**: Phase 75
-**Requirements**: CLI-01, CLI-02, CLI-03, PLAT-01
+### Phase 80: GitHub Action Marketplace
+**Goal**: Any project can add SBOM attestation to their CI with a single YAML snippet by installing `TrustEdge-Labs/attest-sbom-action@v1` from the GitHub Marketplace.
+**Depends on**: Phase 79
+**Requirements**: DIST-01, DIST-02, DIST-03, DIST-04
 **Success Criteria** (what must be TRUE):
-  1. User can run `trst attest-sbom --binary <path> --sbom <path> --device-key <key>` and receive a `.te-attestation.json` output file
-  2. User can run `trst verify-attestation <attestation> --device-pub <pub>` and see a clear verified/failed result with relevant details (key, timestamp, hashes)
-  3. Running `trst attest-sbom` against a 0-byte binary, a non-JSON SBOM, or a binary over 256 MB exits with a clear error message and non-zero exit code
-  4. `POST /v1/verify-attestation` accepts an attestation document and returns a signed JWS receipt on success, or a structured error on failure
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 76-01-PLAN.md — CLI attest-sbom and verify-attestation subcommands with acceptance tests
-- [x] 76-02-PLAN.md — Platform POST /v1/verify-attestation endpoint with integration tests
+  1. A user can find `TrustEdge-Labs/attest-sbom-action` on the GitHub Marketplace and install it without leaving GitHub
+  2. The action downloads the `trst` binary from GitHub Releases and verifies its SHA256 checksum before executing — it does not bundle a binary
+  3. A user can configure the action with `sbom-path`, `binary-path`, `key-path`, and `trustedge-version` inputs in their workflow YAML
+  4. The action README shows two working usage examples: one using a persistent signing key (stored as a secret) and one using an ephemeral key generated per-run
+**Plans**: TBD
 
-### Phase 77: Verify Page + Deployment + Demo
-**Goal**: Anyone with a `.te-attestation.json` file can verify it in a browser via a public URL, and the full flow from keygen to verified receipt runs in under 60 seconds via a demo script.
-**Depends on**: Phase 76
-**Requirements**: PLAT-02, PLAT-03, DIST-01, DIST-02
+### Phase 81: Demo GIF
+**Goal**: A developer landing on the TrustEdge README can immediately see what the product does — attest-sbom to verify-attestation — by watching an embedded GIF, without reading any prose.
+**Depends on**: Phase 79
+**Requirements**: VIS-01, VIS-03
 **Success Criteria** (what must be TRUE):
-  1. A user can visit the public verifier URL, upload a `.te-attestation.json` file, and see a receipt displaying the binary hash, SBOM contents, signing key, and timestamp
-  2. The verify page handles network errors and timeouts with user-visible error messages (no silent failures or blank states)
-  3. A user can upload an attestation document to the verify page and get independent third-party verification using the embedded public key (attestation documents are self-contained)
-  4. Running `./scripts/demo-attestation.sh` completes keygen → attest-sbom → verify end-to-end in under 60 seconds with no manual steps
-**Plans:** 3/3 plans complete
-Plans:
-- [x] 77-01-PLAN.md — Static HTML verify page + platform route serving at GET /verify
-- [x] 77-02-PLAN.md — DigitalOcean App Platform deployment configuration
-- [x] 77-03-PLAN.md — End-to-end SBOM attestation demo script
+  1. The README displays an embedded GIF that shows the complete attest-sbom → verify-attestation flow from a real terminal session
+  2. The GIF is recorded from `scripts/demo.sh --local` (or the updated demo script) and reflects the actual CLI output — no staged or edited content
+  3. The GIF is visible without clicking any links — embedded directly in the README at or near the top
+**Plans**: TBD
+**UI hint**: yes
 
-### Phase 78: Distribution
-**Goal**: TrustEdge's SBOM attestation capability is publicly reachable and self-demonstrating — the product landing page links to the verifier and GitHub Action, TrustEdge attests its own release builds, and a ready-to-use GitHub Action exists for one-line CI integration.
-**Depends on**: Phase 77
-**Requirements**: DIST-03, DIST-04, DIST-05, CI-01
+### Phase 82: Product Landing Page
+**Goal**: A recruiter or prospective user visiting trustedgelabs.com immediately understands what TrustEdge does, can run the quick start, and can reach the live verifier.
+**Depends on**: Phase 81
+**Requirements**: VIS-02
 **Success Criteria** (what must be TRUE):
-  1. The trustedgelabs-website landing page has a quick start section, a link to the public verifier, and a link to the GitHub Action
-  2. TrustEdge GitHub Releases include a `.te-attestation.json` alongside the release binary, generated automatically in CI
-  3. A prospect can independently verify the TrustEdge self-attestation using only the public verifier URL and the release artifact — no TrustEdge infrastructure required
-  4. A third-party project can add SBOM attestation to its release workflow with a single YAML snippet using `trustedge/attest-sbom-action@v1`
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 78-01-PLAN.md — Landing page content and third-party attestation guide
-- [x] 78-02-PLAN.md — GitHub Action and CI self-attestation step
+  1. A visitor to trustedgelabs.com can read a clear one-paragraph explanation of what TrustEdge does and who it is for
+  2. The page includes a copy-pasteable quick start showing how to install `trst` and run `attest-sbom` in three or fewer commands
+  3. The page links directly to the live public verifier so a visitor can verify an attestation without leaving the page context
+  4. The page links to the GitHub Action marketplace listing so a visitor can add attestation to their own CI immediately
+**Plans**: TBD
+**UI hint**: yes
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 75. Core Attestation Library | v4.0 | 1/1 | Complete   | 2026-04-02 |
-| 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete   | 2026-04-02 |
-| 77. Verify Page + Deployment + Demo | v4.0 | 3/3 | Complete   | 2026-04-03 |
-| 78. Distribution | v4.0 | 2/2 | Complete   | 2026-04-03 |
+| 75. Core Attestation Library | v4.0 | 1/1 | Complete | 2026-04-02 |
+| 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete | 2026-04-02 |
+| 77. Verify Page + Deployment + Demo | v4.0 | 3/3 | Complete | 2026-04-03 |
+| 78. Distribution | v4.0 | 2/2 | Complete | 2026-04-03 |
+| 79. Self-Attestation CI | v5.0 | 0/? | Not started | - |
+| 80. GitHub Action Marketplace | v5.0 | 0/? | Not started | - |
+| 81. Demo GIF | v5.0 | 0/? | Not started | - |
+| 82. Product Landing Page | v5.0 | 0/? | Not started | - |

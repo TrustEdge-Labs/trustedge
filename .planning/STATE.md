@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Portfolio Polish
-status: defining requirements
-stopped_at: Milestone started
+status: roadmap created
+stopped_at: Phase 79 not started
 last_updated: "2026-04-05"
 last_activity: 2026-04-05
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -27,14 +27,19 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-04-05)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Defining requirements for v5.0 Portfolio Polish
+**Current focus:** v5.0 Portfolio Polish — making existing SBOM attestation work visible and discoverable
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 79 (Self-Attestation CI) — not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-05 — Milestone v5.0 started
+Status: Roadmap created, ready to plan Phase 79
+Last activity: 2026-04-05 — v5.0 roadmap created (4 phases, 12 requirements)
+
+```
+v5.0 Progress: [ ] [ ] [ ] [ ]  0/4 phases
+                79  80  81  82
+```
 
 ## Performance Metrics
 
@@ -42,7 +47,7 @@ Last activity: 2026-04-05 — Milestone v5.0 started
 
 - v1.0–v4.0: 78 phases, 116 plans shipped
 
-**v5.0 (current):** 0 phases defined
+**v5.0 (current):** 0/4 phases complete
 
 ## Accumulated Context
 
@@ -52,7 +57,8 @@ Last activity: 2026-04-05 — Milestone v5.0 started
 - te-prove (FOSS supply chain trust policy engine) parked as future idea — no demand evidence
 - GitHub Action requires separate repo for marketplace listing (platform constraint)
 - Self-attestation uses ephemeral Ed25519 key per build, OIDC/Sigstore deferred
-- Landing page on trustedgelabs.com root
+- Landing page on trustedgelabs.com root (trustedgelabs-website repo — separate from monorepo)
+- Phase 82 (landing page) touches the trustedgelabs-website repo, not this monorepo
 - Design doc: ~/.gstack/projects/TrustEdge-Labs-trustedge/john-main-design-20260405-085506.md
 
 ### Pending Todos
@@ -69,8 +75,8 @@ None.
 ## Session Continuity
 
 Last session: 2026-04-05
-Stopped at: Milestone v5.0 started
+Stopped at: Roadmap created — ready to plan Phase 79
 Resume file: None
 
 ---
-*Last updated: 2026-04-05 — v5.0 milestone started*
+*Last updated: 2026-04-05 — v5.0 roadmap created*
