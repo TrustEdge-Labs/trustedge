@@ -18,7 +18,18 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-Shipped v4.0 SBOM Attestation Wedge — first product feature. Lightweight point attestation format (.te-attestation.json) for cryptographically binding SBOMs to binary artifacts. CLI (attest-sbom, verify-attestation), platform endpoint (/v1/verify-attestation with JWS receipts), static HTML verifier, DigitalOcean deployment, GitHub Action, CI self-attestation. Public verifier live. 471 tests across 9 workspace crates.
+Shipped v4.0 SBOM Attestation Wedge. Starting v5.0 Portfolio Polish — making the existing work visible and discoverable. Product landing page, demo GIF, marketplace action listing, and archiving future ideas. 471 tests across 9 workspace crates.
+
+## Current Milestone: v5.0 Portfolio Polish
+
+**Goal:** Make the existing SBOM attestation work visible and discoverable to recruiters and potential users.
+
+**Target features:**
+- Wire up self-attestation end-to-end in CI release workflow
+- Publish GitHub Action to GitHub Marketplace (separate `TrustEdge-Labs/attest-sbom-action` repo)
+- Record demo GIF and embed in README
+- Build product landing page on trustedgelabs.com
+- Archive te-prove design doc into .planning/ideas/
 
 ## Requirements
 
@@ -218,21 +229,14 @@ Shipped v4.0 SBOM Attestation Wedge — first product feature. Lightweight point
 
 ### Active
 
-(No active requirements — v4.0 milestone complete, next milestone will define new requirements via `/gsd:new-milestone`)
-
-**Goal:** Ship TrustEdge's first product wedge: a CLI + hosted verifier for cryptographically binding SBOMs to binary artifacts, targeting DevSecOps teams facing EU CRA compliance.
+**Goal:** Make the existing SBOM attestation work visible and discoverable — portfolio polish.
 
 **Target features:**
-- Lightweight point attestation format (`.te-attestation.json`) with Ed25519 signing, BLAKE3 hashing, random nonce
-- `trst attest-sbom` CLI command: CycloneDX JSON + binary → signed attestation document
-- `trst verify-attestation` CLI command: local verification of attestation documents
-- Platform `POST /v1/verify-attestation` endpoint with JWS receipt issuance
-- Static HTML verification page with error handling
-- Public deployment of platform server (in-memory backend, rate limited)
-- Demo script: 60-second keygen → attest → verify flow
-- Product landing page on trustedgelabs-website
-- Self-attestation on TrustEdge's own CI release builds
-- GitHub Action for CI integration (Phase 2)
+- Self-attestation wired up end-to-end in CI release workflow (ephemeral Ed25519 key per build)
+- GitHub Action published to marketplace (`TrustEdge-Labs/attest-sbom-action`)
+- Demo GIF embedded in README showing attest-sbom → verify-attestation flow
+- Product landing page on trustedgelabs.com
+- te-prove design doc archived in .planning/ideas/
 
 ### Deferred
 
@@ -419,4 +423,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after v4.0 milestone*
+*Last updated: 2026-04-05 after v5.0 milestone started*
