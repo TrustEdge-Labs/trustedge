@@ -47,7 +47,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 
 **Milestone Goal:** Make the existing SBOM attestation work visible and discoverable — self-attesting CI releases, a published GitHub Action on the marketplace, a demo GIF embedded in the README, and a product landing page on trustedgelabs.com.
 
-- [ ] **Phase 79: Self-Attestation CI** - Wire up end-to-end self-attestation in the CI release workflow and archive te-prove design doc
+- [x] **Phase 79: Self-Attestation CI** - Wire up end-to-end self-attestation in the CI release workflow and archive te-prove design doc (completed 2026-04-05)
 - [ ] **Phase 80: GitHub Action Marketplace** - Publish `TrustEdge-Labs/attest-sbom-action@v1` to GitHub Marketplace as a standalone repo
 - [ ] **Phase 81: Demo GIF** - Record and embed demo GIF showing the full attest-sbom → verify-attestation flow in the README
 - [ ] **Phase 82: Product Landing Page** - Ship product landing page on trustedgelabs.com with quick start and verifier link
@@ -64,10 +64,10 @@ See `.planning/milestones/` for archived roadmaps and requirements.
   3. The CI job generates a fresh Ed25519 keypair on every run; no signing key is stored in GitHub Secrets or the repository
   4. The CI job uses a pinned `anchore/sbom-action@v0` to generate a CycloneDX SBOM that is bound to the release binary
   5. The te-prove design doc is accessible in `.planning/ideas/` for future reference
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 79-01-PLAN.md — Fix self-attestation CI job and archive te-prove design doc
+- [x] 79-01-PLAN.md — Fix self-attestation CI job and archive te-prove design doc
 
 ### Phase 80: GitHub Action Marketplace
 **Goal**: Any project can add SBOM attestation to their CI with a single YAML snippet by installing `TrustEdge-Labs/attest-sbom-action@v1` from the GitHub Marketplace.
@@ -111,7 +111,7 @@ Plans:
 | 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete | 2026-04-02 |
 | 77. Verify Page + Deployment + Demo | v4.0 | 3/3 | Complete | 2026-04-03 |
 | 78. Distribution | v4.0 | 2/2 | Complete | 2026-04-03 |
-| 79. Self-Attestation CI | v5.0 | 0/1 | Not started | - |
+| 79. Self-Attestation CI | v5.0 | 1/1 | Complete   | 2026-04-05 |
 | 80. GitHub Action Marketplace | v5.0 | 0/? | Not started | - |
 | 81. Demo GIF | v5.0 | 0/? | Not started | - |
 | 82. Product Landing Page | v5.0 | 0/? | Not started | - |
