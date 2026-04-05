@@ -12,9 +12,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.0.0] - 2026-04-05
 
-*No unreleased changes.*
+### Portfolio Polish
+
+Hardened CI self-attestation and enhanced the published GitHub Action for marketplace readiness.
+
+### Changed
+- **CI self-attestation hardened**: Replaced unpinned `curl | sh` syft install with SHA-pinned `anchore/sbom-action@v0.24.0`. Added `continue-on-error: true` so attestation failures never block releases. Renamed `ephemeral.pub` to `build.pub` for clarity.
+- **`build.pub` uploaded as release asset**: Verifiers can now independently check attestations using only the release assets (`trst.te-attestation.json` + `build.pub`), with no TrustEdge infrastructure needed.
+- **GitHub Action enhanced**: `TrustEdge-Labs/attest-sbom-action@v1` now verifies the SHA256 checksum of the downloaded `trst` binary before executing. Graceful degradation when no checksum file is available. Added `branding` block for GitHub Marketplace listing.
+- **Action README rewritten**: Two named usage examples (ephemeral key for CI, persistent key with GitHub Secret). "What you get" section clarifying the action produces a local `.te-attestation.json` file.
+
+### Housekeeping
+- Archived te-prove design doc (FOSS supply chain trust policy engine) to `.planning/ideas/` with context note. Parked pending demand evidence.
 
 ---
 

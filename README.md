@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-4.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v4.0)
+[![Version](https://img.shields.io/badge/version-5.0-blue.svg)](https://github.com/TrustEdge-Labs/trustedge/releases/tag/v5.0)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # TrustEdge
@@ -40,7 +40,7 @@ trst attest-sbom --binary target/release/myapp --sbom bom.cdx.json \
 trst verify-attestation attestation.te-attestation.json --device-pub "$(cat build.pub)"
 ```
 
-Or use the [GitHub Action](https://github.com/TrustEdge-Labs/attest-sbom-action) for one-line CI integration:
+Or use the [GitHub Action](https://github.com/TrustEdge-Labs/attest-sbom-action) for one-line CI integration (verifies `trst` binary SHA256 before executing):
 
 ```yaml
 - uses: TrustEdge-Labs/attest-sbom-action@v1
@@ -48,6 +48,8 @@ Or use the [GitHub Action](https://github.com/TrustEdge-Labs/attest-sbom-action)
     binary: target/release/myapp
     sbom: bom.cdx.json
 ```
+
+TrustEdge self-attests its own releases: every GitHub release includes `trst.te-attestation.json` and `build.pub` as downloadable assets. Verify with `trst verify-attestation trst.te-attestation.json --device-pub "$(cat build.pub)"`.
 
 See the [third-party attestation guide](docs/third-party-attestation-guide.md) for complete manual and CI workflows.
 
@@ -165,7 +167,7 @@ For cam.video-specific archives with frame rate and segment duration, see [examp
 
 ## How It Works
 
-**Security Posture (v4.0):** TrustEdge uses RSA OAEP-SHA256 for all asymmetric operations. Envelopes are v2-only format with HKDF-SHA256 key derivation. Point attestations use Ed25519 signing over BLAKE3 hashes with random nonces (`.te-attestation.json`). Device private keys are encrypted at rest using TRUSTEDGE-KEY-V1 format (PBKDF2-HMAC-SHA256 600k + AES-256-GCM, versioned metadata); a passphrase is prompted at runtime. Key-holding structs zeroize memory on drop. Platform HTTP endpoints enforce a 2 MB body limit and per-IP rate limiting on `/v1/verify` and `/v1/verify-attestation`. JWKS signing key path is configurable via `JWKS_KEY_PATH`. Receipt TTL is configurable via `RECEIPT_TTL_SECS` (default 3600s). 471 tests across 9 workspace crates.
+**Security Posture (v5.0):** TrustEdge uses RSA OAEP-SHA256 for all asymmetric operations. Envelopes are v2-only format with HKDF-SHA256 key derivation. Point attestations use Ed25519 signing over BLAKE3 hashes with random nonces (`.te-attestation.json`). Device private keys are encrypted at rest using TRUSTEDGE-KEY-V1 format (PBKDF2-HMAC-SHA256 600k + AES-256-GCM, versioned metadata); a passphrase is prompted at runtime. Key-holding structs zeroize memory on drop. Platform HTTP endpoints enforce a 2 MB body limit and per-IP rate limiting on `/v1/verify` and `/v1/verify-attestation`. JWKS signing key path is configurable via `JWKS_KEY_PATH`. Receipt TTL is configurable via `RECEIPT_TTL_SECS` (default 3600s). 471 tests across 9 workspace crates.
 
 **Two attestation modes:**
 
