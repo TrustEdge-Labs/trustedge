@@ -25,7 +25,7 @@
 //! ```rust
 //! use trustedge_core::{OwnershipReceipt, create_receipt, assign_receipt};
 //! use ed25519_dalek::SigningKey;
-//! use rand::rngs::OsRng;
+//! use rand_core::OsRng;
 //!
 //! // Create signing keys for Alice and Bob
 //! let alice_key = SigningKey::generate(&mut OsRng);

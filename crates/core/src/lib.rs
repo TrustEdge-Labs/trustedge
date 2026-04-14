@@ -30,7 +30,7 @@
 //! ```rust
 //! use trustedge_core::Envelope;
 //! use ed25519_dalek::SigningKey;
-//! use rand::rngs::OsRng;
+//! use rand_core::OsRng;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! // Generate key pairs
