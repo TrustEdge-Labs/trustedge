@@ -32,9 +32,13 @@ mod http_tests {
     use base64::engine::general_purpose::URL_SAFE_NO_PAD as BASE64URL;
     use ed25519_dalek::{Signer, VerifyingKey as DalekVerifyingKey};
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use tower::ServiceExt;
     use trustedge_platform::http::{create_router, AppState};
+
+    /// Serializes tests that mutate process-global env vars (RATE_LIMIT_RPS,
+    /// TRUSTED_PROXIES) to prevent races when cargo runs tests in parallel.
+    static ENV_MUTEX: std::sync::LazyLock<Mutex<()>> = std::sync::LazyLock::new(|| Mutex::new(()));
 
     /// Build an independent test app state using the real consolidated router (no postgres).
     fn make_state() -> AppState {
@@ -835,14 +839,11 @@ mod http_tests {
 
     #[tokio::test]
     async fn test_rate_limit_429() {
-        // Set a very low rate limit so we can quickly exhaust it.
-        // Safety: tests run sequentially per test binary; this env var is read
-        // at router construction time, so we set it before creating the app.
+        let _lock = ENV_MUTEX.lock().await;
         unsafe {
             std::env::set_var("RATE_LIMIT_RPS", "2");
         }
         let app = create_router(make_state());
-        // Restore default so other tests are unaffected.
         unsafe {
             std::env::remove_var("RATE_LIMIT_RPS");
         }
@@ -879,6 +880,7 @@ mod http_tests {
 
     #[tokio::test]
     async fn test_healthz_not_rate_limited() {
+        let _lock = ENV_MUTEX.lock().await;
         unsafe {
             std::env::set_var("RATE_LIMIT_RPS", "1");
         }
@@ -1055,6 +1057,7 @@ mod http_tests {
 
     #[tokio::test]
     async fn test_rate_limit_retry_after() {
+        let _lock = ENV_MUTEX.lock().await;
         unsafe {
             std::env::set_var("RATE_LIMIT_RPS", "1");
         }
@@ -1105,6 +1108,7 @@ mod http_tests {
 
     #[tokio::test]
     async fn test_rate_limit_xff_trusted_proxy() {
+        let _lock = ENV_MUTEX.lock().await;
         unsafe {
             std::env::set_var("RATE_LIMIT_RPS", "2");
             std::env::set_var("TRUSTED_PROXIES", "127.0.0.1/32");
@@ -1332,6 +1336,7 @@ mod http_tests {
 
     #[tokio::test]
     async fn test_rate_limit_xff_untrusted_proxy() {
+        let _lock = ENV_MUTEX.lock().await;
         unsafe {
             std::env::set_var("RATE_LIMIT_RPS", "2");
             std::env::set_var("TRUSTED_PROXIES", "");
