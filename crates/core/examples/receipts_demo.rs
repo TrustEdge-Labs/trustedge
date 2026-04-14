@@ -13,7 +13,7 @@
 
 use anyhow::Result;
 use ed25519_dalek::SigningKey;
-use rand::rngs::OsRng;
+use rand_core::OsRng;
 use trustedge_core::{assign_receipt, create_receipt, verify_receipt_chain};
 
 fn main() -> Result<()> {

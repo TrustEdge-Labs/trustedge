@@ -7,11 +7,10 @@
 //
 
 use aes_gcm::{
-    aead::{Aead, AeadCore, KeyInit, OsRng},
+    aead::{rand_core::RngCore, Aead, AeadCore, KeyInit, OsRng},
     Aes256Gcm, Key,
 };
 use base64::{engine::general_purpose, Engine as _};
-use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 

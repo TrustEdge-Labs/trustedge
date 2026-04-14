@@ -193,7 +193,7 @@ fn create_sealed_attestation(
     // Get or generate signing key
     let signing_key = match key_source {
         KeySource::Generate => {
-            let mut csprng = rand::rngs::OsRng;
+            let mut csprng = rand_core::OsRng;
             ed25519_dalek::SigningKey::generate(&mut csprng)
         }
         KeySource::Provided { signing_key } => *signing_key,
@@ -509,7 +509,7 @@ mod tests {
         let test_path = test_file.path().to_path_buf();
 
         // Generate a specific key for testing
-        let mut csprng = rand::rngs::OsRng;
+        let mut csprng = rand_core::OsRng;
         let signing_key = ed25519_dalek::SigningKey::generate(&mut csprng);
 
         let config = AttestationConfig {
@@ -541,7 +541,7 @@ mod tests {
         test_file.write_all(b"json with provided key")?;
         let test_path = test_file.path().to_path_buf();
 
-        let mut csprng = rand::rngs::OsRng;
+        let mut csprng = rand_core::OsRng;
         let signing_key = ed25519_dalek::SigningKey::generate(&mut csprng);
 
         let config = AttestationConfig {

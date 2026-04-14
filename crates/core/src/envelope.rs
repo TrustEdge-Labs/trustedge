@@ -154,7 +154,7 @@ impl Envelope {
 
         // Generate per-envelope random HKDF salt once
         let mut hkdf_salt = [0u8; 32];
-        rand::thread_rng().fill_bytes(&mut hkdf_salt);
+        rand::rng().fill_bytes(&mut hkdf_salt);
 
         // Derive key material once for the entire envelope (v2 path)
         let (mut encryption_key, nonce_prefix) =
@@ -516,7 +516,7 @@ struct ChunkManifest {
 mod tests {
     use super::*;
     use ed25519_dalek::SigningKey;
-    use rand::rngs::OsRng;
+    use rand_core::OsRng;
 
     #[test]
     fn test_envelope_creation() {

@@ -343,7 +343,7 @@ pub fn verify_receipt_chain(envelopes: &[Envelope]) -> bool {
 mod tests {
     use super::*;
     use ed25519_dalek::SigningKey;
-    use rand::rngs::OsRng;
+    use rand_core::OsRng;
 
     #[test]
     fn test_receipt_creation() {

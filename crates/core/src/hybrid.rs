@@ -48,7 +48,7 @@ impl Drop for SymmetricKey {
 impl SymmetricKey {
     /// Generate a new random symmetric key
     pub fn generate() -> Self {
-        use rand::{rngs::OsRng, RngCore};
+        use rand_core::{OsRng, RngCore};
         let mut key = [0u8; 32];
         OsRng.fill_bytes(&mut key);
         Self(key)
@@ -169,7 +169,7 @@ fn encrypt_symmetric(
     key: &SymmetricKey,
 ) -> Result<EncryptedData, HybridEncryptionError> {
     use aes_gcm::{AeadInPlace, Aes256Gcm, KeyInit};
-    use rand::{rngs::OsRng, RngCore};
+    use rand_core::{OsRng, RngCore};
 
     let cipher = Aes256Gcm::new_from_slice(key.as_bytes()).map_err(|e| {
         HybridEncryptionError::EncryptionFailed(format!("Failed to create cipher: {}", e))

@@ -526,7 +526,7 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
     // Initialize RNG - seeded if provided, otherwise use default
     let mut rng: Box<dyn RngCore> = match args.seed {
         Some(seed) => Box::new(ChaCha20Rng::seed_from_u64(seed)),
-        None => Box::new(rand::thread_rng()),
+        None => Box::new(rand::rng()),
     };
 
     // Resolve chunk_seconds: cam.video default 2.0, generic default 0.0

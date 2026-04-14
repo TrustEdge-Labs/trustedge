@@ -39,8 +39,7 @@ use p256::{
     PublicKey as P256PublicKey, SecretKey as P256SecretKey,
 };
 use pbkdf2::pbkdf2_hmac;
-use rand::rngs::OsRng;
-use rand::RngCore;
+use rand_core::{OsRng, RngCore};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256, Sha384, Sha512};
 use std::collections::HashMap;

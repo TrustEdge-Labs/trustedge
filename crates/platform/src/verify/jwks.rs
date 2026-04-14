@@ -56,7 +56,7 @@ impl KeyManager {
     }
 
     fn generate_new(key_path: &str) -> Result<Self> {
-        let signing_key = SigningKey::generate(&mut rand::rngs::OsRng);
+        let signing_key = SigningKey::generate(&mut rand_core::OsRng);
         let kid = format!("key_{}", uuid::Uuid::new_v4().simple());
 
         let key_manager = KeyManager {
@@ -185,7 +185,7 @@ impl KeyManager {
     }
 
     pub fn rotate_key(&mut self) -> Result<()> {
-        let new_signing_key = SigningKey::generate(&mut rand::rngs::OsRng);
+        let new_signing_key = SigningKey::generate(&mut rand_core::OsRng);
         let new_kid = format!("key_{}", uuid::Uuid::new_v4().simple());
 
         self.previous_key = Some(self.current_key.clone());

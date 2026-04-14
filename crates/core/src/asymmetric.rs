@@ -155,7 +155,7 @@ impl KeyPair {
     /// Generate an Ed25519 key pair
     fn generate_ed25519() -> Result<Self> {
         use ed25519_dalek::SigningKey;
-        use rand::rngs::OsRng;
+        use rand_core::OsRng;
 
         let signing_key = SigningKey::generate(&mut OsRng);
         let verifying_key = signing_key.verifying_key();
@@ -177,7 +177,7 @@ impl KeyPair {
     fn generate_ecdsa_p256() -> Result<Self> {
         use p256::elliptic_curve::sec1::ToEncodedPoint;
         use p256::SecretKey;
-        use rand::rngs::OsRng;
+        use rand_core::OsRng;
 
         let secret_key = SecretKey::random(&mut OsRng);
         let public_key = secret_key.public_key();
@@ -197,7 +197,7 @@ impl KeyPair {
 
     /// Generate an RSA key pair
     fn generate_rsa(bits: usize) -> Result<Self> {
-        use rand::rngs::OsRng;
+        use rand_core::OsRng;
         use rsa::pkcs8::{EncodePrivateKey, EncodePublicKey};
         use rsa::{RsaPrivateKey, RsaPublicKey};
 
@@ -300,7 +300,7 @@ fn rsa_encrypt_key(
     session_key: &[u8; 32],
     public_key: &PublicKey,
 ) -> Result<Vec<u8>, AsymmetricError> {
-    use rand::rngs::OsRng;
+    use rand_core::OsRng;
     use rsa::pkcs8::DecodePublicKey;
     use rsa::{Oaep, RsaPublicKey};
 

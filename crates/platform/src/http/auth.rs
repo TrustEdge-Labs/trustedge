@@ -36,10 +36,10 @@ pub fn generate_token() -> String {
     const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const TOKEN_LEN: usize = 32;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     (0..TOKEN_LEN)
         .map(|_| {
-            let idx = rng.gen_range(0..CHARSET.len());
+            let idx = rng.random_range(0..CHARSET.len());
             CHARSET[idx] as char
         })
         .collect()

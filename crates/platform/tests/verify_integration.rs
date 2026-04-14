@@ -236,7 +236,7 @@ mod http_tests {
     async fn test_verify_round_trip() -> Result<()> {
         let app = create_test_app().await;
 
-        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
         let (signed_manifest, device_pub) = build_signed_manifest(&signing_key);
         let body_bytes = build_verify_body(&signed_manifest, &device_pub, true);
 
@@ -307,7 +307,7 @@ mod http_tests {
         let app_jwks = create_router(state);
 
         // Step 1: POST /v1/verify → receive JWS receipt
-        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
         let (signed_manifest, device_pub) = build_signed_manifest(&signing_key);
         let body_bytes = build_verify_body(&signed_manifest, &device_pub, true);
 
@@ -428,8 +428,8 @@ mod http_tests {
         let app = create_test_app().await;
 
         // Sign with one key, but present a DIFFERENT key as device_pub
-        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
-        let wrong_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
+        let wrong_key = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
 
         let (signed_manifest, _correct_pub) = build_signed_manifest(&signing_key);
         let wrong_device_pub = format!(
@@ -487,7 +487,7 @@ mod http_tests {
 
     #[tokio::test]
     async fn sec_11_duplicate_submission_distinct_receipts() -> Result<()> {
-        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
         let (signed_manifest, device_pub) = build_signed_manifest(&signing_key);
         let body_bytes = build_verify_body(&signed_manifest, &device_pub, true);
 
@@ -588,8 +588,8 @@ mod http_tests {
     #[tokio::test]
     async fn sec_12_receipt_digest_bound_to_content() -> Result<()> {
         // Two different signing keys with different device_id values in the manifest.
-        let key_a = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
-        let key_b = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let key_a = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
+        let key_b = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
 
         // Build manifest A with device-alpha.
         let manifest_a = serde_json::json!({
@@ -707,7 +707,7 @@ mod http_tests {
 
     #[tokio::test]
     async fn sec_12_same_content_same_digest() -> Result<()> {
-        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
         let (signed_manifest, device_pub) = build_signed_manifest(&signing_key);
         let body_bytes = build_verify_body(&signed_manifest, &device_pub, true);
 
@@ -920,7 +920,7 @@ mod http_tests {
         // A manifest with no "signature" field at all triggers an Err return
         // from verify_signature (not just a passed=false result), which causes
         // the handler to return HTTP 400 with the generic error message.
-        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
         let verifying_key = signing_key.verifying_key();
 
         let manifest_no_sig = serde_json::json!({
@@ -1009,7 +1009,7 @@ mod http_tests {
     async fn test_verify_success_unaffected_by_sanitization() -> Result<()> {
         let app = create_test_app().await;
 
-        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand::rngs::OsRng);
+        let signing_key = ed25519_dalek::SigningKey::generate(&mut rand_core::OsRng);
         let (signed_manifest, device_pub) = build_signed_manifest(&signing_key);
         let body_bytes = build_verify_body(&signed_manifest, &device_pub, false);
 
@@ -1373,7 +1373,7 @@ mod http_tests {
 
 #[test]
 fn test_happy_path_verification() -> Result<()> {
-    let signing_key = SigningKey::generate(&mut rand::rngs::OsRng);
+    let signing_key = SigningKey::generate(&mut rand_core::OsRng);
     let verifying_key = signing_key.verifying_key();
 
     let manifest = json!({
@@ -1413,7 +1413,7 @@ fn test_happy_path_verification() -> Result<()> {
 
 #[test]
 fn test_tampered_segment_verification() -> Result<()> {
-    let signing_key = SigningKey::generate(&mut rand::rngs::OsRng);
+    let signing_key = SigningKey::generate(&mut rand_core::OsRng);
     let verifying_key = signing_key.verifying_key();
 
     let manifest = json!({
@@ -1452,8 +1452,8 @@ fn test_tampered_segment_verification() -> Result<()> {
 
 #[test]
 fn test_wrong_key_verification() -> Result<()> {
-    let signing_key = SigningKey::generate(&mut rand::rngs::OsRng);
-    let wrong_key = SigningKey::generate(&mut rand::rngs::OsRng);
+    let signing_key = SigningKey::generate(&mut rand_core::OsRng);
+    let wrong_key = SigningKey::generate(&mut rand_core::OsRng);
     let wrong_verifying_key = wrong_key.verifying_key();
 
     let manifest = json!({
@@ -1486,7 +1486,7 @@ fn test_wrong_key_verification() -> Result<()> {
 
 #[test]
 fn test_empty_segments_verification() -> Result<()> {
-    let signing_key = SigningKey::generate(&mut rand::rngs::OsRng);
+    let signing_key = SigningKey::generate(&mut rand_core::OsRng);
     let verifying_key = signing_key.verifying_key();
 
     let manifest = json!({
