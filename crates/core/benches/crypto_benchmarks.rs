@@ -32,7 +32,7 @@ fn bench_aes_gcm_encryption(c: &mut Criterion) {
         aead::{Aead, AeadCore, OsRng},
         Aes256Gcm, KeyInit,
     };
-    use rand::RngCore;
+    use rand_core::RngCore;
 
     let mut group = c.benchmark_group("aes_gcm_encryption");
 
@@ -64,7 +64,7 @@ fn bench_aes_gcm_decryption(c: &mut Criterion) {
         aead::{Aead, AeadCore, OsRng},
         Aes256Gcm, KeyInit,
     };
-    use rand::RngCore;
+    use rand_core::RngCore;
 
     let mut group = c.benchmark_group("aes_gcm_decryption");
 
@@ -101,13 +101,12 @@ fn bench_aes_gcm_decryption(c: &mut Criterion) {
 /// Benchmark Ed25519 signature generation
 fn bench_ed25519_signing(c: &mut Criterion) {
     use ed25519_dalek::{Signature, Signer, SigningKey};
-    use rand::rngs::OsRng;
+    use rand_core::OsRng;
 
     let mut group = c.benchmark_group("ed25519_signing");
 
     // Generate a keypair for benchmarking
-    let mut csprng = OsRng {};
-    let keypair = SigningKey::generate(&mut csprng);
+    let keypair = SigningKey::generate(&mut OsRng);
 
     for &size in SIZES {
         let data = generate_test_data(size);
@@ -126,12 +125,11 @@ fn bench_ed25519_signing(c: &mut Criterion) {
 /// Benchmark Ed25519 verification performance
 fn bench_ed25519_verification(c: &mut Criterion) {
     use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
-    use rand::rngs::OsRng;
+    use rand_core::OsRng;
 
     let mut group = c.benchmark_group("ed25519_verification");
 
-    let mut csprng = OsRng {};
-    let keypair = SigningKey::generate(&mut csprng);
+    let keypair = SigningKey::generate(&mut OsRng);
     let public_key: VerifyingKey = keypair.verifying_key();
 
     for &size in SIZES {
@@ -158,7 +156,7 @@ fn bench_p256_signing(c: &mut Criterion) {
         ecdsa::{Signature, SigningKey},
         SecretKey,
     };
-    use rand::rngs::OsRng;
+    use rand_core::OsRng;
 
     let mut group = c.benchmark_group("p256_ecdsa_signing");
 
@@ -186,7 +184,7 @@ fn bench_p256_verification(c: &mut Criterion) {
         ecdsa::{Signature, SigningKey, VerifyingKey},
         SecretKey,
     };
-    use rand::rngs::OsRng;
+    use rand_core::OsRng;
 
     let mut group = c.benchmark_group("p256_ecdsa_verification");
 
