@@ -118,20 +118,21 @@ Plans:
 **UI hint**: yes
 
 ### Phase 83: Crate & Binary Rename
-**Goal**: The entire Cargo workspace presents as sealedge — every crate is named `sealedge-*`, every binary target is a sealedge-derived name (including a new short name replacing `trst`), and the workspace still builds and tests green end-to-end.
+**Goal**: The entire Cargo workspace presents as sealedge — every crate is named `sealedge-*` (including `sealedge-seal-*` for the former `trustedge-trst-*` archive crates), every binary target is a sealedge-derived name (`trst` → `seal`, `trustedge` → `sealedge`, etc.), the `.trst` archive file extension is renamed to `.seal`, and the workspace still builds and tests green end-to-end.
 **Depends on**: Phase 80 (v5.0 shipped portion complete)
-**Requirements**: REBRAND-01, REBRAND-02
+**Requirements**: REBRAND-01, REBRAND-02, REBRAND-04a
 **Success Criteria** (what must be TRUE):
   1. `cargo metadata` shows no package whose name starts with `trustedge-` — every workspace member is `sealedge-*`
-  2. `cargo build --workspace --release` produces only sealedge-named binaries; no binary target in the workspace retains a `trustedge`-derived name (including the former `trst`)
+  2. `cargo build --workspace --release` produces only sealedge-named binaries; no binary target in the workspace retains a `trustedge`-derived name (including the former `trst` → `seal`)
   3. Inter-crate dependencies in every Cargo.toml reference the new `sealedge-*` crate names; `cargo check --workspace` compiles cleanly
   4. All existing workspace tests still pass under the new crate/binary names (`cargo test --workspace` green)
+  5. Archive files are written and read with the `.seal` extension across the archive CLI, core library, examples, and tests; no `.trst` literal remains in production code paths
 **Plans**: TBD
 
 ### Phase 84: Crypto Constants & File Extension
 **Goal**: Wire-format constants and on-disk file extensions announce the product as sealedge — cleanly broken from the old trustedge-labelled values, with no backward-compatibility decrypt path for data encrypted under the old constants.
 **Depends on**: Phase 83
-**Requirements**: REBRAND-03, REBRAND-04
+**Requirements**: REBRAND-03, REBRAND-04b
 **Success Criteria** (what must be TRUE):
   1. The encrypted key file header string is `SEALEDGE-KEY-V1` (not `TRUSTEDGE-KEY-V1`); keygen and unwrap produce and consume only the new header
   2. The HKDF domain-separation info parameter in envelope v2 is `SEALEDGE_ENVELOPE_V1` (not `TRUSTEDGE_ENVELOPE_V1`); envelopes sealed under the old constant intentionally fail to unseal
