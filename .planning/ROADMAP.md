@@ -127,7 +127,16 @@ Plans:
   3. Inter-crate dependencies in every Cargo.toml reference the new `sealedge-*` crate names; `cargo check --workspace` compiles cleanly
   4. All existing workspace tests still pass under the new crate/binary names (`cargo test --workspace` green)
   5. Archive files are written and read with the `.seal` extension across the archive CLI, core library, examples, and tests; no `.trst` literal remains in production code paths
-**Plans**: TBD
+**Plans:** 7 plans
+
+Plans:
+- [ ] 83-01-PLAN.md — Rename 6 root crates trustedge-* → sealedge-* (packages, bin targets, dir normalization, use statement sweep)
+- [ ] 83-02-PLAN.md — Rename trst-family crates to sealedge-seal-* and the trst binary to seal
+- [ ] 83-03-PLAN.md — Sweep .trst archive extension literal to .seal in Rust source code
+- [ ] 83-04-PLAN.md — Rename dashboard + WASM npm package.json files and JS bindings
+- [ ] 83-05-PLAN.md — Update CI workflows and shell scripts for new crate / binary / extension names
+- [ ] 83-06-PLAN.md — Rename experimental workspace crates (pubky, pubky-advanced)
+- [ ] 83-07-PLAN.md — Final verification: full ci-check.sh, verification greps, seal wrap smoke test
 
 ### Phase 84: Crypto Constants & File Extension
 **Goal**: Wire-format constants and on-disk file extensions announce the product as sealedge — cleanly broken from the old trustedge-labelled values, with no backward-compatibility decrypt path for data encrypted under the old constants.
@@ -207,7 +216,7 @@ Plans:
 | 80. GitHub Action Marketplace | v5.0 | 1/1 | Complete | 2026-04-05 |
 | 81. Demo GIF | v5.0 | 0/? | Punted (post-rename) | - |
 | 82. Product Landing Page | v5.0 | 0/? | Punted (post-rename) | - |
-| 83. Crate & Binary Rename | v6.0 | 0/? | Not started | - |
+| 83. Crate & Binary Rename | v6.0 | 0/7 | Not started | - |
 | 84. Crypto Constants & File Extension | v6.0 | 0/? | Not started | - |
 | 85. Code Sweep — Headers, Text, Metadata | v6.0 | 0/? | Not started | - |
 | 86. Documentation Sweep | v6.0 | 0/? | Not started | - |
