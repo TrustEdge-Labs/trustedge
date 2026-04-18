@@ -68,7 +68,7 @@ base64 -w0 build.key   # paste this as TRUSTEDGE_KEY secret
 
 ## What you get
 
-The action writes a `.te-attestation.json` file to `$RUNNER_TEMP` and exposes its path
+The action writes a `.se-attestation.json` file to `$RUNNER_TEMP` and exposes its path
 via `steps.<id>.outputs.attestation-path`. This file is a local cryptographic proof — no
 network calls are made. To get a signed receipt from the TrustEdge platform, POST the
 file to your platform instance (optional follow-on step).
@@ -86,7 +86,7 @@ file to your platform instance (optional follow-on step).
 
 | Output | Description |
 |--------|-------------|
-| `attestation-path` | Absolute path to the generated `.te-attestation.json` file |
+| `attestation-path` | Absolute path to the generated `.se-attestation.json` file |
 
 ## How it works
 
@@ -96,14 +96,14 @@ file to your platform instance (optional follow-on step).
    - The binary artifact (via BLAKE3 hash)
    - The CycloneDX SBOM (via BLAKE3 hash)
    - Ed25519 signature over the attestation payload
-4. Writes the attestation to `$RUNNER_TEMP/<binary-name>.te-attestation.json`.
+4. Writes the attestation to `$RUNNER_TEMP/<binary-name>.se-attestation.json`.
 
 ## Verification
 
 Verify an attestation locally:
 
 ```bash
-trst verify-attestation my-app.te-attestation.json \
+trst verify-attestation my-app.se-attestation.json \
   --device-pub "ed25519:..." \
   --binary ./my-app \
   --sbom sbom.cdx.json
@@ -114,7 +114,7 @@ Or submit to the public TrustEdge verifier:
 ```bash
 curl -X POST https://verify.trustedge.dev/v1/verify-attestation \
   -H "Content-Type: application/json" \
-  -d @my-app.te-attestation.json
+  -d @my-app.se-attestation.json
 ```
 
 ## Links

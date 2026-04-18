@@ -27,7 +27,7 @@ inputs:
 
 outputs:
   attestation-path:
-    description: 'Path to generated .te-attestation.json file'
+    description: 'Path to generated .se-attestation.json file'
     value: ${{ steps.attest.outputs.attestation-path }}
 
 runs:
@@ -86,7 +86,7 @@ runs:
       shell: bash
       run: |
         BINARY_NAME=$(basename "${{ inputs.binary }}")
-        OUT_PATH="${{ runner.temp }}/${BINARY_NAME}.te-attestation.json"
+        OUT_PATH="${{ runner.temp }}/${BINARY_NAME}.se-attestation.json"
         "${{ runner.temp }}/trst" attest-sbom \
           --binary "${{ inputs.binary }}" \
           --sbom "${{ inputs.sbom }}" \

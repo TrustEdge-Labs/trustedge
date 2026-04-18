@@ -27,7 +27,7 @@ open https://<app-url>/verify
 
 # API smoke test
 curl -X POST https://<app-url>/v1/verify-attestation \
-  -d @path/to/attestation.te-attestation.json
+  -d @path/to/attestation.se-attestation.json
 ```
 
 ## Update
