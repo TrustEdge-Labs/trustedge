@@ -13,8 +13,8 @@ use crate::keys::DualKeyPair;
 use anyhow::{Context, Result};
 use blake3;
 use ed25519_dalek::{Signature, Signer, Verifier, VerifyingKey};
+use sealedge_core::{format::AeadAlgorithm, NetworkChunk, NONCE_LEN};
 use serde::{Deserialize, Serialize};
-use trustedge_core::{format::AeadAlgorithm, NetworkChunk, NONCE_LEN};
 use x25519_dalek::{EphemeralSecret, PublicKey as X25519PublicKey};
 use zeroize::Zeroize;
 
@@ -359,8 +359,7 @@ impl EnvelopeV2 {
                 bincode::serialize(&manifest).context("Failed to serialize chunk manifest")?;
 
             // Create network chunk
-            let chunk =
-                NetworkChunk::new_with_nonce(i as u64, ciphertext, manifest_bytes, nonce_bytes);
+            let chunk = NetworkChunk::new(i as u64, ciphertext, manifest_bytes, nonce_bytes);
 
             chunks.push(chunk);
         }

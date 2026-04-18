@@ -9,7 +9,7 @@
 //! - Hybrid encryption (X25519 ECDH + AES-256-GCM)
 //! - Pubky integration for decentralized key discovery
 
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🔐 TrustEdge Pubky Hybrid Encryption Demo");

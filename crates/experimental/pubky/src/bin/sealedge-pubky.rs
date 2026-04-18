@@ -11,14 +11,14 @@
 ///
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
-use trustedge_pubky::{
+use sealedge_pubky::{
     create_pubky_backend_from_seed, create_pubky_backend_random, extract_private_key_seed,
     receive_trusted_data, send_trusted_data,
 };
+use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(name = "trustedge-pubky")]
+#[command(name = "sealedge-pubky")]
 #[command(about = "TrustEdge Pubky CLI - Decentralized key management and hybrid encryption")]
 #[command(long_about = "
 TrustEdge Pubky CLI provides decentralized key management and hybrid encryption
@@ -41,10 +41,10 @@ Examples:
   trustedge-pubky generate --output my-key.txt
   
   # Encrypt a file for someone
-  trustedge-pubky encrypt --input document.pdf --output document.trst --recipient <pubky-id>
+  trustedge-pubky encrypt --input document.pdf --output document.seal --recipient <pubky-id>
   
   # Decrypt a received file
-  trustedge-pubky decrypt --input document.trst --output document.pdf --key my-key.txt
+  trustedge-pubky decrypt --input document.seal --output document.pdf --key my-key.txt
 ")]
 #[command(version)]
 struct Args {
@@ -437,7 +437,7 @@ fn decrypt_data(input: PathBuf, output: PathBuf, key: PathBuf) -> Result<()> {
 
     // Create PrivateKey from the seed
     // We need to determine the algorithm from the envelope or use a default
-    use trustedge_core::{AsymmetricAlgorithm, PrivateKey};
+    use sealedge_core::{AsymmetricAlgorithm, PrivateKey};
 
     // For now, assume Ed25519 - in a real implementation, this should be detected
     let private_key = PrivateKey::new(AsymmetricAlgorithm::Ed25519, key_array.to_vec());

@@ -18,7 +18,7 @@ use tempfile::TempDir;
 /// Test CLI binary exists and shows help
 #[test]
 fn test_cli_help() {
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd = Command::cargo_bin("sealedge-pubky").unwrap();
     cmd.arg("--help")
         .assert()
         .success()
@@ -34,7 +34,7 @@ fn test_key_generation() {
     let temp_dir = TempDir::new().unwrap();
     let key_file = temp_dir.path().join("test_key.txt");
 
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd = Command::cargo_bin("sealedge-pubky").unwrap();
     cmd.arg("generate")
         .arg("--output")
         .arg(&key_file)
@@ -58,7 +58,7 @@ fn test_key_generation_with_seed() {
     let seed = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
 
     // Generate key twice with same seed
-    let mut cmd1 = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd1 = Command::cargo_bin("sealedge-pubky").unwrap();
     let output1 = cmd1
         .arg("generate")
         .arg("--seed")
@@ -70,7 +70,7 @@ fn test_key_generation_with_seed() {
         .stdout
         .clone();
 
-    let mut cmd2 = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd2 = Command::cargo_bin("sealedge-pubky").unwrap();
     let output2 = cmd2
         .arg("generate")
         .arg("--seed")
@@ -94,7 +94,7 @@ fn test_key_generation_with_seed() {
 /// Test invalid seed handling
 #[test]
 fn test_invalid_seed_error() {
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd = Command::cargo_bin("sealedge-pubky").unwrap();
     cmd.arg("generate")
         .arg("--seed")
         .arg("invalid_seed")
@@ -108,11 +108,11 @@ fn test_invalid_seed_error() {
 fn test_encrypt_invalid_recipient() {
     let temp_dir = TempDir::new().unwrap();
     let input_file = temp_dir.path().join("input.txt");
-    let output_file = temp_dir.path().join("output.trst");
+    let output_file = temp_dir.path().join("output.seal");
 
     fs::write(&input_file, "test data").unwrap();
 
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd = Command::cargo_bin("sealedge-pubky").unwrap();
     cmd.arg("encrypt")
         .arg("--input")
         .arg(&input_file)
@@ -132,14 +132,14 @@ fn test_encrypt_invalid_recipient() {
 fn test_encrypt_nonexistent_recipient() {
     let temp_dir = TempDir::new().unwrap();
     let input_file = temp_dir.path().join("input.txt");
-    let output_file = temp_dir.path().join("output.trst");
+    let output_file = temp_dir.path().join("output.seal");
 
     fs::write(&input_file, "test data").unwrap();
 
     // Valid format but non-existent recipient
     let fake_recipient = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
 
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd = Command::cargo_bin("sealedge-pubky").unwrap();
     cmd.arg("encrypt")
         .arg("--input")
         .arg(&input_file)
@@ -155,7 +155,7 @@ fn test_encrypt_nonexistent_recipient() {
 /// Test resolve command with invalid Pubky ID
 #[test]
 fn test_resolve_invalid_id() {
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd = Command::cargo_bin("sealedge-pubky").unwrap();
     cmd.arg("resolve")
         .arg("invalid_id")
         .assert()
@@ -167,14 +167,14 @@ fn test_resolve_invalid_id() {
 #[test]
 fn test_decrypt_missing_key() {
     let temp_dir = TempDir::new().unwrap();
-    let input_file = temp_dir.path().join("input.trst");
+    let input_file = temp_dir.path().join("input.seal");
     let output_file = temp_dir.path().join("output.txt");
     let key_file = temp_dir.path().join("nonexistent_key.txt");
 
     // Create dummy envelope file
     fs::write(&input_file, "dummy envelope data").unwrap();
 
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd = Command::cargo_bin("sealedge-pubky").unwrap();
     cmd.arg("decrypt")
         .arg("--input")
         .arg(&input_file)
@@ -191,7 +191,7 @@ fn test_decrypt_missing_key() {
 #[test]
 fn test_decrypt_invalid_key_format() {
     let temp_dir = TempDir::new().unwrap();
-    let input_file = temp_dir.path().join("input.trst");
+    let input_file = temp_dir.path().join("input.seal");
     let output_file = temp_dir.path().join("output.txt");
     let key_file = temp_dir.path().join("invalid_key.txt");
 
@@ -201,7 +201,7 @@ fn test_decrypt_invalid_key_format() {
     // Create invalid key file
     fs::write(&key_file, "invalid_key_content").unwrap();
 
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd = Command::cargo_bin("sealedge-pubky").unwrap();
     cmd.arg("decrypt")
         .arg("--input")
         .arg(&input_file)
@@ -218,7 +218,7 @@ fn test_decrypt_invalid_key_format() {
 #[test]
 fn test_key_generation_randomness() {
     // Generate two keys without seed
-    let mut cmd1 = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd1 = Command::cargo_bin("sealedge-pubky").unwrap();
     let output1 = cmd1
         .arg("generate")
         .arg("--id-only")
@@ -228,7 +228,7 @@ fn test_key_generation_randomness() {
         .stdout
         .clone();
 
-    let mut cmd2 = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd2 = Command::cargo_bin("sealedge-pubky").unwrap();
     let output2 = cmd2
         .arg("generate")
         .arg("--id-only")
@@ -247,11 +247,11 @@ fn test_key_generation_randomness() {
 fn test_file_io_errors() {
     let temp_dir = TempDir::new().unwrap();
     let nonexistent_input = temp_dir.path().join("nonexistent.txt");
-    let output_file = temp_dir.path().join("output.trst");
+    let output_file = temp_dir.path().join("output.seal");
 
     let recipient = "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
 
-    let mut cmd = Command::cargo_bin("trustedge-pubky").unwrap();
+    let mut cmd = Command::cargo_bin("sealedge-pubky").unwrap();
     cmd.arg("encrypt")
         .arg("--input")
         .arg(&nonexistent_input)

@@ -7,13 +7,13 @@
 //! This example demonstrates the clean adapter API using mock storage
 //! to avoid network dependencies.
 
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use trustedge_core::{backends::AsymmetricAlgorithm, KeyPair};
-use trustedge_pubky::{
+use sealedge_core::{backends::AsymmetricAlgorithm, KeyPair};
+use sealedge_pubky::{
     mock::{mock_send_trusted_data, MockPubkyBackend},
     receive_trusted_data,
 };
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("● TrustEdge Pubky Simple Demo (Mock Network)");

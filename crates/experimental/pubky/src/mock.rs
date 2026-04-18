@@ -9,13 +9,13 @@
 
 use crate::{PubkyAdapterError, PublicKeyData, TrustEdgeKeyRecord};
 use anyhow::Result;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use trustedge_core::backends::{
+use sealedge_core::backends::{
     BackendCapabilities, BackendInfo, CryptoOperation, CryptoResult, KeyMetadata, UniversalBackend,
 };
-use trustedge_core::error::BackendError;
-use trustedge_core::{backends::AsymmetricAlgorithm, PublicKey};
+use sealedge_core::error::BackendError;
+use sealedge_core::{backends::AsymmetricAlgorithm, PublicKey};
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 /// Mock storage for testing
 type MockStorage = Arc<Mutex<HashMap<String, String>>>;
@@ -86,10 +86,10 @@ impl MockPubkyBackend {
 
         // Convert back to TrustEdge PublicKey
         let algorithm = match record.public_key.algorithm.as_str() {
-            "Ed25519" => trustedge_core::backends::AsymmetricAlgorithm::Ed25519,
-            "EcdsaP256" => trustedge_core::backends::AsymmetricAlgorithm::EcdsaP256,
-            "Rsa2048" => trustedge_core::backends::AsymmetricAlgorithm::Rsa2048,
-            "Rsa4096" => trustedge_core::backends::AsymmetricAlgorithm::Rsa4096,
+            "Ed25519" => sealedge_core::backends::AsymmetricAlgorithm::Ed25519,
+            "EcdsaP256" => sealedge_core::backends::AsymmetricAlgorithm::EcdsaP256,
+            "Rsa2048" => sealedge_core::backends::AsymmetricAlgorithm::Rsa2048,
+            "Rsa4096" => sealedge_core::backends::AsymmetricAlgorithm::Rsa4096,
             _ => {
                 return Err(PubkyAdapterError::InvalidPubkyId(format!(
                     "Unsupported algorithm: {}",
@@ -190,7 +190,7 @@ pub fn mock_send_trusted_data(
     let recipient_public_key = backend.resolve_public_key(recipient_id)?;
 
     // Use the core library function
-    let sealed_envelope = trustedge_core::seal_for_recipient(data, &recipient_public_key)?;
+    let sealed_envelope = sealedge_core::seal_for_recipient(data, &recipient_public_key)?;
 
     Ok(sealed_envelope)
 }
@@ -199,7 +199,7 @@ pub fn mock_send_trusted_data(
 mod tests {
     use super::*;
     use crate::receive_trusted_data;
-    use trustedge_core::{backends::AsymmetricAlgorithm, KeyPair};
+    use sealedge_core::{backends::AsymmetricAlgorithm, KeyPair};
 
     #[test]
     fn test_mock_backend() {

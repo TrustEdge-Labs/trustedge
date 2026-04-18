@@ -4,7 +4,7 @@
 
 
 [package]
-name = "trustedge-pubky-advanced"
+name = "sealedge-pubky-advanced"
 version = "0.1.0"
 edition = "2021"
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
@@ -20,7 +20,7 @@ maintained = false
 
 [dependencies]
 # Core TrustEdge functionality
-trustedge-core = { path = "../../core" }
+sealedge-core = { path = "../../core" }
 
 # Pubky integration
 pubky = "0.5.4"

@@ -12,15 +12,15 @@ pub mod mock;
 
 use anyhow::Result;
 use pubky::{Client, ClientBuilder, Keypair};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use tokio::runtime::Runtime;
-use trustedge_core::backends::{
+use sealedge_core::backends::{
     AsymmetricAlgorithm, BackendCapabilities, BackendInfo, CryptoOperation, CryptoResult,
     KeyMetadata, UniversalBackend,
 };
-use trustedge_core::error::BackendError;
-use trustedge_core::{PrivateKey, PublicKey};
+use sealedge_core::error::BackendError;
+use sealedge_core::{PrivateKey, PublicKey};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use tokio::runtime::Runtime;
 
 /// Errors that can occur during Pubky operations
 #[derive(Debug, thiserror::Error)]
@@ -35,7 +35,7 @@ pub enum PubkyAdapterError {
     InvalidPubkyId(String),
 
     #[error("TrustEdge core error: {0}")]
-    CoreError(#[from] trustedge_core::HybridEncryptionError),
+    CoreError(#[from] sealedge_core::HybridEncryptionError),
 
     #[error("Serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),
@@ -278,7 +278,7 @@ pub fn send_trusted_data(
     let recipient_public_key = pubky_backend.resolve_public_key_sync(recipient_id)?;
 
     // 2. Call the core library function to perform the hybrid encryption
-    let sealed_envelope = trustedge_core::seal_for_recipient(data, &recipient_public_key)?;
+    let sealed_envelope = sealedge_core::seal_for_recipient(data, &recipient_public_key)?;
 
     Ok(sealed_envelope)
 }
@@ -293,7 +293,7 @@ pub fn receive_trusted_data(
     my_private_key: &PrivateKey,
 ) -> Result<Vec<u8>, PubkyAdapterError> {
     // Use the core library function to decrypt the envelope
-    let decrypted_data = trustedge_core::open_envelope(envelope, my_private_key)?;
+    let decrypted_data = sealedge_core::open_envelope(envelope, my_private_key)?;
 
     Ok(decrypted_data)
 }
@@ -321,7 +321,7 @@ pub fn create_pubky_backend_random() -> Result<PubkyBackend, PubkyAdapterError> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use trustedge_core::{AsymmetricAlgorithm, KeyPair};
+    use sealedge_core::{AsymmetricAlgorithm, KeyPair};
 
     #[test]
     fn test_public_key_serialization() {
@@ -444,7 +444,7 @@ mod tests {
             ];
 
             for (i, data) in test_cases.iter().enumerate() {
-                let envelope = trustedge_core::seal_for_recipient(data, &alice_keypair.public)
+                let envelope = sealedge_core::seal_for_recipient(data, &alice_keypair.public)
                     .unwrap_or_else(|_| panic!("Failed to seal envelope for case {}", i));
 
                 // Verify envelope is not empty and different from original data

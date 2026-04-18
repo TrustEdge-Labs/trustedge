@@ -13,11 +13,11 @@
 //! ) -> Result<Vec<u8>, Box<dyn std::error::Error>>
 //! ```
 
+use sealedge_core::{backends::AsymmetricAlgorithm, KeyPair};
+use sealedge_pubky::mock::MockPubkyBackend;
+use sealedge_pubky::receive_trusted_data;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use trustedge_core::{backends::AsymmetricAlgorithm, KeyPair};
-use trustedge_pubky::mock::MockPubkyBackend;
-use trustedge_pubky::receive_trusted_data;
 
 /// This is your exact API specification!
 ///
@@ -35,7 +35,7 @@ pub fn send_trusted_data(
     let recipient_public_key = backend.resolve_public_key(recipient_id)?;
 
     // 2. Call the core library function to perform the hybrid encryption.
-    let sealed_envelope = trustedge_core::seal_for_recipient(data, &recipient_public_key)?;
+    let sealed_envelope = sealedge_core::seal_for_recipient(data, &recipient_public_key)?;
 
     Ok(sealed_envelope)
 }
@@ -107,7 +107,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Show what happened under the hood
     println!("📋 What happened under the hood:");
     println!("   1. ✅ Pubky client resolved recipient_id to public key");
-    println!("   2. ✅ trustedge_core::seal_for_recipient() performed hybrid encryption");
+    println!("   2. ✅ sealedge_core::seal_for_recipient() performed hybrid encryption");
     println!("   3. ✅ Session key encrypted with recipient's RSA public key");
     println!("   4. ✅ Data encrypted with AES-256-GCM session key");
     println!("   5. ✅ Clean separation: Pubky network ↔ adapter ↔ core crypto");

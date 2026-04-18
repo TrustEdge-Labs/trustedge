@@ -4,7 +4,7 @@
 
 
 [package]
-name = "trustedge-pubky"
+name = "sealedge-pubky"
 version = "0.1.0"
 edition = "2021"
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
@@ -15,8 +15,8 @@ keywords = ["cryptography", "pubky", "adapter", "bridge"]
 categories = ["cryptography", "network-programming"]
 
 [[bin]]
-name = "trustedge-pubky"
-path = "src/bin/trustedge-pubky.rs"
+name = "sealedge-pubky"
+path = "src/bin/sealedge-pubky.rs"
 
 [package.metadata.trustedge]
 tier = "experimental"
@@ -24,7 +24,7 @@ maintained = false
 
 [dependencies]
 # Core TrustEdge functionality
-trustedge-core = { path = "../../core" }
+sealedge-core = { path = "../../core" }
 
 # Pubky network integration
 pubky = "0.5.4"
