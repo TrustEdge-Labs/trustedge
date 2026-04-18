@@ -164,7 +164,7 @@ fi
 # ── Step 5: Create attestation ────────────────────────────────────────────────
 step_banner "Create SBOM attestation"
 
-ATTESTATION_PATH="$DEMO_DIR/attestation.te-attestation.json"
+ATTESTATION_PATH="$DEMO_DIR/attestation.se-attestation.json"
 if [ -n "${SEAL_BINARY:-}" ] && [ -f "${SEAL_BINARY:-}" ] && \
    [ -n "${SBOM_PATH:-}" ] && [ -f "${SBOM_PATH:-}" ] && \
    [ -n "${DEVICE_PUB:-}" ]; then

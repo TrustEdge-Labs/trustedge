@@ -231,7 +231,7 @@ impl PointAttestation {
         Ok(())
     }
 
-    /// Serialize to pretty-printed JSON for writing to a `.te-attestation.json` file.
+    /// Serialize to pretty-printed JSON for writing to a `.se-attestation.json` file.
     pub fn to_json(&self) -> Result<String, PointAttestationError> {
         Ok(serde_json::to_string_pretty(self)?)
     }

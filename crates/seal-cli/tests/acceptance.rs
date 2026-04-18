@@ -1146,7 +1146,7 @@ fn test_attest_sbom_creates_attestation_file() {
     let tempdir = TempDir::new().unwrap();
     let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
     let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
-    let out_path = tempdir.path().join("output.te-attestation.json");
+    let out_path = tempdir.path().join("output.se-attestation.json");
 
     Command::cargo_bin("seal")
         .unwrap()
@@ -1204,10 +1204,10 @@ fn test_attest_sbom_default_output_name() {
         .assert()
         .success();
 
-    let default_out = tempdir.path().join("attestation.te-attestation.json");
+    let default_out = tempdir.path().join("attestation.se-attestation.json");
     assert!(
         default_out.exists(),
-        "default output file attestation.te-attestation.json should exist"
+        "default output file attestation.se-attestation.json should exist"
     );
 }
 
@@ -1287,7 +1287,7 @@ fn test_attest_sbom_valid_inputs_succeed() {
     let tempdir = TempDir::new().unwrap();
     let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
     let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
-    let out_path = tempdir.path().join("result.te-attestation.json");
+    let out_path = tempdir.path().join("result.se-attestation.json");
 
     Command::cargo_bin("seal")
         .unwrap()
@@ -1317,7 +1317,7 @@ fn test_verify_attestation_success() {
     let tempdir = TempDir::new().unwrap();
     let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
     let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
-    let out_path = tempdir.path().join("attest.te-attestation.json");
+    let out_path = tempdir.path().join("attest.se-attestation.json");
 
     // Create attestation
     Command::cargo_bin("seal")
@@ -1360,7 +1360,7 @@ fn test_verify_attestation_wrong_key_fails() {
     let tempdir = TempDir::new().unwrap();
     let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
     let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
-    let out_path = tempdir.path().join("attest.te-attestation.json");
+    let out_path = tempdir.path().join("attest.se-attestation.json");
 
     // Create attestation with first keypair
     Command::cargo_bin("seal")
@@ -1421,7 +1421,7 @@ fn test_verify_attestation_with_file_hashes() {
     let tempdir = TempDir::new().unwrap();
     let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
     let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
-    let out_path = tempdir.path().join("attest.te-attestation.json");
+    let out_path = tempdir.path().join("attest.se-attestation.json");
 
     // Create attestation
     Command::cargo_bin("seal")

@@ -319,7 +319,7 @@ struct AttestSbomCmd {
     #[arg(
         long,
         value_name = "PATH",
-        help = "Output path [default: attestation.te-attestation.json]"
+        help = "Output path [default: attestation.se-attestation.json]"
     )]
     out: Option<PathBuf>,
     #[arg(long, help = "Use unencrypted key file (CI/automation only)")]
@@ -328,7 +328,7 @@ struct AttestSbomCmd {
 
 #[derive(Args, Debug)]
 struct VerifyAttestationCmd {
-    #[arg(value_name = "ATTESTATION", help = "Path to .te-attestation.json file")]
+    #[arg(value_name = "ATTESTATION", help = "Path to .se-attestation.json file")]
     attestation: PathBuf,
     #[arg(
         long = "device-pub",
@@ -1458,7 +1458,7 @@ fn handle_attest_sbom(args: AttestSbomCmd) -> Result<()> {
     // Determine output path
     let out_path = args
         .out
-        .unwrap_or_else(|| PathBuf::from("attestation.te-attestation.json"));
+        .unwrap_or_else(|| PathBuf::from("attestation.se-attestation.json"));
 
     // Write output file
     fs::write(&out_path, &json)
