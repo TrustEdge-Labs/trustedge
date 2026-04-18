@@ -1,3 +1,33 @@
+## v5.0 Portfolio Polish (Partial — 2 of 4 phases shipped: 2026-04-05)
+
+**Phases completed:** 2 phases (79-80), 2 plans
+**Phases punted to post-rename roadmap:** 2 phases (81 Demo GIF, 82 Product Landing Page)
+**Timeline:** 1 day (2026-04-05)
+
+**Delivered:** Self-attestation wired into CI release workflow and `TrustEdge-Labs/attest-sbom-action@v1` published to the GitHub Marketplace.
+
+**Key accomplishments:**
+
+- Phase 79: CI release workflow generates ephemeral Ed25519 keypair per build, produces `.te-attestation.json` + `build.pub` as release assets, no stored signing secrets, anchore/sbom-action@v0 pinned for SBOM generation
+- Phase 80: `TrustEdge-Labs/attest-sbom-action` separate repo published to GitHub Marketplace with SHA256 binary checksum verification, README shows persistent-key and ephemeral-key usage examples, v1/v1.0.0 tags cut
+
+**Punted (to post-rename roadmap):**
+
+- Phase 81: Demo GIF embedded in README — deferred; makes more sense to record after the product rename to Sealedge
+- Phase 82: Product landing page on trustedgelabs.com — deferred; will be written against the rebranded product
+
+**Tech debt carried forward:**
+
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+
+**Archives:**
+
+- `.planning/milestones/v5.0-ROADMAP.md`
+- `.planning/milestones/v5.0-REQUIREMENTS.md`
+- `.planning/milestones/v5.0-phases/` (phases 79-80)
+
+---
+
 ## v4.0 SBOM Attestation Wedge (Shipped: 2026-04-03)
 
 **Phases completed:** 4 phases (75-78), 8 plans, 13 tasks

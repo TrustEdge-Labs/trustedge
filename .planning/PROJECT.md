@@ -18,18 +18,21 @@ Prove that data from an edge device has not been tampered with — from capture 
 
 ## Current State
 
-Shipped v4.0 SBOM Attestation Wedge. Starting v5.0 Portfolio Polish — making the existing work visible and discoverable. Product landing page, demo GIF, marketplace action listing, and archiving future ideas. 471 tests across 9 workspace crates.
+Shipped v5.0 Portfolio Polish (partial — 2 of 4 phases). Self-attestation wired into CI, GitHub Action published to Marketplace. Phases 81-82 (demo GIF, landing page) punted to post-rename roadmap. Starting v6.0 Sealedge Rebrand — trademark-driven rename from "trustedge" to "sealedge" end-to-end. 471 tests across 9 workspace crates.
 
-## Current Milestone: v5.0 Portfolio Polish
+## Current Milestone: v6.0 Sealedge Rebrand
 
-**Goal:** Make the existing SBOM attestation work visible and discoverable to recruiters and potential users.
+**Goal:** Rename the product from "trustedge" to "sealedge" end-to-end — repo, crates, binaries, internal constants, docs, functions — clean break with no legacy compatibility path, while the TrustEdge-Labs org/brand retains its identity.
 
 **Target features:**
-- Wire up self-attestation end-to-end in CI release workflow
-- Publish GitHub Action to GitHub Marketplace (separate `TrustEdge-Labs/attest-sbom-action` repo)
-- Record demo GIF and embed in README
-- Build product landing page on trustedgelabs.com
-- Archive te-prove design doc into .planning/ideas/
+- Rename GitHub monorepo (`trustedge` → `sealedge`) and all workspace crates (`trustedge-*` → `sealedge-*`)
+- Rename all CLI binaries including `trst` (pick new short name) to sealedge equivalents
+- Replace crypto constants (`TRUSTEDGE-KEY-V1`, `TRUSTEDGE_ENVELOPE_V1` HKDF domain separation) with sealedge equivalents — clean break, no backward-compat decrypt
+- Sweep code: copyright headers, error messages, log output, CLI help text, env var prefixes, code comments
+- Sweep docs: README, CLAUDE.md, docs/ directory, DEPENDENCIES.md, scripts
+- Republish GitHub Action under sealedge-* name; deprecate `TrustEdge-Labs/attest-sbom-action@v1` with redirect
+- Update product references on trustedgelabs.com (labs brand stays, product is now Sealedge)
+- Validate all 471 tests pass and CI/WASM/Docker stack continues to work under new names
 
 ## Requirements
 
@@ -227,16 +230,29 @@ Shipped v4.0 SBOM Attestation Wedge. Starting v5.0 Portfolio Polish — making t
 - ✓ CI self-attestation with ephemeral keys, .te-attestation.json in GitHub Releases — v4.0 Phase 78
 - ✓ Product landing page content and third-party attestation guide — v4.0 Phase 78
 
+- ✓ CI release workflow self-attests with ephemeral Ed25519 keypair; zero stored signing secrets — v5.0 Phase 79
+- ✓ te-prove design doc archived to .planning/ideas/ — v5.0 Phase 79
+- ✓ `TrustEdge-Labs/attest-sbom-action` separate repo published to GitHub Marketplace with SHA256 binary checksum verification — v5.0 Phase 80
+- ✓ Action README documents persistent-key and ephemeral-key usage patterns — v5.0 Phase 80
+
 ### Active
 
-**Goal:** Make the existing SBOM attestation work visible and discoverable — portfolio polish.
+**Goal:** Rename the product from "trustedge" to "sealedge" end-to-end — clean break with no legacy compatibility path. TrustEdge-Labs org/brand retains its identity.
 
 **Target features:**
-- Self-attestation wired up end-to-end in CI release workflow (ephemeral Ed25519 key per build)
-- GitHub Action published to marketplace (`TrustEdge-Labs/attest-sbom-action`)
-- Demo GIF embedded in README showing attest-sbom → verify-attestation flow
-- Product landing page on trustedgelabs.com
-- te-prove design doc archived in .planning/ideas/
+- Rename GitHub monorepo (`trustedge` → `sealedge`) and all workspace crates (`trustedge-*` → `sealedge-*`)
+- Rename all CLI binaries including `trst` (pick new short name)
+- Replace crypto constants (`TRUSTEDGE-KEY-V1`, `TRUSTEDGE_ENVELOPE_V1`) with sealedge equivalents — clean break
+- Sweep code: copyright headers, error messages, log output, CLI help, env vars, comments
+- Sweep docs: README, CLAUDE.md, docs/, scripts, examples
+- Republish GitHub Action under sealedge name; deprecate old marketplace listing
+- Update product references on trustedgelabs.com to advertise Sealedge
+- Validate tests, CI, WASM, Docker all green under new names
+
+### Punted (v5.0 deferrals, post-rename roadmap)
+
+- Demo GIF embedded in README showing attest-sbom → verify-attestation flow (was v5.0 Phase 81)
+- Product landing page on trustedgelabs.com (was v5.0 Phase 82)
 
 ### Deferred
 
@@ -274,6 +290,7 @@ Shipped v4.0 SBOM Attestation Wedge. Starting v5.0 Portfolio Polish — making t
 - **v2.9 Security Review P2 Remediation** — Insecure Default impls removed (CAConfig, SoftwareHsmConfig), LazyLock regex, --unencrypted warning, least-privilege CI, nginx security headers (CSP, HSTS, X-Frame, Referrer-Policy), HTTP-to-HTTPS redirect
 - **v3.0 Release Polish** — Official signed release. Configurable receipt TTL, healthz version removed, strict PORT, crypto hygiene (expect + Result), nginx headers in all locations, Docker env_file, full docs sweep
 - **v4.0 SBOM Attestation Wedge** — First product feature. Point attestation format (.te-attestation.json), CLI (attest-sbom, verify-attestation), platform endpoint, HTML verifier, DO deployment, GitHub Action, CI self-attestation
+- **v5.0 Portfolio Polish (Partial)** — 2 of 4 phases shipped: CI self-attestation with ephemeral keys + `TrustEdge-Labs/attest-sbom-action@v1` on GitHub Marketplace. Phases 81-82 (demo GIF, landing page) punted to post-rename roadmap
 
 ## Context
 
@@ -423,4 +440,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after v5.0 milestone started*
+*Last updated: 2026-04-18 — v5.0 archived (partial), v6.0 Sealedge Rebrand started*
