@@ -12,10 +12,10 @@
 
 use anyhow::{Context, Result};
 use bincode::deserialize_from;
+use sealedge_core::{Record, StreamHeader, MAGIC};
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
-use trustedge_core::{Record, StreamHeader, MAGIC};
 
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -48,7 +48,7 @@ fn main() -> Result<()> {
     println!("First record sequence: {}", record.seq);
 
     // Deserialize and inspect the manifest
-    let manifest: trustedge_core::Manifest = bincode::deserialize(&record.sm.manifest)?;
+    let manifest: sealedge_core::Manifest = bincode::deserialize(&record.sm.manifest)?;
 
     println!("Manifest:");
     println!("  Version: {}", manifest.v);

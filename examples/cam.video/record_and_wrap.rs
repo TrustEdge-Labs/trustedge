@@ -8,13 +8,13 @@
 
 use chacha20poly1305::Key;
 use chrono::{DateTime, SecondsFormat, Utc};
-use std::error::Error;
-use std::fs;
-use trustedge_core::{
+use sealedge_core::{
     chain_next, encrypt_segment, generate_aad, generate_nonce24, genesis, segment_hash,
     sign_manifest, write_archive, CamVideoManifest, CamVideoMetadata, ChunkInfo, DeviceInfo,
     DeviceKeypair, ProfileMetadata, SegmentInfo,
 };
+use std::error::Error;
+use std::fs;
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("TrustEdge P0 cam.video Example: Record and Wrap");

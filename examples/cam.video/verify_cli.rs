@@ -10,7 +10,7 @@ use std::env;
 use std::error::Error;
 use std::fs;
 
-use trustedge_core::{read_archive, validate_archive, verify_manifest, ProfileMetadata};
+use sealedge_core::{read_archive, validate_archive, verify_manifest, ProfileMetadata};
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("TrustEdge P0 cam.video Example: Verify CLI");

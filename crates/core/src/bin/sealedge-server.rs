@@ -17,8 +17,8 @@ use tokio::time::timeout;
 use tokio_util::codec::{Framed, LengthDelimitedCodec};
 
 #[cfg(feature = "keyring")]
-use trustedge_core::KeyringBackend;
-use trustedge_core::{server_authenticate, NetworkChunk, SessionManager};
+use sealedge_core::KeyringBackend;
+use sealedge_core::{server_authenticate, NetworkChunk, SessionManager};
 
 // ---- CLI --------------------------------------------------------------------
 

@@ -18,8 +18,8 @@ use tokio::time::{sleep, timeout};
 use tokio_util::codec::{Framed, LengthDelimitedCodec};
 
 #[cfg(feature = "keyring")]
-use trustedge_core::KeyringBackend;
-use trustedge_core::{
+use sealedge_core::KeyringBackend;
+use sealedge_core::{
     auth::{client_authenticate, load_server_cert, save_client_cert, ClientCertificate},
     build_aad, FileHeader, KeyBackend, KeyContext, Manifest, NetworkChunk, SignedManifest,
     NONCE_LEN, VERSION,
@@ -412,13 +412,13 @@ async fn send_encrypted_file(
             key_id,
             ai_used: false,
             model_ids: vec![],
-            data_type: trustedge_core::DataType::File { mime_type: None }, // Generic file data
+            data_type: sealedge_core::DataType::File { mime_type: None }, // Generic file data
             chunk_len: bytes_read as u32, // Bind actual chunk length to AAD
         };
 
         // Sign & wrap
         let m_bytes = bincode::serialize(&manifest)?;
-        let sig: Signature = trustedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
+        let sig: Signature = sealedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
         let sm = SignedManifest {
             manifest: m_bytes.clone(),
             sig: sig.to_bytes().to_vec(),
@@ -522,12 +522,12 @@ async fn send_encrypted_test_chunks(
             key_id,
             ai_used: false,
             model_ids: vec![],
-            data_type: trustedge_core::DataType::File { mime_type: None }, // Test data
+            data_type: sealedge_core::DataType::File { mime_type: None }, // Test data
             chunk_len: pt.len() as u32, // Bind actual chunk length to AAD
         };
 
         let m_bytes = bincode::serialize(&manifest)?;
-        let sig: Signature = trustedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
+        let sig: Signature = sealedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
         let sm = SignedManifest {
             manifest: m_bytes.clone(),
             sig: sig.to_bytes().to_vec(),
@@ -616,10 +616,10 @@ fn build_session_header(chunk_size: usize) -> Result<([u8; 32], [u8; 4], [u8; 16
 
     let header = FileHeader {
         version: VERSION,
-        aead_alg: trustedge_core::format::AeadAlgorithm::Aes256Gcm as u8,
-        sig_alg: trustedge_core::format::SignatureAlgorithm::Ed25519 as u8,
-        hash_alg: trustedge_core::format::HashAlgorithm::Blake3 as u8,
-        kdf_alg: trustedge_core::format::KdfAlgorithm::Pbkdf2Sha256 as u8,
+        aead_alg: sealedge_core::format::AeadAlgorithm::Aes256Gcm as u8,
+        sig_alg: sealedge_core::format::SignatureAlgorithm::Ed25519 as u8,
+        hash_alg: sealedge_core::format::HashAlgorithm::Blake3 as u8,
+        kdf_alg: sealedge_core::format::KdfAlgorithm::Pbkdf2Sha256 as u8,
         reserved: [0; 3],
         key_id,
         device_id_hash,
@@ -720,12 +720,12 @@ async fn send_encrypted_test_chunks_hardened(
             key_id,
             ai_used: false,
             model_ids: vec![],
-            data_type: trustedge_core::DataType::File { mime_type: None }, // Test data
+            data_type: sealedge_core::DataType::File { mime_type: None }, // Test data
             chunk_len: pt.len() as u32, // Bind actual chunk length to AAD
         };
 
         let m_bytes = bincode::serialize(&manifest)?;
-        let sig: Signature = trustedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
+        let sig: Signature = sealedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
         let sm = SignedManifest {
             manifest: m_bytes.clone(),
             sig: sig.to_bytes().to_vec(),
@@ -838,14 +838,14 @@ async fn send_encrypted_file_hardened(
             key_id,
             ai_used: false,
             model_ids: vec![],
-            data_type: trustedge_core::DataType::File {
+            data_type: sealedge_core::DataType::File {
                 mime_type: Some("application/octet-stream".to_string()),
             },
             chunk_len: pt.len() as u32,
         };
 
         let m_bytes = bincode::serialize(&manifest)?;
-        let sig: Signature = trustedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
+        let sig: Signature = sealedge_core::format::sign_manifest_with_domain(&signing, &m_bytes);
         let sm = SignedManifest {
             manifest: m_bytes.clone(),
             sig: sig.to_bytes().to_vec(),

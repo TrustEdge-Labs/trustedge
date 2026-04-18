@@ -4,7 +4,7 @@
 
 
 [package]
-name = "trustedge-wasm"
+name = "sealedge-wasm"
 version = "0.2.0"
 edition = "2021"
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
@@ -18,7 +18,7 @@ categories = ["cryptography", "wasm", "web-programming"]
 default = []
 
 [lib]
-name = "trustedge_wasm"
+name = "sealedge_wasm"
 crate-type = ["cdylib", "rlib"]
 
 [package.metadata.trustedge]

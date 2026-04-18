@@ -28,7 +28,7 @@
 //! ## Quick Start
 //!
 //! ```rust
-//! use trustedge_core::Envelope;
+//! use sealedge_core::Envelope;
 //! use ed25519_dalek::SigningKey;
 //! use rand_core::OsRng;
 //!
@@ -174,10 +174,10 @@ pub use trustedge_trst_protocols::archive::manifest::{
 };
 
 // Shared wire types — re-exported from trustedge-types for downstream access
-// Downstream crates can use `trustedge_core::trustedge_types::*` or the
-// convenience re-exports `trustedge_core::Uuid` and `trustedge_core::DateTime`.
-pub use trustedge_types;
-pub use trustedge_types::{DateTime, Utc, Uuid};
+// Downstream crates can use `sealedge_core::sealedge_types::*` or the
+// convenience re-exports `sealedge_core::Uuid` and `sealedge_core::DateTime`.
+pub use sealedge_types;
+pub use sealedge_types::{DateTime, Utc, Uuid};
 
 // Receipt system re-exports (Layer 4 applications)
 pub use applications::receipts::{

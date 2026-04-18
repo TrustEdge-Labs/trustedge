@@ -2,7 +2,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: trustedge — Privacy and trust at the edge.
 
-/// trustedge_core/src/format.rs
+/// sealedge_core/src/format.rs
 use anyhow::{Context, Result};
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use serde::{Deserialize, Serialize};

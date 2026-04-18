@@ -50,8 +50,8 @@
 //! ## Usage Example
 //!
 //! ```rust,ignore
-//! use trustedge_core::io::{AudioCapture, read_archive, write_archive};
-//! use trustedge_core::protocols::Envelope;
+//! use sealedge_core::io::{AudioCapture, read_archive, write_archive};
+//! use sealedge_core::protocols::Envelope;
 //!
 //! // Capture live audio
 //! #[cfg(feature = "audio")]

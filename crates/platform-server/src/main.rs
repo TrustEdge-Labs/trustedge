@@ -8,19 +8,19 @@
 
 //! TrustEdge Platform Server — thin entry point for the Axum HTTP service.
 //!
-//! All routing logic lives in `trustedge_platform::http::create_router`. This binary
+//! All routing logic lives in `sealedge_platform::http::create_router`. This binary
 //! is responsible only for: CLI parsing, env config loading, AppState wiring,
 //! server binding, and graceful shutdown.
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use sealedge_platform::http::{create_router, AppState, Config};
+use sealedge_platform::verify::jwks::KeyManager;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use trustedge_platform::http::{create_router, AppState, Config};
-use trustedge_platform::verify::jwks::KeyManager;
 
 #[cfg(feature = "postgres")]
-use trustedge_platform::database::{create_connection_pool, run_migrations};
+use sealedge_platform::database::{create_connection_pool, run_migrations};
 
 /// TrustEdge Platform Server — boots the TrustEdge platform HTTP service.
 #[derive(Parser)]

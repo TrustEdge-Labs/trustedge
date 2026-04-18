@@ -6,7 +6,7 @@
 # Project: trustedge — Privacy and trust at the edge.
 #
 [package]
-name = "trustedge-core"
+name = "sealedge-core"
 version = "0.2.0"
 edition = "2021"
 description = "Core cryptographic library and CLI tools for privacy-preserving edge computing"
@@ -17,16 +17,16 @@ keywords = ["cryptography", "privacy", "edge-computing", "encryption", "audio"]
 categories = ["cryptography", "command-line-utilities", "multimedia::audio"]
 
 [lib]
-name = "trustedge_core"
+name = "sealedge_core"
 path = "src/lib.rs"
 
 [[bin]]
-name = "trustedge-server"
-path = "src/bin/trustedge-server.rs"
+name = "sealedge-server"
+path = "src/bin/sealedge-server.rs"
 
 [[bin]]
-name = "trustedge-client" 
-path = "src/bin/trustedge-client.rs"
+name = "sealedge-client"
+path = "src/bin/sealedge-client.rs"
 
 [[bin]]
 name = "software-hsm-demo"
@@ -64,7 +64,7 @@ serde = { workspace = true }
 serde_bytes = { workspace = true }
 serde_json = { workspace = true }
 trustedge-trst-protocols = { path = "../trst-protocols" }
-trustedge-types = { workspace = true }
+sealedge-types = { workspace = true }
 
 # Crate-specific dependencies not in workspace
 sha2 = "0.10"

@@ -7,7 +7,7 @@
 #
 
 [package]
-name = "trustedge-platform-server"
+name = "sealedge-platform-server"
 version = "0.1.0"
 edition = "2021"
 license = "MPL-2.0"
@@ -18,12 +18,12 @@ tier = "stable"
 maintained = true
 
 [[bin]]
-name = "trustedge-platform-server"
+name = "sealedge-platform-server"
 path = "src/main.rs"
 
 [dependencies]
-trustedge-platform = { path = "../platform", features = ["http", "openapi"] }
-trustedge-core = { path = "../core" }
+sealedge-platform = { path = "../platform", features = ["http", "openapi"] }
+sealedge-core = { path = "../core" }
 anyhow = { workspace = true }
 axum = { workspace = true }
 clap = { workspace = true }
@@ -39,5 +39,5 @@ serde_json = { workspace = true }
 
 [features]
 default = []
-postgres = ["trustedge-platform/postgres"]
-ca = ["trustedge-platform/ca"]
+postgres = ["sealedge-platform/postgres"]
+ca = ["sealedge-platform/ca"]

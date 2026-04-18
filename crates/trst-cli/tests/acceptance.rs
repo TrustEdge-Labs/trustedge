@@ -16,11 +16,11 @@ use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
 use p256::ecdsa::signature::Signer as P256Signer;
 use predicates::str::contains;
 use rand_core::OsRng;
+use sealedge_core::TrstManifest;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
-use trustedge_core::TrstManifest;
 
 const PROFILE: &str = "cam.video";
 

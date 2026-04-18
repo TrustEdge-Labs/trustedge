@@ -13,17 +13,17 @@
 //! cross-session operations.
 
 use anyhow::Result;
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::process::Command;
-use tempfile::TempDir;
-use trustedge_core::backends::{
+use sealedge_core::backends::{
     software_hsm::{SoftwareHsmBackend, SoftwareHsmConfig},
     universal::{
         AsymmetricAlgorithm, CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend,
     },
     universal_registry::{BackendPreferences, UniversalBackendRegistry},
 };
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use tempfile::TempDir;
 
 /// Test helper to create a temporary Software HSM setup
 fn create_test_hsm_setup() -> Result<(TempDir, SoftwareHsmConfig)> {

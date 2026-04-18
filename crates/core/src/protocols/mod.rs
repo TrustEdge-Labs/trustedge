@@ -65,7 +65,7 @@
 //! ## Usage Example
 //!
 //! ```rust,ignore
-//! use trustedge_core::protocols::{Envelope, ChainSegment, TrstManifest};
+//! use sealedge_core::protocols::{Envelope, ChainSegment, TrstManifest};
 //! use ed25519_dalek::SigningKey;
 //! use rand::rngs::OsRng;
 //!

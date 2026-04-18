@@ -6,7 +6,7 @@
 # Project: trustedge — Privacy and trust at the edge.
 #
 [package]
-name = "trustedge-types"
+name = "sealedge-types"
 version = "0.2.0"
 edition = "2021"
 description = "Shared wire types for TrustEdge platform services"
@@ -17,7 +17,7 @@ keywords = ["cryptography", "privacy", "edge-computing", "types", "serialization
 categories = ["cryptography", "data-structures"]
 
 [lib]
-name = "trustedge_types"
+name = "sealedge_types"
 path = "src/lib.rs"
 
 [dependencies]

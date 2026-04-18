@@ -23,7 +23,7 @@
 //! ## Usage
 //!
 //! ```rust
-//! use trustedge_core::{OwnershipReceipt, create_receipt, assign_receipt};
+//! use sealedge_core::{OwnershipReceipt, create_receipt, assign_receipt};
 //! use ed25519_dalek::SigningKey;
 //! use rand_core::OsRng;
 //!

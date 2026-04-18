@@ -8,12 +8,12 @@
 
 //! Snapshot regression tests for JSON schema generation.
 //!
-//! These tests ensure schema output from `trustedge_types::schema` exactly
+//! These tests ensure schema output from `sealedge_types::schema` exactly
 //! matches the baseline fixtures in `tests/fixtures/`. Any schema drift
 //! (field additions, type changes, etc.) will cause these tests to fail,
 //! making it safe to rely on schema stability for downstream consumers.
 
-use trustedge_types::schema;
+use sealedge_types::schema;
 
 /// Load and parse a fixture JSON file.
 fn load_fixture(name: &str) -> serde_json::Value {

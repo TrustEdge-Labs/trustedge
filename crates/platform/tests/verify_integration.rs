@@ -17,9 +17,9 @@
 use anyhow::Result;
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use ed25519_dalek::{Signer, SigningKey};
+use sealedge_platform::verify::engine::{verify_to_report, SegmentDigest};
+use sealedge_platform::verify::jwks::KeyManager;
 use serde_json::json;
-use trustedge_platform::verify::engine::{verify_to_report, SegmentDigest};
-use trustedge_platform::verify::jwks::KeyManager;
 
 // ---------------------------------------------------------------------------
 // HTTP endpoint tests (require `http` feature)
@@ -31,10 +31,10 @@ mod http_tests {
     use axum::{body::Body, http::header::CONTENT_TYPE, http::Request};
     use base64::engine::general_purpose::URL_SAFE_NO_PAD as BASE64URL;
     use ed25519_dalek::{Signer, VerifyingKey as DalekVerifyingKey};
+    use sealedge_platform::http::{create_router, AppState};
     use std::sync::Arc;
     use tokio::sync::{Mutex, RwLock};
     use tower::ServiceExt;
-    use trustedge_platform::http::{create_router, AppState};
 
     /// Serializes tests that mutate process-global env vars (RATE_LIMIT_RPS,
     /// TRUSTED_PROXIES) to prevent races when cargo runs tests in parallel.
@@ -1172,8 +1172,8 @@ mod http_tests {
         std::fs::write(&binary_path, b"test binary content").unwrap();
         std::fs::write(&sbom_path, r#"{"bomFormat":"CycloneDX","components":[]}"#).unwrap();
 
-        let keypair = trustedge_core::DeviceKeypair::generate().unwrap();
-        let attestation = trustedge_core::PointAttestation::create(
+        let keypair = sealedge_core::DeviceKeypair::generate().unwrap();
+        let attestation = sealedge_core::PointAttestation::create(
             &binary_path,
             "binary",
             &sbom_path,

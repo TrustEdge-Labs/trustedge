@@ -15,8 +15,8 @@
 //! - Memory allocation patterns
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use sealedge_core::AudioChunk;
 use std::time::{Duration, Instant};
-use trustedge_core::AudioChunk;
 
 // Test data sizes for network streaming
 const CHUNK_SIZES: &[usize] = &[512, 1024, 2048, 4096, 8192, 16384];

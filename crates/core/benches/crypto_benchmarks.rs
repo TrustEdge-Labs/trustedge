@@ -13,10 +13,8 @@
 //! including AES-GCM encryption, Ed25519 signatures, and universal backend overhead.
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use sealedge_core::{BackendPreferences, CryptoOperation, HashAlgorithm, UniversalBackendRegistry};
 use std::time::Duration;
-use trustedge_core::{
-    BackendPreferences, CryptoOperation, HashAlgorithm, UniversalBackendRegistry,
-};
 
 // Test data sizes for throughput benchmarks
 const SIZES: &[usize] = &[1024, 4096, 16384, 65536, 262144, 1048576]; // 1KB to 1MB

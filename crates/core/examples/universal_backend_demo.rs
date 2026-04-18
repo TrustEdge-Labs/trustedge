@@ -12,7 +12,7 @@
 //! to perform cryptographic operations across different backend types.
 
 use anyhow::Result;
-use trustedge_core::{
+use sealedge_core::{
     BackendPreferences, CryptoOperation, CryptoResult, HashAlgorithm, KeyDerivationContext,
     UniversalBackendRegistry,
 };
@@ -100,7 +100,7 @@ fn main() -> Result<()> {
             "Digital Signing",
             CryptoOperation::Sign {
                 data: vec![1, 2, 3],
-                algorithm: trustedge_core::SignatureAlgorithm::Ed25519,
+                algorithm: sealedge_core::SignatureAlgorithm::Ed25519,
             },
         ),
         (

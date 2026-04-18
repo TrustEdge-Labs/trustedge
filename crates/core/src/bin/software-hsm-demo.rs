@@ -15,14 +15,14 @@
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
-use trustedge_core::backends::{
+use sealedge_core::backends::{
     software_hsm::{SoftwareHsmBackend, SoftwareHsmConfig},
     universal::{
         AsymmetricAlgorithm, CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend,
     },
     universal_registry::UniversalBackendRegistry,
 };
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "software-hsm-demo")]

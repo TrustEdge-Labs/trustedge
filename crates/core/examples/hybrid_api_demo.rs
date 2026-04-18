@@ -7,7 +7,7 @@
 //! This example demonstrates the new high-level hybrid encryption API
 //! that matches the specification in Step 2.
 
-use trustedge_core::{open_envelope, seal_for_recipient, AsymmetricAlgorithm, KeyPair};
+use sealedge_core::{open_envelope, seal_for_recipient, AsymmetricAlgorithm, KeyPair};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🔐 TrustEdge Core Hybrid Encryption API Demo");
@@ -85,8 +85,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let alice_ecdsa = KeyPair::generate(AsymmetricAlgorithm::EcdsaP256)?;
     let bob_ecdsa = KeyPair::generate(AsymmetricAlgorithm::EcdsaP256)?;
 
-    let alice_shared = trustedge_core::key_exchange(&alice_ecdsa.private, &bob_ecdsa.public)?;
-    let bob_shared = trustedge_core::key_exchange(&bob_ecdsa.private, &alice_ecdsa.public)?;
+    let alice_shared = sealedge_core::key_exchange(&alice_ecdsa.private, &bob_ecdsa.public)?;
+    let bob_shared = sealedge_core::key_exchange(&bob_ecdsa.private, &alice_ecdsa.public)?;
 
     println!(
         "✅ ECDH key exchange successful: {}",
@@ -179,9 +179,9 @@ mod tests {
         let bob = KeyPair::generate(AsymmetricAlgorithm::EcdsaP256)
             .expect("Failed to generate Bob's key");
 
-        let alice_shared = trustedge_core::key_exchange(&alice.private, &bob.public)
+        let alice_shared = sealedge_core::key_exchange(&alice.private, &bob.public)
             .expect("Alice's key exchange failed");
-        let bob_shared = trustedge_core::key_exchange(&bob.private, &alice.public)
+        let bob_shared = sealedge_core::key_exchange(&bob.private, &alice.public)
             .expect("Bob's key exchange failed");
 
         assert_eq!(alice_shared, bob_shared);

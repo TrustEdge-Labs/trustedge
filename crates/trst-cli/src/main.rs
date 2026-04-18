@@ -20,29 +20,29 @@ use chrono::{DateTime, SecondsFormat, Utc};
 use clap::{Args, Parser, Subcommand};
 use rand::prelude::*;
 use rand_chacha::ChaCha20Rng;
-use serde::Serialize;
-use std::time::Instant;
-use trustedge_core::{
+use sealedge_core::{
     chain_next, decrypt_segment, derive_chunk_key, encrypt_segment, generate_aad, genesis,
     is_encrypted_key_file, read_archive, segment_hash, sign_manifest, validate_archive,
     verify_manifest, write_archive, AudioMetadata, CamVideoMetadata, ChunkInfo, DeviceInfo,
     DeviceKeypair, GenericMetadata, LogMetadata, PointAttestation, ProfileMetadata, SegmentInfo,
     SensorMetadata, TrstManifest,
 };
+use serde::Serialize;
+use std::time::Instant;
 // Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
 // SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
-use trustedge_types::verification::{SegmentRef, VerifyOptions, VerifyRequest};
+use sealedge_types::verification::{SegmentRef, VerifyOptions, VerifyRequest};
 
 #[cfg(feature = "yubikey")]
 use p256::pkcs8::DecodePublicKey;
 #[cfg(feature = "yubikey")]
-use trustedge_core::backends::universal::{
+use sealedge_core::backends::universal::{
     CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend,
 };
 #[cfg(feature = "yubikey")]
-use trustedge_core::backends::yubikey::YubiKeyConfig;
+use sealedge_core::backends::yubikey::YubiKeyConfig;
 #[cfg(feature = "yubikey")]
-use trustedge_core::backends::YubiKeyBackend;
+use sealedge_core::backends::YubiKeyBackend;
 
 /// Emit a security warning when --unencrypted is used.
 fn warn_unencrypted() {
@@ -74,7 +74,7 @@ struct WrapResult {
     chunk_count: usize,
 }
 
-// NOTE: Differs from trustedge_types::verify_report::VerifyReport — this version uses
+// NOTE: Differs from sealedge_types::verify_report::VerifyReport — this version uses
 // `out_of_order: Option<bool>` (a simple presence flag) while the shared type uses
 // `out_of_order: Option<OutOfOrder>` (structured {expected, found} hash strings from ChainError).
 // Kept local to avoid losing the boolean semantics used in CLI output formatting.
@@ -879,22 +879,22 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
 
             // Map error types to human messages
             let first_line = match e {
-                trustedge_core::archive::ArchiveError::MissingChunk(_) => "Missing chunk file",
-                trustedge_core::archive::ArchiveError::UnreferencedChunk(_) => {
+                sealedge_core::archive::ArchiveError::MissingChunk(_) => "Missing chunk file",
+                sealedge_core::archive::ArchiveError::UnreferencedChunk(_) => {
                     "Unreferenced chunk file"
                 }
-                trustedge_core::archive::ArchiveError::InvalidChunkIndex { .. } => {
+                sealedge_core::archive::ArchiveError::InvalidChunkIndex { .. } => {
                     "Missing chunk file"
                 }
-                trustedge_core::archive::ArchiveError::Json(_) => "Invalid manifest format",
-                trustedge_core::archive::ArchiveError::SignatureMismatch => {
+                sealedge_core::archive::ArchiveError::Json(_) => "Invalid manifest format",
+                sealedge_core::archive::ArchiveError::SignatureMismatch => {
                     "Signature verification failed"
                 }
-                trustedge_core::archive::ArchiveError::Io(_) => "Archive read error",
-                trustedge_core::archive::ArchiveError::SchemaMismatch(_) => "Schema error",
-                trustedge_core::archive::ArchiveError::Manifest(_) => "Manifest error",
-                trustedge_core::archive::ArchiveError::Chain(_) => "Continuity chain error",
-                trustedge_core::archive::ArchiveError::ValidationFailed(_) => "Validation error",
+                sealedge_core::archive::ArchiveError::Io(_) => "Archive read error",
+                sealedge_core::archive::ArchiveError::SchemaMismatch(_) => "Schema error",
+                sealedge_core::archive::ArchiveError::Manifest(_) => "Manifest error",
+                sealedge_core::archive::ArchiveError::Chain(_) => "Continuity chain error",
+                sealedge_core::archive::ArchiveError::ValidationFailed(_) => "Validation error",
             };
 
             output_error(&args, &report, first_line)?;
@@ -974,12 +974,12 @@ fn handle_verify(args: VerifyCmd) -> Result<()> {
                     report.error = Some(error_msg.clone());
 
                     // Extract structured information from chain errors
-                    if let trustedge_core::archive::ArchiveError::Chain(chain_err) = &e {
+                    if let sealedge_core::archive::ArchiveError::Chain(chain_err) = &e {
                         match chain_err {
-                            trustedge_core::chain::ChainError::Gap(index) => {
+                            sealedge_core::chain::ChainError::Gap(index) => {
                                 report.first_gap_index = Some(*index as u32);
                             }
-                            trustedge_core::chain::ChainError::OutOfOrder { .. } => {
+                            sealedge_core::chain::ChainError::OutOfOrder { .. } => {
                                 report.out_of_order = Some(true);
                             }
                             _ => {} // Other chain errors don't have specific structured data
@@ -1323,7 +1323,7 @@ async fn handle_emit_request(args: EmitRequestCmd) -> Result<()> {
     })?;
     let device_pub = device_pub_content.trim().to_string();
 
-    // Build VerifyRequest using shared trustedge_types::verification::VerifyRequest.
+    // Build VerifyRequest using shared sealedge_types::verification::VerifyRequest.
     // TrstManifest is serialized to serde_json::Value for compatibility with the shared type.
     let manifest_value = serde_json::to_value(&manifest)
         .with_context(|| "Failed to serialize manifest to JSON value")?;

@@ -23,7 +23,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 /// # Usage
 ///
 /// ```rust
-/// use trustedge_core::Secret;
+/// use sealedge_core::Secret;
 ///
 /// let api_key = Secret::new("my-secret-api-key".to_string());
 ///

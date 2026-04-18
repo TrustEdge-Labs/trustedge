@@ -13,8 +13,8 @@
 
 use super::{error::*, models::*};
 use chrono::{DateTime, Duration, Utc};
+use sealedge_core::{CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend};
 use std::sync::Arc;
-use trustedge_core::{CryptoOperation, CryptoResult, SignatureAlgorithm, UniversalBackend};
 use uuid::Uuid;
 
 /// Core Certificate Authority service
@@ -385,7 +385,7 @@ pub async fn create_yubikey_ca_service(
     key_id: &str,        // Required key ID parameter
     pin: Option<String>, // Optional PIN for authentication
 ) -> CAResult<CertificateAuthorityService> {
-    use trustedge_core::backends::yubikey::{YubiKeyBackend, YubiKeyConfig};
+    use sealedge_core::backends::yubikey::{YubiKeyBackend, YubiKeyConfig};
 
     // Configure YubiKey backend
     let yubikey_config = {

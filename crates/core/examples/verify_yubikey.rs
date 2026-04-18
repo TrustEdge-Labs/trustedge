@@ -13,7 +13,7 @@
 
 #[cfg(feature = "yubikey")]
 fn main() -> anyhow::Result<()> {
-    use trustedge_core::{
+    use sealedge_core::{
         backends::yubikey::{YubiKeyBackend, YubiKeyConfig},
         CryptoOperation, CryptoResult, UniversalBackend,
     };

@@ -24,12 +24,12 @@
 #![cfg(all(feature = "http", feature = "postgres", feature = "test-utils"))]
 
 use axum_test::TestServer;
-use serde_json::json;
-use sqlx::PgPool;
-use trustedge_platform::{
+use sealedge_platform::{
     database::{create_api_key, create_connection_pool, create_organization, run_migrations},
     http::{auth::generate_token, auth::hash_token_for_storage, handlers::create_test_app},
 };
+use serde_json::json;
+use sqlx::PgPool;
 use uuid::Uuid;
 
 async fn setup_test_db() -> (PgPool, Uuid, String) {

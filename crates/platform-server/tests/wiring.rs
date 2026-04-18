@@ -17,11 +17,11 @@
 //! avoid races when setting/clearing PORT.
 
 use axum::{body::Body, http::Request};
+use sealedge_platform::http::{create_router, AppState, Config};
+use sealedge_platform::verify::jwks::KeyManager;
 use std::sync::{Arc, Mutex, OnceLock};
 use tokio::sync::RwLock;
 use tower::ServiceExt;
-use trustedge_platform::http::{create_router, AppState, Config};
-use trustedge_platform::verify::jwks::KeyManager;
 
 /// Global lock for tests that mutate environment variables.
 ///

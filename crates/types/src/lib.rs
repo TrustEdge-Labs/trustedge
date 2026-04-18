@@ -15,7 +15,7 @@
 //! # Quick Start
 //!
 //! ```rust
-//! use trustedge_types::prelude::*;
+//! use sealedge_types::prelude::*;
 //!
 //! let report = VerifyReport {
 //!     signature: "pass".to_string(),

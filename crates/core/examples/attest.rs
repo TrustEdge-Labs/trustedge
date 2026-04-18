@@ -10,8 +10,8 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
+use sealedge_core::{create_signed_attestation, AttestationConfig, KeySource, OutputFormat};
 use std::path::PathBuf;
-use trustedge_core::{create_signed_attestation, AttestationConfig, KeySource, OutputFormat};
 
 /// Create software attestation (birth certificate)
 #[derive(Parser, Debug)]

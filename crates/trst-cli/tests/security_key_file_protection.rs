@@ -22,11 +22,11 @@
 
 use assert_cmd::prelude::*;
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
+use sealedge_core::{CryptoError, DeviceKeypair};
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 use tempfile::TempDir;
-use trustedge_core::{CryptoError, DeviceKeypair};
 
 // ---------------------------------------------------------------------------
 // KEY-01: Auto-generated wrap key file permissions

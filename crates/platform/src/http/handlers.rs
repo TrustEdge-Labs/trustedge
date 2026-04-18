@@ -37,7 +37,7 @@ use crate::verify::{engine::receipt_from_report, signing::sign_receipt_jws};
 #[cfg(not(feature = "postgres"))]
 use crate::verify::signing::sign_receipt_jws;
 
-use trustedge_core::{point_attestation::FORMAT_V1, PointAttestation};
+use sealedge_core::{point_attestation::FORMAT_V1, PointAttestation};
 
 use super::state::AppState;
 
@@ -209,7 +209,7 @@ pub async fn verify_attestation_handler(
 
             let manifest_digest = {
                 let canonical = attestation.canonical_bytes().unwrap_or_default();
-                let hash = trustedge_core::chain::segment_hash(&canonical);
+                let hash = sealedge_core::chain::segment_hash(&canonical);
                 format!("b3:{}", BASE64.encode(hash))
             };
 
@@ -567,7 +567,7 @@ pub fn create_test_app(pool: sqlx::PgPool) -> axum::Router {
 /// Compute BLAKE3 manifest digest (for receipt construction).
 pub(crate) fn compute_manifest_digest_blake3(manifest: &Value) -> String {
     let canonical = serde_json::to_string(manifest).unwrap_or_default();
-    let hash = trustedge_core::chain::segment_hash(canonical.as_bytes());
+    let hash = sealedge_core::chain::segment_hash(canonical.as_bytes());
     format!("b3:{}", BASE64.encode(hash))
 }
 

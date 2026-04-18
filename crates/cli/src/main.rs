@@ -17,21 +17,21 @@ use bincode::{deserialize_from, serialize_into};
 use clap::Parser;
 use ed25519_dalek::{Signature, SigningKey, VerifyingKey};
 use rand_core::RngCore;
+use sealedge_core::format;
+#[cfg(feature = "audio")]
+use sealedge_core::AudioCapture;
+#[cfg(feature = "audio")]
+use sealedge_core::AudioConfig;
+#[cfg(feature = "keyring")]
+use sealedge_core::KeyringBackend;
+use sealedge_core::{BackendRegistry, KeyBackend, KeyContext};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use trustedge_core::format;
-#[cfg(feature = "audio")]
-use trustedge_core::AudioCapture;
-#[cfg(feature = "audio")]
-use trustedge_core::AudioConfig;
-#[cfg(feature = "keyring")]
-use trustedge_core::KeyringBackend;
-use trustedge_core::{BackendRegistry, KeyBackend, KeyContext};
 use zeroize::Zeroize;
 
-use trustedge_core::{
+use sealedge_core::{
     // helpers
     build_aad,
     write_stream_header,
@@ -421,15 +421,15 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
     anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
 
     // turn Vec<u8> into the fixed array
-    let header_arr: [u8; trustedge_core::HEADER_LEN] = sh
+    let header_arr: [u8; sealedge_core::HEADER_LEN] = sh
         .header
         .as_slice()
         .try_into()
         .context("stream header length != 58")?;
 
     // parse the header into a FileHeader with validation
-    let fh = trustedge_core::FileHeader::from_bytes(&header_arr)
-        .context("failed to parse FileHeader")?;
+    let fh =
+        sealedge_core::FileHeader::from_bytes(&header_arr).context("failed to parse FileHeader")?;
 
     // extract the nonce prefix from the parsed header
     let stream_nonce_prefix = fh.nonce_prefix;
@@ -440,10 +440,10 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
 
     // Validate chunk size bounds from header
     anyhow::ensure!(
-        fh.chunk_size > 0 && fh.chunk_size <= trustedge_core::format::MAX_CHUNK_SIZE,
+        fh.chunk_size > 0 && fh.chunk_size <= sealedge_core::format::MAX_CHUNK_SIZE,
         "chunk_size {} exceeds maximum allowed size {}",
         fh.chunk_size,
-        trustedge_core::format::MAX_CHUNK_SIZE
+        sealedge_core::format::MAX_CHUNK_SIZE
     );
 
     // records
@@ -472,18 +472,18 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             .checked_add(1)
             .ok_or_else(|| anyhow!("record count overflow"))?;
         anyhow::ensure!(
-            record_count <= trustedge_core::format::MAX_RECORDS_PER_STREAM,
+            record_count <= sealedge_core::format::MAX_RECORDS_PER_STREAM,
             "stream exceeds maximum record count: {} > {}",
             record_count,
-            trustedge_core::format::MAX_RECORDS_PER_STREAM
+            sealedge_core::format::MAX_RECORDS_PER_STREAM
         );
 
         // DoS protection: Check ciphertext size bounds
         anyhow::ensure!(
-            rec.ct.len() <= (fh.chunk_size as usize + trustedge_core::format::AES_GCM_TAG_SIZE),
+            rec.ct.len() <= (fh.chunk_size as usize + sealedge_core::format::AES_GCM_TAG_SIZE),
             "ciphertext size {} exceeds chunk_size + tag_size ({})",
             rec.ct.len(),
-            fh.chunk_size as usize + trustedge_core::format::AES_GCM_TAG_SIZE
+            fh.chunk_size as usize + sealedge_core::format::AES_GCM_TAG_SIZE
         );
 
         // envelope invariants
@@ -602,10 +602,10 @@ fn decrypt_envelope(args: &Args) -> Result<()> {
             .checked_add(pt.len() as u64)
             .ok_or_else(|| anyhow!("stream size overflow"))?;
         anyhow::ensure!(
-            stream_size_bytes <= trustedge_core::format::MAX_STREAM_SIZE_BYTES,
+            stream_size_bytes <= sealedge_core::format::MAX_STREAM_SIZE_BYTES,
             "stream exceeds maximum size: {} > {} bytes",
             stream_size_bytes,
-            trustedge_core::format::MAX_STREAM_SIZE_BYTES
+            sealedge_core::format::MAX_STREAM_SIZE_BYTES
         );
 
         // write
@@ -633,21 +633,21 @@ fn inspect_envelope(args: &Args) -> Result<()> {
     let mut r = BufReader::new(File::open(input).context("open envelope")?);
 
     // Use the new version-aware header reading function
-    let sh = trustedge_core::read_preamble_and_header(&mut r)
+    let sh = sealedge_core::read_preamble_and_header(&mut r)
         .context("read preamble and stream header")?;
 
     anyhow::ensure!(sh.header.len() == HEADER_LEN, "bad stream header length");
 
     // turn Vec<u8> into the fixed array
-    let header_arr: [u8; trustedge_core::HEADER_LEN] = sh
+    let header_arr: [u8; sealedge_core::HEADER_LEN] = sh
         .header
         .as_slice()
         .try_into()
         .context("stream header length mismatch")?;
 
     // parse the header into a FileHeader with validation
-    let fh = trustedge_core::FileHeader::from_bytes(&header_arr)
-        .context("failed to parse FileHeader")?;
+    let fh =
+        sealedge_core::FileHeader::from_bytes(&header_arr).context("failed to parse FileHeader")?;
 
     // verify stored header hash matches recompute
     let hh = blake3::hash(&sh.header);
@@ -658,39 +658,39 @@ fn inspect_envelope(args: &Args) -> Result<()> {
     println!("  Format Version: {}", fh.version);
 
     // Display algorithm information
-    let aead_name = match trustedge_core::format::AeadAlgorithm::try_from(fh.aead_alg) {
-        Ok(trustedge_core::format::AeadAlgorithm::Aes256Gcm) => "AES-256-GCM",
-        Ok(trustedge_core::format::AeadAlgorithm::ChaCha20Poly1305) => "ChaCha20-Poly1305",
-        Ok(trustedge_core::format::AeadAlgorithm::Aes256Siv) => "AES-256-SIV",
+    let aead_name = match sealedge_core::format::AeadAlgorithm::try_from(fh.aead_alg) {
+        Ok(sealedge_core::format::AeadAlgorithm::Aes256Gcm) => "AES-256-GCM",
+        Ok(sealedge_core::format::AeadAlgorithm::ChaCha20Poly1305) => "ChaCha20-Poly1305",
+        Ok(sealedge_core::format::AeadAlgorithm::Aes256Siv) => "AES-256-SIV",
         Err(_) => "Unknown",
     };
 
-    let sig_name = match trustedge_core::format::SignatureAlgorithm::try_from(fh.sig_alg) {
-        Ok(trustedge_core::format::SignatureAlgorithm::Ed25519) => "Ed25519",
-        Ok(trustedge_core::format::SignatureAlgorithm::EcdsaP256) => "ECDSA-P256",
-        Ok(trustedge_core::format::SignatureAlgorithm::EcdsaP384) => "ECDSA-P384",
-        Ok(trustedge_core::format::SignatureAlgorithm::RsaPss2048) => "RSA-PSS-2048",
-        Ok(trustedge_core::format::SignatureAlgorithm::RsaPss4096) => "RSA-PSS-4096",
-        Ok(trustedge_core::format::SignatureAlgorithm::Dilithium3) => "Dilithium3",
-        Ok(trustedge_core::format::SignatureAlgorithm::Falcon512) => "Falcon512",
+    let sig_name = match sealedge_core::format::SignatureAlgorithm::try_from(fh.sig_alg) {
+        Ok(sealedge_core::format::SignatureAlgorithm::Ed25519) => "Ed25519",
+        Ok(sealedge_core::format::SignatureAlgorithm::EcdsaP256) => "ECDSA-P256",
+        Ok(sealedge_core::format::SignatureAlgorithm::EcdsaP384) => "ECDSA-P384",
+        Ok(sealedge_core::format::SignatureAlgorithm::RsaPss2048) => "RSA-PSS-2048",
+        Ok(sealedge_core::format::SignatureAlgorithm::RsaPss4096) => "RSA-PSS-4096",
+        Ok(sealedge_core::format::SignatureAlgorithm::Dilithium3) => "Dilithium3",
+        Ok(sealedge_core::format::SignatureAlgorithm::Falcon512) => "Falcon512",
         Err(_) => "Unknown",
     };
 
-    let hash_name = match trustedge_core::format::HashAlgorithm::try_from(fh.hash_alg) {
-        Ok(trustedge_core::format::HashAlgorithm::Blake3) => "BLAKE3",
-        Ok(trustedge_core::format::HashAlgorithm::Sha256) => "SHA-256",
-        Ok(trustedge_core::format::HashAlgorithm::Sha384) => "SHA-384",
-        Ok(trustedge_core::format::HashAlgorithm::Sha512) => "SHA-512",
-        Ok(trustedge_core::format::HashAlgorithm::Sha3_256) => "SHA3-256",
-        Ok(trustedge_core::format::HashAlgorithm::Sha3_512) => "SHA3-512",
+    let hash_name = match sealedge_core::format::HashAlgorithm::try_from(fh.hash_alg) {
+        Ok(sealedge_core::format::HashAlgorithm::Blake3) => "BLAKE3",
+        Ok(sealedge_core::format::HashAlgorithm::Sha256) => "SHA-256",
+        Ok(sealedge_core::format::HashAlgorithm::Sha384) => "SHA-384",
+        Ok(sealedge_core::format::HashAlgorithm::Sha512) => "SHA-512",
+        Ok(sealedge_core::format::HashAlgorithm::Sha3_256) => "SHA3-256",
+        Ok(sealedge_core::format::HashAlgorithm::Sha3_512) => "SHA3-512",
         Err(_) => "Unknown",
     };
 
-    let kdf_name = match trustedge_core::format::KdfAlgorithm::try_from(fh.kdf_alg) {
-        Ok(trustedge_core::format::KdfAlgorithm::Pbkdf2Sha256) => "PBKDF2-SHA256",
-        Ok(trustedge_core::format::KdfAlgorithm::Argon2id) => "Argon2id",
-        Ok(trustedge_core::format::KdfAlgorithm::Scrypt) => "scrypt",
-        Ok(trustedge_core::format::KdfAlgorithm::Hkdf) => "HKDF",
+    let kdf_name = match sealedge_core::format::KdfAlgorithm::try_from(fh.kdf_alg) {
+        Ok(sealedge_core::format::KdfAlgorithm::Pbkdf2Sha256) => "PBKDF2-SHA256",
+        Ok(sealedge_core::format::KdfAlgorithm::Argon2id) => "Argon2id",
+        Ok(sealedge_core::format::KdfAlgorithm::Scrypt) => "scrypt",
+        Ok(sealedge_core::format::KdfAlgorithm::Hkdf) => "HKDF",
         Err(_) => "Unknown",
     };
 
@@ -993,10 +993,10 @@ fn main() -> Result<()> {
 
     let header = FileHeader {
         version: VERSION,
-        aead_alg: trustedge_core::format::AeadAlgorithm::Aes256Gcm as u8,
-        sig_alg: trustedge_core::format::SignatureAlgorithm::Ed25519 as u8,
-        hash_alg: trustedge_core::format::HashAlgorithm::Blake3 as u8,
-        kdf_alg: trustedge_core::format::KdfAlgorithm::Pbkdf2Sha256 as u8,
+        aead_alg: sealedge_core::format::AeadAlgorithm::Aes256Gcm as u8,
+        sig_alg: sealedge_core::format::SignatureAlgorithm::Ed25519 as u8,
+        hash_alg: sealedge_core::format::HashAlgorithm::Blake3 as u8,
+        kdf_alg: sealedge_core::format::KdfAlgorithm::Pbkdf2Sha256 as u8,
         reserved: [0; 3],
         key_id,
         device_id_hash,

@@ -11,9 +11,9 @@
 //! Status: Stable types used by the CA service and its consumers.
 
 use chrono::{DateTime, Utc};
+use sealedge_core::Secret;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use trustedge_core::Secret;
 use uuid::Uuid;
 
 /// Unique identifier for tenants

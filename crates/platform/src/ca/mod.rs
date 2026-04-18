@@ -26,8 +26,8 @@ pub mod service;
 
 pub mod api;
 
+use sealedge_core::Secret;
 use std::fmt;
-use trustedge_core::Secret;
 
 /// Configuration for the CA service.
 ///

@@ -13,13 +13,13 @@
 //! demonstrating capability-based backend selection and operation dispatch.
 
 use anyhow::Result;
-use std::io::Write;
-use tempfile::NamedTempFile;
-use trustedge_core::{
+use sealedge_core::{
     backends::universal::{CryptoOperation, CryptoResult, HashAlgorithm, KeyDerivationContext},
     backends::universal_keyring::UniversalKeyringBackend,
     backends::universal_registry::{BackendPreferences, UniversalBackendRegistry},
 };
+use std::io::Write;
+use tempfile::NamedTempFile;
 
 /// Test helper to create test data
 fn create_test_data(size: usize) -> Vec<u8> {

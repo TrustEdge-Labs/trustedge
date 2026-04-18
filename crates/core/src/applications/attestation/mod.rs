@@ -95,7 +95,7 @@ pub struct VerificationInfo {
 ///
 /// # Example
 /// ```rust
-/// use trustedge_core::{AttestationConfig, OutputFormat, KeySource, create_signed_attestation};
+/// use sealedge_core::{AttestationConfig, OutputFormat, KeySource, create_signed_attestation};
 /// use std::path::PathBuf;
 /// use std::io::Write;
 /// use tempfile::NamedTempFile;

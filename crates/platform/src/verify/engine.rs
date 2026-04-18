@@ -8,7 +8,7 @@
 
 //! Verification engine — BLAKE3 continuity chaining and Ed25519 signature verification.
 //!
-//! All cryptographic operations delegate to trustedge_core's chain and crypto modules.
+//! All cryptographic operations delegate to sealedge_core's chain and crypto modules.
 //! No direct blake3 or ed25519_dalek calls remain in this module.
 
 use anyhow::{anyhow, Result};
@@ -121,7 +121,7 @@ fn verify_signature(manifest: &serde_json::Value, device_pub: &str) -> Result<Ve
     // The manifest stores the raw base64 without the prefix, so we prepend it.
     let signature_str = format!("ed25519:{}", signature_b64);
 
-    match trustedge_core::crypto::verify_manifest(
+    match sealedge_core::crypto::verify_manifest(
         device_pub,
         canonicalized.as_bytes(),
         &signature_str,
@@ -187,16 +187,16 @@ fn canonicalize_manifest_for_signature(manifest: &serde_json::Value) -> Result<S
     Ok(canonical)
 }
 
-/// Compute the genesis chain hash using trustedge_core's chain module.
+/// Compute the genesis chain hash using sealedge_core's chain module.
 ///
 /// Uses BASE64 (standard alphabet with padding) to match the existing wire format.
 /// Core's `genesis()` returns the raw `[u8; 32]` BLAKE3 hash bytes, which we
 /// format with the "b3:" prefix and standard base64 encoding.
 fn compute_genesis_hash() -> String {
-    format_b3(&trustedge_core::chain::genesis())
+    format_b3(&sealedge_core::chain::genesis())
 }
 
-/// Compute a chain link using trustedge_core's chain module.
+/// Compute a chain link using sealedge_core's chain module.
 fn compute_chain_link(prev: &str, hash: &str) -> String {
     let prev_clean = prev.strip_prefix("b3:").unwrap_or(prev);
     let hash_clean = hash.strip_prefix("b3:").unwrap_or(hash);
@@ -213,7 +213,7 @@ fn compute_chain_link(prev: &str, hash: &str) -> String {
         hash_arr.copy_from_slice(&hash_bytes);
     }
 
-    format_b3(&trustedge_core::chain::chain_next(&prev_arr, &hash_arr))
+    format_b3(&sealedge_core::chain::chain_next(&prev_arr, &hash_arr))
 }
 
 fn compute_chain_tip(segments: &[SegmentDigest]) -> Result<String> {
@@ -249,8 +249,8 @@ mod tests {
         let genesis = compute_genesis_hash();
         assert!(genesis.starts_with("b3:"));
 
-        // Verify using trustedge_core's chain primitives directly
-        let expected_hash = format_b3(&trustedge_core::chain::genesis());
+        // Verify using sealedge_core's chain primitives directly
+        let expected_hash = format_b3(&sealedge_core::chain::genesis());
         assert_eq!(genesis, expected_hash);
     }
 

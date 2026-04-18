@@ -19,12 +19,12 @@
 #![allow(deprecated)]
 
 use assert_cmd::prelude::*;
+use sealedge_core::derive_chunk_key;
 use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
-use trustedge_core::derive_chunk_key;
 
 // ---------------------------------------------------------------------------
 // Test helpers

@@ -22,11 +22,11 @@
 #![cfg(feature = "yubikey")]
 
 use der::Decode;
-use trustedge_core::backends::universal::{
+use sealedge_core::backends::universal::{
     CryptoOperation, CryptoResult, HashAlgorithm, SignatureAlgorithm, UniversalBackend,
 };
-use trustedge_core::backends::yubikey::{YubiKeyBackend, YubiKeyConfig};
-use trustedge_core::error::BackendError;
+use sealedge_core::backends::yubikey::{YubiKeyBackend, YubiKeyConfig};
+use sealedge_core::error::BackendError;
 use x509_cert::Certificate;
 
 /// Create a test backend configuration

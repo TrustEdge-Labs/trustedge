@@ -6,7 +6,7 @@
 # Project: trustedge — Privacy and trust at the edge.
 #
 [package]
-name = "trustedge-cli"
+name = "sealedge-cli"
 version = "0.2.0"
 edition = "2021"
 description = "Command-line interface for TrustEdge envelope encryption"
@@ -17,7 +17,7 @@ keywords = ["cryptography", "privacy", "encryption", "cli"]
 categories = ["command-line-utilities", "cryptography"]
 
 [[bin]]
-name = "trustedge"
+name = "sealedge"
 path = "src/main.rs"
 
 [package.metadata.trustedge]
@@ -25,7 +25,7 @@ tier = "stable"
 maintained = true
 
 [dependencies]
-trustedge-core = { path = "../core" }
+sealedge-core = { path = "../core" }
 
 # Cryptography
 aead = { workspace = true }
@@ -43,5 +43,5 @@ zeroize = { workspace = true }
 
 [features]
 default = []
-audio = ["trustedge-core/audio"]
-keyring = ["trustedge-core/keyring"]
+audio = ["sealedge-core/audio"]
+keyring = ["sealedge-core/keyring"]

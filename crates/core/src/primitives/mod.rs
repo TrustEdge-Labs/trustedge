@@ -62,7 +62,7 @@
 //! ## Usage Example
 //!
 //! ```rust,ignore
-//! use trustedge_core::primitives::{encrypt_segment, sign_manifest, DeviceKeypair};
+//! use sealedge_core::primitives::{encrypt_segment, sign_manifest, DeviceKeypair};
 //!
 //! // Encrypt a data segment
 //! let key = [0u8; 32];

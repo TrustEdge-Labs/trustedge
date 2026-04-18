@@ -19,7 +19,7 @@ name = "verify_cli"
 path = "verify_cli.rs"
 
 [dependencies]
-trustedge-core = { path = "../../crates/core" }
+sealedge-core = { path = "../../crates/core" }
 chrono = { version = "0.4", features = ["serde"] }
 chacha20poly1305 = "0.10"
 hex = "0.4"

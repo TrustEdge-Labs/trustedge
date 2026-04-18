@@ -2,10 +2,10 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: trustedge — Privacy and trust at the edge.
 
+use sealedge_core::{create_signed_attestation, AttestationConfig, KeySource, OutputFormat};
 use std::fs::File;
 use std::io::Write;
 use tempfile::tempdir;
-use trustedge_core::{create_signed_attestation, AttestationConfig, KeySource, OutputFormat};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("● TrustEdge Software Attestation Demo");

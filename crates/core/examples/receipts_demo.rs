@@ -14,7 +14,7 @@
 use anyhow::Result;
 use ed25519_dalek::SigningKey;
 use rand_core::OsRng;
-use trustedge_core::{assign_receipt, create_receipt, verify_receipt_chain};
+use sealedge_core::{assign_receipt, create_receipt, verify_receipt_chain};
 
 fn main() -> Result<()> {
     println!("🏢 TrustEdge Receipt Demo: The Office Analogy in Action\n");

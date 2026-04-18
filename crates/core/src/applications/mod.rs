@@ -60,7 +60,7 @@
 //! ## Usage Example
 //!
 //! ```rust,ignore
-//! use trustedge_core::applications::{OwnershipReceipt, Attestation, SessionManager};
+//! use sealedge_core::applications::{OwnershipReceipt, Attestation, SessionManager};
 //! use ed25519_dalek::SigningKey;
 //! use rand::rngs::OsRng;
 //!

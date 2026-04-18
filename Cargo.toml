@@ -12,7 +12,7 @@ members = [
     "crates/types",
     "crates/platform",
     "crates/platform-server",
-    "crates/trustedge-cli",
+    "crates/cli",
     "crates/wasm",
     "crates/trst-protocols",
     "crates/trst-cli",
@@ -53,7 +53,7 @@ rand_core = "0.6"
 rsa = { version = "0.9.10", features = ["pem"] }
 
 # Internal workspace crates
-trustedge-types = { path = "crates/types" }
+sealedge-types = { path = "crates/types" }
 
 # Serialization
 bincode = "1.3"

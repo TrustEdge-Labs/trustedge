@@ -25,7 +25,7 @@ pub enum CAError {
     Database(String),
 
     #[error("TrustEdge backend error: {0}")]
-    Backend(#[from] trustedge_core::BackendError),
+    Backend(#[from] sealedge_core::BackendError),
 
     #[error("Certificate parsing error: {0}")]
     CertificateParsing(String),

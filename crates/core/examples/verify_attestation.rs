@@ -10,8 +10,8 @@
 
 use anyhow::{Context, Result};
 use clap::Parser;
+use sealedge_core::{verify_attestation, VerificationConfig};
 use std::path::PathBuf;
-use trustedge_core::{verify_attestation, VerificationConfig};
 
 /// Verify software attestation
 #[derive(Parser, Debug)]

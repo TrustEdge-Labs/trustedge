@@ -16,13 +16,13 @@
 
 use anyhow::Result;
 
-use trustedge_core::transport::{tcp::TcpTransport, TransportConfig};
-use trustedge_core::NetworkChunk;
+use sealedge_core::transport::{tcp::TcpTransport, TransportConfig};
+use sealedge_core::NetworkChunk;
 
 /// Test real QUIC transport data transfer
 #[tokio::test]
 async fn test_real_quic_data_transfer() -> Result<()> {
-    use trustedge_core::transport::TransportFactory;
+    use sealedge_core::transport::TransportFactory;
 
     let config = TransportConfig::default();
 
@@ -56,10 +56,10 @@ async fn test_real_quic_data_transfer() -> Result<()> {
 /// Test concurrent TCP connections with multiple clients
 #[tokio::test]
 async fn test_concurrent_tcp_connections() -> Result<()> {
+    use sealedge_core::transport::TransportFactory;
     use std::sync::Arc;
     use tokio::net::TcpListener;
     use tokio::sync::Barrier;
-    use trustedge_core::transport::TransportFactory;
 
     let _config = TransportConfig::default();
 
@@ -150,8 +150,8 @@ async fn test_concurrent_tcp_connections() -> Result<()> {
 }
 #[tokio::test]
 async fn test_real_tcp_data_transfer() -> Result<()> {
+    use sealedge_core::transport::TransportFactory;
     use tokio::net::TcpListener;
-    use trustedge_core::transport::TransportFactory;
 
     let config = TransportConfig::default();
 
@@ -196,9 +196,9 @@ async fn test_real_tcp_data_transfer() -> Result<()> {
 /// Test large data transfer with proper chunking
 #[tokio::test]
 async fn test_multi_chunk_data_transfer() -> Result<()> {
+    use sealedge_core::transport::TransportFactory;
     use tokio::net::TcpListener;
     use tokio::sync::mpsc;
-    use trustedge_core::transport::TransportFactory;
 
     let config = TransportConfig::default();
 
@@ -289,9 +289,9 @@ async fn test_multi_chunk_data_transfer() -> Result<()> {
 }
 #[tokio::test]
 async fn test_real_tcp_bidirectional_communication() -> Result<()> {
+    use sealedge_core::transport::TransportFactory;
     use tokio::net::TcpListener;
     use tokio::sync::mpsc;
-    use trustedge_core::transport::TransportFactory;
 
     let config = TransportConfig::default();
 
@@ -350,7 +350,7 @@ async fn test_real_tcp_bidirectional_communication() -> Result<()> {
 /// Test real TCP connection failure handling
 #[tokio::test]
 async fn test_real_tcp_connection_failure() -> Result<()> {
-    use trustedge_core::transport::TransportFactory;
+    use sealedge_core::transport::TransportFactory;
 
     let config = TransportConfig {
         connect_timeout_ms: 1000, // Short timeout for faster test
@@ -374,9 +374,9 @@ async fn test_real_tcp_connection_failure() -> Result<()> {
 /// Test real TCP large data transfer
 #[tokio::test]
 async fn test_real_tcp_large_data_transfer() -> Result<()> {
+    use sealedge_core::transport::TransportFactory;
     use tokio::net::TcpListener;
     use tokio::sync::mpsc;
-    use trustedge_core::transport::TransportFactory;
 
     let config = TransportConfig {
         max_message_size: 2 * 1024 * 1024, // 2MB limit
@@ -438,7 +438,7 @@ async fn test_real_tcp_large_data_transfer() -> Result<()> {
 /// Test real TCP message size limits
 #[tokio::test]
 async fn test_real_tcp_message_size_limits() -> Result<()> {
-    use trustedge_core::transport::TransportFactory;
+    use sealedge_core::transport::TransportFactory;
 
     let config = TransportConfig {
         max_message_size: 1024, // Very small limit for testing
@@ -473,7 +473,7 @@ async fn test_real_tcp_message_size_limits() -> Result<()> {
 /// Test real transport timeout scenarios
 #[tokio::test]
 async fn test_real_transport_timeout_scenarios() -> Result<()> {
-    use trustedge_core::transport::TransportFactory;
+    use sealedge_core::transport::TransportFactory;
 
     let config = TransportConfig {
         connect_timeout_ms: 500, // Very short timeout

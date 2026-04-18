@@ -14,7 +14,7 @@
 
 #![cfg(target_arch = "wasm32")]
 
-use trustedge_wasm::*;
+use sealedge_wasm::*;
 use wasm_bindgen_test::*;
 
 // Configure tests to run in browser

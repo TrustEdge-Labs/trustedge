@@ -7,7 +7,7 @@
 
 use anyhow::Result;
 use ed25519_dalek::{Signer, SigningKey, Verifier};
-use trustedge_core::format::{
+use sealedge_core::format::{
     sign_manifest_with_domain, verify_manifest_with_domain, MANIFEST_DOMAIN_SEP,
 };
 

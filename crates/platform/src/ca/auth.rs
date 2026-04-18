@@ -12,7 +12,7 @@
 //! for CA service consumers. Not wired into the platform HTTP auth middleware.
 
 use super::{error::*, models::*};
-use trustedge_core::Secret;
+use sealedge_core::Secret;
 
 pub struct AuthService {
     jwt_secret: Secret<String>,

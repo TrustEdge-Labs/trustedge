@@ -73,7 +73,7 @@ pub struct ArtifactRef {
 /// # Examples
 ///
 /// ```rust,no_run
-/// # use trustedge_core::{PointAttestation, DeviceKeypair};
+/// # use sealedge_core::{PointAttestation, DeviceKeypair};
 /// # use std::path::Path;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let keypair = DeviceKeypair::generate()?;
