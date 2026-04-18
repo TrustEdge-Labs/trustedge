@@ -19,7 +19,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [ ] **REBRAND-01**: All workspace crates renamed `trustedge-*` → `sealedge-*` across Cargo.toml manifests, workspace members, and inter-crate deps
 - [ ] **REBRAND-02**: All CLI binaries renamed (`trustedge`, `trustedge-server`, `trustedge-client`, `trustedge-platform-server`, and `trst` → new short name) — no binary retains a trustedge-derived name
 - [ ] **REBRAND-03**: Crypto wire-format constants replaced (`TRUSTEDGE-KEY-V1` → `SEALEDGE-KEY-V1`, `TRUSTEDGE_ENVELOPE_V1` HKDF domain-separation → `SEALEDGE_ENVELOPE_V1`) — clean break, no backward-compat decrypt of existing data
-- [ ] **REBRAND-04**: `.te-attestation.json` file extension renamed to reflect sealedge (e.g. `.se-attestation.json`) across CLI, platform endpoint, GitHub Action, and verify page
+- [ ] **REBRAND-04**: File extensions renamed across CLI, platform endpoint, GitHub Action, and verify page — `.te-attestation.json` → `.se-attestation.json` AND `.trst` archive extension → `.seal` (per Phase 83 CONTEXT.md decision D-02). `.trst` rename lands in Phase 83 alongside the binary rename; `.te-attestation.json` rename lands in Phase 84 alongside the crypto constants
 - [ ] **REBRAND-05**: Copyright/license headers in every `.rs` file say `Project: sealedge` (no `trustedge` strings remain)
 - [ ] **REBRAND-06**: All user-facing text updated — error messages, log output, CLI help text, env-var prefixes (`TRUSTEDGE_*` → `SEALEDGE_*`), dashboard UI labels and titles
 - [ ] **REBRAND-07**: Cargo.toml metadata updated (`description`, `repository`, `homepage`, `documentation` URLs) for every workspace crate
@@ -73,7 +73,8 @@ Explicit exclusions for this milestone:
 | REBRAND-01  | Phase 83 — Crate & Binary Rename | Pending |
 | REBRAND-02  | Phase 83 — Crate & Binary Rename | Pending |
 | REBRAND-03  | Phase 84 — Crypto Constants & File Extension | Pending |
-| REBRAND-04  | Phase 84 — Crypto Constants & File Extension | Pending |
+| REBRAND-04a | Phase 83 — Crate & Binary Rename (`.trst` → `.seal`) | Pending |
+| REBRAND-04b | Phase 84 — Crypto Constants & File Extension (`.te-attestation.json` → `.se-attestation.json`) | Pending |
 | REBRAND-05  | Phase 85 — Code Sweep (Headers, Text, Metadata) | Pending |
 | REBRAND-06  | Phase 85 — Code Sweep (Headers, Text, Metadata) | Pending |
 | REBRAND-07  | Phase 85 — Code Sweep (Headers, Text, Metadata) | Pending |
