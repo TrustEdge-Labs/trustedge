@@ -114,17 +114,17 @@ jobs:
       # Clippy (reuses build artifacts for test step)
       - name: Clippy workspace
         run: |
-          cargo clippy -p trustedge-core --all-targets --all-features -- -D warnings
-          cargo clippy -p trustedge-platform --all-targets --features "http,ca,openapi,yubikey" -- -D warnings
-          cargo clippy -p trustedge-platform-server --all-targets -- -D warnings
-          cargo clippy -p trustedge-cli --all-targets --all-features -- -D warnings
-          cargo clippy -p trustedge-trst-cli --all-targets -- -D warnings
-          cargo clippy -p trustedge-trst-protocols --all-targets -- -D warnings
-          cargo clippy -p trustedge-types --all-targets -- -D warnings
-          cargo clippy -p trustedge-wasm --all-targets -- -D warnings
-          cargo clippy -p trustedge-trst-wasm --all-targets -- -D warnings
+          cargo clippy -p sealedge-core --all-targets --all-features -- -D warnings
+          cargo clippy -p sealedge-platform --all-targets --features "http,ca,openapi,yubikey" -- -D warnings
+          cargo clippy -p sealedge-platform-server --all-targets -- -D warnings
+          cargo clippy -p sealedge-cli --all-targets --all-features -- -D warnings
+          cargo clippy -p sealedge-seal-cli --all-targets -- -D warnings
+          cargo clippy -p sealedge-seal-protocols --all-targets -- -D warnings
+          cargo clippy -p sealedge-types --all-targets -- -D warnings
+          cargo clippy -p sealedge-wasm --all-targets -- -D warnings
+          cargo clippy -p sealedge-seal-wasm --all-targets -- -D warnings
 
-      # Build CLI binaries (needed by roundtrip_integration tests that invoke trustedge binary)
+      # Build CLI binaries (needed by roundtrip_integration tests that invoke sealedge binary)
       - name: Build workspace
         run: cargo build --workspace --locked
 
@@ -132,23 +132,23 @@ jobs:
       - name: Test workspace (default features)
         run: cargo test --workspace --no-default-features --locked
 
-      - name: Test trustedge-core (all non-yubikey features)
-        run: cargo test -p trustedge-core --features "audio,git-attestation,keyring,insecure-tls" --locked
+      - name: Test sealedge-core (all non-yubikey features)
+        run: cargo test -p sealedge-core --features "audio,git-attestation,keyring,insecure-tls" --locked
 
-      - name: Test trustedge-core (yubikey simulation)
-        run: cargo test -p trustedge-core --features yubikey --lib --locked
+      - name: Test sealedge-core (yubikey simulation)
+        run: cargo test -p sealedge-core --features yubikey --lib --locked
 
-      - name: Test trustedge-platform features
+      - name: Test sealedge-platform features
         run: |
-          cargo test -p trustedge-platform --lib --locked
-          cargo test -p trustedge-platform --test verify_integration --locked
-          cargo test -p trustedge-platform --test verify_integration --features http --locked
+          cargo test -p sealedge-platform --lib --locked
+          cargo test -p sealedge-platform --test verify_integration --locked
+          cargo test -p sealedge-platform --test verify_integration --features http --locked
 
       # WASM (quick check, no full build)
       - name: WASM build verification
         run: |
-          cargo check -p trustedge-wasm --target wasm32-unknown-unknown
-          cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown
+          cargo check -p sealedge-wasm --target wasm32-unknown-unknown
+          cargo check -p sealedge-seal-wasm --target wasm32-unknown-unknown
 
       - name: Dependency tree size
         run: |
@@ -184,32 +184,32 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libpcsclite-dev pkg-config pkgconf
 
-      - name: Build trst binary
-        run: cargo build -p trustedge-trst-cli --release --locked
+      - name: Build seal binary
+        run: cargo build -p sealedge-seal-cli --release --locked
 
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
-          path: ./target/release/trst
+          path: ./target/release/seal
           format: cyclonedx-json
-          output-file: trst-sbom.cdx.json
+          output-file: seal-sbom.cdx.json
           upload-artifact: false
 
       - name: Generate ephemeral Ed25519 keypair
         run: |
-          ./target/release/trst keygen \
+          ./target/release/seal keygen \
             --out-key ephemeral.key \
             --out-pub build.pub \
             --unencrypted
 
       - name: Create SBOM attestation
         run: |
-          ./target/release/trst attest-sbom \
-            --binary ./target/release/trst \
-            --sbom trst-sbom.cdx.json \
+          ./target/release/seal attest-sbom \
+            --binary ./target/release/seal \
+            --sbom seal-sbom.cdx.json \
             --device-key ephemeral.key \
             --device-pub build.pub \
-            --out trst.te-attestation.json \
+            --out seal.te-attestation.json \
             --unencrypted
 
       - name: Upload attestation assets
@@ -217,6 +217,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ github.ref_name }}" \
-            trst.te-attestation.json \
+            seal.te-attestation.json \
             build.pub \
             --clobber

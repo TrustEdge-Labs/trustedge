@@ -20,7 +20,7 @@ fi
 
 # Build the WASM module
 echo "📦 Building WASM module..."
-wasm-pack build crates/trst-wasm --target web --out-dir ../../web/demo/pkg
+wasm-pack build crates/seal-wasm --target web --out-dir ../../web/demo/pkg
 
 # Check if Node.js is available for serving
 if command -v npx &> /dev/null; then

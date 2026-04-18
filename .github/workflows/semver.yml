@@ -31,5 +31,5 @@ jobs:
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y libpcsclite-dev libasound2-dev
 
-      - name: API compatibility (trustedge-core)
-        run: cargo semver-checks --package trustedge-core --baseline-rev HEAD~1
+      - name: API compatibility (sealedge-core)
+        run: cargo semver-checks --package sealedge-core --baseline-rev HEAD~1

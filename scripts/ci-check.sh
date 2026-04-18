@@ -110,8 +110,8 @@ pkg-config --exists libpcsclite 2>/dev/null && HAS_PCSC=true
 
 if $HAS_ALSA && $HAS_PCSC; then
     # All system deps available — per-crate clippy (postgres excluded: sqlx removed)
-    if cargo clippy -p trustedge-core --all-targets --all-features -- -D warnings && \
-       cargo clippy -p trustedge-platform --all-targets --features "http,ca,openapi,yubikey" -- -D warnings && \
+    if cargo clippy -p sealedge-core --all-targets --all-features -- -D warnings && \
+       cargo clippy -p sealedge-platform --all-targets --features "http,ca,openapi,yubikey" -- -D warnings && \
        cargo clippy --workspace --all-targets --no-default-features -- -D warnings; then
         pass "clippy (all buildable features)"
     else
@@ -126,15 +126,15 @@ else
     fi
 
     # Platform feature combinations
-    if cargo clippy -p trustedge-platform --features "http" -- -D warnings && \
-       cargo clippy -p trustedge-platform --features "http,ca" -- -D warnings; then
+    if cargo clippy -p sealedge-platform --features "http" -- -D warnings && \
+       cargo clippy -p sealedge-platform --features "http,ca" -- -D warnings; then
         pass "clippy trustedge-platform features"
     else
         fail "clippy trustedge-platform features"
     fi
 
     $HAS_ALSA && {
-        if cargo clippy -p trustedge-core --all-targets --features audio -- -D warnings; then
+        if cargo clippy -p sealedge-core --all-targets --features audio -- -D warnings; then
             pass "clippy audio"
         else
             fail "clippy audio"
@@ -142,7 +142,7 @@ else
     }
 
     $HAS_PCSC && {
-        if cargo clippy -p trustedge-core --all-targets --features yubikey -- -D warnings; then
+        if cargo clippy -p sealedge-core --all-targets --features yubikey -- -D warnings; then
             pass "clippy yubikey"
         else
             fail "clippy yubikey"
@@ -151,7 +151,7 @@ else
 
     # Non-system-dep features
     for feat in git-attestation keyring insecure-tls; do
-        if cargo clippy -p trustedge-core --all-targets --features "$feat" -- -D warnings; then
+        if cargo clippy -p sealedge-core --all-targets --features "$feat" -- -D warnings; then
             pass "clippy $feat"
         else
             fail "clippy $feat"
@@ -162,8 +162,8 @@ fi
 # ── Step 5: Feature compatibility (cargo-hack) ─────────────────────
 step "Step 5: Feature compatibility (cargo-hack)"
 if command -v cargo-hack &> /dev/null; then
-    if cargo hack check --each-feature --no-dev-deps --exclude-features audio --package trustedge-core && \
-       cargo hack check --each-feature --no-dev-deps --package trustedge-cli; then
+    if cargo hack check --each-feature --no-dev-deps --exclude-features audio --package sealedge-core && \
+       cargo hack check --each-feature --no-dev-deps --package sealedge-cli; then
         pass "cargo-hack each-feature"
     else
         fail "cargo-hack each-feature"
@@ -188,7 +188,7 @@ fi
 # Core tests with all non-yubikey features
 CORE_FEATURES="git-attestation,keyring,insecure-tls"
 $HAS_ALSA && CORE_FEATURES="audio,$CORE_FEATURES"
-if cargo test -p trustedge-core --features "$CORE_FEATURES" --locked; then
+if cargo test -p sealedge-core --features "$CORE_FEATURES" --locked; then
     pass "trustedge-core tests ($CORE_FEATURES)"
 else
     fail "trustedge-core tests ($CORE_FEATURES)"
@@ -196,7 +196,7 @@ fi
 
 # YubiKey simulation tests (unit tests only, no hardware)
 if $HAS_PCSC; then
-    if cargo test -p trustedge-core --features yubikey --lib --locked; then
+    if cargo test -p sealedge-core --features yubikey --lib --locked; then
         pass "yubikey simulation tests"
     else
         fail "yubikey simulation tests"
@@ -206,9 +206,9 @@ else
 fi
 
 # Platform feature tests
-if cargo test -p trustedge-platform --lib --locked && \
-   cargo test -p trustedge-platform --test verify_integration --locked && \
-   cargo test -p trustedge-platform --test verify_integration --features http --locked; then
+if cargo test -p sealedge-platform --lib --locked && \
+   cargo test -p sealedge-platform --test verify_integration --locked && \
+   cargo test -p sealedge-platform --test verify_integration --features http --locked; then
     pass "trustedge-platform tests"
 else
     fail "trustedge-platform tests"
@@ -217,8 +217,8 @@ fi
 # ── Step 7: WASM ───────────────────────────────────────────────────
 step "Step 7: WASM build verification"
 if rustup target list --installed | grep -q wasm32-unknown-unknown; then
-    if cargo check -p trustedge-wasm --target wasm32-unknown-unknown && \
-       cargo check -p trustedge-trst-wasm --target wasm32-unknown-unknown; then
+    if cargo check -p sealedge-wasm --target wasm32-unknown-unknown && \
+       cargo check -p sealedge-seal-wasm --target wasm32-unknown-unknown; then
         pass "WASM build"
     else
         fail "WASM build"
@@ -230,7 +230,7 @@ fi
 # ── Step 8: Semver ─────────────────────────────────────────────────
 step "Step 8: API compatibility (cargo-semver-checks)"
 if command -v cargo-semver-checks &> /dev/null; then
-    if cargo semver-checks --package trustedge-core --baseline-rev HEAD~1 2>/dev/null; then
+    if cargo semver-checks --package sealedge-core --baseline-rev HEAD~1 2>/dev/null; then
         pass "semver check"
     else
         echo "  ⚠ semver check failed (non-blocking)"

@@ -28,7 +28,7 @@ echo "  ● Updating README.md with FEATURES.md link..."
 
 # Add WASM.md reference to crate READMEs
 echo "  ● Updating crates/wasm/README.md..."
-echo "  ● Updating crates/trst-wasm/README.md..."
+echo "  ● Updating crates/seal-wasm/README.md..."
 
 # Add cross-reference in web/demo/README.md
 echo "  ● Updating web/demo/README.md..."

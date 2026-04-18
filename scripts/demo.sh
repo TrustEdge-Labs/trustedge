@@ -42,7 +42,7 @@ if $FORCE_LOCAL && $FORCE_DOCKER; then
 fi
 
 # ── Mode detection ────────────────────────────────────────────────────────────
-TRST="cargo run -q -p trustedge-trst-cli --"
+SEAL="cargo run -q -p sealedge-seal-cli --"
 
 SERVER_AVAILABLE=false
 if ! $FORCE_LOCAL; then
@@ -95,7 +95,7 @@ fi
 
 # ── Step 1: Generate Ed25519 device key pair ──────────────────────────────────
 step_banner "Generate Ed25519 device key pair"
-if $TRST keygen \
+if $SEAL keygen \
         --out-key "$DEMO_DIR/device.key" \
         --out-pub "$DEMO_DIR/device.pub" \
         --unencrypted 2>&1; then
@@ -115,27 +115,27 @@ else
     fail "Failed to generate sample data"
 fi
 
-# ── Step 3: Wrap data into .trst archive ──────────────────────────────────────
-step_banner "Wrap data into .trst archive"
-if $TRST wrap \
+# ── Step 3: Wrap data into .seal archive ──────────────────────────────────────
+step_banner "Wrap data into .seal archive"
+if $SEAL wrap \
         --profile generic \
         --in "$DEMO_DIR/sample.bin" \
-        --out "$DEMO_DIR/sample.trst" \
+        --out "$DEMO_DIR/sample.seal" \
         --device-key "$DEMO_DIR/device.key" \
         --device-pub "$DEMO_DIR/device.pub" \
         --data-type "sensor" \
         --source "demo-device-01" \
         --description "Demo sensor data capture" \
         --unencrypted 2>&1; then
-    pass "Created $DEMO_DIR/sample.trst archive"
+    pass "Created $DEMO_DIR/sample.seal archive"
 else
     fail "Wrap failed"
 fi
 
 # ── Step 4: Local verification ────────────────────────────────────────────────
 step_banner "Verify archive locally"
-if [ -n "${DEVICE_PUB:-}" ] && [ -f "$DEMO_DIR/sample.trst/manifest.json" ]; then
-    if $TRST verify "$DEMO_DIR/sample.trst" --device-pub "$DEVICE_PUB" 2>&1; then
+if [ -n "${DEVICE_PUB:-}" ] && [ -f "$DEMO_DIR/sample.seal/manifest.json" ]; then
+    if $SEAL verify "$DEMO_DIR/sample.seal" --device-pub "$DEVICE_PUB" 2>&1; then
         pass "Local verification PASSED"
     else
         fail "Local verification FAILED"
@@ -147,21 +147,21 @@ fi
 # ── Step 5: YubiKey hardware signing (only if YubiKey detected) ──────────────
 if $YUBIKEY_AVAILABLE; then
     step_banner "Sign archive with YubiKey (ECDSA P-256)"
-    TRST_YUBIKEY="cargo run -q -p trustedge-trst-cli --features yubikey --"
-    if $TRST_YUBIKEY wrap \
+    SEAL_YUBIKEY="cargo run -q -p sealedge-seal-cli --features yubikey --"
+    if $SEAL_YUBIKEY wrap \
             --backend yubikey \
             --profile generic \
             --in "$DEMO_DIR/sample.bin" \
-            --out "$DEMO_DIR/sample-yubikey.trst" \
+            --out "$DEMO_DIR/sample-yubikey.seal" \
             --device-key "$DEMO_DIR/device.key" \
             --data-type "sensor" \
             --source "demo-yubikey" \
             --description "YubiKey hardware-signed demo" \
             --unencrypted 2>&1; then
-        pass "Created $DEMO_DIR/sample-yubikey.trst (YubiKey ECDSA P-256 signed)"
+        pass "Created $DEMO_DIR/sample-yubikey.seal (YubiKey ECDSA P-256 signed)"
         # Verify the YubiKey-signed archive
-        YUBIKEY_PUB=$(jq -r '.device.public_key' "$DEMO_DIR/sample-yubikey.trst/manifest.json")
-        if $TRST verify "$DEMO_DIR/sample-yubikey.trst" --device-pub "$YUBIKEY_PUB" 2>&1; then
+        YUBIKEY_PUB=$(jq -r '.device.public_key' "$DEMO_DIR/sample-yubikey.seal/manifest.json")
+        if $SEAL verify "$DEMO_DIR/sample-yubikey.seal" --device-pub "$YUBIKEY_PUB" 2>&1; then
             pass "YubiKey archive verification PASSED"
         else
             fail "YubiKey archive verification FAILED"
@@ -177,8 +177,8 @@ fi
 # ── Step N: Server verification (only if server available) ────────────────────
 if $SERVER_AVAILABLE; then
     step_banner "Submit to platform verification server"
-    if $TRST emit-request \
-            --archive "$DEMO_DIR/sample.trst" \
+    if $SEAL emit-request \
+            --archive "$DEMO_DIR/sample.seal" \
             --device-pub "$DEMO_DIR/device.pub" \
             --out "$DEMO_DIR/verify-request.json" \
             --post http://localhost:3001/v1/verify 2>&1; then

@@ -79,8 +79,8 @@ fi
 DEMO_DIR="demo-attestation-output"
 rm -rf "$DEMO_DIR" && mkdir -p "$DEMO_DIR"
 
-# ── trst runner ───────────────────────────────────────────────────────────────
-TRST="cargo run -q -p trustedge-trst-cli --"
+# ── seal runner ───────────────────────────────────────────────────────────────
+SEAL="cargo run -q -p sealedge-seal-cli --"
 
 # ── Step 1: Check prerequisites ───────────────────────────────────────────────
 step_banner "Check prerequisites"
@@ -112,7 +112,7 @@ fi
 # ── Step 2: Generate Ed25519 device key pair ──────────────────────────────────
 step_banner "Generate Ed25519 device key pair"
 
-if $TRST keygen \
+if $SEAL keygen \
         --out-key "$DEMO_DIR/device.key" \
         --out-pub "$DEMO_DIR/device.pub" \
         --unencrypted 2>&1; then
@@ -124,31 +124,31 @@ else
     DEVICE_PUB=""
 fi
 
-# ── Step 3: Build the trst binary (for self-attestation) ─────────────────────
-step_banner "Build trst binary (self-attestation target)"
+# ── Step 3: Build the seal binary (for self-attestation) ─────────────────────
+step_banner "Build seal binary (self-attestation target)"
 
-printf "  Building trustedge-trst-cli (this may take a moment on first build)...\n"
-if cargo build -p trustedge-trst-cli --release 2>&1; then
-    TRST_BINARY="target/release/trst"
-    if [ -f "$TRST_BINARY" ]; then
-        BINARY_SIZE=$(du -sh "$TRST_BINARY" 2>/dev/null | cut -f1)
-        pass "Built $TRST_BINARY ($BINARY_SIZE)"
+printf "  Building sealedge-seal-cli (this may take a moment on first build)...\n"
+if cargo build -p sealedge-seal-cli --release 2>&1; then
+    SEAL_BINARY="target/release/seal"
+    if [ -f "$SEAL_BINARY" ]; then
+        BINARY_SIZE=$(du -sh "$SEAL_BINARY" 2>/dev/null | cut -f1)
+        pass "Built $SEAL_BINARY ($BINARY_SIZE)"
     else
-        fail "Build succeeded but binary not found at $TRST_BINARY"
-        TRST_BINARY=""
+        fail "Build succeeded but binary not found at $SEAL_BINARY"
+        SEAL_BINARY=""
     fi
 else
     fail "Build failed"
-    TRST_BINARY=""
+    SEAL_BINARY=""
 fi
 
 # ── Step 4: Generate SBOM with syft ──────────────────────────────────────────
 step_banner "Generate SBOM with syft (CycloneDX JSON)"
 
 SBOM_PATH="$DEMO_DIR/sbom.cdx.json"
-if [ -n "${TRST_BINARY:-}" ] && [ -f "${TRST_BINARY:-}" ]; then
-    printf "  Running syft on %s (may take 10-20 seconds)...\n" "$TRST_BINARY"
-    if syft "$TRST_BINARY" -o cyclonedx-json > "$SBOM_PATH" 2>/dev/null; then
+if [ -n "${SEAL_BINARY:-}" ] && [ -f "${SEAL_BINARY:-}" ]; then
+    printf "  Running syft on %s (may take 10-20 seconds)...\n" "$SEAL_BINARY"
+    if syft "$SEAL_BINARY" -o cyclonedx-json > "$SBOM_PATH" 2>/dev/null; then
         SBOM_SIZE=$(wc -c < "$SBOM_PATH" 2>/dev/null || echo "0")
         COMPONENT_COUNT=$(grep -c '"type"' "$SBOM_PATH" 2>/dev/null || echo "?")
         pass "Generated $SBOM_PATH (${SBOM_SIZE} bytes, ~${COMPONENT_COUNT} type entries)"
@@ -165,11 +165,11 @@ fi
 step_banner "Create SBOM attestation"
 
 ATTESTATION_PATH="$DEMO_DIR/attestation.te-attestation.json"
-if [ -n "${TRST_BINARY:-}" ] && [ -f "${TRST_BINARY:-}" ] && \
+if [ -n "${SEAL_BINARY:-}" ] && [ -f "${SEAL_BINARY:-}" ] && \
    [ -n "${SBOM_PATH:-}" ] && [ -f "${SBOM_PATH:-}" ] && \
    [ -n "${DEVICE_PUB:-}" ]; then
-    if $TRST attest-sbom \
-            --binary "$TRST_BINARY" \
+    if $SEAL attest-sbom \
+            --binary "$SEAL_BINARY" \
             --sbom "$SBOM_PATH" \
             --device-key "$DEMO_DIR/device.key" \
             --device-pub "$DEMO_DIR/device.pub" \
@@ -190,7 +190,7 @@ fi
 step_banner "Verify attestation locally"
 
 if [ -n "${ATTESTATION_PATH:-}" ] && [ -f "${ATTESTATION_PATH:-}" ] && [ -n "${DEVICE_PUB:-}" ]; then
-    if $TRST verify-attestation "$ATTESTATION_PATH" --device-pub "$DEVICE_PUB" 2>&1; then
+    if $SEAL verify-attestation "$ATTESTATION_PATH" --device-pub "$DEVICE_PUB" 2>&1; then
         pass "Local verification PASSED — signature valid, hashes match"
     else
         fail "Local verification FAILED"

@@ -10,14 +10,14 @@ on:
     branches: [ main, develop ]
     paths:
       - 'crates/wasm/**'
-      - 'crates/trst-wasm/**'
+      - 'crates/seal-wasm/**'
       - 'crates/core/**'
       - '.github/workflows/wasm-tests.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'crates/wasm/**'
-      - 'crates/trst-wasm/**'
+      - 'crates/seal-wasm/**'
       - 'crates/core/**'
       - '.github/workflows/wasm-tests.yml'
 
@@ -46,32 +46,32 @@ jobs:
     - name: Install wasm-pack
       run: cargo binstall wasm-pack --no-confirm
 
-    - name: Build trustedge-wasm and check size
+    - name: Build sealedge-wasm and check size
       run: |
         cd crates/wasm
         wasm-pack build --target web --release
-        wasm_size=$(wc -c < pkg/trustedge_wasm_bg.wasm)
-        echo "trustedge-wasm size: $wasm_size bytes"
+        wasm_size=$(wc -c < pkg/sealedge_wasm_bg.wasm)
+        echo "sealedge-wasm size: $wasm_size bytes"
         # Fail if WASM is larger than 2MB (reasonable size for crypto operations)
         if [ $wasm_size -gt 2097152 ]; then
-          echo "❌ trustedge-wasm is too large: $wasm_size bytes (max: 2MB)"
+          echo "❌ sealedge-wasm is too large: $wasm_size bytes (max: 2MB)"
           exit 1
         else
-          echo "✅ trustedge-wasm size is acceptable: $wasm_size bytes"
+          echo "✅ sealedge-wasm size is acceptable: $wasm_size bytes"
         fi
 
-    - name: Build trst-wasm and check size
+    - name: Build sealedge-seal-wasm and check size
       run: |
-        cd crates/trst-wasm
+        cd crates/seal-wasm
         wasm-pack build --target web --release
-        wasm_size=$(wc -c < pkg/trustedge_trst_wasm_bg.wasm)
-        echo "trst-wasm size: $wasm_size bytes"
+        wasm_size=$(wc -c < pkg/sealedge_seal_wasm_bg.wasm)
+        echo "sealedge-seal-wasm size: $wasm_size bytes"
         # Fail if WASM is larger than 1MB (verification should be lightweight)
         if [ $wasm_size -gt 1048576 ]; then
-          echo "❌ trst-wasm is too large: $wasm_size bytes (max: 1MB)"
+          echo "❌ sealedge-seal-wasm is too large: $wasm_size bytes (max: 1MB)"
           exit 1
         else
-          echo "✅ trst-wasm size is acceptable: $wasm_size bytes"
+          echo "✅ sealedge-seal-wasm size is acceptable: $wasm_size bytes"
         fi
 
   wasm-build-check:
