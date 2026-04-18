@@ -70,7 +70,26 @@ Explicit exclusions for this milestone:
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| *(filled by roadmap)* | | |
+| REBRAND-01  | Phase 83 — Crate & Binary Rename | Pending |
+| REBRAND-02  | Phase 83 — Crate & Binary Rename | Pending |
+| REBRAND-03  | Phase 84 — Crypto Constants & File Extension | Pending |
+| REBRAND-04  | Phase 84 — Crypto Constants & File Extension | Pending |
+| REBRAND-05  | Phase 85 — Code Sweep (Headers, Text, Metadata) | Pending |
+| REBRAND-06  | Phase 85 — Code Sweep (Headers, Text, Metadata) | Pending |
+| REBRAND-07  | Phase 85 — Code Sweep (Headers, Text, Metadata) | Pending |
+| DOCS-01     | Phase 86 — Documentation Sweep | Pending |
+| DOCS-02     | Phase 86 — Documentation Sweep | Pending |
+| DOCS-03     | Phase 86 — Documentation Sweep | Pending |
+| DOCS-04     | Phase 86 — Documentation Sweep | Pending |
+| EXT-01      | Phase 87 — GitHub Repository Rename | Pending |
+| EXT-02      | Phase 88 — External Action & Product Website | Pending |
+| EXT-03      | Phase 88 — External Action & Product Website | Pending |
+| EXT-04      | Phase 88 — External Action & Product Website | Pending |
+| VALID-01    | Phase 89 — Final Validation | Pending |
+| VALID-02    | Phase 89 — Final Validation | Pending |
+| VALID-03    | Phase 89 — Final Validation | Pending |
+
+**Coverage:** 18/18 requirements mapped (100%) — no orphans, no duplicates.
 
 ---
 

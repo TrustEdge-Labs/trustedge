@@ -30,7 +30,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v2.9 Security Review P2 Remediation** - Phases 68-70 (shipped 2026-03-26)
 - ✅ **v3.0 Release Polish** - Phases 71-74 (shipped 2026-03-27)
 - ✅ **v4.0 SBOM Attestation Wedge** - Phases 75-78 (shipped 2026-04-03)
-- 📋 **v5.0 Portfolio Polish** - Phases 79-82 (planned)
+- 🚚 **v5.0 Portfolio Polish** - Phases 79-82 (partial — 79-80 shipped 2026-04-05; 81-82 punted to post-rename)
+- 📋 **v6.0 Sealedge Rebrand** - Phases 83-89 (planned)
 
 ## Phases
 
@@ -43,14 +44,24 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 
 </details>
 
-### 📋 v5.0 Portfolio Polish (Planned)
+### 🚚 v5.0 Portfolio Polish (Partial — 2 of 4 phases shipped)
 
-**Milestone Goal:** Make the existing SBOM attestation work visible and discoverable — self-attesting CI releases, a published GitHub Action on the marketplace, a demo GIF embedded in the README, and a product landing page on trustedgelabs.com.
+- [x] **Phase 79: Self-Attestation CI** - Wire up end-to-end self-attestation in the CI release workflow (completed 2026-04-05)
+- [x] **Phase 80: GitHub Action Marketplace** - Publish `TrustEdge-Labs/attest-sbom-action@v1` to GitHub Marketplace (completed 2026-04-05)
+- [ ] **Phase 81: Demo GIF** - Record and embed demo GIF in README (punted — execute after v6.0 rebrand lands)
+- [ ] **Phase 82: Product Landing Page** - Ship product landing page on trustedgelabs.com (punted — execute after v6.0 rebrand lands)
 
-- [x] **Phase 79: Self-Attestation CI** - Wire up end-to-end self-attestation in the CI release workflow and archive te-prove design doc (completed 2026-04-05)
-- [x] **Phase 80: GitHub Action Marketplace** - Publish `TrustEdge-Labs/attest-sbom-action@v1` to GitHub Marketplace as a standalone repo (completed 2026-04-05)
-- [ ] **Phase 81: Demo GIF** - Record and embed demo GIF showing the full attest-sbom → verify-attestation flow in the README
-- [ ] **Phase 82: Product Landing Page** - Ship product landing page on trustedgelabs.com with quick start and verifier link
+### 📋 v6.0 Sealedge Rebrand (Planned)
+
+**Milestone Goal:** Rename the product from "trustedge" to "sealedge" end-to-end — repo, crates, binaries, internal constants, docs, functions — clean break with no legacy compatibility path, while the TrustEdge-Labs org/brand retains its identity.
+
+- [ ] **Phase 83: Crate & Binary Rename** - Rename all workspace crates `trustedge-*` → `sealedge-*` and all CLI binaries (including `trst`) to sealedge equivalents in a single atomic workspace-coherent change
+- [ ] **Phase 84: Crypto Constants & File Extension** - Replace `TRUSTEDGE-KEY-V1` / `TRUSTEDGE_ENVELOPE_V1` with sealedge equivalents (clean break, no backward-compat decrypt) and rename `.te-attestation.json` file extension to the sealedge form everywhere
+- [ ] **Phase 85: Code Sweep — Headers, Text, Metadata** - Update all copyright/license headers, user-facing text (errors, logs, help, env vars, UI labels), and Cargo.toml metadata (description, repository, homepage, documentation) across the workspace
+- [ ] **Phase 86: Documentation Sweep** - Update root project docs (README, CLAUDE.md, DEPENDENCIES.md, SECURITY.md), developer docs (docs/**), code doc comments (`///`, `//!`), and scripts/examples to reflect sealedge naming
+- [ ] **Phase 87: GitHub Repository Rename** - Rename monorepo `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` with GitHub's automatic redirect enabled; update local git remotes
+- [ ] **Phase 88: External Action & Product Website** - Publish new GitHub Action repo under sealedge naming with SHA256 checksum verification; deprecate old `attest-sbom-action` marketplace listing with redirect; update product references on trustedgelabs.com
+- [ ] **Phase 89: Final Validation** - Full workspace test suite, all GitHub Actions workflows, WASM + dashboard + Docker stack all green end-to-end under the new names
 
 ## Phase Details
 
@@ -83,9 +94,9 @@ Plans:
 Plans:
 - [x] 80-01-PLAN.md — Enhance action.yml (SHA256 verification), polish README (two usage examples), create separate repo and tag v1/v1.0.0, submit Marketplace listing
 
-### Phase 81: Demo GIF
-**Goal**: A developer landing on the TrustEdge README can immediately see what the product does — attest-sbom to verify-attestation — by watching an embedded GIF, without reading any prose.
-**Depends on**: Phase 79
+### Phase 81: Demo GIF (Punted — post-rename)
+**Goal**: A developer landing on the README can immediately see what the product does — attest-sbom to verify-attestation — by watching an embedded GIF, without reading any prose.
+**Depends on**: Phase 89 (v6.0 rebrand validated)
 **Requirements**: VIS-01, VIS-03
 **Success Criteria** (what must be TRUE):
   1. The README displays an embedded GIF that shows the complete attest-sbom → verify-attestation flow from a real terminal session
@@ -94,17 +105,94 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 82: Product Landing Page
-**Goal**: A recruiter or prospective user visiting trustedgelabs.com immediately understands what TrustEdge does, can run the quick start, and can reach the live verifier.
+### Phase 82: Product Landing Page (Punted — post-rename)
+**Goal**: A recruiter or prospective user visiting trustedgelabs.com immediately understands what Sealedge does, can run the quick start, and can reach the live verifier.
 **Depends on**: Phase 81
 **Requirements**: VIS-02
 **Success Criteria** (what must be TRUE):
-  1. A visitor to trustedgelabs.com can read a clear one-paragraph explanation of what TrustEdge does and who it is for
-  2. The page includes a copy-pasteable quick start showing how to install `trst` and run `attest-sbom` in three or fewer commands
+  1. A visitor to trustedgelabs.com can read a clear one-paragraph explanation of what Sealedge does and who it is for
+  2. The page includes a copy-pasteable quick start showing how to install the Sealedge CLI and run its attestation command in three or fewer commands
   3. The page links directly to the live public verifier so a visitor can verify an attestation without leaving the page context
   4. The page links to the GitHub Action marketplace listing so a visitor can add attestation to their own CI immediately
 **Plans**: TBD
 **UI hint**: yes
+
+### Phase 83: Crate & Binary Rename
+**Goal**: The entire Cargo workspace presents as sealedge — every crate is named `sealedge-*`, every binary target is a sealedge-derived name (including a new short name replacing `trst`), and the workspace still builds and tests green end-to-end.
+**Depends on**: Phase 80 (v5.0 shipped portion complete)
+**Requirements**: REBRAND-01, REBRAND-02
+**Success Criteria** (what must be TRUE):
+  1. `cargo metadata` shows no package whose name starts with `trustedge-` — every workspace member is `sealedge-*`
+  2. `cargo build --workspace --release` produces only sealedge-named binaries; no binary target in the workspace retains a `trustedge`-derived name (including the former `trst`)
+  3. Inter-crate dependencies in every Cargo.toml reference the new `sealedge-*` crate names; `cargo check --workspace` compiles cleanly
+  4. All existing workspace tests still pass under the new crate/binary names (`cargo test --workspace` green)
+**Plans**: TBD
+
+### Phase 84: Crypto Constants & File Extension
+**Goal**: Wire-format constants and on-disk file extensions announce the product as sealedge — cleanly broken from the old trustedge-labelled values, with no backward-compatibility decrypt path for data encrypted under the old constants.
+**Depends on**: Phase 83
+**Requirements**: REBRAND-03, REBRAND-04
+**Success Criteria** (what must be TRUE):
+  1. The encrypted key file header string is `SEALEDGE-KEY-V1` (not `TRUSTEDGE-KEY-V1`); keygen and unwrap produce and consume only the new header
+  2. The HKDF domain-separation info parameter in envelope v2 is `SEALEDGE_ENVELOPE_V1` (not `TRUSTEDGE_ENVELOPE_V1`); envelopes sealed under the old constant intentionally fail to unseal
+  3. Attestation files are written and read with the sealedge-branded extension (e.g. `.se-attestation.json`) across CLI subcommands, the platform endpoint, the GitHub Action, and the verify HTML page
+  4. A targeted test proves that data produced with the old `TRUSTEDGE-*` constants is rejected cleanly (not silently decrypted) — confirming the clean break
+**Plans**: TBD
+
+### Phase 85: Code Sweep — Headers, Text, Metadata
+**Goal**: Every human-readable string emitted from the codebase or written in its source says "sealedge" — copyright headers, error messages, log lines, CLI help text, env var prefixes, dashboard UI labels, and Cargo.toml metadata URLs all match the new brand.
+**Depends on**: Phase 84
+**Requirements**: REBRAND-05, REBRAND-06, REBRAND-07
+**Success Criteria** (what must be TRUE):
+  1. Every `.rs` file's MPL-2.0 header reads `Project: sealedge` — a repo-wide grep for `Project: trustedge` returns zero results
+  2. CLI help output, error messages, and log lines visible to a user contain no `trustedge` strings; environment variable prefixes are `SEALEDGE_*` (not `TRUSTEDGE_*`)
+  3. Every Cargo.toml `description`, `repository`, `homepage`, and `documentation` field points at sealedge naming and the new repo URL
+  4. The SvelteKit dashboard UI (titles, headings, labels, footer) renders "Sealedge" in place of "TrustEdge" in all user-facing copy
+  5. A repo-wide grep (outside of archived `.planning/milestones/` history) for case-insensitive `trustedge` returns only intentional references to the `TrustEdge-Labs` org/brand
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 86: Documentation Sweep
+**Goal**: All project documentation — root docs, developer docs, code doc comments, and scripts — describes the product as sealedge, so a new reader never sees conflicting or stale brand references.
+**Depends on**: Phase 85
+**Requirements**: DOCS-01, DOCS-02, DOCS-03, DOCS-04
+**Success Criteria** (what must be TRUE):
+  1. README.md, CLAUDE.md, DEPENDENCIES.md, and SECURITY.md (if present) describe the product as sealedge throughout, with updated crate names, binary names, and install/usage snippets
+  2. Developer docs under `docs/` (architecture.md, cli.md, development.md, testing.md, user/*) reflect the new crate names, binary names, file extensions, and env var prefixes
+  3. `cargo doc --workspace --no-deps` produces rustdoc output where module-level and item-level doc comments render "sealedge" — no stale `trustedge` references remain in the rendered docs
+  4. Scripts in `scripts/` and examples under `examples/cam.video/` invoke the new binary names and reference the new attestation file extension
+**Plans**: TBD
+
+### Phase 87: GitHub Repository Rename
+**Goal**: The monorepo lives at `TrustEdge-Labs/sealedge` on GitHub with working redirects from the old URL, local git remotes updated, and in-repo links pointing at the new location.
+**Depends on**: Phase 86
+**Requirements**: EXT-01
+**Success Criteria** (what must be TRUE):
+  1. The repo is accessible at `https://github.com/TrustEdge-Labs/sealedge`; requests to `https://github.com/TrustEdge-Labs/trustedge` automatically redirect (GitHub's built-in redirect) and do not 404
+  2. The local working clone's `origin` remote URL points to the new `sealedge` repo; `git push` and `git pull` operate against the renamed repo without manual URL fixes
+  3. In-repo markdown and Cargo.toml references to the repository URL (now updated in Phase 85–86) resolve correctly against the renamed repo
+**Plans**: TBD
+
+### Phase 88: External Action & Product Website
+**Goal**: Sealedge's external distribution surface — the GitHub Action and the product references on trustedgelabs.com — matches the new brand, with the old action clearly deprecated and redirected so existing users can migrate without breakage.
+**Depends on**: Phase 87
+**Requirements**: EXT-02, EXT-03, EXT-04
+**Success Criteria** (what must be TRUE):
+  1. A new GitHub Action repo exists under sealedge naming and is published to the GitHub Marketplace with equivalent functionality to the old `attest-sbom-action`, including SHA256 checksum verification of the downloaded binary (separate repo work — cross-repo deliverable)
+  2. The old `TrustEdge-Labs/attest-sbom-action` marketplace listing is marked deprecated and its README redirects readers to the new listing; existing consumers of `@v1` are not silently broken but are clearly told to migrate
+  3. Product-page content on `trustedgelabs.com` (served from the `trustedgelabs-website` repo, which itself is not renamed) advertises the product as "Sealedge" — any in-repo website-content files referencing the product name are updated
+**Plans**: TBD
+
+### Phase 89: Final Validation
+**Goal**: End-to-end proof that nothing functional regressed during the rebrand — every test, every CI workflow, and every runtime deployment target works under the new names.
+**Depends on**: Phase 88
+**Requirements**: VALID-01, VALID-02, VALID-03
+**Success Criteria** (what must be TRUE):
+  1. `cargo test --workspace` passes with all 471 tests green under the new crate/binary/constant names
+  2. Feature-matrix tests pass for `yubikey`, `http`, `postgres`, `ca`, and `openapi` combinations (per the existing CI matrix)
+  3. All GitHub Actions workflows (ci.yml, semver.yml, wasm-tests.yml, release workflow, self-attestation job) run green on a push to the renamed repo
+  4. The WASM build succeeds, `web/dashboard/` builds and type-generates cleanly, and the Docker Compose stack (platform + postgres + dashboard) starts and runs the demo script end-to-end under the new names
+**Plans**: TBD
 
 ## Progress
 
@@ -114,7 +202,14 @@ Plans:
 | 76. CLI + Platform Endpoint | v4.0 | 2/2 | Complete | 2026-04-02 |
 | 77. Verify Page + Deployment + Demo | v4.0 | 3/3 | Complete | 2026-04-03 |
 | 78. Distribution | v4.0 | 2/2 | Complete | 2026-04-03 |
-| 79. Self-Attestation CI | v5.0 | 1/1 | Complete   | 2026-04-05 |
-| 80. GitHub Action Marketplace | v5.0 | 1/1 | Complete   | 2026-04-05 |
-| 81. Demo GIF | v5.0 | 0/? | Not started | - |
-| 82. Product Landing Page | v5.0 | 0/? | Not started | - |
+| 79. Self-Attestation CI | v5.0 | 1/1 | Complete | 2026-04-05 |
+| 80. GitHub Action Marketplace | v5.0 | 1/1 | Complete | 2026-04-05 |
+| 81. Demo GIF | v5.0 | 0/? | Punted (post-rename) | - |
+| 82. Product Landing Page | v5.0 | 0/? | Punted (post-rename) | - |
+| 83. Crate & Binary Rename | v6.0 | 0/? | Not started | - |
+| 84. Crypto Constants & File Extension | v6.0 | 0/? | Not started | - |
+| 85. Code Sweep — Headers, Text, Metadata | v6.0 | 0/? | Not started | - |
+| 86. Documentation Sweep | v6.0 | 0/? | Not started | - |
+| 87. GitHub Repository Rename | v6.0 | 0/? | Not started | - |
+| 88. External Action & Product Website | v6.0 | 0/? | Not started | - |
+| 89. Final Validation | v6.0 | 0/? | Not started | - |
