@@ -145,7 +145,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     // Write archive
-    let output_path = "examples/cam.video/clip.trst";
+    let output_path = "examples/cam.video/clip.seal";
     let detached_sig = signature.as_bytes();
     write_archive(
         output_path,

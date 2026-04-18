@@ -19,7 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
     let archive_path = args
         .get(1)
-        .unwrap_or(&"examples/cam.video/clip.trst".to_string())
+        .unwrap_or(&"examples/cam.video/clip.seal".to_string())
         .clone();
     let key_path = args
         .get(2)

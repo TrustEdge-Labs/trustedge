@@ -41,9 +41,9 @@ fn write_sample_input(dir: &Path) -> PathBuf {
 /// Returns `(archive_dir, device_pub_string)`.
 fn wrap_unencrypted_archive(tempdir: &TempDir) -> (PathBuf, String) {
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip.trst");
+    let archive_dir = tempdir.path().join("clip.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -74,7 +74,7 @@ fn wrap_encrypted_archive(tempdir: &TempDir) -> (PathBuf, String, PathBuf) {
     let pub_path = tempdir.path().join("device.pub");
 
     // Generate unencrypted key so no passphrase prompt blocks the test.
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -89,9 +89,9 @@ fn wrap_encrypted_archive(tempdir: &TempDir) -> (PathBuf, String, PathBuf) {
         .success();
 
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip.trst");
+    let archive_dir = tempdir.path().join("clip.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -121,7 +121,7 @@ fn wrap_encrypted_archive(tempdir: &TempDir) -> (PathBuf, String, PathBuf) {
 
 /// Run `trst verify <archive> --device-pub <pub>` and return the assert handle.
 fn run_verify(tempdir: &TempDir, archive: &Path, device_pub: &str) -> assert_cmd::assert::Assert {
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([

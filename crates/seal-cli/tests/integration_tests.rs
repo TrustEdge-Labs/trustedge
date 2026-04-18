@@ -26,10 +26,10 @@ fn test_wrap_and_verify_basic_workflow() {
     fs::write(&input_file, b"Hello, TrustEdge P0 Implementation!").unwrap();
 
     // Create output archive path
-    let output_archive = temp_path.join("test-archive.trst");
+    let output_archive = temp_path.join("test-archive.seal");
 
     // Run wrap command
-    let mut cmd = Command::cargo_bin("trst").unwrap();
+    let mut cmd = Command::cargo_bin("seal").unwrap();
     cmd.arg("wrap")
         .arg("--profile")
         .arg("cam.video")
@@ -70,7 +70,7 @@ fn test_wrap_and_verify_basic_workflow() {
     let device_pub = device_pub.trim();
 
     // Run verify command
-    let mut verify_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_cmd = Command::cargo_bin("seal").unwrap();
     verify_cmd
         .arg("verify")
         .arg(&output_archive)
@@ -104,10 +104,10 @@ fn test_wrap_with_existing_device_key() {
     .unwrap();
 
     // Create output archive path
-    let output_archive = temp_path.join("test-archive.trst");
+    let output_archive = temp_path.join("test-archive.seal");
 
     // Run wrap command with existing key
-    let mut cmd = Command::cargo_bin("trst").unwrap();
+    let mut cmd = Command::cargo_bin("seal").unwrap();
     cmd.arg("wrap")
         .arg("--profile")
         .arg("cam.video")
@@ -131,7 +131,7 @@ fn test_wrap_with_existing_device_key() {
     let expected_pub_key = "ed25519:fFdywmF53dtS8H34c8x4lfoLsp83trzL7N/x6Rb/xlI=";
 
     // Run verify command
-    let mut verify_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_cmd = Command::cargo_bin("seal").unwrap();
     verify_cmd
         .arg("verify")
         .arg(&output_archive)
@@ -155,10 +155,10 @@ fn test_verify_with_wrong_public_key() {
     let input_file = temp_path.join("test-input.bin");
     fs::write(&input_file, b"Test verification failure").unwrap();
 
-    let output_archive = temp_path.join("test-archive.trst");
+    let output_archive = temp_path.join("test-archive.seal");
 
     // Run wrap command
-    let mut cmd = Command::cargo_bin("trst").unwrap();
+    let mut cmd = Command::cargo_bin("seal").unwrap();
     cmd.arg("wrap")
         .arg("--profile")
         .arg("cam.video")
@@ -174,7 +174,7 @@ fn test_verify_with_wrong_public_key() {
     // Try to verify with wrong public key
     let wrong_pub_key = "ed25519:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
 
-    let mut verify_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_cmd = Command::cargo_bin("seal").unwrap();
     verify_cmd
         .arg("verify")
         .arg(&output_archive)
@@ -191,9 +191,9 @@ fn test_wrap_nonexistent_input_file() {
     let temp_path = temp_dir.path();
 
     let nonexistent_file = temp_path.join("does-not-exist.bin");
-    let output_archive = temp_path.join("test-archive.trst");
+    let output_archive = temp_path.join("test-archive.seal");
 
-    let mut cmd = Command::cargo_bin("trst").unwrap();
+    let mut cmd = Command::cargo_bin("seal").unwrap();
     cmd.arg("wrap")
         .arg("--profile")
         .arg("cam.video")
@@ -214,10 +214,10 @@ fn test_verify_nonexistent_archive() {
     let temp_dir = TempDir::new().unwrap();
     let temp_path = temp_dir.path();
 
-    let nonexistent_archive = temp_path.join("does-not-exist.trst");
+    let nonexistent_archive = temp_path.join("does-not-exist.seal");
     let pub_key = "ed25519:tQ8g8XOQSKfRFBEzHzQcGsNWz9t4pf04sJMCPElcRZ0=";
 
-    let mut cmd = Command::cargo_bin("trst").unwrap();
+    let mut cmd = Command::cargo_bin("seal").unwrap();
     cmd.arg("verify")
         .arg(&nonexistent_archive)
         .arg("--device-pub")
@@ -239,7 +239,7 @@ fn test_invalid_output_directory_name() {
 
     let invalid_output = temp_path.join("invalid-name-without-trst-extension");
 
-    let mut cmd = Command::cargo_bin("trst").unwrap();
+    let mut cmd = Command::cargo_bin("seal").unwrap();
     cmd.arg("wrap")
         .arg("--profile")
         .arg("cam.video")
@@ -251,7 +251,7 @@ fn test_invalid_output_directory_name() {
         .current_dir(temp_path);
 
     cmd.assert().failure().stderr(predicate::str::contains(
-        "Output directory must end with .trst",
+        "Output directory must end with .seal",
     ));
 }
 
@@ -265,10 +265,10 @@ fn test_verify_emit_receipt() {
     fs::write(&input_file, b"Test emit receipt functionality").unwrap();
 
     // Create output archive path
-    let output_archive = temp_path.join("test-archive.trst");
+    let output_archive = temp_path.join("test-archive.seal");
 
     // Run wrap command to create archive
-    let mut cmd = Command::cargo_bin("trst").unwrap();
+    let mut cmd = Command::cargo_bin("seal").unwrap();
     cmd.arg("wrap")
         .arg("--profile")
         .arg("cam.video")
@@ -287,7 +287,7 @@ fn test_verify_emit_receipt() {
 
     // Test emit-receipt without --json (human output + receipt file)
     let receipt_path = temp_path.join("receipt.json");
-    let mut verify_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_cmd = Command::cargo_bin("seal").unwrap();
     verify_cmd
         .arg("verify")
         .arg(&output_archive)
@@ -319,7 +319,7 @@ fn test_verify_emit_receipt() {
 
     // Test emit-receipt with --json (JSON output + identical receipt file)
     let receipt_path_json = temp_path.join("receipt-json.json");
-    let mut verify_json_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_json_cmd = Command::cargo_bin("seal").unwrap();
     verify_json_cmd
         .arg("verify")
         .arg(&output_archive)
@@ -379,8 +379,8 @@ fn test_seed_deterministic_output() {
     .unwrap();
 
     // Create first archive with seed
-    let output_archive1 = temp_path.join("test-archive1.trst");
-    let mut cmd1 = Command::cargo_bin("trst").unwrap();
+    let output_archive1 = temp_path.join("test-archive1.seal");
+    let mut cmd1 = Command::cargo_bin("seal").unwrap();
     cmd1.arg("wrap")
         .arg("--profile")
         .arg("cam.video")
@@ -398,8 +398,8 @@ fn test_seed_deterministic_output() {
     cmd1.assert().success();
 
     // Create second archive with same seed and device key
-    let output_archive2 = temp_path.join("test-archive2.trst");
-    let mut cmd2 = Command::cargo_bin("trst").unwrap();
+    let output_archive2 = temp_path.join("test-archive2.seal");
+    let mut cmd2 = Command::cargo_bin("seal").unwrap();
     cmd2.arg("wrap")
         .arg("--profile")
         .arg("cam.video")
@@ -417,8 +417,8 @@ fn test_seed_deterministic_output() {
     cmd2.assert().success();
 
     // Create third archive without seed (but same device key)
-    let output_archive3 = temp_path.join("test-archive3.trst");
-    let mut cmd3 = Command::cargo_bin("trst").unwrap();
+    let output_archive3 = temp_path.join("test-archive3.seal");
+    let mut cmd3 = Command::cargo_bin("seal").unwrap();
     cmd3.arg("wrap")
         .arg("--profile")
         .arg("cam.video")
@@ -490,8 +490,8 @@ fn test_a1_successful_verification() {
     fs::write(&input_file, b"A1 test: successful verification").unwrap();
 
     // Create archive
-    let output_archive = temp_path.join("test-archive.trst");
-    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    let output_archive = temp_path.join("test-archive.seal");
+    let mut wrap_cmd = Command::cargo_bin("seal").unwrap();
     wrap_cmd
         .arg("wrap")
         .arg("--profile")
@@ -510,7 +510,7 @@ fn test_a1_successful_verification() {
     let device_pub = device_pub.trim();
 
     // A1: Successful verification should exit 0
-    let mut verify_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_cmd = Command::cargo_bin("seal").unwrap();
     verify_cmd
         .arg("verify")
         .arg(&output_archive)
@@ -531,10 +531,10 @@ fn test_a2_archive_not_found() {
     let temp_path = temp_dir.path();
 
     // A2: Non-existent archive should exit 12
-    let mut verify_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_cmd = Command::cargo_bin("seal").unwrap();
     verify_cmd
         .arg("verify")
-        .arg("nonexistent.trst")
+        .arg("nonexistent.seal")
         .arg("--device-pub")
         .arg("ed25519:fakepubkey==")
         .current_dir(temp_path);
@@ -552,8 +552,8 @@ fn test_a3_signature_verification_failure() {
     fs::write(&input_file, b"A3 test: signature verification failure").unwrap();
 
     // Create archive
-    let output_archive = temp_path.join("test-archive.trst");
-    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    let output_archive = temp_path.join("test-archive.seal");
+    let mut wrap_cmd = Command::cargo_bin("seal").unwrap();
     wrap_cmd
         .arg("wrap")
         .arg("--profile")
@@ -568,7 +568,7 @@ fn test_a3_signature_verification_failure() {
     wrap_cmd.assert().success();
 
     // A3: Wrong device public key should exit 10
-    let mut verify_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_cmd = Command::cargo_bin("seal").unwrap();
     verify_cmd
         .arg("verify")
         .arg(&output_archive)
@@ -588,8 +588,8 @@ fn test_a4_missing_signature_in_manifest() {
     let input_file = temp_path.join("test-input.bin");
     fs::write(&input_file, b"A4 test: missing signature").unwrap();
 
-    let output_archive = temp_path.join("test-archive.trst");
-    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    let output_archive = temp_path.join("test-archive.seal");
+    let mut wrap_cmd = Command::cargo_bin("seal").unwrap();
     wrap_cmd
         .arg("wrap")
         .arg("--profile")
@@ -621,7 +621,7 @@ fn test_a4_missing_signature_in_manifest() {
     .unwrap();
 
     // A4: Missing signature should exit 12
-    let mut verify_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_cmd = Command::cargo_bin("seal").unwrap();
     verify_cmd
         .arg("verify")
         .arg(&output_archive)
@@ -645,8 +645,8 @@ fn test_a5_continuity_failure_with_json() {
     let input_file = temp_path.join("test-input.bin");
     fs::write(&input_file, b"A5 test: continuity failure").unwrap();
 
-    let output_archive = temp_path.join("test-archive.trst");
-    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    let output_archive = temp_path.join("test-archive.seal");
+    let mut wrap_cmd = Command::cargo_bin("seal").unwrap();
     wrap_cmd
         .arg("wrap")
         .arg("--profile")
@@ -673,7 +673,7 @@ fn test_a5_continuity_failure_with_json() {
     fs::write(&chunk_file, chunk_data).unwrap();
 
     // A5: Continuity failure should exit 11 with JSON
-    let mut verify_cmd = Command::cargo_bin("trst").unwrap();
+    let mut verify_cmd = Command::cargo_bin("seal").unwrap();
     verify_cmd
         .arg("verify")
         .arg(&output_archive)
@@ -707,8 +707,8 @@ fn test_emit_request_basic_functionality() {
     fs::write(&input_file, b"Test data for emit-request").unwrap();
 
     // Create archive
-    let output_archive = temp_path.join("test-archive.trst");
-    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    let output_archive = temp_path.join("test-archive.seal");
+    let mut wrap_cmd = Command::cargo_bin("seal").unwrap();
     wrap_cmd
         .arg("wrap")
         .arg("--profile")
@@ -726,7 +726,7 @@ fn test_emit_request_basic_functionality() {
     let device_pub_file = temp_path.join("device.pub");
     let output_json = temp_path.join("verify_request.json");
 
-    let mut emit_cmd = Command::cargo_bin("trst").unwrap();
+    let mut emit_cmd = Command::cargo_bin("seal").unwrap();
     emit_cmd
         .arg("emit-request")
         .arg("--archive")
@@ -779,8 +779,8 @@ fn test_emit_request_blake3_computation() {
     fs::write(&input_file, test_data).unwrap();
 
     // Create archive
-    let output_archive = temp_path.join("test-archive.trst");
-    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    let output_archive = temp_path.join("test-archive.seal");
+    let mut wrap_cmd = Command::cargo_bin("seal").unwrap();
     wrap_cmd
         .arg("wrap")
         .arg("--profile")
@@ -800,7 +800,7 @@ fn test_emit_request_blake3_computation() {
     let device_pub_file = temp_path.join("device.pub");
     let output_json = temp_path.join("verify_request.json");
 
-    let mut emit_cmd = Command::cargo_bin("trst").unwrap();
+    let mut emit_cmd = Command::cargo_bin("seal").unwrap();
     emit_cmd
         .arg("emit-request")
         .arg("--archive")
@@ -842,8 +842,8 @@ fn test_emit_request_http_error_handling() {
     let input_file = temp_path.join("test-input.bin");
     fs::write(&input_file, b"Test data for POST request").unwrap();
 
-    let output_archive = temp_path.join("test-archive.trst");
-    let mut wrap_cmd = Command::cargo_bin("trst").unwrap();
+    let output_archive = temp_path.join("test-archive.seal");
+    let mut wrap_cmd = Command::cargo_bin("seal").unwrap();
     wrap_cmd
         .arg("wrap")
         .arg("--profile")
@@ -861,7 +861,7 @@ fn test_emit_request_http_error_handling() {
     let device_pub_file = temp_path.join("device.pub");
     let output_json = temp_path.join("verify_request.json");
 
-    let mut emit_cmd = Command::cargo_bin("trst").unwrap();
+    let mut emit_cmd = Command::cargo_bin("seal").unwrap();
     emit_cmd
         .arg("emit-request")
         .arg("--archive")

@@ -211,7 +211,7 @@ fn parse_chunk_index(filename: &str) -> Result<usize, ArchiveError> {
 
 /// Get the expected archive directory name for a given ID
 pub fn archive_dir_name(id: &str) -> String {
-    format!("clip-{}.trst", id)
+    format!("clip-{}.seal", id)
 }
 
 #[cfg(test)]
@@ -271,7 +271,7 @@ mod tests {
     #[test]
     fn test_write_and_read_archive_round_trip() {
         let temp_dir = TempDir::new().unwrap();
-        let archive_path = temp_dir.path().join("test.trst");
+        let archive_path = temp_dir.path().join("test.seal");
 
         let manifest = create_test_manifest();
         let chunk_data = vec![
@@ -309,7 +309,7 @@ mod tests {
     #[test]
     fn test_archive_validation() {
         let temp_dir = TempDir::new().unwrap();
-        let archive_path = temp_dir.path().join("test.trst");
+        let archive_path = temp_dir.path().join("test.seal");
 
         let manifest = create_test_manifest();
         let chunk_data = vec![
@@ -329,7 +329,7 @@ mod tests {
     #[test]
     fn test_mutation_missing_chunk_causes_validation_failure() {
         let temp_dir = TempDir::new().unwrap();
-        let archive_path = temp_dir.path().join("test.trst");
+        let archive_path = temp_dir.path().join("test.seal");
 
         let manifest = create_test_manifest();
         let chunk_data = vec![
@@ -360,7 +360,7 @@ mod tests {
     #[test]
     fn test_schema_mismatch_chunk_count() {
         let temp_dir = TempDir::new().unwrap();
-        let archive_path = temp_dir.path().join("test.trst");
+        let archive_path = temp_dir.path().join("test.seal");
 
         let manifest = create_test_manifest();
         let wrong_chunk_data = vec![
@@ -384,7 +384,7 @@ mod tests {
     #[test]
     fn test_signature_mismatch() {
         let temp_dir = TempDir::new().unwrap();
-        let archive_path = temp_dir.path().join("test.trst");
+        let archive_path = temp_dir.path().join("test.seal");
 
         let mut manifest = create_test_manifest();
         manifest.signature = Some("ed25519:different_signature".to_string());
@@ -421,14 +421,14 @@ mod tests {
 
     #[test]
     fn test_archive_dir_name() {
-        assert_eq!(archive_dir_name("test123"), "clip-test123.trst");
-        assert_eq!(archive_dir_name("CAM-001"), "clip-CAM-001.trst");
+        assert_eq!(archive_dir_name("test123"), "clip-test123.seal");
+        assert_eq!(archive_dir_name("CAM-001"), "clip-CAM-001.seal");
     }
 
     #[test]
     fn test_unreferenced_chunk_detected() {
         let temp_dir = TempDir::new().unwrap();
-        let archive_path = temp_dir.path().join("test.trst");
+        let archive_path = temp_dir.path().join("test.seal");
 
         let manifest = create_test_manifest();
         let chunk_data = vec![

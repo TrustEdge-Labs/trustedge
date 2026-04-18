@@ -124,7 +124,7 @@ mod tests {
         let (fh, header_bytes, header_hash) = make_file_header(chunk_size);
         let nonce_prefix = fh.nonce_prefix;
 
-        // Build the .trst in memory
+        // Build the .seal in memory
         let mut out = Vec::<u8>::new();
 
         // Preamble
@@ -229,7 +229,7 @@ mod tests {
         let input = make_golden_input(32_768); // 32 KB
         let chunk_size = 4096;
 
-        // Build deterministic .trst bytes
+        // Build deterministic .seal bytes
         let trst = deterministic_trst(&input, chunk_size);
 
         // Compute digest and print it for first-time copy

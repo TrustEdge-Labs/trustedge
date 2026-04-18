@@ -33,9 +33,9 @@ fn write_sample_input(dir: &Path) -> PathBuf {
 
 fn wrap_archive(tempdir: &TempDir) -> (PathBuf, String) {
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip.trst");
+    let archive_dir = tempdir.path().join("clip.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -62,9 +62,9 @@ fn wrap_archive(tempdir: &TempDir) -> (PathBuf, String) {
 /// Wrap a generic profile archive (no --profile flag = uses default "generic").
 fn wrap_generic_archive(tempdir: &TempDir) -> (PathBuf, String) {
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-generic.trst");
+    let archive_dir = tempdir.path().join("clip-generic.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -85,7 +85,7 @@ fn wrap_generic_archive(tempdir: &TempDir) -> (PathBuf, String) {
 }
 
 fn run_verify(tempdir: &TempDir, archive: &Path, device_pub: &str) -> assert_cmd::assert::Assert {
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -267,9 +267,9 @@ fn acceptance_generic_explicit_profile() {
     // Wrap with --profile generic explicitly; must produce a valid archive
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-explicit.trst");
+    let archive_dir = tempdir.path().join("clip-explicit.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -301,9 +301,9 @@ fn acceptance_generic_with_metadata() {
     // Wrap with --data-type and --source flags; verify they appear in the manifest
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-meta.trst");
+    let archive_dir = tempdir.path().join("clip-meta.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -351,7 +351,7 @@ fn acceptance_keygen_creates_files() {
     let key_path = tempdir.path().join("device.key");
     let pub_path = tempdir.path().join("device.pub");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -389,7 +389,7 @@ fn acceptance_keygen_roundtrip() {
     let pub_path = tempdir.path().join("mydevice.pub");
 
     // Step 1: generate keys
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -405,9 +405,9 @@ fn acceptance_keygen_roundtrip() {
 
     // Step 2: wrap an archive using the generated key
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-keygen.trst");
+    let archive_dir = tempdir.path().join("clip-keygen.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -443,7 +443,7 @@ fn acceptance_keygen_no_overwrite() {
     // Pre-create the key file to trigger the overwrite guard
     fs::write(&key_path, "existing content\n").unwrap();
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -463,9 +463,9 @@ fn acceptance_camvideo_still_works() {
     // cam.video wrap + verify round-trip must pass (regression guard)
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-camvideo.trst");
+    let archive_dir = tempdir.path().join("clip-camvideo.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -506,9 +506,9 @@ fn acceptance_camvideo_still_works() {
 fn acceptance_sensor_wrap_verify() {
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-sensor.trst");
+    let archive_dir = tempdir.path().join("clip-sensor.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -556,9 +556,9 @@ fn acceptance_sensor_wrap_verify() {
 fn acceptance_audio_wrap_verify() {
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-audio.trst");
+    let archive_dir = tempdir.path().join("clip-audio.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -612,9 +612,9 @@ fn acceptance_audio_wrap_verify() {
 fn acceptance_log_wrap_verify() {
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-log.trst");
+    let archive_dir = tempdir.path().join("clip-log.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -668,9 +668,9 @@ fn acceptance_log_wrap_verify() {
 fn acceptance_sensor_with_geo() {
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-sensor-geo.trst");
+    let archive_dir = tempdir.path().join("clip-sensor-geo.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -727,7 +727,7 @@ fn run_unwrap(
     device_key: &Path,
     output: &Path,
 ) -> assert_cmd::assert::Assert {
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -746,7 +746,7 @@ fn wrap_with_key(tempdir: &TempDir, input: &Path, profile: &str) -> (PathBuf, Pa
     let key_path = tempdir.path().join("test.key");
     let pub_path = tempdir.path().join("test.pub");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -760,8 +760,8 @@ fn wrap_with_key(tempdir: &TempDir, input: &Path, profile: &str) -> (PathBuf, Pa
         .assert()
         .success();
 
-    let archive_dir = tempdir.path().join("clip-unwrap.trst");
-    Command::cargo_bin("trst")
+    let archive_dir = tempdir.path().join("clip-unwrap.seal");
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -812,7 +812,7 @@ fn acceptance_unwrap_wrong_key() {
     // Generate a second key
     let wrong_key_path = tempdir.path().join("wrong.key");
     let wrong_pub_path = tempdir.path().join("wrong.pub");
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -909,9 +909,9 @@ fn acceptance_sensor_missing_required_flag() {
     // Missing --unit and --sensor-model; should fail with a clear error message
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-sensor-fail.trst");
+    let archive_dir = tempdir.path().join("clip-sensor-fail.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1008,9 +1008,9 @@ fn acceptance_backend_software_explicit() {
     // --backend software must produce Ed25519-signed archives (regression guard)
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-sw.trst");
+    let archive_dir = tempdir.path().join("clip-sw.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1056,9 +1056,9 @@ fn acceptance_backend_unknown_fails() {
     // Unknown backend name must fail with a clear error message
     let tempdir = TempDir::new().unwrap();
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip-unknown.trst");
+    let archive_dir = tempdir.path().join("clip-unknown.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1125,7 +1125,7 @@ fn write_attestation_inputs(dir: &Path) -> (PathBuf, PathBuf) {
 fn keygen_unencrypted(dir: &Path) -> (PathBuf, PathBuf) {
     let key_path = dir.join("device.key");
     let pub_path = dir.join("device.pub");
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(dir)
         .args([
@@ -1148,7 +1148,7 @@ fn test_attest_sbom_creates_attestation_file() {
     let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
     let out_path = tempdir.path().join("output.te-attestation.json");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1186,7 +1186,7 @@ fn test_attest_sbom_default_output_name() {
     let (binary_path, sbom_path) = write_attestation_inputs(tempdir.path());
     let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1226,7 +1226,7 @@ fn test_attest_sbom_rejects_zero_byte_binary() {
     )
     .unwrap();
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1257,7 +1257,7 @@ fn test_attest_sbom_rejects_non_json_sbom() {
     let bad_sbom = tempdir.path().join("bad.json");
     fs::write(&bad_sbom, b"not json at all").unwrap();
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1289,7 +1289,7 @@ fn test_attest_sbom_valid_inputs_succeed() {
     let (key_path, pub_path) = keygen_unencrypted(tempdir.path());
     let out_path = tempdir.path().join("result.te-attestation.json");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1320,7 +1320,7 @@ fn test_verify_attestation_success() {
     let out_path = tempdir.path().join("attest.te-attestation.json");
 
     // Create attestation
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1341,7 +1341,7 @@ fn test_verify_attestation_success() {
         .success();
 
     // Verify the attestation using pub file path
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1363,7 +1363,7 @@ fn test_verify_attestation_wrong_key_fails() {
     let out_path = tempdir.path().join("attest.te-attestation.json");
 
     // Create attestation with first keypair
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1386,7 +1386,7 @@ fn test_verify_attestation_wrong_key_fails() {
     // Generate a second keypair (different key)
     let key2_path = tempdir.path().join("device2.key");
     let pub2_path = tempdir.path().join("device2.pub");
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1401,7 +1401,7 @@ fn test_verify_attestation_wrong_key_fails() {
         .success();
 
     // Verify using wrong (second) keypair's public key — should fail with exit 10
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1424,7 +1424,7 @@ fn test_verify_attestation_with_file_hashes() {
     let out_path = tempdir.path().join("attest.te-attestation.json");
 
     // Create attestation
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1445,7 +1445,7 @@ fn test_verify_attestation_with_file_hashes() {
         .success();
 
     // Verify with correct binary and SBOM — should pass
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -1465,7 +1465,7 @@ fn test_verify_attestation_with_file_hashes() {
     // Modify binary, verify again — should fail with exit 10
     fs::write(&binary_path, b"tampered binary content").unwrap();
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([

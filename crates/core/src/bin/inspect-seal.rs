@@ -20,7 +20,7 @@ use std::io::BufReader;
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
-        eprintln!("Usage: {} <file.trst>", args[0]);
+        eprintln!("Usage: {} <file.seal>", args[0]);
         std::process::exit(1);
     }
 

@@ -42,9 +42,9 @@ fn write_sample_input(dir: &Path) -> PathBuf {
 /// Returns `(archive_dir, device_pub_string)`.
 fn wrap_unencrypted_archive(tempdir: &TempDir) -> (PathBuf, String) {
     let input = write_sample_input(tempdir.path());
-    let archive_dir = tempdir.path().join("clip.trst");
+    let archive_dir = tempdir.path().join("clip.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -70,7 +70,7 @@ fn wrap_unencrypted_archive(tempdir: &TempDir) -> (PathBuf, String) {
 
 /// Generate a keypair (unencrypted) into key_path and pub_path.
 fn keygen_unencrypted(tempdir: &TempDir, key_path: &Path, pub_path: &Path) {
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -194,8 +194,8 @@ fn test_sec06_same_plaintext_same_key_different_nonces() {
     let pub_path = tempdir.path().join("device.pub");
     keygen_unencrypted(&tempdir, &key_path, &pub_path);
 
-    let archive1 = tempdir.path().join("archive1.trst");
-    let archive2 = tempdir.path().join("archive2.trst");
+    let archive1 = tempdir.path().join("archive1.seal");
+    let archive2 = tempdir.path().join("archive2.seal");
 
     // Write the same input twice (identical plaintext).
     let input1 = tempdir.path().join("input1.bin");
@@ -206,7 +206,7 @@ fn test_sec06_same_plaintext_same_key_different_nonces() {
     fs::write(&input2, &data).unwrap();
 
     // Wrap both from identical plaintext with identical key.
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
@@ -230,7 +230,7 @@ fn test_sec06_same_plaintext_same_key_different_nonces() {
         .assert()
         .success();
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([

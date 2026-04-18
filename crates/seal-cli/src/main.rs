@@ -96,7 +96,7 @@ struct VerifyReport {
 }
 
 #[derive(Parser, Debug)]
-#[command(author, version, about = "TrustEdge .trst archival tool", long_about = None)]
+#[command(author, version, about = "TrustEdge .seal archival tool", long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -118,7 +118,7 @@ enum Commands {
 struct WrapCmd {
     #[arg(long = "in", value_name = "PATH", help = "Input file to wrap")]
     input: PathBuf,
-    #[arg(long = "out", value_name = "PATH", help = "Output .trst directory")]
+    #[arg(long = "out", value_name = "PATH", help = "Output .seal directory")]
     output: PathBuf,
     /// Archive profile. Defaults to "generic". Use "cam.video" for video capture archives.
     #[arg(long, default_value = "generic")]
@@ -216,7 +216,7 @@ struct WrapCmd {
 
 #[derive(Args, Debug)]
 struct VerifyCmd {
-    #[arg(value_name = "ARCHIVE", help = "Path to .trst archive directory")]
+    #[arg(value_name = "ARCHIVE", help = "Path to .seal archive directory")]
     archive: PathBuf,
     #[arg(
         long = "device-pub",
@@ -236,7 +236,7 @@ struct VerifyCmd {
 
 #[derive(Args, Debug)]
 struct UnwrapCmd {
-    #[arg(value_name = "ARCHIVE", help = "Path to .trst archive directory")]
+    #[arg(value_name = "ARCHIVE", help = "Path to .seal archive directory")]
     archive: PathBuf,
     #[arg(
         long = "device-key",
@@ -279,7 +279,7 @@ struct EmitRequestCmd {
     #[arg(
         long = "archive",
         value_name = "PATH",
-        help = "Path to .trst archive directory"
+        help = "Path to .seal archive directory"
     )]
     archive: PathBuf,
     #[arg(
@@ -515,8 +515,8 @@ fn handle_wrap(args: WrapCmd) -> Result<()> {
         .ok_or_else(|| anyhow::anyhow!("Invalid output path"))?
         .to_string_lossy();
 
-    if !archive_name.ends_with(".trst") {
-        anyhow::bail!("Output directory must end with .trst");
+    if !archive_name.ends_with(".seal") {
+        anyhow::bail!("Output directory must end with .seal");
     }
 
     fs::create_dir_all(&args.output)?;

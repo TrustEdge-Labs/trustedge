@@ -29,7 +29,7 @@ use tempfile::TempDir;
 fn generate_keypair(dir: &Path) -> (PathBuf, PathBuf) {
     let key_path = dir.join("device.key");
     let pub_path = dir.join("device.pub");
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .args(["keygen", "--out-key"])
         .arg(&key_path)
@@ -62,9 +62,9 @@ fn sec_13_sensor_missing_sample_rate() {
     let tempdir = TempDir::new().unwrap();
     let (key_path, pub_path) = generate_keypair(tempdir.path());
     let input_path = write_sample_input(tempdir.path());
-    let archive_path = tempdir.path().join("out.trst");
+    let archive_path = tempdir.path().join("out.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .args(["wrap", "--profile", "sensor", "--in"])
         .arg(&input_path)
@@ -96,9 +96,9 @@ fn sec_13_sensor_missing_unit() {
     let tempdir = TempDir::new().unwrap();
     let (key_path, pub_path) = generate_keypair(tempdir.path());
     let input_path = write_sample_input(tempdir.path());
-    let archive_path = tempdir.path().join("out.trst");
+    let archive_path = tempdir.path().join("out.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .args(["wrap", "--profile", "sensor", "--in"])
         .arg(&input_path)
@@ -130,9 +130,9 @@ fn sec_13_sensor_missing_sensor_model() {
     let tempdir = TempDir::new().unwrap();
     let (key_path, pub_path) = generate_keypair(tempdir.path());
     let input_path = write_sample_input(tempdir.path());
-    let archive_path = tempdir.path().join("out.trst");
+    let archive_path = tempdir.path().join("out.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .args(["wrap", "--profile", "sensor", "--in"])
         .arg(&input_path)
@@ -158,9 +158,9 @@ fn sec_13_sensor_all_required_present_succeeds() {
     let tempdir = TempDir::new().unwrap();
     let (key_path, pub_path) = generate_keypair(tempdir.path());
     let input_path = write_sample_input(tempdir.path());
-    let archive_path = tempdir.path().join("out.trst");
+    let archive_path = tempdir.path().join("out.seal");
 
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .args(["wrap", "--profile", "sensor", "--in"])
         .arg(&input_path)

@@ -48,10 +48,10 @@ fn test_wrap_autogen_key_permissions_0600() {
     let data: Vec<u8> = (0..1024).map(|i| (i % 251) as u8).collect();
     fs::write(&input_path, &data).expect("failed to write input");
 
-    let archive_path = tempdir.path().join("archive.trst");
+    let archive_path = tempdir.path().join("archive.seal");
 
     // Run trst wrap without --device-key so it auto-generates the keypair
-    Command::cargo_bin("trst")
+    Command::cargo_bin("seal")
         .unwrap()
         .current_dir(tempdir.path())
         .args([
