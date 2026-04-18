@@ -55,7 +55,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 
 **Milestone Goal:** Rename the product from "trustedge" to "sealedge" end-to-end — repo, crates, binaries, internal constants, docs, functions — clean break with no legacy compatibility path, while the TrustEdge-Labs org/brand retains its identity.
 
-- [ ] **Phase 83: Crate & Binary Rename** - Rename all workspace crates `trustedge-*` → `sealedge-*` and all CLI binaries (including `trst`) to sealedge equivalents in a single atomic workspace-coherent change
+- [x] **Phase 83: Crate & Binary Rename** - Rename all workspace crates `trustedge-*` → `sealedge-*` and all CLI binaries (including `trst` → `seal`) to sealedge equivalents (completed 2026-04-18 — 7 plans, 7 commits)
 - [ ] **Phase 84: Crypto Constants & File Extension** - Replace `TRUSTEDGE-KEY-V1` / `TRUSTEDGE_ENVELOPE_V1` with sealedge equivalents (clean break, no backward-compat decrypt) and rename `.te-attestation.json` file extension to the sealedge form everywhere
 - [ ] **Phase 85: Code Sweep — Headers, Text, Metadata** - Update all copyright/license headers, user-facing text (errors, logs, help, env vars, UI labels), and Cargo.toml metadata (description, repository, homepage, documentation) across the workspace
 - [ ] **Phase 86: Documentation Sweep** - Update root project docs (README, CLAUDE.md, DEPENDENCIES.md, SECURITY.md), developer docs (docs/**), code doc comments (`///`, `//!`), and scripts/examples to reflect sealedge naming
@@ -127,16 +127,16 @@ Plans:
   3. Inter-crate dependencies in every Cargo.toml reference the new `sealedge-*` crate names; `cargo check --workspace` compiles cleanly
   4. All existing workspace tests still pass under the new crate/binary names (`cargo test --workspace` green)
   5. Archive files are written and read with the `.seal` extension across the archive CLI, core library, examples, and tests; no `.trst` literal remains in production code paths
-**Plans:** 7 plans
+**Plans:** 7/7 plans complete (completed 2026-04-18)
 
 Plans:
-- [ ] 83-01-PLAN.md — Rename 6 root crates trustedge-* → sealedge-* (packages, bin targets, dir normalization, use statement sweep)
-- [ ] 83-02-PLAN.md — Rename trst-family crates to sealedge-seal-* and the trst binary to seal
-- [ ] 83-03-PLAN.md — Sweep .trst archive extension literal to .seal in Rust source code
-- [ ] 83-04-PLAN.md — Rename dashboard + WASM npm package.json files and JS bindings
-- [ ] 83-05-PLAN.md — Update CI workflows and shell scripts for new crate / binary / extension names
-- [ ] 83-06-PLAN.md — Rename experimental workspace crates (pubky, pubky-advanced)
-- [ ] 83-07-PLAN.md — Final verification: full ci-check.sh, verification greps, seal wrap smoke test
+- [x] 83-01-PLAN.md — Rename 6 root crates trustedge-* → sealedge-* (f38bd31)
+- [x] 83-02-PLAN.md — Rename trst-family → sealedge-seal-*, trst → seal binary (92e8243)
+- [x] 83-03-PLAN.md — Sweep .trst → .seal archive extension in Rust code (59ebcd2)
+- [x] 83-04-PLAN.md — Rename dashboard + WASM npm packages + JS bindings (586644e)
+- [x] 83-05-PLAN.md — Update CI workflows + shell scripts for sealedge naming (7322536)
+- [x] 83-06-PLAN.md — Rename experimental pubky crates (4408d13)
+- [x] 83-07-PLAN.md — Final verification + human checkpoint (fbe8ba8)
 
 ### Phase 84: Crypto Constants & File Extension
 **Goal**: Wire-format constants and on-disk file extensions announce the product as sealedge — cleanly broken from the old trustedge-labelled values, with no backward-compatibility decrypt path for data encrypted under the old constants.
