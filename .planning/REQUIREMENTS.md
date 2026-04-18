@@ -5,88 +5,73 @@ Project: trustedge — Privacy and trust at the edge.
 GitHub: https://github.com/TrustEdge-Labs/trustedge
 -->
 
-# Requirements: TrustEdge v5.0 Portfolio Polish
+# Requirements: v6.0 Sealedge Rebrand
 
-**Defined:** 2026-04-05
-**Core Value:** Make the existing SBOM attestation work visible and discoverable.
+**Defined:** 2026-04-18
+**Core Value:** Rename the product from "trustedge" to "sealedge" end-to-end so it can move past its trademark constraint. Clean break, no legacy compatibility path. TrustEdge-Labs org/brand retains its identity; only the product renames.
 
-## v5.0 Requirements
+## v6.0 Requirements
 
 Requirements for this milestone. Each maps to roadmap phases.
 
-### CI/CD
+### Rebrand (core rename)
 
-- [ ] **CI-01**: Self-attestation job runs end-to-end on every GitHub release, producing `.te-attestation.json` and `build.pub` as release assets
-- [ ] **CI-02**: Self-attestation generates SBOM via pinned `anchore/sbom-action@v0` and binds it to the release binary
-- [ ] **CI-03**: Self-attestation uses ephemeral Ed25519 keypair per build (no stored secrets)
-- [ ] **CI-04**: Self-attestation job uses `continue-on-error: true` until promoted to required
+- [ ] **REBRAND-01**: All workspace crates renamed `trustedge-*` → `sealedge-*` across Cargo.toml manifests, workspace members, and inter-crate deps
+- [ ] **REBRAND-02**: All CLI binaries renamed (`trustedge`, `trustedge-server`, `trustedge-client`, `trustedge-platform-server`, and `trst` → new short name) — no binary retains a trustedge-derived name
+- [ ] **REBRAND-03**: Crypto wire-format constants replaced (`TRUSTEDGE-KEY-V1` → `SEALEDGE-KEY-V1`, `TRUSTEDGE_ENVELOPE_V1` HKDF domain-separation → `SEALEDGE_ENVELOPE_V1`) — clean break, no backward-compat decrypt of existing data
+- [ ] **REBRAND-04**: `.te-attestation.json` file extension renamed to reflect sealedge (e.g. `.se-attestation.json`) across CLI, platform endpoint, GitHub Action, and verify page
+- [ ] **REBRAND-05**: Copyright/license headers in every `.rs` file say `Project: sealedge` (no `trustedge` strings remain)
+- [ ] **REBRAND-06**: All user-facing text updated — error messages, log output, CLI help text, env-var prefixes (`TRUSTEDGE_*` → `SEALEDGE_*`), dashboard UI labels and titles
+- [ ] **REBRAND-07**: Cargo.toml metadata updated (`description`, `repository`, `homepage`, `documentation` URLs) for every workspace crate
 
-### Distribution
+### Docs (documentation sweep)
 
-- [ ] **DIST-01**: GitHub Action published to marketplace as `TrustEdge-Labs/attest-sbom-action@v1` (separate repo)
-- [ ] **DIST-02**: Action downloads trst binary from GitHub Releases with SHA256 verification
-- [ ] **DIST-03**: Action accepts inputs: sbom-path, binary-path, key-path, trustedge-version
-- [ ] **DIST-04**: Action README includes usage example with persistent key and ephemeral key patterns
+- [ ] **DOCS-01**: Root project docs updated — `README.md`, `CLAUDE.md`, `DEPENDENCIES.md`, `SECURITY.md` (if present) reflect sealedge throughout
+- [ ] **DOCS-02**: Developer docs directory swept — `docs/architecture.md`, `docs/cli.md`, `docs/development.md`, `docs/testing.md`, `docs/user/*` updated for new names
+- [ ] **DOCS-03**: Code doc comments (`///`, `//!`) and module docstrings updated — `cargo doc` renders sealedge everywhere
+- [ ] **DOCS-04**: Scripts and examples updated — `scripts/*.sh`, `examples/cam.video/*`, demo scripts invoke new binary names and reference new file extension
 
-### Visibility
+### Ext (external surfaces)
 
-- [ ] **VIS-01**: README demo GIF shows the full attest-sbom → verify-attestation flow
-- [ ] **VIS-02**: Product landing page live on trustedgelabs.com with quick start and verifier link
-- [ ] **VIS-03**: Demo GIF recorded from `scripts/demo.sh --local` (or updated script if needed)
+- [ ] **EXT-01**: GitHub monorepo renamed `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` with GitHub's automatic redirect enabled; local git remotes updated
+- [ ] **EXT-02**: New GitHub Action repo created under sealedge naming and published to GitHub Marketplace (equivalent functionality to current `attest-sbom-action`); SHA256 checksum verification preserved
+- [ ] **EXT-03**: Old `TrustEdge-Labs/attest-sbom-action` marketplace listing marked deprecated with README redirect to the new listing
+- [ ] **EXT-04**: Product references on `trustedgelabs.com` updated — the labs brand stays, but the advertised product is now "Sealedge"; any in-repo website content (trustedgelabs-website references) updated
 
-### Housekeeping
+### Valid (verify nothing broke)
 
-- [ ] **HK-01**: te-prove design doc archived in `.planning/ideas/` with office hours context notes
+- [ ] **VALID-01**: Full workspace test suite passes under new names — all 471 tests green across default, yubikey, http, postgres, ca, and openapi feature combinations
+- [ ] **VALID-02**: All GitHub Actions workflows green (ci.yml, semver.yml, wasm-tests.yml, release workflow, self-attestation job)
+- [ ] **VALID-03**: WASM builds, dashboard build + type generation, and Docker compose stack (platform + postgres + dashboard) all start clean and the demo script runs end-to-end under the new names
 
 ## Future Requirements
 
-Deferred to future milestones. Tracked but not in current roadmap.
+Deferred to later milestones:
 
-### Security Enhancements
-- **SEC-01**: OIDC/Sigstore integration for identity-bound attestations
-- **SEC-02**: SPDX SBOM format support (in addition to CycloneDX)
-
-### Product Features
-- **PROD-01**: C2PA compatibility for media profiles (cam.video, audio) — first amendment auditor use case
-- **PROD-02**: Verification badge endpoint for README embedding
-- **PROD-03**: SBOM diff/drift detection between attested versions
-- **PROD-04**: te-prove — FOSS supply chain trust policy engine (parked, see .planning/ideas/)
+- Record demo GIF and embed in README (post-rename, was v5.0 Phase 81)
+- Ship product landing page on trustedgelabs.com (post-rename, was v5.0 Phase 82)
+- C2PA compatibility for media profiles (cam.video, audio) — first amendment auditor use case
+- Verification badge endpoint for README embedding
+- SBOM diff/drift detection between attested versions
+- te-prove: FOSS supply chain trust policy engine (parked in `.planning/ideas/`)
 
 ## Out of Scope
 
-Explicitly excluded. Documented to prevent scope creep.
+Explicit exclusions for this milestone:
 
-| Feature | Reason |
-|---------|--------|
-| te-prove implementation | No demand evidence, undefined target user, FOMO-driven — parked as idea |
-| New cryptographic features | This milestone is visibility/polish, not new capabilities |
-| Dashboard changes | Dashboard is functional, not part of portfolio polish scope |
-| Multi-tenant platform features | Premature — no users yet |
+- **Backward-compatible decryption of existing `TRUSTEDGE-KEY-V1` / `TRUSTEDGE_ENVELOPE_V1` data** — solo dev, no production users, clean break is acceptable and avoids legacy code paths forever
+- **Rebranding the `TrustEdge-Labs` GitHub org or `trustedgelabs.com` domain** — only the product renames; the labs identity is retained
+- **Rebranding the `trustedgelabs-website` repo name** — the labs-owned website repo keeps its name; only its product-page content changes
+- **Publishing crates to `crates.io` under new names** — workspace is not currently published; publishing is a separate future initiative
+- **Adding new features or behaviors during the rebrand** — rename-only; functional changes come in subsequent milestones
+- **Tagging an official `v6.0` semver release on the old repo name before the GitHub repo rename** — the release tag is cut under the new repo name to avoid fragmented release history
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CI-01 | Phase 79 | Pending |
-| CI-02 | Phase 79 | Pending |
-| CI-03 | Phase 79 | Pending |
-| CI-04 | Phase 79 | Pending |
-| HK-01 | Phase 79 | Pending |
-| DIST-01 | Phase 80 | Pending |
-| DIST-02 | Phase 80 | Pending |
-| DIST-03 | Phase 80 | Pending |
-| DIST-04 | Phase 80 | Pending |
-| VIS-01 | Phase 81 | Pending |
-| VIS-03 | Phase 81 | Pending |
-| VIS-02 | Phase 82 | Pending |
-
-**Coverage:**
-- v5.0 requirements: 12 total
-- Mapped to phases: 12
-- Unmapped: 0 ✓
+| *(filled by roadmap)* | | |
 
 ---
-*Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 — traceability populated after roadmap creation*
+
+<!-- Last updated: 2026-04-18 -->
