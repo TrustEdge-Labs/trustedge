@@ -147,7 +147,12 @@ Plans:
   2. The HKDF domain-separation info parameter in envelope v2 is `SEALEDGE_ENVELOPE_V1` (not `TRUSTEDGE_ENVELOPE_V1`); envelopes sealed under the old constant intentionally fail to unseal
   3. Attestation files are written and read with the sealedge-branded extension (e.g. `.se-attestation.json`) across CLI subcommands, the platform endpoint, the GitHub Action, and the verify HTML page
   4. A targeted test proves that data produced with the old `TRUSTEDGE-*` constants is rejected cleanly (not silently decrypted) — confirming the clean break
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 84-01-PLAN.md — Rename ENCRYPTED_KEY_HEADER + HKDF info byte literal; add D-02 clean-break rejection tests
+- [ ] 84-02-PLAN.md — Sweep .te-attestation.json → .se-attestation.json in Rust sources + demo script
+- [ ] 84-03-PLAN.md — Sweep .te-attestation.json → .se-attestation.json in external assets (HTML, Action, deploy README)
 
 ### Phase 85: Code Sweep — Headers, Text, Metadata
 **Goal**: Every human-readable string emitted from the codebase or written in its source says "sealedge" — copyright headers, error messages, log lines, CLI help text, env var prefixes, dashboard UI labels, and Cargo.toml metadata URLs all match the new brand.
