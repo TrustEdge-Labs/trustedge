@@ -21,7 +21,7 @@ import init, {
     generate_random_bytes,
     validate_key,
     validate_nonce
-} from '../pkg-bundler/trustedge_wasm.js';
+} from '../pkg-bundler/sealedge_seal_wasm.js';
 
 import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
@@ -47,7 +47,7 @@ class TrustEdgeNode {
 
         try {
             // Load WASM binary for Node.js
-            const wasmPath = join(__dirname, '../pkg-bundler/trustedge_wasm_bg.wasm');
+            const wasmPath = join(__dirname, '../pkg-bundler/sealedge_seal_wasm_bg.wasm');
             const wasmBinary = await readFile(wasmPath);
             
             this.wasmModule = await init(wasmBinary);
@@ -237,4 +237,4 @@ export {
 };
 
 // Create a default instance for convenience
-export const trustedge = new TrustEdgeNode();
+export const seal = new TrustEdgeNode();

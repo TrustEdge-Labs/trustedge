@@ -21,7 +21,7 @@ import init, {
     generate_random_bytes,
     validate_key,
     validate_nonce
-} from '../pkg/trustedge_wasm.js';
+} from '../pkg/sealedge_seal_wasm.js';
 
 class TrustEdge {
     constructor() {
@@ -235,4 +235,4 @@ export {
 };
 
 // Create a default instance for convenience
-export const trustedge = new TrustEdge();
+export const seal = new TrustEdge();

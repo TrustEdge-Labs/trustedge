@@ -1,6 +1,6 @@
 /**
- * TrustEdge WASM Node.js SDK
- * Node.js-specific wrapper for TrustEdge cryptographic operations
+ * TrustEdge WASM JavaScript SDK
+ * High-level wrapper for TrustEdge cryptographic operations
  */
 
 import init, {
@@ -21,24 +21,17 @@ import init, {
     generate_random_bytes,
     validate_key,
     validate_nonce
-} from '../pkg-bundler/trustedge_wasm.js';
+} from '../pkg/sealedge_wasm.js';
 
-import { readFile } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-class TrustEdgeNode {
+class TrustEdge {
     constructor() {
         this.initialized = false;
         this.wasmModule = null;
     }
 
     /**
-     * Initialize the TrustEdge WASM module for Node.js
-     * Automatically loads the WASM binary
+     * Initialize the TrustEdge WASM module
+     * Must be called before using any cryptographic functions
      */
     async init() {
         if (this.initialized) {
@@ -46,13 +39,9 @@ class TrustEdgeNode {
         }
 
         try {
-            // Load WASM binary for Node.js
-            const wasmPath = join(__dirname, '../pkg-bundler/trustedge_wasm_bg.wasm');
-            const wasmBinary = await readFile(wasmPath);
-            
-            this.wasmModule = await init(wasmBinary);
+            this.wasmModule = await init();
             this.initialized = true;
-            console.log('TrustEdge WASM initialized successfully (Node.js)');
+            console.log('TrustEdge WASM initialized successfully');
             return this;
         } catch (error) {
             console.error('Failed to initialize TrustEdge WASM:', error);
@@ -218,6 +207,15 @@ class TrustEdgeNode {
     }
 
     /**
+     * Show greeting alert (for testing)
+     * @param {string} name - Name to greet
+     */
+    greet(name) {
+        this._ensureInitialized();
+        greet(name);
+    }
+
+    /**
      * Ensure the module is initialized before calling WASM functions
      * @private
      */
@@ -229,12 +227,12 @@ class TrustEdgeNode {
 }
 
 // Export the main class and individual functions
-export default TrustEdgeNode;
+export default TrustEdge;
 export {
-    TrustEdgeNode,
+    TrustEdge,
     EncryptedData,
     Timer
 };
 
 // Create a default instance for convenience
-export const trustedge = new TrustEdgeNode();
+export const sealedge = new TrustEdge();

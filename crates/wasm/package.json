@@ -1,10 +1,10 @@
 {
-  "name": "@trustedge/wasm",
+  "name": "@sealedge/wasm",
   "version": "0.1.0",
   "description": "WebAssembly bindings for TrustEdge cryptographic operations",
-  "main": "js/trustedge-node.js",
-  "browser": "js/trustedge.js",
-  "types": "js/trustedge.d.ts",
+  "main": "js/sealedge-node.js",
+  "browser": "js/sealedge.js",
+  "types": "js/sealedge.d.ts",
   "files": [
     "pkg/",
     "pkg-node/",
@@ -33,7 +33,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/trustedge-labs/trustedge.git",
-    "directory": "trustedge-wasm"
+    "directory": "wasm"
   },
   "homepage": "https://github.com/trustedge-labs/trustedge#readme",
   "bugs": {
@@ -45,22 +45,22 @@
   "type": "module",
   "exports": {
     ".": {
-      "node": "./js/trustedge-node.js",
-      "browser": "./js/trustedge.js",
-      "import": "./js/trustedge.js",
-      "types": "./js/trustedge.d.ts"
+      "node": "./js/sealedge-node.js",
+      "browser": "./js/sealedge.js",
+      "import": "./js/sealedge.js",
+      "types": "./js/sealedge.d.ts"
     },
     "./web": {
-      "import": "./js/trustedge.js",
-      "types": "./js/trustedge.d.ts"
+      "import": "./js/sealedge.js",
+      "types": "./js/sealedge.d.ts"
     },
     "./node": {
-      "import": "./js/trustedge-node.js",
-      "types": "./js/trustedge.d.ts"
+      "import": "./js/sealedge-node.js",
+      "types": "./js/sealedge.d.ts"
     },
-    "./pkg": "./pkg/trustedge_wasm.js",
-    "./pkg-node": "./pkg-node/trustedge_wasm.js",
-    "./pkg-bundler": "./pkg-bundler/trustedge_wasm.js",
+    "./pkg": "./pkg/sealedge_wasm.js",
+    "./pkg-node": "./pkg-node/sealedge_wasm.js",
+    "./pkg-bundler": "./pkg-bundler/sealedge_wasm.js",
     "./pkg/*": "./pkg/*",
     "./pkg-node/*": "./pkg-node/*",
     "./pkg-bundler/*": "./pkg-bundler/*"

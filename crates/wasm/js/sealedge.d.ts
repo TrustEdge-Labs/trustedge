@@ -180,7 +180,7 @@ export class TrustEdgeError extends Error {
 /**
  * Default TrustEdge instance for convenience
  */
-export const trustedge: TrustEdge;
+export const sealedge: TrustEdge;
 
 /**
  * Export the main class as default
