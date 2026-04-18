@@ -166,12 +166,12 @@ pub use error::{BackendError, TransportError, TrustEdgeError};
 pub use format::*;
 pub use hybrid::{open_envelope, seal_for_recipient, HybridEncryptionError, SymmetricKey};
 pub use point_attestation::{ArtifactRef, PointAttestation, PointAttestationError};
-pub use transport::{Transport, TransportConfig, TransportFactory};
-pub use trustedge_trst_protocols::archive::manifest::{
+pub use sealedge_seal_protocols::archive::manifest::{
     AudioMetadata, CamVideoManifest, CamVideoMetadata, CaptureInfo, ChunkInfo, DeviceInfo,
     GenericMetadata, LogMetadata, ManifestFormatError, ProfileMetadata, SegmentInfo,
     SensorMetadata, TrstManifest,
 };
+pub use transport::{Transport, TransportConfig, TransportFactory};
 
 // Shared wire types — re-exported from trustedge-types for downstream access
 // Downstream crates can use `sealedge_core::sealedge_types::*` or the

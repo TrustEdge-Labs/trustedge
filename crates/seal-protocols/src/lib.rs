@@ -22,7 +22,7 @@
 //! ## Usage
 //!
 //! ```rust
-//! use trustedge_trst_protocols::{TrstManifest, CamVideoManifest, DeviceInfo, ChunkInfo, SegmentInfo};
+//! use sealedge_seal_protocols::{TrstManifest, CamVideoManifest, DeviceInfo, ChunkInfo, SegmentInfo};
 //!
 //! // Generic profile (default)
 //! let manifest = TrstManifest::new();

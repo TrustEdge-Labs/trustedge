@@ -4,7 +4,7 @@
 
 
 [package]
-name = "trustedge-trst-protocols"
+name = "sealedge-seal-protocols"
 version = "0.2.0"
 edition = "2021"
 description = "Protocol and format definitions for TrustEdge archives and capture profiles (WASM-compatible)"

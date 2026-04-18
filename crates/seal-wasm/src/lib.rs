@@ -21,7 +21,7 @@ use base64::{engine::general_purpose, Engine as _};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 
 // Import canonical manifest types from trst-protocols
-use trustedge_trst_protocols::TrstManifest;
+use sealedge_seal_protocols::TrstManifest;
 
 pub mod crypto;
 

@@ -4,7 +4,7 @@
 
 
 [package]
-name = "trustedge-trst-wasm"
+name = "sealedge-seal-wasm"
 version = "0.2.0"
 edition = "2021"
 description = "WASM bindings for TrustEdge verification"
@@ -22,8 +22,8 @@ maintained = true
 ignored = ["getrandom", "getrandom_v03"]
 
 [dependencies]
-# Protocol definitions from trst-protocols
-trustedge-trst-protocols = { path = "../trst-protocols" }
+# Protocol definitions from seal-protocols
+sealedge-seal-protocols = { path = "../seal-protocols" }
 
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

@@ -32,6 +32,10 @@ path = "src/bin/sealedge-client.rs"
 name = "software-hsm-demo"
 path = "src/bin/software-hsm-demo.rs"
 
+[[bin]]
+name = "inspect-seal"
+path = "src/bin/inspect-seal.rs"
+
 
 
 [dependencies]
@@ -63,7 +67,7 @@ rsa = { workspace = true }
 serde = { workspace = true }
 serde_bytes = { workspace = true }
 serde_json = { workspace = true }
-trustedge-trst-protocols = { path = "../trst-protocols" }
+sealedge-seal-protocols = { path = "../seal-protocols" }
 sealedge-types = { workspace = true }
 
 # Crate-specific dependencies not in workspace

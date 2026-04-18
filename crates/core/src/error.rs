@@ -101,7 +101,7 @@ pub enum AsymmetricError {
 }
 
 /// Re-export ManifestFormatError from trst-protocols as ManifestError for backward compatibility
-pub use trustedge_trst_protocols::archive::manifest::ManifestFormatError as ManifestError;
+pub use sealedge_seal_protocols::archive::manifest::ManifestFormatError as ManifestError;
 
 /// Errors related to archive operations
 #[derive(Error, Debug)]

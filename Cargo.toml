@@ -14,9 +14,9 @@ members = [
     "crates/platform-server",
     "crates/cli",
     "crates/wasm",
-    "crates/trst-protocols",
-    "crates/trst-cli",
-    "crates/trst-wasm",
+    "crates/seal-protocols",
+    "crates/seal-cli",
+    "crates/seal-wasm",
     "examples/cam.video",
 ]
 

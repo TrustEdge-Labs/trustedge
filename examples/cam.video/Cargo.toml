@@ -3,7 +3,7 @@
 # Project: trustedge — Privacy and trust at the edge.
 
 [package]
-name = "trustedge-cam-video-examples"
+name = "sealedge-cam-video-examples"
 version = "0.1.0"
 edition = "2021"
 description = "TrustEdge cam.video P0 implementation examples"

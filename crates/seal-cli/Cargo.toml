@@ -4,7 +4,7 @@
 
 
 [package]
-name = "trustedge-trst-cli"
+name = "sealedge-seal-cli"
 version = "0.2.0"
 edition = "2021"
 description = "TrustEdge .trst archive CLI"
@@ -12,7 +12,7 @@ authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
 license = "MPL-2.0"
 
 [[bin]]
-name = "trst"
+name = "seal"
 path = "src/main.rs"
 test = false
 
