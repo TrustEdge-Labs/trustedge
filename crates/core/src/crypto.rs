@@ -24,8 +24,8 @@ use zeroize::Zeroize;
 
 pub use crate::error::CryptoError;
 
-/// Magic header prefix identifying an encrypted TrustEdge key file.
-const ENCRYPTED_KEY_HEADER: &str = "TRUSTEDGE-KEY-V1";
+/// Magic header prefix identifying an encrypted SealEdge key file.
+const ENCRYPTED_KEY_HEADER: &str = "SEALEDGE-KEY-V1";
 
 /// Minimum PBKDF2-HMAC-SHA256 iterations per OWASP 2023 guidelines.
 /// See: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
@@ -139,7 +139,7 @@ impl DeviceKeypair {
     ///
     /// Output format:
     /// ```text
-    /// TRUSTEDGE-KEY-V1\n
+    /// SEALEDGE-KEY-V1\n
     /// {"salt":"<b64>","nonce":"<b64>","iterations":600000}\n
     /// <AES-256-GCM ciphertext bytes>
     /// ```
@@ -393,13 +393,13 @@ pub fn generate_aad(
         .into_bytes()
 }
 
-/// Detect whether raw bytes represent an encrypted TrustEdge key file.
+/// Detect whether raw bytes represent an encrypted SealEdge key file.
 ///
-/// Returns `true` if `data` starts with `"TRUSTEDGE-KEY-V1\n"`, which is the
+/// Returns `true` if `data` starts with `"SEALEDGE-KEY-V1\n"`, which is the
 /// magic header written by [`DeviceKeypair::export_secret_encrypted`].
 /// Returns `false` for plaintext `"ed25519:…"` key strings and any other content.
 pub fn is_encrypted_key_file(data: &[u8]) -> bool {
-    data.starts_with(b"TRUSTEDGE-KEY-V1\n")
+    data.starts_with(b"SEALEDGE-KEY-V1\n")
 }
 
 /// Sign manifest canonical bytes with device secret key
@@ -802,7 +802,7 @@ mod tests {
             "iterations": low_iterations,
         });
 
-        let mut file_data = format!("TRUSTEDGE-KEY-V1\n{}\n", meta).into_bytes();
+        let mut file_data = format!("SEALEDGE-KEY-V1\n{}\n", meta).into_bytes();
         file_data.extend_from_slice(&ciphertext);
 
         let result = DeviceKeypair::import_secret_encrypted(&file_data, passphrase);
@@ -819,8 +819,8 @@ mod tests {
 
     #[test]
     fn test_is_encrypted_key_file() {
-        // True: starts with TRUSTEDGE-KEY-V1\n
-        assert!(is_encrypted_key_file(b"TRUSTEDGE-KEY-V1\nsome data"));
+        // True: starts with SEALEDGE-KEY-V1\n
+        assert!(is_encrypted_key_file(b"SEALEDGE-KEY-V1\nsome data"));
         // False: plaintext ed25519: prefix
         assert!(!is_encrypted_key_file(b"ed25519:AAAA"));
         // False: empty
@@ -834,10 +834,10 @@ mod tests {
         let keypair = DeviceKeypair::generate().unwrap();
         let encrypted = keypair.export_secret_encrypted("test-passphrase").unwrap();
 
-        // First line must be TRUSTEDGE-KEY-V1
+        // First line must be SEALEDGE-KEY-V1
         let first_newline = encrypted.iter().position(|&b| b == b'\n').unwrap();
         let header = std::str::from_utf8(&encrypted[..first_newline]).unwrap();
-        assert_eq!(header, "TRUSTEDGE-KEY-V1");
+        assert_eq!(header, "SEALEDGE-KEY-V1");
 
         // Second line must be valid JSON with salt, nonce, iterations
         let rest = &encrypted[first_newline + 1..];
@@ -852,5 +852,48 @@ mod tests {
             "metadata must have iterations field"
         );
         assert_eq!(meta["iterations"].as_u64().unwrap(), 600_000);
+    }
+
+    /// D-02 clean-break rejection: a buffer prefixed with the legacy TRUSTEDGE-KEY-V1
+    /// magic bytes must be rejected by both is_encrypted_key_file() and the import
+    /// path. No silent legacy fall-through (per CONTEXT.md §Decisions D-02 and
+    /// Claude's Discretion: magic header detection function).
+    #[test]
+    fn test_old_header_rejected_cleanly() {
+        const OLD_KEY_HEADER: &[u8] = b"TRUSTEDGE-KEY-V1";
+
+        // Build a minimally plausible legacy-era buffer: old header + newline +
+        // valid-looking JSON metadata + newline + 48 bytes of junk ciphertext.
+        let mut legacy_buf: Vec<u8> = Vec::new();
+        legacy_buf.extend_from_slice(OLD_KEY_HEADER);
+        legacy_buf.push(b'\n');
+        let meta = serde_json::json!({
+            "version": 1,
+            "salt": BASE64.encode([0u8; 32]),
+            "nonce": BASE64.encode([0u8; 12]),
+            "iterations": 600_000u32,
+        });
+        legacy_buf.extend_from_slice(meta.to_string().as_bytes());
+        legacy_buf.push(b'\n');
+        legacy_buf.extend_from_slice(&[0u8; 48]);
+
+        // Detection fn rejects the legacy prefix — it only matches SEALEDGE-KEY-V1\n.
+        assert!(
+            !is_encrypted_key_file(&legacy_buf),
+            "is_encrypted_key_file must NOT accept legacy TRUSTEDGE-KEY-V1 prefix"
+        );
+
+        // Import path rejects with a clear InvalidKeyFormat error (not silent decrypt).
+        let result = DeviceKeypair::import_secret_encrypted(&legacy_buf, "any-passphrase");
+        match result {
+            Err(CryptoError::InvalidKeyFormat(msg)) => {
+                assert!(
+                    msg.contains("Expected header"),
+                    "import error should mention expected-header mismatch, got: {msg}"
+                );
+            }
+            Err(other) => panic!("expected InvalidKeyFormat on legacy header, got: {other:?}"),
+            Ok(_) => panic!("legacy TRUSTEDGE-KEY-V1 header must not import successfully"),
+        }
     }
 }

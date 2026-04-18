@@ -6,7 +6,7 @@
 // Project: trustedge — Privacy and trust at the edge.
 //
 
-//! Security tests for TRUSTEDGE-KEY-V1 encrypted key format — covers threat model T3 (key protection).
+//! Security tests for SEALEDGE-KEY-V1 encrypted key format — covers threat model T3 (key protection).
 //!
 //! Tests are organized by requirement:
 //!   KEY-01: Auto-generated key files from trst wrap have 0600 Unix permissions
@@ -89,7 +89,7 @@ fn test_wrap_autogen_key_permissions_0600() {
 // ---------------------------------------------------------------------------
 
 /// Generate a valid encrypted key file using a known passphrase.
-/// Returns the raw bytes of the TRUSTEDGE-KEY-V1 format.
+/// Returns the raw bytes of the SEALEDGE-KEY-V1 format.
 fn make_valid_encrypted_key() -> Vec<u8> {
     let keypair = DeviceKeypair::generate().expect("generate must succeed");
     keypair
@@ -100,7 +100,7 @@ fn make_valid_encrypted_key() -> Vec<u8> {
 /// Build a syntactically valid metadata JSON line with correct base64 fields
 /// but allow overriding individual fields for targeted corruption tests.
 fn build_corrupted_key_file(meta_json: &str, ciphertext: &[u8]) -> Vec<u8> {
-    let mut data = b"TRUSTEDGE-KEY-V1\n".to_vec();
+    let mut data = b"SEALEDGE-KEY-V1\n".to_vec();
     data.extend_from_slice(meta_json.as_bytes());
     data.push(b'\n');
     data.extend_from_slice(ciphertext);
@@ -155,35 +155,35 @@ fn assert_decryption_failed(result: Result<DeviceKeypair, CryptoError>, expected
 // SEC-08: Truncated files
 // ---------------------------------------------------------------------------
 
-/// SEC-08: Data "TRUSTEDGE-KEY" (no newline) is rejected with "Missing header line".
+/// SEC-08: Data "SEALEDGE-KEY" (no newline) is rejected with "Missing header line".
 ///
 /// The format requires a newline-terminated header as its first structural element.
 /// A file that ends before the first newline cannot be parsed and must be rejected.
 #[test]
 fn sec_08_truncated_before_header_newline() {
-    let data = b"TRUSTEDGE-KEY".to_vec();
+    let data = b"SEALEDGE-KEY".to_vec();
     let result = DeviceKeypair::import_secret_encrypted(&data, "any-passphrase");
     assert_invalid_key_format(result, "Missing header line");
 }
 
-/// SEC-08: Data "TRUSTEDGE-KEY-V1\n" (header only, no JSON metadata) is rejected with "Missing metadata line".
+/// SEC-08: Data "SEALEDGE-KEY-V1\n" (header only, no JSON metadata) is rejected with "Missing metadata line".
 ///
 /// After parsing the header the parser expects a second newline-terminated line
 /// containing the JSON metadata. A file that ends after the header newline must be rejected.
 #[test]
 fn sec_08_truncated_after_header() {
-    let data = b"TRUSTEDGE-KEY-V1\n".to_vec();
+    let data = b"SEALEDGE-KEY-V1\n".to_vec();
     let result = DeviceKeypair::import_secret_encrypted(&data, "any-passphrase");
     assert_invalid_key_format(result, "Missing metadata line");
 }
 
-/// SEC-08: Partial JSON "TRUSTEDGE-KEY-V1\n{\"salt\":" (no closing newline) is rejected.
+/// SEC-08: Partial JSON "SEALEDGE-KEY-V1\n{\"salt\":" (no closing newline) is rejected.
 ///
 /// If the metadata line is truncated mid-way (no second newline found), the parser
 /// must detect the missing structural delimiter and reject the file.
 #[test]
 fn sec_08_truncated_mid_json() {
-    let data = b"TRUSTEDGE-KEY-V1\n{\"salt\":".to_vec();
+    let data = b"SEALEDGE-KEY-V1\n{\"salt\":".to_vec();
     let result = DeviceKeypair::import_secret_encrypted(&data, "any-passphrase");
     assert_invalid_key_format(result, "Missing metadata line");
 }
