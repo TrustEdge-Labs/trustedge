@@ -134,4 +134,16 @@ Verification: `grep -c 'OLD_ENVELOPE_DOMAIN' crates/core/src/envelope.rs` = 6; `
 - `network_integration` tests look for `target/debug/trustedge-server` (old binary name from Phase 83 rename). Pre-existing since Phase 83. Logged to deferred-items.
 - Experimental workspace requires rustc >= 1.95.0 (`constant_time_eq@0.4.3` dependency). Pre-existing environment constraint unrelated to this plan.
 
-## Self-Check
+## Self-Check: PASSED
+
+- FOUND: `crates/core/src/crypto.rs` (modified, committed)
+- FOUND: `crates/core/src/auth.rs` (modified, committed)
+- FOUND: `crates/core/src/chain.rs` (modified, committed)
+- FOUND: `crates/core/src/format.rs` (modified, committed)
+- FOUND: `crates/core/tests/domain_separation_test.rs` (modified, committed)
+- FOUND: `crates/core/src/bin/inspect-seal.rs` (modified, committed)
+- FOUND: `crates/core/benches/crypto_benchmarks.rs` (modified, committed)
+- FOUND: `crates/core/src/vectors.rs` (modified, committed)
+- FOUND: commit `1086637` (108663765cd77bed7967269043fed5b1525efdda) in git log
+- FOUND: SUMMARY.md at `.planning/phases/85-code-sweep-headers-text-metadata/85-01-SUMMARY.md`
+- FOUND: SUMMARY committed at `5493f25`
