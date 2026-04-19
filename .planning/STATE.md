@@ -32,10 +32,10 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 85 (code-sweep-headers-text-metadata) — PENDING
-Plan: not yet planned
-Status: Phase 84 complete; ready to start Phase 85
-Last activity: 2026-04-18 -- Phase 84 complete (3 plans, 6 commits)
+Phase: 85 (code-sweep-headers-text-metadata) — PLANNED
+Plan: 6 plans in 3 waves (Wave 1: 85-01/02/03/06 parallel; Wave 2: 85-04; Wave 3: 85-05)
+Status: Ready to execute
+Last activity: 2026-04-18 -- Phase 85 planned (6 plans after D-01 scope expansion from pre-planning source audit)
 
 ## Performance Metrics
 
