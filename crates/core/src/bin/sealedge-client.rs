@@ -606,8 +606,8 @@ fn build_session_header(chunk_size: usize) -> Result<([u8; 32], [u8; 4], [u8; 16
 
     // Device hash from env (like main.rs), but tolerate absence
     let device_id =
-        std::env::var("TRUSTEDGE_DEVICE_ID").unwrap_or_else(|_| "trustedge-abc123".into());
-    let salt = std::env::var("TRUSTEDGE_SALT").unwrap_or_else(|_| "trustedge-demo-salt".into());
+        std::env::var("SEALEDGE_DEVICE_ID").unwrap_or_else(|_| "sealedge-abc123".into());
+    let salt = std::env::var("SEALEDGE_SALT").unwrap_or_else(|_| "sealedge-demo-salt".into());
     let mut device_id_hash = [0u8; 32];
     let mut hasher = blake3::Hasher::new();
     hasher.update(device_id.as_bytes());

@@ -31,7 +31,7 @@ impl Config {
         #[cfg(feature = "postgres")]
         let database_url = env::var("DATABASE_URL").or_else(|_| {
             if cfg!(debug_assertions) {
-                Ok("postgres://postgres:password@localhost:5432/trustedge".to_string())
+                Ok("postgres://postgres:password@localhost:5432/sealedge".to_string())
             } else {
                 Err(anyhow::anyhow!(
                     "DATABASE_URL must be set in release builds (no hardcoded fallback)"
@@ -40,7 +40,7 @@ impl Config {
         })?;
 
         let jwt_audience =
-            env::var("JWT_AUDIENCE").unwrap_or_else(|_| "trustedge-platform".to_string());
+            env::var("JWT_AUDIENCE").unwrap_or_else(|_| "sealedge-platform".to_string());
 
         let port = match env::var("PORT") {
             Ok(val) => val.parse::<u16>().map_err(|_| {
