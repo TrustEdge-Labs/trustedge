@@ -3,8 +3,8 @@
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Project: trustedge — Privacy and trust at the edge.
-// GitHub: https://github.com/TrustEdge-Labs/trustedge
+// Project: sealedge — Privacy and trust at the edge.
+// GitHub: https://github.com/TrustEdge-Labs/sealedge
 //
 
 //! Performance benchmarks for TrustEdge cryptographic operations

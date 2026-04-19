@@ -4,7 +4,7 @@
 # This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 # If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
 #
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 #
 # Script to automatically add copyright headers to all source files
 
@@ -30,13 +30,13 @@ add_copyright_header() {
         
         case "$header_type" in
             "rust")
-                HEADER=$'//\n// Copyright (c) 2025 TRUSTEDGE LABS LLC\n// This source code is subject to the terms of the Mozilla Public License, v. 2.0.\n// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/\n//\n// Project: trustedge — Privacy and trust at the edge.\n//\n\n'
+                HEADER=$'//\n// Copyright (c) 2025 TRUSTEDGE LABS LLC\n// This source code is subject to the terms of the Mozilla Public License, v. 2.0.\n// If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/\n//\n// Project: sealedge — Privacy and trust at the edge.\n//\n\n'
                 ;;
             "markdown")
-                HEADER=$'<!--\nCopyright (c) 2025 TRUSTEDGE LABS LLC\nMPL-2.0: https://mozilla.org/MPL/2.0/\nProject: trustedge — Privacy and trust at the edge.\nGitHub: https://github.com/TrustEdge-Labs/trustedge\n-->\n\n'
+                HEADER=$'<!--\nCopyright (c) 2025 TRUSTEDGE LABS LLC\nMPL-2.0: https://mozilla.org/MPL/2.0/\nProject: sealedge — Privacy and trust at the edge.\nGitHub: https://github.com/TrustEdge-Labs/sealedge\n-->\n\n'
                 ;;
             "yaml")
-                HEADER=$'# Copyright (c) 2025 TRUSTEDGE LABS LLC\n# MPL-2.0: https://mozilla.org/MPL/2.0/\n# Project: trustedge — Privacy and trust at the edge.\n\n'
+                HEADER=$'# Copyright (c) 2025 TRUSTEDGE LABS LLC\n# MPL-2.0: https://mozilla.org/MPL/2.0/\n# Project: sealedge — Privacy and trust at the edge.\n\n'
                 ;;
         esac
         
