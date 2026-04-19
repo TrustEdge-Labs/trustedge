@@ -1,8 +1,8 @@
-// Dashboard-local types not generated from trustedge-types schemas.
+// Dashboard-local types not generated from sealedge-types schemas.
 // These are platform-API types specific to the dashboard UI.
 //
 // The DashboardReceipt type represents the receipt shape returned by the platform
-// list/detail API endpoints. It differs from the trustedge-types VerificationReceipt (in types.ts),
+// list/detail API endpoints. It differs from the sealedge-types VerificationReceipt (in types.ts),
 // which is the verification receipt wire type issued by the verify engine.
 
 // Dashboard-specific receipt shape (as returned by the platform list/get API).

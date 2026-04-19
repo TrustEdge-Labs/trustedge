@@ -61,7 +61,7 @@
 </script>
 
 <svelte:head>
-	<title>Receipt {receiptId} - TrustEdge Dashboard</title>
+	<title>Receipt {receiptId} - Sealedge Dashboard</title>
 </svelte:head>
 
 <div class="header">

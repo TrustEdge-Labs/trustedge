@@ -1,4 +1,4 @@
-// AUTO-GENERATED from trustedge-types JSON schemas.
+// AUTO-GENERATED from sealedge-types JSON schemas.
 // Do not edit manually. Run scripts/generate-types.sh to regenerate.
 //
 // Source: crates/types/tests/fixtures/*.json
