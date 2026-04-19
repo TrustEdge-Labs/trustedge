@@ -125,7 +125,7 @@ fn test_domain_separation_different_manifests() -> Result<()> {
 #[test]
 fn test_domain_string_content() {
     // Verify the domain separation string is what we expect
-    assert_eq!(MANIFEST_DOMAIN_SEP, b"trustedge.manifest.v1");
+    assert_eq!(MANIFEST_DOMAIN_SEP, b"sealedge.manifest.v1");
     println!(
         "✔ Domain separation string is correct: {:?}",
         std::str::from_utf8(MANIFEST_DOMAIN_SEP).unwrap()
@@ -155,4 +155,58 @@ fn test_signature_determinism_with_domain_separation() -> Result<()> {
 
     println!("✔ Domain-separated signatures are deterministic");
     Ok(())
+}
+
+// D-02 clean-break: legacy manifest-signature domain separator used before Phase 85.
+// Lives only here — zero production footprint for the old value (per CONTEXT.md §D-02).
+const OLD_MANIFEST_DOMAIN_SEP: &[u8] = b"trustedge.manifest.v1";
+
+fn sign_with_domain(signing: &SigningKey, domain: &[u8], payload: &[u8]) -> [u8; 64] {
+    let mut msg = Vec::with_capacity(domain.len() + payload.len());
+    msg.extend_from_slice(domain);
+    msg.extend_from_slice(payload);
+    signing.sign(&msg).to_bytes()
+}
+
+/// D-02 KAT: signing an identical payload under two different domain-sep
+/// prefixes produces distinct Ed25519 signatures. Proves domain separation
+/// is active at the signature-bytes layer.
+#[test]
+fn test_old_manifest_domain_produces_distinct_signature() {
+    let signing = SigningKey::generate(&mut rand_core::OsRng);
+    let payload = b"fixed-manifest-payload-for-D02-kat";
+
+    let sig_old = sign_with_domain(&signing, OLD_MANIFEST_DOMAIN_SEP, payload);
+    let sig_new = sign_with_domain(&signing, b"sealedge.manifest.v1", payload);
+
+    assert_ne!(
+        sig_old, sig_new,
+        "manifest-signature domain separation failed: legacy and new domain prefixes must produce distinct Ed25519 signatures over identical payload"
+    );
+}
+
+/// D-02 rejection: a signature produced under OLD_MANIFEST_DOMAIN_SEP must
+/// FAIL verification when the verifier prepends the NEW domain-sep prefix
+/// (the message being verified is different bytes, so signature is invalid).
+#[test]
+fn test_old_manifest_domain_rejected_cleanly() {
+    let signing = SigningKey::generate(&mut rand_core::OsRng);
+    let verifying = signing.verifying_key();
+    let payload = b"fixed-manifest-payload-for-D02-rejection";
+
+    let sig_old_bytes = sign_with_domain(&signing, OLD_MANIFEST_DOMAIN_SEP, payload);
+    let sig_old = ed25519_dalek::Signature::from_bytes(&sig_old_bytes);
+
+    // Verifier uses the NEW domain-sep prefix — message being verified
+    // differs from what was signed, so verification MUST fail.
+    let mut verify_msg = Vec::new();
+    verify_msg.extend_from_slice(b"sealedge.manifest.v1");
+    verify_msg.extend_from_slice(payload);
+
+    let verify_result = verifying.verify(&verify_msg, &sig_old);
+    assert!(
+        verify_result.is_err(),
+        "a signature produced under OLD_MANIFEST_DOMAIN_SEP must fail verification under sealedge.manifest.v1 — got: {:?}",
+        verify_result
+    );
 }

@@ -7,7 +7,7 @@
 //
 
 /// Genesis seed for the continuity chain
-const GENESIS_SEED: &[u8] = b"trustedge:genesis";
+const GENESIS_SEED: &[u8] = b"sealedge:genesis";
 
 pub use crate::error::ChainError;
 
@@ -286,5 +286,49 @@ mod tests {
             .decode(b64_part)
             .expect("valid base64");
         assert_eq!(decoded, test_data);
+    }
+}
+
+#[cfg(test)]
+mod clean_break_genesis_tests {
+    /// D-02 clean-break tests for the continuity-chain genesis seed. Per
+    /// CONTEXT.md §Decisions D-02 — shadow const lives only here.
+    const OLD_GENESIS_SEED: &[u8] = b"trustedge:genesis";
+
+    /// KAT: BLAKE3(old_seed) and BLAKE3(new_seed) produce DISTINCT 32-byte hashes.
+    #[test]
+    fn test_old_genesis_seed_produces_distinct_hash() {
+        let old = blake3::hash(OLD_GENESIS_SEED);
+        let new = blake3::hash(b"sealedge:genesis");
+        assert_ne!(
+            old.as_bytes(),
+            new.as_bytes(),
+            "genesis-seed BLAKE3 domain separation failed: legacy and new seeds must produce distinct 32-byte hashes"
+        );
+    }
+
+    /// D-02 rejection: any continuity chain rooted at OLD_GENESIS_SEED has a
+    /// first-block hash distinct from a chain rooted at the NEW seed, so a
+    /// verifier computing from the NEW genesis will reject OLD-rooted chains
+    /// (chain-id mismatch, not silent accept).
+    #[test]
+    fn test_old_genesis_seed_rejected_cleanly() {
+        // Simulate "first chain step" = BLAKE3(seed || arbitrary segment hash).
+        let segment_hash = [0xEEu8; 32];
+        let mut old_hasher = blake3::Hasher::new();
+        old_hasher.update(OLD_GENESIS_SEED);
+        old_hasher.update(&segment_hash);
+        let old_first = *old_hasher.finalize().as_bytes();
+
+        let mut new_hasher = blake3::Hasher::new();
+        new_hasher.update(b"sealedge:genesis");
+        new_hasher.update(&segment_hash);
+        let new_first = *new_hasher.finalize().as_bytes();
+
+        assert_ne!(
+            old_first, new_first,
+            "first-block chain hash under the two genesis seeds must differ — \
+             otherwise a verifier using the new seed could silently accept an old-rooted chain"
+        );
     }
 }

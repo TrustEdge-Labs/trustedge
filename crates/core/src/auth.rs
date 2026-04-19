@@ -317,7 +317,7 @@ fn derive_session_key(
     }
 
     // blake3::derive_key provides domain-separated KDF (BLAKE3 spec Section 4.4)
-    let session_key = blake3::derive_key("TRUSTEDGE_SESSION_KEY_V1", &key_material);
+    let session_key = blake3::derive_key("SEALEDGE_SESSION_KEY_V1", &key_material);
     key_material.zeroize();
 
     Ok(session_key)
@@ -919,5 +919,46 @@ mod tests {
                 || msg.contains("ECDH"),
             "expected a key/signature/ECDH error after timestamp passes, got: {msg}"
         );
+    }
+
+    /// D-02 clean-break tests for the session-key BLAKE3 derive_key context.
+    /// Per CONTEXT.md §Decisions D-02 — shadow const lives only in this test
+    /// module, zero production footprint for the old value.
+    mod clean_break_session_key_tests {
+        /// Legacy BLAKE3 derive_key context used before Phase 85.
+        const OLD_SESSION_KEY_DOMAIN: &str = "TRUSTEDGE_SESSION_KEY_V1";
+
+        fn derive_session(context: &str) -> [u8; 32] {
+            let key_material = [0x17u8; 64]; // arbitrary fixed input
+            blake3::derive_key(context, &key_material)
+        }
+
+        /// KAT: legacy and new session-key contexts produce DISTINCT 32-byte
+        /// derived keys for identical key_material. Proves BLAKE3 derive_key
+        /// domain separation is active.
+        #[test]
+        fn test_old_session_key_domain_produces_distinct_okm() {
+            let old = derive_session(OLD_SESSION_KEY_DOMAIN);
+            let new = derive_session("SEALEDGE_SESSION_KEY_V1");
+            assert_ne!(
+                old, new,
+                "session-key BLAKE3 derive_key domain separation failed: legacy and new contexts must produce distinct 32-byte keys"
+            );
+        }
+
+        /// D-02 rejection: any AEAD ciphertext authenticated under a session
+        /// key derived from the OLD context must fail tag verification under a
+        /// session key derived from the NEW context. Asserted at the
+        /// key-material layer: distinct 32-byte session keys imply tag failure.
+        #[test]
+        fn test_old_session_key_domain_rejected_cleanly() {
+            let old = derive_session(OLD_SESSION_KEY_DOMAIN);
+            let new = derive_session("SEALEDGE_SESSION_KEY_V1");
+            assert_ne!(
+                old, new,
+                "session keys derived under the two contexts must differ — \
+                 otherwise AEAD tag verification would NOT reject legacy session traffic"
+            );
+        }
     }
 }

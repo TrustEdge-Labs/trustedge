@@ -361,8 +361,8 @@ fn bench_format_detection(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::new("detect", file_type), &data, |b, data| {
             b.iter(|| {
                 // Simple format detection based on header bytes
-                let detected = if data.starts_with(b"TRST") {
-                    "trustedge"
+                let detected = if data.starts_with(b"SEAL") {
+                    "sealedge"
                 } else if data.starts_with(b"\xFF\xFB") {
                     "mp3"
                 } else if data.starts_with(b"%PDF") {

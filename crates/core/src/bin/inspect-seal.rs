@@ -37,7 +37,7 @@ fn main() -> Result<()> {
 
     let mut version = [0u8; 1];
     std::io::Read::read_exact(&mut reader, &mut version)?;
-    println!("File format: TRST v{}", version[0]);
+    println!("File format: SEAL v{}", version[0]);
 
     // Read stream header
     let header: StreamHeader = deserialize_from(&mut reader)?;
