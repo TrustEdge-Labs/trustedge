@@ -32,10 +32,10 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 85 (code-sweep-headers-text-metadata) — PLANNED
-Plan: 6 plans in 3 waves (Wave 1: 85-01/02/03/06 parallel; Wave 2: 85-04; Wave 3: 85-05)
-Status: Ready to execute
-Last activity: 2026-04-18 -- Phase 85 planned (6 plans after D-01 scope expansion from pre-planning source audit)
+Phase: 85 (code-sweep-headers-text-metadata) — IN PROGRESS
+Plan: Wave 1 complete (85-01/02/03/06, 4/6 plans); Wave 2 pending (85-04); Wave 3 pending (85-05)
+Status: Wave 1 merged to main; post-merge test gate green (300 tests across main + experimental workspaces)
+Last activity: 2026-04-19 -- Phase 85 Wave 1 complete (crypto core + experimental + Cargo.toml + dashboard)
 
 ## Performance Metrics
 

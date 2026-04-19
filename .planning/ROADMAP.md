@@ -169,12 +169,12 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 85-01-PLAN.md — Core crypto byte-literal domain rename + D-02 clean-break tests (chunk key, session key, genesis seed, manifest domain, MAGIC)
-- [ ] 85-02-PLAN.md — Experimental pubky-advanced crypto byte-literal rename + D-02 clean-break tests + audio demo header
-- [ ] 85-03-PLAN.md — Cargo.toml metadata sweep (repository URLs, docs URLs, descriptions, workspace comment block)
+- [x] 85-01-PLAN.md — Core crypto byte-literal domain rename + D-02 clean-break tests (chunk key, session key, genesis seed, manifest domain, MAGIC)
+- [x] 85-02-PLAN.md — Experimental pubky-advanced crypto byte-literal rename + D-02 clean-break tests + audio demo header
+- [x] 85-03-PLAN.md — Cargo.toml metadata sweep (repository URLs, docs URLs, descriptions, workspace comment block)
 - [ ] 85-04-PLAN.md — MPL-2.0 headers across all .rs and .sh files (Project: sealedge + new GitHub URL) + fix-copyright.sh templates
 - [ ] 85-05-PLAN.md — Production-code prose sweep (env vars, clap #[command(name=)], CLI help/error/log strings, inline // comments, test vectors, scripts echo prose)
-- [ ] 85-06-PLAN.md — SvelteKit dashboard UI compiled text (titles, headings, nav, footer, meta, package.json metadata)
+- [x] 85-06-PLAN.md — SvelteKit dashboard UI compiled text (titles, headings, nav, footer, meta, package.json metadata)
 
 ### Phase 86: Documentation Sweep
 **Goal**: All project documentation — root docs, developer docs, code doc comments, and scripts — describes the product as sealedge, so a new reader never sees conflicting or stale brand references.
