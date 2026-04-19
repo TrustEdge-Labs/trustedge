@@ -11,7 +11,7 @@ pub const NONCE_LEN: usize = 12;
 pub const AAD_LEN: usize = 32 + 8 + NONCE_LEN + 32 + 4; // Added 4 bytes for chunk_len
 pub const HEADER_LEN: usize = 66; // Updated from 58 for algorithm agility
 
-pub const MAGIC: &[u8; 4] = b"TRST";
+pub const MAGIC: &[u8; 4] = b"SEAL";
 pub const VERSION: u8 = 2; // Updated for algorithm agility
 pub const ALG_AES_256_GCM: u8 = 1; // Legacy constant for backward compatibility
 
@@ -138,7 +138,7 @@ pub const AES_GCM_TAG_SIZE: usize = 16; // AES-GCM authentication tag size
 
 /// Domain separation string for manifest signatures
 /// Prevents signature reuse across different contexts or protocols
-pub const MANIFEST_DOMAIN_SEP: &[u8] = b"trustedge.manifest.v1";
+pub const MANIFEST_DOMAIN_SEP: &[u8] = b"sealedge.manifest.v1";
 
 /// Enhanced FileHeader structure with algorithm agility
 #[derive(Clone, Copy, Debug)]

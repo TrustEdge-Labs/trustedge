@@ -69,9 +69,9 @@ mod tests {
 
     /// Replace this after first run (see test output).
     /// const GOLDEN_TRST_BLAKE3: &str = "<fill-me-after-first-run>";
-    /// Updated for algorithm agility enhancement (new 66-byte header format)
+    /// Updated for Phase 85 MAGIC rename: b"TRST" -> b"SEAL"
     const GOLDEN_TRST_BLAKE3: &str =
-        "162efe3e02b010bd871bb8c69befe673aeb5828ab650131a1664d326609a8bb0";
+        "d432874a3e59bb5ea8d0b00d8f32fe64296ac36a36de9562416b6552ced28079";
 
     // ----------------------------
     // Helpers

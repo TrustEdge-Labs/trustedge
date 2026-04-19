@@ -283,12 +283,12 @@ impl DeviceKeypair {
 /// Derive a 32-byte XChaCha20Poly1305 chunk encryption key from a device Ed25519 secret key.
 ///
 /// Uses HKDF-SHA256 (RFC 5869) with an empty salt (the device key is high-entropy IKM)
-/// and a fixed domain tag `TRUSTEDGE_TRST_CHUNK_KEY`. The output is deterministic:
+/// and a fixed domain tag `SEALEDGE_SEAL_CHUNK_KEY`. The output is deterministic:
 /// the same device key always produces the same chunk key.
 pub fn derive_chunk_key(device_secret_bytes: &[u8; 32]) -> chacha20poly1305::Key {
     let hkdf = Hkdf::<Sha256>::new(None, device_secret_bytes.as_slice());
     let mut okm = [0u8; 32];
-    hkdf.expand(b"TRUSTEDGE_TRST_CHUNK_KEY", &mut okm)
+    hkdf.expand(b"SEALEDGE_SEAL_CHUNK_KEY", &mut okm)
         .expect("HKDF expand with 32-byte OKM is always valid");
     chacha20poly1305::Key::from(okm)
 }
@@ -894,6 +894,53 @@ mod tests {
             }
             Err(other) => panic!("expected InvalidKeyFormat on legacy header, got: {other:?}"),
             Ok(_) => panic!("legacy TRUSTEDGE-KEY-V1 header must not import successfully"),
+        }
+    }
+
+    /// D-02 clean-break tests for the chunk-key HKDF domain. Per CONTEXT.md
+    /// §Decisions D-02 — shadow const lives only in this test module, zero
+    /// production footprint for the old value.
+    mod clean_break_chunk_key_tests {
+        use hkdf::Hkdf;
+        use sha2::Sha256;
+
+        /// Legacy HKDF info used before Phase 85 — kept ONLY in this test module.
+        const OLD_CHUNK_KEY_DOMAIN: &[u8] = b"TRUSTEDGE_TRST_CHUNK_KEY";
+
+        fn hkdf_expand_32(info: &[u8]) -> [u8; 32] {
+            let ikm = [0x42u8; 32];
+            let hkdf = Hkdf::<Sha256>::new(None, &ikm);
+            let mut okm = [0u8; 32];
+            hkdf.expand(info, &mut okm)
+                .expect("HKDF expand with 32-byte OKM is always valid");
+            okm
+        }
+
+        /// KAT: legacy and new chunk-key domains produce DISTINCT 32-byte OKMs
+        /// for identical IKM. Proves HKDF domain separation is active.
+        #[test]
+        fn test_old_chunk_key_domain_produces_distinct_okm() {
+            let okm_old = hkdf_expand_32(OLD_CHUNK_KEY_DOMAIN);
+            let okm_new = hkdf_expand_32(b"SEALEDGE_SEAL_CHUNK_KEY");
+            assert_ne!(
+                okm_old, okm_new,
+                "chunk-key HKDF domain separation failed: legacy and new info values must produce distinct 32-byte OKMs"
+            );
+        }
+
+        /// D-02 rejection: a chunk encrypted under a key derived with the
+        /// OLD_CHUNK_KEY_DOMAIN must fail to decrypt under a key derived with
+        /// SEALEDGE_SEAL_CHUNK_KEY. Asserted at the key-material layer:
+        /// distinct 32-byte AEAD keys imply XChaCha20Poly1305 tag failure.
+        #[test]
+        fn test_old_chunk_key_domain_rejected_cleanly() {
+            let old_key = hkdf_expand_32(OLD_CHUNK_KEY_DOMAIN);
+            let new_key = hkdf_expand_32(b"SEALEDGE_SEAL_CHUNK_KEY");
+            assert_ne!(
+                old_key, new_key,
+                "chunk-key 32-byte AEAD keys derived under the two domains must differ — \
+                 otherwise XChaCha20Poly1305 tag verification would NOT reject legacy chunks"
+            );
         }
     }
 }
