@@ -1,10 +1,10 @@
 <svelte:head>
-	<title>TrustEdge Dashboard</title>
+	<title>Sealedge Dashboard</title>
 </svelte:head>
 
 <div class="card">
-	<h1>TrustEdge Dashboard</h1>
-	<p>Welcome to the TrustEdge organization dashboard. Monitor receipts, manage devices, and track verification status.</p>
+	<h1>Sealedge Dashboard</h1>
+	<p>Welcome to the Sealedge organization dashboard. Monitor receipts, manage devices, and track verification status.</p>
 
 	<div class="quick-links">
 		<a href="/receipts" class="btn btn-primary">View Receipts</a>

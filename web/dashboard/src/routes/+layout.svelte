@@ -11,7 +11,7 @@
 <nav class="nav">
 	<div class="nav-container">
 		<a href="/" class:active={currentPath === '/'}>
-			TrustEdge Dashboard
+			Sealedge Dashboard
 		</a>
 		<a href="/receipts" class:active={currentPath.startsWith('/receipts')}>
 			Receipts

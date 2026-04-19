@@ -3,12 +3,12 @@
 </script>
 
 <svelte:head>
-	<title>Devices - TrustEdge Dashboard</title>
+	<title>Devices - Sealedge Dashboard</title>
 </svelte:head>
 
 <div class="header">
 	<h1>Devices</h1>
-	<p>Registered TrustEdge edge devices</p>
+	<p>Registered Sealedge edge devices</p>
 </div>
 
 <div class="card">

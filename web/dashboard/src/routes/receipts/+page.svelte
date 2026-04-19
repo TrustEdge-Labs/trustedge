@@ -3,12 +3,12 @@
 </script>
 
 <svelte:head>
-	<title>Receipts - TrustEdge Dashboard</title>
+	<title>Receipts - Sealedge Dashboard</title>
 </svelte:head>
 
 <div class="header">
 	<h1>Receipts</h1>
-	<p>Digital verification receipts from your TrustEdge devices</p>
+	<p>Digital verification receipts from your Sealedge devices</p>
 </div>
 
 <div class="card">
