@@ -3,16 +3,16 @@
 # This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 # If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 #
 [package]
 name = "sealedge-cli"
 version = "0.2.0"
 edition = "2021"
-description = "Command-line interface for TrustEdge envelope encryption"
+description = "Command-line interface for Sealedge envelope encryption"
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
 license = "MPL-2.0"
-repository = "https://github.com/TrustEdge-Labs/trustedge"
+repository = "https://github.com/TrustEdge-Labs/sealedge"
 keywords = ["cryptography", "privacy", "encryption", "cli"]
 categories = ["command-line-utilities", "cryptography"]
 

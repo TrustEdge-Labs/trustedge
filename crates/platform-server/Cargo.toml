@@ -3,7 +3,7 @@
 # This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 # If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 #
 
 [package]
@@ -11,7 +11,7 @@ name = "sealedge-platform-server"
 version = "0.1.0"
 edition = "2021"
 license = "MPL-2.0"
-description = "TrustEdge Platform Server — standalone binary that boots the platform HTTP service"
+description = "Sealedge Platform Server — standalone binary that boots the platform HTTP service"
 
 [package.metadata.trustedge]
 tier = "stable"
