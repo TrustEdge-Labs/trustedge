@@ -56,7 +56,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 **Milestone Goal:** Rename the product from "trustedge" to "sealedge" end-to-end — repo, crates, binaries, internal constants, docs, functions — clean break with no legacy compatibility path, while the TrustEdge-Labs org/brand retains its identity.
 
 - [x] **Phase 83: Crate & Binary Rename** - Rename all workspace crates `trustedge-*` → `sealedge-*` and all CLI binaries (including `trst` → `seal`) to sealedge equivalents (completed 2026-04-18 — 7 plans, 7 commits)
-- [ ] **Phase 84: Crypto Constants & File Extension** - Replace `TRUSTEDGE-KEY-V1` / `TRUSTEDGE_ENVELOPE_V1` with sealedge equivalents (clean break, no backward-compat decrypt) and rename `.te-attestation.json` file extension to the sealedge form everywhere
+- [x] **Phase 84: Crypto Constants & File Extension** - Replace `TRUSTEDGE-KEY-V1` / `TRUSTEDGE_ENVELOPE_V1` with sealedge equivalents (clean break, no backward-compat decrypt) and rename `.te-attestation.json` file extension to the sealedge form everywhere (completed 2026-04-18)
 - [ ] **Phase 85: Code Sweep — Headers, Text, Metadata** - Update all copyright/license headers, user-facing text (errors, logs, help, env vars, UI labels), and Cargo.toml metadata (description, repository, homepage, documentation) across the workspace
 - [ ] **Phase 86: Documentation Sweep** - Update root project docs (README, CLAUDE.md, DEPENDENCIES.md, SECURITY.md), developer docs (docs/**), code doc comments (`///`, `//!`), and scripts/examples to reflect sealedge naming
 - [ ] **Phase 87: GitHub Repository Rename** - Rename monorepo `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` with GitHub's automatic redirect enabled; update local git remotes
@@ -150,9 +150,10 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 84-01-PLAN.md — Rename ENCRYPTED_KEY_HEADER + HKDF info byte literal; add D-02 clean-break rejection tests
-- [ ] 84-02-PLAN.md — Sweep .te-attestation.json → .se-attestation.json in Rust sources + demo script
-- [ ] 84-03-PLAN.md — Sweep .te-attestation.json → .se-attestation.json in external assets (HTML, Action, deploy README)
+- [x] 84-01-PLAN.md — Rename ENCRYPTED_KEY_HEADER + HKDF info byte literal; add D-02 clean-break rejection tests
+- [x] 84-02-PLAN.md — Sweep .te-attestation.json → .se-attestation.json in Rust sources + demo script
+- [x] 84-03-PLAN.md — Sweep .te-attestation.json → .se-attestation.json in external assets (HTML, Action, deploy README)
+**Status:** Complete (2026-04-18)
 
 ### Phase 85: Code Sweep — Headers, Text, Metadata
 **Goal**: Every human-readable string emitted from the codebase or written in its source says "sealedge" — copyright headers, error messages, log lines, CLI help text, env var prefixes, dashboard UI labels, and Cargo.toml metadata URLs all match the new brand.

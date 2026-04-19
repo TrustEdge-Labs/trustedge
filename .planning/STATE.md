@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v6.0
-milestone_name: Sealedge Rebrand
+milestone: v5.0
+milestone_name: Portfolio Polish
 status: executing
-stopped_at: Phase 83 complete (7 plans, 7 commits) — ready to discuss Phase 84
-last_updated: "2026-04-18T23:00:00.000Z"
-last_activity: 2026-04-18 -- Phase 83 complete (Crate & Binary Rename)
+stopped_at: v6.0 roadmap created — phases 83-89 defined, awaiting Phase 83 planning
+last_updated: "2026-04-18T22:39:44.428Z"
+last_activity: 2026-04-18 -- Phase 84 complete (crypto constants + attestation extension rename)
 progress:
-  total_phases: 7
+  total_phases: 2
   completed_phases: 1
-  total_plans: 7
-  completed_plans: 7
-  percent: 14
+  total_plans: 10
+  completed_plans: 4
+  percent: 40
 ---
 
 <!--
@@ -28,14 +28,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 83 complete — ready for Phase 84 (Crypto Constants & File Extension)
+**Current focus:** Phase 85 — Code Sweep (Headers, Text, Metadata)
 
 ## Current Position
 
-Phase: 83 — Crate & Binary Rename (complete)
-Plan: 7 of 7
-Status: Verified complete; workspace builds/tests green under new names
-Last activity: 2026-04-18 — Phase 83 verified complete (7 plans, 7 commits f38bd31→fbe8ba8)
+Phase: 85 (code-sweep-headers-text-metadata) — PENDING
+Plan: not yet planned
+Status: Phase 84 complete; ready to start Phase 85
+Last activity: 2026-04-18 -- Phase 84 complete (3 plans, 6 commits)
 
 ## Performance Metrics
 
@@ -43,9 +43,9 @@ Last activity: 2026-04-18 — Phase 83 verified complete (7 plans, 7 commits f38
 
 - v1.0–v4.0: 78 phases, 116 plans shipped
 - v5.0: 2 phases shipped (79-80), 2 punted (81-82 → post-rename, will execute after Phase 89)
-- v6.0: 1 phase shipped (83)
+- v6.0: 2 phases shipped (83, 84)
 
-**v6.0 (current):** 1/7 phases — Phase 83 done, Phase 84 next
+**v6.0 (current):** 2/7 phases — Phases 83-84 done, Phase 85 next
 
 ## Accumulated Context
 
