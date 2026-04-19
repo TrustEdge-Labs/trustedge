@@ -3,7 +3,7 @@
 # This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 # If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 #
 
 [workspace]
@@ -21,19 +21,19 @@ members = [
 ]
 
 # Workspace crates:
-#   - trustedge-types         (shared wire types for platform services)
-#   - trustedge-core          (core cryptographic library)
-#   - trustedge-platform      (consolidated verification and CA service)
-#   - trustedge-platform-server (standalone HTTP server binary)
-#   - trustedge-cli           (main CLI binary)
-#   - trustedge-wasm          (general WASM bindings)
-#   - trustedge-trst-protocols (archive format definitions)
-#   - trustedge-trst-cli      (archive CLI binary)
-#   - trustedge-trst-wasm     (browser archive verification)
+#   - sealedge-types         (shared wire types for platform services)
+#   - sealedge-core          (core cryptographic library)
+#   - sealedge-platform      (consolidated verification and CA service)
+#   - sealedge-platform-server (standalone HTTP server binary)
+#   - sealedge-cli           (main CLI binary)
+#   - sealedge-wasm          (general WASM bindings)
+#   - sealedge-seal-protocols (archive format definitions)
+#   - sealedge-seal-cli       (archive CLI binary — `seal` / `inspect-seal`)
+#   - sealedge-seal-wasm      (browser archive verification)
 #
 # Experimental crates (separate workspace at crates/experimental/):
-#   - trustedge-pubky         (Pubky network adapter)
-#   - trustedge-pubky-advanced (Pubky hybrid encryption)
+#   - sealedge-pubky         (Pubky network adapter)
+#   - sealedge-pubky-advanced (Pubky hybrid encryption)
 
 resolver = "2"
 
@@ -88,7 +88,7 @@ js-sys = "0.3"
 serde-wasm-bindgen = "0.6"
 getrandom = { version = "0.3", features = ["wasm_js"] }
 
-# Platform service (feature-gated in trustedge-platform)
+# Platform service (feature-gated in sealedge-platform)
 axum = "0.7"
 tower = "0.4"
 tower-http = { version = "0.5", features = ["cors", "trace", "limit"] }
@@ -100,9 +100,9 @@ tokio = { version = "1.0", features = ["full"] }
 [workspace.metadata]
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
 license = "MPL-2.0"
-repository = "https://github.com/TrustEdge-Labs/trustedge"
+repository = "https://github.com/TrustEdge-Labs/sealedge"
 homepage = "https://trustedgelabs.com"
-documentation = "https://docs.rs/trustedge-core"
+documentation = "https://docs.rs/sealedge-core"
 keywords = ["cryptography", "privacy", "security", "edge-computing", "yubikey"]
 categories = ["cryptography", "authentication", "hardware-support"]
 

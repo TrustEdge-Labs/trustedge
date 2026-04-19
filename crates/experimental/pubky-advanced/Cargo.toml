@@ -1,6 +1,6 @@
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 
 
 [package]
@@ -9,8 +9,8 @@ version = "0.1.0"
 edition = "2021"
 authors = ["TrustEdge Labs LLC <contact@trustedgelabs.com>"]
 license = "MPL-2.0"
-description = "Pubky integration for TrustEdge - hybrid encryption with decentralized key discovery"
-repository = "https://github.com/TrustEdge-Labs/trustedge"
+description = "Pubky integration for Sealedge - hybrid encryption with decentralized key discovery"
+repository = "https://github.com/TrustEdge-Labs/sealedge"
 keywords = ["cryptography", "pubky", "decentralized", "encryption", "hybrid"]
 categories = ["cryptography", "network-programming"]
 
@@ -19,7 +19,7 @@ tier = "experimental"
 maintained = false
 
 [dependencies]
-# Core TrustEdge functionality
+# Core Sealedge functionality
 sealedge-core = { path = "../../core" }
 
 # Pubky integration

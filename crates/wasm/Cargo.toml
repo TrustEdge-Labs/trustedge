@@ -1,6 +1,6 @@
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 
 
 [package]
@@ -8,9 +8,9 @@ name = "sealedge-wasm"
 version = "0.2.0"
 edition = "2021"
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
-description = "WebAssembly bindings for TrustEdge cryptographic operations"
+description = "WebAssembly bindings for Sealedge cryptographic operations"
 license = "MPL-2.0"
-repository = "https://github.com/TrustEdge-Labs/trustedge"
+repository = "https://github.com/TrustEdge-Labs/sealedge"
 keywords = ["cryptography", "wasm", "encryption", "security", "aes"]
 categories = ["cryptography", "wasm", "web-programming"]
 

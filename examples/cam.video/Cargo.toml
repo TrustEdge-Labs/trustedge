@@ -1,12 +1,12 @@
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 
 [package]
 name = "sealedge-cam-video-examples"
 version = "0.1.0"
 edition = "2021"
-description = "TrustEdge cam.video P0 implementation examples"
+description = "Sealedge cam.video P0 implementation examples"
 authors = ["TrustEdge Labs <dev@trustedgelabs.com>"]
 license = "MPL-2.0"
 
