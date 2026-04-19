@@ -35,17 +35,80 @@ Every human-readable string **compiled into the binary or written in Rust source
 
 ### Crypto byte-literal domain separators (Phase 84 follow-up)
 
-- **D-01:** Rename three crypto byte-literal domain tags that Phase 84 did not cover. Clean break — same shape as Phase 84 envelope rename:
-  - `b"TRUSTEDGE_TRST_CHUNK_KEY"` (HKDF-SHA256 info at `crates/core/src/crypto.rs:291`, used for per-chunk AES-GCM key derivation) → **`b"SEALEDGE_SEAL_CHUNK_KEY"`**
-  - `"TRUSTEDGE_SESSION_KEY_V1"` (BLAKE3 derive_key context at `crates/core/src/auth.rs:320`, used for TCP/QUIC session key after ECDH) → **`"SEALEDGE_SESSION_KEY_V1"`**
+> **Audit amendment (2026-04-18):** Original D-01 scope asserted "no other HKDF/BLAKE3 domain tags in the codebase". Planner's ground-truth grep found **5 additional wire-format crypto constants** CONTEXT's scout missed. D-01 and D-02 below are the expanded post-audit scope. See D-01a below for the audit-finding rationale.
+
+- **D-01:** Rename all crypto/wire-format byte-literal and domain constants. Clean break — same shape as Phase 84 envelope rename:
+
+  **Production core (`crates/core/src/`):**
+  - `b"TRUSTEDGE_TRST_CHUNK_KEY"` (HKDF-SHA256 info at `crates/core/src/crypto.rs:291`, per-chunk AES-GCM key derivation) → **`b"SEALEDGE_SEAL_CHUNK_KEY"`**
+  - `"TRUSTEDGE_SESSION_KEY_V1"` (BLAKE3 derive_key context at `crates/core/src/auth.rs:320`, TCP/QUIC session key after ECDH) → **`"SEALEDGE_SESSION_KEY_V1"`**
+  - `b"trustedge:genesis"` (`GENESIS_SEED` const, BLAKE3 continuity-chain genesis seed at `crates/core/src/chain.rs:10`) → **`b"sealedge:genesis"`**
+  - `b"trustedge.manifest.v1"` (`MANIFEST_DOMAIN_SEP` const, Ed25519 manifest-signature domain separation at `crates/core/src/format.rs:141`) → **`b"sealedge.manifest.v1"`**
+  - `b"TRST"` (`MAGIC` const, 4-byte legacy core-envelope file-format magic at `crates/core/src/format.rs:14`) → **`b"SEAL"`**
+
+  **Experimental (`crates/experimental/pubky-advanced/src/`):**
+  - `b"TRUSTEDGE_X25519_DERIVATION"` (BLAKE3 key derivation at `keys.rs:132`) → **`b"SEALEDGE_X25519_DERIVATION"`**
+  - `b"TRUSTEDGE_V2_SESSION_KEY"` (HKDF info for hybrid-envelope session key at `envelope.rs:251`) → **`b"SEALEDGE_V2_SESSION_KEY"`**
+
+  **Experimental demo:**
   - `b"TRUSTEDGE_AUDIO_V2"` (magic header in `crates/experimental/pubky-advanced/examples/hybrid_encryption_demo.rs:149`) → **`b"SEALEDGE_AUDIO_V2"`**
-- **D-02:** Full D-02 treatment per Phase 84 precedent for the two production tags (`SEALEDGE_SEAL_CHUNK_KEY` and `SEALEDGE_SESSION_KEY_V1`). Each gets:
-  - Inline `#[cfg(test)]` shadow const for the old tag (`OLD_CHUNK_KEY_DOMAIN`, `OLD_SESSION_KEY_DOMAIN`)
-  - Rejection test: data sealed/derived under old domain fails under new domain (AES-GCM tag failure for chunk key; session-key mismatch yields auth failure)
-  - KAT sanity check: identical IKM + salt + two different `info`/context values produce distinct OKMs
-  - Test names: `test_old_chunk_key_domain_rejected_cleanly`, `test_old_chunk_key_domain_produces_distinct_okm`, `test_old_session_key_domain_rejected_cleanly`, `test_old_session_key_domain_produces_distinct_okm`
-- **Blast radius:** Any existing `.seal` archive becomes undecryptable (chunk key derivation depends on `SEALEDGE_SEAL_CHUNK_KEY`). Any existing live TCP/QUIC session breaks (session key derivation depends on `SEALEDGE_SESSION_KEY_V1`). Consistent with v6.0 clean-break preference and Phase 84 envelope precedent.
-- **Scope:** D-01 and D-02 apply ONLY to these three byte literals. No other HKDF/BLAKE3 domain tags in the codebase — verify via grep during planning.
+
+- **D-02:** Treatment by category:
+
+  **Full D-02 treatment** (shadow const + rejection test + KAT distinctness) for the **6 crypto-meaningful domain constants**:
+  | Constant | Shadow const name | Test module location |
+  |----------|-------------------|----------------------|
+  | `SEALEDGE_SEAL_CHUNK_KEY` | `OLD_CHUNK_KEY_DOMAIN` | `crates/core/src/crypto.rs` (inline `#[cfg(test)]`) |
+  | `SEALEDGE_SESSION_KEY_V1` | `OLD_SESSION_KEY_DOMAIN` | `crates/core/src/auth.rs` (inline `#[cfg(test)]`) |
+  | `sealedge:genesis` | `OLD_GENESIS_SEED` | `crates/core/src/chain.rs` (inline `#[cfg(test)]`) |
+  | `sealedge.manifest.v1` | `OLD_MANIFEST_DOMAIN_SEP` | `crates/core/tests/domain_separation_test.rs` (adjacent to existing `MANIFEST_DOMAIN_SEP` assertion at line 128) |
+  | `SEALEDGE_X25519_DERIVATION` | `OLD_X25519_DERIVATION` | `crates/experimental/pubky-advanced/src/keys.rs` (inline `#[cfg(test)]`) |
+  | `SEALEDGE_V2_SESSION_KEY` | `OLD_V2_SESSION_KEY` | `crates/experimental/pubky-advanced/src/envelope.rs` (inline `#[cfg(test)]`) |
+
+  Each shadow-const site gets:
+  - Inline `#[cfg(test)]` shadow const for the old tag
+  - Rejection test: data sealed/derived/signed under old domain fails cleanly under new domain (AES-GCM tag failure, BLAKE3 hash mismatch, or Ed25519 signature verification failure depending on primitive)
+  - KAT sanity check: identical IKM/input + two different domain values produce distinct outputs
+
+  **Test names** (all 12):
+  - `test_old_chunk_key_domain_rejected_cleanly`, `test_old_chunk_key_domain_produces_distinct_okm`
+  - `test_old_session_key_domain_rejected_cleanly`, `test_old_session_key_domain_produces_distinct_okm`
+  - `test_old_genesis_seed_rejected_cleanly`, `test_old_genesis_seed_produces_distinct_hash`
+  - `test_old_manifest_domain_rejected_cleanly`, `test_old_manifest_domain_produces_distinct_signature`
+  - `test_old_x25519_derivation_rejected_cleanly`, `test_old_x25519_derivation_produces_distinct_key`
+  - `test_old_v2_session_key_rejected_cleanly`, `test_old_v2_session_key_produces_distinct_okm`
+
+  **Plain rename + fixture update** (no D-02 cryptographic-distinctness test — wire-format magic header, same pattern as Phase 84 `ENCRYPTED_KEY_HEADER: "TRUSTEDGE-KEY-V1"` → `"SEALEDGE-KEY-V1"`):
+  - `MAGIC: &[u8; 4] = b"TRST"` → `b"SEAL"` (`crates/core/src/format.rs:14`)
+  - Any test fixtures containing raw legacy-envelope bytes need regeneration or magic-byte update (planner enumerates via `grep -l 'TRST\b'` on test files)
+
+  **Plain rename only** (demo code, not security-critical, no test treatment):
+  - `b"TRUSTEDGE_AUDIO_V2"` → `b"SEALEDGE_AUDIO_V2"`
+
+- **Blast radius:** All of the following break as expected under clean-break rebrand:
+  - Any existing `.seal` archive chunk decryption fails (chunk key derivation uses `SEALEDGE_SEAL_CHUNK_KEY`)
+  - Any existing live TCP/QUIC session fails to authenticate (session key uses `SEALEDGE_SESSION_KEY_V1`)
+  - Any existing continuity chain rooted at `b"trustedge:genesis"` is cryptographically distinct from a new chain — chain verification rejects old-rooted chains (expected — different genesis = different chain identity)
+  - Any existing Ed25519 manifest signature verifies only under the old `b"trustedge.manifest.v1"` domain — signatures over old-domain-rebuilt manifests fail verification under the new domain (expected)
+  - Any existing `.trst` legacy core-envelope file fails magic check (byte 0 = `b"TRST"`, new reader expects `b"SEAL"`)
+  - Any experimental pubky-advanced encrypted payload using old X25519 derivation or V2 session key cannot be decrypted
+  Consistent with v6.0 clean-break preference and Phase 84 envelope precedent.
+
+- **Scope (post-audit):** D-01 and D-02 apply to the 8 constants above. Verified via `grep -rn 'b"[Tt][Rr][Uu][Ss][Tt][Ee][Dd][Gg][Ee]' --include='*.rs' crates/core/src/ crates/experimental/` during the audit — no additional hits outside the D-02 shadow consts already installed by Phase 84 (`OLD_ENVELOPE_DOMAIN`, `OLD_KEY_HEADER`) and Phase 84's `TRST` file-magic path which this phase now closes. Planner re-runs the grep at the start of Plan 01 to confirm the surface is still closed.
+
+### D-01a: Source-audit amendment (2026-04-18)
+
+The original D-01 scope (3 byte literals) reflected an incomplete scout pass. The pre-planning ground-truth grep found 5 additional constants of the same semantic category:
+
+| Constant | Location | Why D-01 now covers it |
+|----------|----------|------------------------|
+| `GENESIS_SEED` = `b"trustedge:genesis"` | `crates/core/src/chain.rs:10` | BLAKE3 continuity-chain domain — same category as the HKDF/BLAKE3 tags originally listed |
+| `MANIFEST_DOMAIN_SEP` = `b"trustedge.manifest.v1"` | `crates/core/src/format.rs:141` | Ed25519 signature domain separation — exact use case `DOMAIN_SEP` exists to prevent; wire-format |
+| `b"TRUSTEDGE_X25519_DERIVATION"` | `crates/experimental/pubky-advanced/src/keys.rs:132` | BLAKE3 key derivation — production-shape crypto even in experimental crate |
+| `b"TRUSTEDGE_V2_SESSION_KEY"` | `crates/experimental/pubky-advanced/src/envelope.rs:251` | HKDF info — identical pattern to `SEALEDGE_SEAL_CHUNK_KEY` |
+| `MAGIC` = `b"TRST"` | `crates/core/src/format.rs:14` | File-format magic header — rename sibling of Phase 83 `.trst`→`.seal` and Phase 84 `SEALEDGE-KEY-V1`; Phase 83/84 overlook |
+
+Phase 85 ROADMAP success criterion 5 (repo-wide case-insensitive grep for `trustedge` returning only `TrustEdge-Labs` org references) cannot pass while any of these remain under the old brand. They are functionally the same as the originally-listed HKDF `info` and BLAKE3 `derive_key` context — all are wire-format domain/magic constants baked into the binary and visible under `grep -i trustedge` against `.rs` source.
 
 ### Copyright / license header format
 
@@ -75,6 +138,11 @@ Every human-readable string **compiled into the binary or written in Rust source
 - **D-12:** **CLI help text, error messages, log lines, prose in strings**: `sealedge` (lowercase product name). Reads naturally in `error: sealedge envelope format mismatch` / `log: sealedge-cli started` prose.
 - **D-13:** **Environment variable names, constants, byte-literal domain tags**: `SEALEDGE_*` (ALL_CAPS, existing convention carried forward).
 - **D-14:** **Brand word at start of a user-visible sentence (e.g., log line starting with the brand)**: follow sentence-case grammar → `Sealedge` (Title case at sentence start). Rare; call out as edge case in plans if encountered.
+- **D-14a:** **Phase 83 carry-forward: clap `#[command(name = ...)]` attributes.** Phase 83 Plan 02 (REBRAND-02) renamed Cargo binary target names but missed the `clap::Parser` `#[command(name = "trustedge-*")]` attributes on binaries and examples. These print in `--help` output and are user-visible CLI text per D-12. Plan 03 scope — lowercase rename. Known sites (planner re-greps `name = "trustedge` and `#\[command(name =` during Plan 03 enumeration to catch any additional):
+  - `crates/core/src/bin/sealedge-client.rs:57` — `name = "trustedge-client"` → `"sealedge-client"`
+  - `crates/core/src/bin/sealedge-server.rs:27` — `name = "trustedge-server"` → `"sealedge-server"`
+  - `crates/core/examples/attest.rs:18` — `name = "trustedge-attest"` → `"sealedge-attest"`
+  - `crates/core/examples/verify_attestation.rs:18` — `name = "trustedge-verify"` → `"sealedge-verify"`
 - **Rationale:** Matches how `TrustEdge` / `trustedge` / `TRUSTEDGE_*` were used throughout the codebase before the rename. Preserving the casing convention means downstream readers don't notice the rename disrupts their mental model of where each form appears.
 
 ### Dashboard UI scope (Phase 85 vs Phase 86 boundary)
