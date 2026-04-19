@@ -129,7 +129,7 @@ impl DualKeyPair {
 
         // Create deterministic X25519 key from Ed25519 key
         let mut hasher = Hasher::new();
-        hasher.update(b"TRUSTEDGE_X25519_DERIVATION");
+        hasher.update(b"SEALEDGE_X25519_DERIVATION");
         hasher.update(&ed25519_key.to_bytes());
 
         let hash = hasher.finalize();
@@ -224,6 +224,53 @@ impl Drop for DualKeyPair {
         // Note: ed25519_dalek::SigningKey doesn't implement Zeroize directly
         // The underlying key material is zeroized when the SigningKey is dropped
         // x25519_dalek::StaticSecret implements Zeroize automatically
+    }
+}
+
+#[cfg(test)]
+mod clean_break_x25519_tests {
+    /// D-02 clean-break tests for the BLAKE3 X25519-from-Ed25519 derivation
+    /// domain tag. Per CONTEXT.md §Decisions D-02 — shadow const lives only
+    /// here, zero production footprint for the old value.
+    const OLD_X25519_DERIVATION: &[u8] = b"TRUSTEDGE_X25519_DERIVATION";
+
+    fn derive_with_tag(tag: &[u8]) -> [u8; 32] {
+        use blake3::Hasher;
+        let mut hasher = Hasher::new();
+        hasher.update(tag);
+        // Fixed "Ed25519-like" 32-byte input
+        hasher.update(&[0x55u8; 32]);
+        let hash = hasher.finalize();
+        let mut out = [0u8; 32];
+        out.copy_from_slice(&hash.as_bytes()[..32]);
+        out
+    }
+
+    /// KAT: the legacy and new X25519-derivation tags produce DISTINCT 32-byte
+    /// hashes for identical Ed25519 input.
+    #[test]
+    fn test_old_x25519_derivation_produces_distinct_key() {
+        let old = derive_with_tag(OLD_X25519_DERIVATION);
+        let new = derive_with_tag(b"SEALEDGE_X25519_DERIVATION");
+        assert_ne!(
+            old, new,
+            "X25519-derivation BLAKE3 domain separation failed: legacy and new tags must produce distinct 32-byte outputs"
+        );
+    }
+
+    /// D-02 rejection: an X25519 static secret derived under OLD_X25519_DERIVATION
+    /// is a different secret than one derived under the new tag, so any session
+    /// relying on the new-tag secret will NOT match an old-tag-derived session
+    /// (ECDH shared-secret mismatch, not silent success).
+    #[test]
+    fn test_old_x25519_derivation_rejected_cleanly() {
+        let old_secret = derive_with_tag(OLD_X25519_DERIVATION);
+        let new_secret = derive_with_tag(b"SEALEDGE_X25519_DERIVATION");
+        assert_ne!(
+            old_secret, new_secret,
+            "X25519 static secrets derived under the two tags must differ — \
+             otherwise downstream ECDH would silently succeed across the domain boundary"
+        );
     }
 }
 

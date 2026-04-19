@@ -146,7 +146,7 @@ fn create_sample_audio_data() -> Vec<u8> {
     let mut data = Vec::new();
 
     // Add a "header" section
-    data.extend_from_slice(b"TRUSTEDGE_AUDIO_V2");
+    data.extend_from_slice(b"SEALEDGE_AUDIO_V2");
     data.extend_from_slice(&[0u8; 14]); // Padding to 32 bytes
 
     // Add sample rate and metadata

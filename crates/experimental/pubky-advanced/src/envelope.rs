@@ -248,7 +248,7 @@ impl EnvelopeV2 {
 
         // Create info context for key derivation
         let mut info = Vec::new();
-        info.extend_from_slice(b"TRUSTEDGE_V2_SESSION_KEY");
+        info.extend_from_slice(b"SEALEDGE_V2_SESSION_KEY");
         info.extend_from_slice(sender_pubkey);
         info.extend_from_slice(recipient_pubkey);
 
@@ -525,6 +525,60 @@ struct ChunkManifestV2 {
     sequence: u64,
     /// Size of the chunk data in bytes
     chunk_size: u32,
+}
+
+#[cfg(test)]
+mod clean_break_v2_session_key_tests {
+    use hkdf::Hkdf;
+    use sha2::Sha256;
+
+    /// D-02 clean-break tests for the HKDF V2-session-key info prefix. Per
+    /// CONTEXT.md §Decisions D-02 — shadow const lives only here.
+    const OLD_V2_SESSION_KEY: &[u8] = b"TRUSTEDGE_V2_SESSION_KEY";
+
+    fn derive_v2_session(info_prefix: &[u8]) -> [u8; 32] {
+        let shared_secret = [0x7Au8; 32];
+        let sender_pubkey = [0x01u8; 32];
+        let recipient_pubkey = [0x02u8; 32];
+
+        let hk = Hkdf::<Sha256>::new(None, &shared_secret);
+        let mut info: Vec<u8> = Vec::new();
+        info.extend_from_slice(info_prefix);
+        info.extend_from_slice(&sender_pubkey);
+        info.extend_from_slice(&recipient_pubkey);
+
+        let mut key = [0u8; 32];
+        hk.expand(&info, &mut key)
+            .expect("HKDF expand with 32-byte output is always valid");
+        key
+    }
+
+    /// KAT: legacy and new V2-session-key prefixes produce DISTINCT 32-byte
+    /// AEAD keys for identical shared_secret + sender_pubkey + recipient_pubkey.
+    #[test]
+    fn test_old_v2_session_key_produces_distinct_okm() {
+        let old = derive_v2_session(OLD_V2_SESSION_KEY);
+        let new = derive_v2_session(b"SEALEDGE_V2_SESSION_KEY");
+        assert_ne!(
+            old, new,
+            "V2-session-key HKDF domain separation failed: legacy and new info prefixes must produce distinct 32-byte OKMs"
+        );
+    }
+
+    /// D-02 rejection: any ciphertext authenticated under a session key derived
+    /// with the OLD_V2_SESSION_KEY prefix must fail tag verification under a key
+    /// derived with the NEW prefix. Asserted at the key-material layer:
+    /// distinct 32-byte AEAD keys imply tag failure.
+    #[test]
+    fn test_old_v2_session_key_rejected_cleanly() {
+        let old = derive_v2_session(OLD_V2_SESSION_KEY);
+        let new = derive_v2_session(b"SEALEDGE_V2_SESSION_KEY");
+        assert_ne!(
+            old, new,
+            "V2 session keys derived under the two info prefixes must differ — \
+             otherwise AEAD tag verification would NOT reject legacy hybrid-envelope ciphertexts"
+        );
+    }
 }
 
 #[cfg(test)]
