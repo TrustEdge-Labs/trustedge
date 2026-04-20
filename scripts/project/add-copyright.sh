@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# TrustEdge Copyright Header Updater
+# Sealedge Copyright Header Updater
 # Adds consistent copyright headers to all source files
 #
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
 # Project: sealedge — Privacy and trust at the edge.
-# GitHub: https://github.com/johnzilla/trustedge
+# GitHub: https://github.com/TrustEdge-Labs/sealedge
 
 set -e
 
-echo "📄 TrustEdge Copyright Header Updater"
+echo "📄 Sealedge Copyright Header Updater"
 echo "===================================="
 
 # Color codes for output
@@ -24,8 +24,8 @@ YEAR="2025"
 AUTHOR="TRUSTEDGE LABS LLC"
 LICENSE="MPL-2.0"
 LICENSE_URL="https://mozilla.org/MPL/2.0/"
-PROJECT="trustedge — Privacy and trust at the edge."
-GITHUB_URL="https://github.com/johnzilla/trustedge"
+PROJECT="sealedge — Privacy and trust at the edge."
+GITHUB_URL="https://github.com/TrustEdge-Labs/sealedge"
 
 # Function to check if file already has copyright header
 has_copyright() {

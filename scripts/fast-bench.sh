@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Fast benchmark runner for TrustEdge (Local Development)
+# Fast benchmark runner for sealedge (Local Development)
 # Usage: ./scripts/fast-bench.sh [crypto|network|all]
 #        OR from scripts/: ./fast-bench.sh [crypto|network|all]
 #
@@ -10,19 +10,19 @@
 
 set -e
 
-# Change to the trustedge-core directory
+# Change to the sealedge core crate directory (Phase 83 renamed crates/trustedge-core → crates/core)
 SCRIPT_DIR="$(dirname "$0")"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-AUDIO_DIR="$PROJECT_ROOT/trustedge-core"
+AUDIO_DIR="$PROJECT_ROOT/crates/core"
 
 if [[ ! -d "$AUDIO_DIR" ]]; then
-    echo "✖ Error: trustedge-core directory not found at $AUDIO_DIR"
+    echo "✖ Error: sealedge-core directory not found at $AUDIO_DIR"
     exit 1
 fi
 
 cd "$AUDIO_DIR"
 
-echo "● TrustEdge Fast Benchmarks (Local Development)"
+echo "● Sealedge Fast Benchmarks (Local Development)"
 echo "=============================================="
 echo "● Working directory: $AUDIO_DIR"
 echo "● Note: These are quick checks, not statistically rigorous"
@@ -60,7 +60,7 @@ case "${1:-all}" in
         echo "  ./scripts/fast-bench.sh crypto"
         echo ""
         echo "For full statistical accuracy:"
-        echo "  cd trustedge-core && cargo bench"
+        echo "  cd crates/core && cargo bench"
         exit 1
         ;;
 esac
@@ -68,4 +68,4 @@ esac
 echo ""
 echo "✔ Fast benchmarks completed!"
 echo "● For full statistical accuracy:"
-echo "   cd trustedge-core && cargo bench"
+echo "   cd crates/core && cargo bench"

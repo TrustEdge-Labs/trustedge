@@ -67,7 +67,7 @@ fail() { printf "  ${RED}✖ %s${NC}\n" "$1"; FAILURES=$((FAILURES + 1)); }
 warn() { printf "  ${YELLOW}⚠ %s${NC}\n" "$1"; }
 
 # ── Header ────────────────────────────────────────────────────────────────────
-printf "\n${BOLD}● TrustEdge SBOM Attestation Demo${NC}\n"
+printf "\n${BOLD}● Sealedge SBOM Attestation Demo${NC}\n"
 printf "  Flow: keygen → syft SBOM → attest → local verify → remote verify (optional)\n"
 if $FORCE_LOCAL; then
     printf "  Mode: local-only (remote verification skipped)\n"

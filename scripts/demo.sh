@@ -3,7 +3,7 @@
 # MPL-2.0: https://mozilla.org/MPL/2.0/
 # Project: sealedge — Privacy and trust at the edge.
 #
-# End-to-end TrustEdge demo: keygen, wrap, local verify, server verify (optional)
+# End-to-end sealedge demo: keygen, wrap, local verify, server verify (optional)
 #
 # Usage:
 #   ./scripts/demo.sh           # Auto-detect: full demo if server running, local-only otherwise
@@ -84,7 +84,7 @@ pass() { printf "  ${GREEN}✔ %s${NC}\n" "$1"; }
 fail() { printf "  ${RED}✖ %s${NC}\n" "$1"; FAILURES=$((FAILURES + 1)); }
 
 # ── Header ────────────────────────────────────────────────────────────────────
-printf "\n${BOLD}● TrustEdge End-to-End Demo${NC}\n"
+printf "\n${BOLD}● Sealedge End-to-End Demo${NC}\n"
 if $SERVER_AVAILABLE; then
     printf "  Mode: full (keygen + wrap + local verify + server verify)\n"
 else

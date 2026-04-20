@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # scripts/generate-types.sh
 #
-# Generate TypeScript interfaces from trustedge-types JSON Schema fixtures.
+# Generate TypeScript interfaces from sealedge-types JSON Schema fixtures.
 # Output: web/dashboard/src/lib/types.ts
 #
 # Usage: bash scripts/generate-types.sh
@@ -50,7 +50,7 @@ for f in "${FIXTURE_FILES[@]}"; do
   fi
 done
 
-echo "Generating TypeScript types from trustedge-types JSON Schema fixtures..."
+echo "Generating TypeScript types from sealedge-types JSON Schema fixtures..."
 
 # Generate TypeScript for each schema, collect raw output into a temp file
 TMPFILE="$(mktemp /tmp/ts-raw-XXXXXX.ts)"
@@ -124,7 +124,7 @@ DEDUPED="$(node "${DEDUP_SCRIPT}" "${TMPFILE}")"
 
 # Write final output with header
 {
-  printf '// AUTO-GENERATED from trustedge-types JSON schemas.\n'
+  printf '// AUTO-GENERATED from sealedge-types JSON schemas.\n'
   printf '// Do not edit manually. Run scripts/generate-types.sh to regenerate.\n'
   printf '//\n'
   printf '// Source: crates/types/tests/fixtures/*.json\n'

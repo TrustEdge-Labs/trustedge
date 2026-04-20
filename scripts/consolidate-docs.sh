@@ -12,7 +12,7 @@
 
 set -e
 
-echo "🔧 TrustEdge Documentation Consolidation"
+echo "🔧 Sealedge Documentation Consolidation"
 echo "=========================================="
 echo
 

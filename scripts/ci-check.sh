@@ -49,7 +49,7 @@ warn() {
     WARN=$((WARN + 1))
 }
 
-echo "● TrustEdge local CI check"
+echo "● Sealedge local CI check"
 if $CLEAN; then
     echo "  Mode: clean build"
 else
@@ -128,9 +128,9 @@ else
     # Platform feature combinations
     if cargo clippy -p sealedge-platform --features "http" -- -D warnings && \
        cargo clippy -p sealedge-platform --features "http,ca" -- -D warnings; then
-        pass "clippy trustedge-platform features"
+        pass "clippy sealedge-platform features"
     else
-        fail "clippy trustedge-platform features"
+        fail "clippy sealedge-platform features"
     fi
 
     $HAS_ALSA && {
@@ -189,9 +189,9 @@ fi
 CORE_FEATURES="git-attestation,keyring,insecure-tls"
 $HAS_ALSA && CORE_FEATURES="audio,$CORE_FEATURES"
 if cargo test -p sealedge-core --features "$CORE_FEATURES" --locked; then
-    pass "trustedge-core tests ($CORE_FEATURES)"
+    pass "sealedge-core tests ($CORE_FEATURES)"
 else
-    fail "trustedge-core tests ($CORE_FEATURES)"
+    fail "sealedge-core tests ($CORE_FEATURES)"
 fi
 
 # YubiKey simulation tests (unit tests only, no hardware)
@@ -209,9 +209,9 @@ fi
 if cargo test -p sealedge-platform --lib --locked && \
    cargo test -p sealedge-platform --test verify_integration --locked && \
    cargo test -p sealedge-platform --test verify_integration --features http --locked; then
-    pass "trustedge-platform tests"
+    pass "sealedge-platform tests"
 else
-    fail "trustedge-platform tests"
+    fail "sealedge-platform tests"
 fi
 
 # ── Step 7: WASM ───────────────────────────────────────────────────

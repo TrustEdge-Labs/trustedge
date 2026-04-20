@@ -4,11 +4,11 @@
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
 # Project: sealedge — Privacy and trust at the edge.
-# GitHub: https://github.com/johnzilla/trustedge
+# GitHub: https://github.com/TrustEdge-Labs/sealedge
 #
 
 
-# TrustEdge Documentation Status Checker
+# Sealedge Documentation Status Checker
 # Verifies that all documentation is current and consistent
 #
 # Usage: ./scripts/project/check-docs.sh
@@ -16,7 +16,7 @@
 
 set -e
 
-echo "📚 TrustEdge Documentation Status Check"
+echo "📚 Sealedge Documentation Status Check"
 echo "======================================"
 
 # Colors for output

@@ -9,7 +9,7 @@
 
 set -e
 
-echo "🔧 Building TrustEdge P0 WASM Demo..."
+echo "🔧 Building Sealedge P0 WASM Demo..."
 
 # Check if wasm-pack is installed
 if ! command -v wasm-pack &> /dev/null; then
