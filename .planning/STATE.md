@@ -32,10 +32,10 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 85 (code-sweep-headers-text-metadata) — IN PROGRESS
-Plan: Wave 1+2 complete (85-01/02/03/04/06, 5/6 plans); Wave 3 pending (85-05)
-Status: Wave 2 cherry-picked to main; post-merge test gate green (300 tests across main + experimental workspaces)
-Last activity: 2026-04-19 -- Phase 85 Wave 2 complete (MPL-2.0 header sweep across 134 .rs + .sh files)
+Phase: 85 (code-sweep-headers-text-metadata) — COMPLETE
+Plan: All 6 plans complete (85-01/02/03/04/05/06) + verifier gap fixes (wiring.rs JWT audience test + WASM crates swept)
+Status: Verification passed with documented deferrals (7 categories flagged for Phase 86 / follow-up — all non-blocker)
+Last activity: 2026-04-19 -- Phase 85 complete (300 tests green, all 5 ROADMAP success criteria met modulo documented Phase 86 scope residue)
 
 ## Performance Metrics
 

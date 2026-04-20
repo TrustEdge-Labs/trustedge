@@ -57,7 +57,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 
 - [x] **Phase 83: Crate & Binary Rename** - Rename all workspace crates `trustedge-*` → `sealedge-*` and all CLI binaries (including `trst` → `seal`) to sealedge equivalents (completed 2026-04-18 — 7 plans, 7 commits)
 - [x] **Phase 84: Crypto Constants & File Extension** - Replace `TRUSTEDGE-KEY-V1` / `TRUSTEDGE_ENVELOPE_V1` with sealedge equivalents (clean break, no backward-compat decrypt) and rename `.te-attestation.json` file extension to the sealedge form everywhere (completed 2026-04-18)
-- [ ] **Phase 85: Code Sweep — Headers, Text, Metadata** - Update all copyright/license headers, user-facing text (errors, logs, help, env vars, UI labels), and Cargo.toml metadata (description, repository, homepage, documentation) across the workspace
+- [x] **Phase 85: Code Sweep — Headers, Text, Metadata** - Update all copyright/license headers, user-facing text (errors, logs, help, env vars, UI labels), and Cargo.toml metadata (description, repository, homepage, documentation) across the workspace (completed 2026-04-19 — 6 plans, ~25 commits)
 - [ ] **Phase 86: Documentation Sweep** - Update root project docs (README, CLAUDE.md, DEPENDENCIES.md, SECURITY.md), developer docs (docs/**), code doc comments (`///`, `//!`), and scripts/examples to reflect sealedge naming
 - [ ] **Phase 87: GitHub Repository Rename** - Rename monorepo `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` with GitHub's automatic redirect enabled; update local git remotes
 - [ ] **Phase 88: External Action & Product Website** - Publish new GitHub Action repo under sealedge naming with SHA256 checksum verification; deprecate old `attest-sbom-action` marketplace listing with redirect; update product references on trustedgelabs.com
@@ -173,8 +173,9 @@ Plans:
 - [x] 85-02-PLAN.md — Experimental pubky-advanced crypto byte-literal rename + D-02 clean-break tests + audio demo header
 - [x] 85-03-PLAN.md — Cargo.toml metadata sweep (repository URLs, docs URLs, descriptions, workspace comment block)
 - [x] 85-04-PLAN.md — MPL-2.0 headers across all .rs and .sh files (Project: sealedge + new GitHub URL) + fix-copyright.sh templates
-- [ ] 85-05-PLAN.md — Production-code prose sweep (env vars, clap #[command(name=)], CLI help/error/log strings, inline // comments, test vectors, scripts echo prose)
+- [x] 85-05-PLAN.md — Production-code prose sweep (env vars, clap #[command(name=)], CLI help/error/log strings, inline // comments, test vectors, scripts echo prose)
 - [x] 85-06-PLAN.md — SvelteKit dashboard UI compiled text (titles, headings, nav, footer, meta, package.json metadata)
+**Status:** Complete (2026-04-19)
 
 ### Phase 86: Documentation Sweep
 **Goal**: All project documentation — root docs, developer docs, code doc comments, and scripts — describes the product as sealedge, so a new reader never sees conflicting or stale brand references.
