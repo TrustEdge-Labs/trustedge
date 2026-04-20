@@ -1,16 +1,18 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Changelog
+# Sealedge Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+> **Note — Pre-v6.0 entries:** Entries below v6.0 describe the project under its former name, **trustedge**. Artifact names, binary names, extensions, and env-var prefixes in those entries refer to what shipped at the time. See `MIGRATION.md` §"v6.0" for the rename map. Entries from v6.0 onward use the current brand, **sealedge**.
 
 ## [5.0.0] - 2026-04-05
 
