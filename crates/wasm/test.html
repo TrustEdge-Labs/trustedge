@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>TrustEdge WASM Test</title>
+    <title>Sealedge WASM Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,7 +48,7 @@
     </style>
 </head>
 <body>
-    <h1>TrustEdge WASM Test Suite</h1>
+    <h1>Sealedge WASM Test Suite</h1>
     
     <div class="test-section">
         <h2>Basic Functionality Tests</h2>
@@ -73,9 +73,9 @@
     <div id="output"></div>
 
     <script type="module">
-        import TrustEdge from './js/trustedge.js';
+        import Sealedge from './js/sealedge.js';
 
-        let trustedge;
+        let sealedge;
         let output = document.getElementById('output');
 
         function log(message) {
@@ -85,14 +85,14 @@
 
         async function run() {
             try {
-                trustedge = new TrustEdge();
-                await trustedge.init();
-                log('✅ TrustEdge WASM module loaded successfully');
+                sealedge = new Sealedge();
+                await sealedge.init();
+                log('✅ Sealedge WASM module loaded successfully');
                 
                 // Make functions available globally for button clicks
                 window.testBasicFunctionality = () => {
                     try {
-                        const result = trustedge.test();
+                        const result = sealedge.test();
                         log('✅ Basic functionality test: ' + result);
                     } catch (e) {
                         log('❌ Basic functionality test failed: ' + e);
@@ -101,7 +101,7 @@
                 
                 window.testGreeting = () => {
                     try {
-                        trustedge.greet('WASM Tester');
+                        sealedge.greet('WASM Tester');
                         log('✅ Greeting test completed (check alert)');
                     } catch (e) {
                         log('❌ Greeting test failed: ' + e);
@@ -110,7 +110,7 @@
                 
                 window.testVersion = () => {
                     try {
-                        const ver = trustedge.getVersion();
+                        const ver = sealedge.getVersion();
                         log('✅ Version test: ' + ver);
                     } catch (e) {
                         log('❌ Version test failed: ' + e);
@@ -119,7 +119,7 @@
                 
                 window.testTimer = () => {
                     try {
-                        const timer = trustedge.createTimer();
+                        const timer = sealedge.createTimer();
                         setTimeout(() => {
                             const elapsed = timer.elapsed();
                             log('✅ Timer test: ' + elapsed.toFixed(2) + 'ms elapsed');
@@ -131,7 +131,7 @@
                 
                 window.testLogging = () => {
                     try {
-                        trustedge.log('Test message from WASM');
+                        sealedge.log('Test message from WASM');
                         log('✅ Logging test completed (check console)');
                     } catch (e) {
                         log('❌ Logging test failed: ' + e);
@@ -143,19 +143,19 @@
                         log('🔐 Starting crypto tests...');
                         
                         // Generate key and test data
-                        const key = trustedge.generateKey();
-                        const testData = 'Hello, TrustEdge WASM! This is a test message.';
+                        const key = sealedge.generateKey();
+                        const testData = 'Hello, Sealedge WASM! This is a test message.';
                         
                         log('✅ Generated key: ' + key.substring(0, 16) + '...');
                         
                         // Test encryption
-                        const encrypted = trustedge.encryptSimple(testData, key);
+                        const encrypted = sealedge.encryptSimple(testData, key);
                         log('✅ Encryption successful');
                         log('   Ciphertext: ' + encrypted.ciphertext.substring(0, 32) + '...');
                         log('   Nonce: ' + encrypted.nonce);
                         
                         // Test decryption
-                        const decrypted = trustedge.decrypt(encrypted, key);
+                        const decrypted = sealedge.decrypt(encrypted, key);
                         log('✅ Decryption successful: ' + decrypted);
                         
                         // Verify data integrity
@@ -166,12 +166,12 @@
                         }
                         
                         // Test key validation
-                        const validKey = trustedge.validateKey(key);
-                        const invalidKey = trustedge.validateKey('invalid-key');
+                        const validKey = sealedge.validateKey(key);
+                        const invalidKey = sealedge.validateKey('invalid-key');
                         log('✅ Key validation: valid=' + validKey + ', invalid=' + invalidKey);
                         
                         // Test random bytes generation
-                        const randomBytes = trustedge.generateRandomBytes(16);
+                        const randomBytes = sealedge.generateRandomBytes(16);
                         log('✅ Generated 16 random bytes: ' + randomBytes);
                         
                         log('🎉 All crypto tests passed!');
@@ -185,24 +185,24 @@
                     try {
                         log('⚡ Starting performance tests...');
                         
-                        const key = trustedge.generateKey();
+                        const key = sealedge.generateKey();
                         const testData = 'Performance test data '.repeat(100); // ~2KB
                         const iterations = 100;
                         
-                        const timer = trustedge.createTimer();
+                        const timer = sealedge.createTimer();
                         
                         // Encryption performance
                         for (let i = 0; i < iterations; i++) {
-                            trustedge.encryptSimple(testData, key);
+                            sealedge.encryptSimple(testData, key);
                         }
                         const encryptTime = timer.elapsed();
                         
                         // Decryption performance
-                        const encrypted = trustedge.encryptSimple(testData, key);
-                        const decryptTimer = trustedge.createTimer();
+                        const encrypted = sealedge.encryptSimple(testData, key);
+                        const decryptTimer = sealedge.createTimer();
                         
                         for (let i = 0; i < iterations; i++) {
-                            trustedge.decrypt(encrypted, key);
+                            sealedge.decrypt(encrypted, key);
                         }
                         const decryptTime = decryptTimer.elapsed();
                         

@@ -38,7 +38,7 @@ echo "║  ✔ Private key never left the YubiKey                          ║"
 echo "║  ✔ Standards-compliant X.509 certificate                       ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""
-echo "Source: https://github.com/trustedge-labs/trustedge"
+echo "Source: https://github.com/TrustEdge-Labs/sealedge"
 echo "Commercial support: pilot@trustedgelabs.com"
 
 # Press Ctrl+D to stop recording

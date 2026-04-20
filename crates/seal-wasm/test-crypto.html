@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>TrustEdge WASM Crypto Test</title>
+    <title>Sealedge WASM Crypto Test</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
         .result { background: #f0f8ff; padding: 10px; margin: 10px 0; border-radius: 5px; }
@@ -14,7 +14,7 @@
     </style>
 </head>
 <body>
-    <h1>🔐 TrustEdge WASM Crypto Test</h1>
+    <h1>🔐 Sealedge WASM Crypto Test</h1>
     
     <button onclick="runCryptoTest()">Run Crypto Test</button>
     <button onclick="runPerformanceTest()">Performance Test</button>
@@ -22,9 +22,9 @@
     <div id="results"></div>
 
     <script type="module">
-        import TrustEdge from './js/trustedge.js';
+        import Sealedge from './js/sealedge.js';
 
-        let trustedge;
+        let sealedge;
         const resultsDiv = document.getElementById('results');
 
         function addResult(message, isError = false) {
@@ -36,18 +36,18 @@
 
         async function init() {
             try {
-                trustedge = new TrustEdge();
-                await trustedge.init();
-                addResult('✅ TrustEdge WASM initialized successfully');
-                addResult('Version: ' + trustedge.getVersion());
+                sealedge = new Sealedge();
+                await sealedge.init();
+                addResult('✅ Sealedge WASM initialized successfully');
+                addResult('Version: ' + sealedge.getVersion());
             } catch (error) {
                 addResult('❌ Failed to initialize: ' + error.message, true);
             }
         }
 
         window.runCryptoTest = async () => {
-            if (!trustedge) {
-                addResult('❌ TrustEdge not initialized', true);
+            if (!sealedge) {
+                addResult('❌ Sealedge not initialized', true);
                 return;
             }
 
@@ -55,20 +55,20 @@
                 addResult('🔐 Starting crypto test...');
                 
                 // Generate key
-                const key = trustedge.generateKey();
+                const key = sealedge.generateKey();
                 addResult('✅ Generated key: ' + key.substring(0, 32) + '...');
                 
                 // Test data
-                const testData = 'Hello, TrustEdge WASM! This is a secret message for testing.';
+                const testData = 'Hello, Sealedge WASM! This is a secret message for testing.';
                 addResult('📝 Test data: ' + testData);
                 
                 // Encrypt
-                const encrypted = trustedge.encryptSimple(testData, key);
+                const encrypted = sealedge.encryptSimple(testData, key);
                 addResult('✅ Encryption successful');
                 addResult('<pre>Ciphertext: ' + encrypted.ciphertext + '\nNonce: ' + encrypted.nonce + '</pre>');
                 
                 // Decrypt
-                const decrypted = trustedge.decrypt(encrypted, key);
+                const decrypted = sealedge.decrypt(encrypted, key);
                 addResult('✅ Decryption successful: ' + decrypted);
                 
                 // Verify
@@ -81,7 +81,7 @@
                 // Test JSON serialization
                 const jsonString = encrypted.to_json();
                 const parsedData = JSON.parse(jsonString);
-                const decryptedFromJson = trustedge.decrypt(parsedData, key);
+                const decryptedFromJson = sealedge.decrypt(parsedData, key);
                 
                 if (testData === decryptedFromJson) {
                     addResult('✅ JSON serialization test passed');
@@ -97,8 +97,8 @@
         };
 
         window.runPerformanceTest = async () => {
-            if (!trustedge) {
-                addResult('❌ TrustEdge not initialized', true);
+            if (!sealedge) {
+                addResult('❌ Sealedge not initialized', true);
                 return;
             }
 
@@ -107,24 +107,24 @@
                 
                 const iterations = 100;
                 const testData = 'Performance test data '.repeat(50); // ~1KB
-                const key = trustedge.generateKey();
+                const key = sealedge.generateKey();
                 
                 addResult(`📊 Test parameters: ${iterations} iterations, ${(testData.length/1024).toFixed(1)}KB data`);
                 
                 // Encryption performance
-                const encryptTimer = trustedge.createTimer();
+                const encryptTimer = sealedge.createTimer();
                 const encryptedResults = [];
                 
                 for (let i = 0; i < iterations; i++) {
-                    encryptedResults.push(trustedge.encryptSimple(testData, key));
+                    encryptedResults.push(sealedge.encryptSimple(testData, key));
                 }
                 const encryptTime = encryptTimer.elapsed();
                 
                 // Decryption performance
-                const decryptTimer = trustedge.createTimer();
+                const decryptTimer = sealedge.createTimer();
                 
                 for (let i = 0; i < iterations; i++) {
-                    trustedge.decrypt(encryptedResults[i], key);
+                    sealedge.decrypt(encryptedResults[i], key);
                 }
                 const decryptTime = decryptTimer.elapsed();
                 

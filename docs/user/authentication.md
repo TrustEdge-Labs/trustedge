@@ -727,7 +727,7 @@ spec:
           - "--bind-addr"
           - "0.0.0.0:8080"
           - "--server-identity"
-          - "TrustEdge-K8s-Production"
+          - "Sealedge-K8s-Production"
           - "--session-timeout"
           - "300"
         ports:
@@ -828,11 +828,11 @@ Critical authentication components to backup:
 Use structured identity strings for complex deployments:
 ```bash
 # Hierarchical identity naming
---server-identity "TrustEdge-Production-East-Server01"
+--server-identity "Sealedge-Production-East-Server01"
 --client-identity "MobileApp-v2.1.3-iOS-Device12345"
 
 # Environment-specific identities
---server-identity "TrustEdge-${ENVIRONMENT}-${REGION}-${INSTANCE}"
+--server-identity "Sealedge-${ENVIRONMENT}-${REGION}-${INSTANCE}"
 --client-identity "Client-${APP_VERSION}-${DEVICE_TYPE}-${USER_ID}"
 ```
 
