@@ -1,14 +1,14 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/johnzilla/sealedge
 -->
 
 
 # cam.video Manifest Specification
 
-The `cam.video` profile defines a standardized manifest format for trusted video capture archives in the TrustEdge .trst format.
+The `cam.video` profile defines a standardized manifest format for trusted video capture archives in the Sealedge .seal format.
 
 ## Schema Fields and Types
 
@@ -107,7 +107,7 @@ The continuity chain provides cryptographic linking between segments to detect t
 
 ### Genesis State
 ```rust
-genesis = blake3("trustedge:genesis")
+genesis = blake3("sealedge:genesis")
 ```
 
 ### Chain Progression
@@ -201,5 +201,5 @@ where hash_i = blake3(ciphertext_i)
 ## Related Documentation
 
 - [CLI Reference](../README.md#p0-golden-path-2-minutes)
-- [Acceptance Tests](../trst-cli/tests/acceptance.rs)
+- [Acceptance Tests](../seal-cli/tests/acceptance.rs)
 - [P0 Test Script](../p0_acceptance.sh)

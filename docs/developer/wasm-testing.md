@@ -1,22 +1,22 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 # WebAssembly Testing Guide
 
-This document provides comprehensive guidance for testing TrustEdge WebAssembly modules in browser environments.
+This document provides comprehensive guidance for testing Sealedge WebAssembly modules in browser environments.
 
 > **📚 See Also**: **[WASM.md](../../WASM.md)** - Complete WASM build and deployment guide (primary reference)
 
 ## Overview
 
-TrustEdge includes two WebAssembly crates with comprehensive browser integration testing:
+Sealedge includes two WebAssembly crates with comprehensive browser integration testing:
 
-- **`trustedge-wasm`**: Core cryptographic operations (AES-256-GCM encryption/decryption)
-- **`trst-wasm`**: Archive verification and .trst format validation
+- **`sealedge-wasm`**: Core cryptographic operations (AES-256-GCM encryption/decryption)
+- **`seal-wasm`**: Archive verification and .seal format validation
 
 Both crates include real browser tests that verify functionality in actual browser environments using `wasm-bindgen-test`.
 
@@ -55,7 +55,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 
 #### 4. **Archive Verification Tests**
 - Manifest signature validation
-- .trst format parsing and verification
+- .seal format parsing and verification
 - Error handling for malformed archives
 - Different profile type support
 
@@ -83,33 +83,33 @@ npm install -g chromedriver geckodriver
 
 #### Chrome/Chromium
 ```bash
-# Test trustedge-wasm in Chrome
-cd trustedge-wasm
+# Test sealedge-wasm in Chrome
+cd sealedge-wasm
 wasm-pack test --chrome --headless
 
-# Test trst-wasm in Chrome
+# Test seal-wasm in Chrome
 cd crates/wasm
 wasm-pack test --chrome --headless
 ```
 
 #### Firefox
 ```bash
-# Test trustedge-wasm in Firefox
-cd trustedge-wasm
+# Test sealedge-wasm in Firefox
+cd sealedge-wasm
 wasm-pack test --firefox --headless
 
-# Test trst-wasm in Firefox
+# Test seal-wasm in Firefox
 cd crates/wasm
 wasm-pack test --firefox --headless
 ```
 
 #### Safari (macOS only)
 ```bash
-# Test trustedge-wasm in Safari
-cd trustedge-wasm
+# Test sealedge-wasm in Safari
+cd sealedge-wasm
 wasm-pack test --safari --headless
 
-# Test trst-wasm in Safari
+# Test seal-wasm in Safari
 cd crates/wasm
 wasm-pack test --safari --headless
 ```
@@ -123,7 +123,7 @@ make test-wasm-all
 ### Development Testing
 ```bash
 # Run tests with browser window visible (for debugging)
-cd trustedge-wasm
+cd sealedge-wasm
 wasm-pack test --chrome
 
 # Run specific test
@@ -132,7 +132,7 @@ wasm-pack test --chrome --headless -- --grep "test_browser_crypto_operations"
 
 ## Test Coverage
 
-### trustedge-wasm Tests (18 comprehensive tests)
+### sealedge-wasm Tests (18 comprehensive tests)
 
 | Test Category | Test Count | Description |
 |---------------|------------|-------------|
@@ -149,7 +149,7 @@ wasm-pack test --chrome --headless -- --grep "test_browser_crypto_operations"
 - `test_browser_memory_efficiency`: 100-iteration stress test
 - `test_browser_performance_characteristics`: Performance validation
 
-### trst-wasm Tests (15 comprehensive tests)
+### seal-wasm Tests (15 comprehensive tests)
 
 | Test Category | Test Count | Description |
 |---------------|------------|-------------|
@@ -221,12 +221,12 @@ jobs:
           apt-get update
           apt-get install google-chrome-stable
 
-      - name: Test trustedge-wasm
+      - name: Test sealedge-wasm
         run: |
-          cd trustedge-wasm
+          cd sealedge-wasm
           wasm-pack test --chrome --headless
 
-      - name: Test trst-wasm
+      - name: Test seal-wasm
         run: |
           cd crates/wasm
           wasm-pack test --chrome --headless
@@ -239,19 +239,19 @@ Add to your `Makefile`:
 ```makefile
 test-wasm: ## Run all WASM tests in Chrome
 	@echo "Running WASM tests..."
-	@cd trustedge-wasm && wasm-pack test --chrome --headless
+	@cd sealedge-wasm && wasm-pack test --chrome --headless
 	@cd crates/wasm && wasm-pack test --chrome --headless
 	@echo "✅ All WASM tests passed"
 
 test-wasm-all: ## Run WASM tests in all browsers
 	@echo "Running WASM tests in all browsers..."
-	@cd trustedge-wasm && wasm-pack test --chrome --headless && wasm-pack test --firefox --headless
+	@cd sealedge-wasm && wasm-pack test --chrome --headless && wasm-pack test --firefox --headless
 	@cd crates/wasm && wasm-pack test --chrome --headless && wasm-pack test --firefox --headless
 	@echo "✅ All cross-browser WASM tests passed"
 
 test-wasm-dev: ## Run WASM tests with visible browser (for debugging)
 	@echo "Running WASM tests in development mode..."
-	@cd trustedge-wasm && wasm-pack test --chrome
+	@cd sealedge-wasm && wasm-pack test --chrome
 ```
 
 ## Debugging WASM Tests
@@ -275,7 +275,7 @@ fn test_browser_crypto_operations() {
 
 1. **Run with visible browser:**
    ```bash
-   cd trustedge-wasm
+   cd sealedge-wasm
    wasm-pack test --chrome  # Remove --headless
    ```
 
@@ -388,7 +388,7 @@ fn test_browser_crypto_operations() {
 
 ### Integration with Main Test Suite
 
-WASM tests are integrated with the main TrustEdge test suite:
+WASM tests are integrated with the main Sealedge test suite:
 
 ```bash
 # Run all tests including WASM
@@ -401,4 +401,4 @@ make test-wasm
 make test-all-platforms
 ```
 
-This comprehensive WASM testing ensures TrustEdge cryptographic operations work reliably across all major browser environments with the same security guarantees as native implementations.
+This comprehensive WASM testing ensures Sealedge cryptographic operations work reliably across all major browser environments with the same security guarantees as native implementations.

@@ -1,11 +1,11 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Protocol Specification
+# Sealedge Protocol Specification
 
 **Version:** 1.0 (Stable)
 **Date:** August 28, 2025
@@ -14,7 +14,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Overview
 
-This document describes the wire format and network protocol for chunk transfer between TrustEdge clients and servers. The protocol provides privacy-preserving, authenticated, and integrity-checked streaming of data with comprehensive validation and tamper detection.
+This document describes the wire format and network protocol for chunk transfer between Sealedge clients and servers. The protocol provides privacy-preserving, authenticated, and integrity-checked streaming of data with comprehensive validation and tamper detection.
 
 **Key Features:**
 - **TCP-based transport** with QUIC/TLS support (webpki-roots, secure-by-default)
@@ -82,7 +82,7 @@ struct NetworkChunk {
 
 ### 2.1.1. Envelope File Format
 
-The `.trst` envelope file is a binary format containing:
+The `.seal` envelope file is a binary format containing:
 
 - **StreamHeader**: version, header bytes (66 bytes V2, 58 bytes V1), header hash (BLAKE3)
 - **Record(s)**: sequence number, nonce (12 bytes: 4-byte prefix + 8-byte counter), signed manifest (with Ed25519 signature), ciphertext (AES-GCM)
@@ -122,10 +122,10 @@ struct SignedManifest {
 
 **Domain Separation**: Manifest signatures use domain separation to prevent signature reuse across different contexts. The signature is computed over:
 ```
-signature = Ed25519.sign(b"trustedge.manifest.v1" || manifest_bytes)
+signature = Ed25519.sign(b"sealedge.manifest.v1" || manifest_bytes)
 ```
 
-This prevents cross-protocol signature attacks and ensures signatures are cryptographically bound to the TrustEdge manifest context.
+This prevents cross-protocol signature attacks and ensures signatures are cryptographically bound to the Sealedge manifest context.
 
 struct FileHeader {
     version: u8,             // File format version
@@ -241,7 +241,7 @@ During the auth handshake, both client and server independently derive the same 
 
 1. Ed25519 keys are converted to X25519 (`SigningKey::to_scalar_bytes()` / `VerifyingKey::to_montgomery()`)
 2. Standard X25519 Diffie-Hellman produces a shared secret
-3. BLAKE3 `derive_key` with domain `"TRUSTEDGE_SESSION_KEY_V1"` mixes: shared secret + challenge bytes + both public keys (deterministically ordered)
+3. BLAKE3 `derive_key` with domain `"SEALEDGE_SESSION_KEY_V1"` mixes: shared secret + challenge bytes + both public keys (deterministically ordered)
 4. Low-order point rejection prevents invalid curve attacks
 
 No additional wire messages are needed — the session key is a side-effect of the existing challenge-response handshake.
@@ -264,7 +264,7 @@ The key management system uses pluggable backends via the `UniversalBackend` tra
 
 ### Connection Management Options
 
-**Client Connection Resilience (trustedge-client):**
+**Client Connection Resilience (sealedge-client):**
 ```bash
 # Configure connection timeouts and retry behavior
 --connect-timeout <SECONDS>    # Connection establishment timeout (default: 10)
@@ -272,7 +272,7 @@ The key management system uses pluggable backends via the `UniversalBackend` tra
 --retry-delay <SECONDS>        # Delay between retries (default: 2)
 
 # Example: Aggressive retry for unstable networks
-trustedge-client --server 10.0.1.100:8080 \
+sealedge-client --server 10.0.1.100:8080 \
   --file data.wav \
   --connect-timeout 5 \
   --retry-attempts 5 \
@@ -280,20 +280,20 @@ trustedge-client --server 10.0.1.100:8080 \
   --verbose
 
 # Example: Conservative settings for reliable networks
-trustedge-client --server server.example.com:8080 \
+sealedge-client --server server.example.com:8080 \
   --file data.wav \
   --connect-timeout 30 \
   --retry-attempts 1
 ```
 
-**Server Connection Management (trustedge-server):**
+**Server Connection Management (sealedge-server):**
 ```bash
 # Graceful shutdown via SIGINT/SIGTERM
 # Server will complete active connections before shutdown
 kill -INT <server_pid>
 
 # Example: Server with verbose connection tracking
-trustedge-server --listen 0.0.0.0:8080 \
+sealedge-server --listen 0.0.0.0:8080 \
   --verbose \
   --decrypt \
   --output-dir ./received_data
@@ -343,7 +343,7 @@ struct LiveStreamMetadata {
 
 - **Certificate-based device authentication** using Matter credentials
 - **Device onboarding workflow** with local test CA simulation
-- **Matter device ID mapping** to TrustEdge envelope manifests
+- **Matter device ID mapping** to Sealedge envelope manifests
 - **Commissioning protocol integration** for seamless device addition
 
 **Planned Extensions:**
@@ -392,7 +392,7 @@ struct DeviceAttestationData {
 
 ### 8.1. Deterministic Test Vectors
 
-TrustEdge provides deterministic test vectors to verify protocol compliance:
+Sealedge provides deterministic test vectors to verify protocol compliance:
 
 **Test Configuration:**
 - **32KB input data**: Deterministic pseudo-random bytes via LCG
@@ -430,10 +430,10 @@ If any validation fails during decryption (e.g., manifest signature, nonce prefi
 ---
 
 **See also:**
-- [`src/format.rs`](trustedge-core/src/format.rs) — Centralized format definitions and constants
-- [`src/lib.rs`](trustedge-core/src/lib.rs) for struct definitions
-- [`src/main.rs`](trustedge-core/src/main.rs) for CLI and envelope logic
-- `trustedge-client` and `trustedge-server` for protocol usage
+- [`src/format.rs`](sealedge-core/src/format.rs) — Centralized format definitions and constants
+- [`src/lib.rs`](sealedge-core/src/lib.rs) for struct definitions
+- [`src/main.rs`](sealedge-core/src/main.rs) for CLI and envelope logic
+- `sealedge-client` and `sealedge-server` for protocol usage
 - [threat-model.md](threat-model.md) for security rationale
 
 ---
@@ -449,6 +449,6 @@ The protocol is versioned (see StreamHeader and file preamble). Future changes w
 
 **License**: This specification is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](https://mozilla.org/MPL/2.0/).
 
-**Project**: [TrustEdge](https://github.com/TrustEdge-Labs/trustedge) — Privacy and trust at the edge.
+**Project**: [Sealedge](https://github.com/TrustEdge-Labs/sealedge) — Privacy and trust at the edge.
 
 **Standards**: This specification references [BLAKE3](https://github.com/BLAKE3-team/BLAKE3-specs), [Ed25519 RFC 8032](https://tools.ietf.org/html/rfc8032), and [AES-GCM NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final).

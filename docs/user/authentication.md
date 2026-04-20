@@ -1,13 +1,13 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Authentication Guide
+# Sealedge Authentication Guide
 
-Complete guide to TrustEdge's mutual authentication system for secure network operations.
+Complete guide to Sealedge's mutual authentication system for secure network operations.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -24,9 +24,9 @@ Complete guide to TrustEdge's mutual authentication system for secure network op
 
 ## Overview
 
-TrustEdge implements **mutual authentication** using Ed25519 digital signatures with **automated X25519 ECDH key exchange** to establish secure, encrypted sessions between clients and servers. This system ensures:
+Sealedge implements **mutual authentication** using Ed25519 digital signatures with **automated X25519 ECDH key exchange** to establish secure, encrypted sessions between clients and servers. This system ensures:
 
-- **Server Authentication**: Clients verify they're connecting to legitimate TrustEdge servers
+- **Server Authentication**: Clients verify they're connecting to legitimate Sealedge servers
 - **Client Authorization**: Servers validate client identity and authorize access
 - **Session Encryption**: X25519 ECDH derives a shared encryption key during the handshake — no out-of-band key sharing needed
 - **Session Security**: Cryptographically secure session IDs prevent unauthorized access
@@ -52,7 +52,7 @@ TrustEdge implements **mutual authentication** using Ed25519 digital signatures 
 
 **Server:**
 ```bash
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --listen 127.0.0.1:8080 \
   --require-auth \
   --server-identity "My Secure Server" \
@@ -63,7 +63,7 @@ TrustEdge implements **mutual authentication** using Ed25519 digital signatures 
 
 **Client:**
 ```bash
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --server 127.0.0.1:8080 \
   --input my_file.txt \
   --require-auth \
@@ -87,7 +87,7 @@ TrustEdge implements **mutual authentication** using Ed25519 digital signatures 
 
 ## Authentication Architecture
 
-### How TrustEdge Secure Session Works
+### How Sealedge Secure Session Works
 
 The following diagram shows the complete security flow from initial connection through authenticated data transfer:
 
@@ -217,14 +217,14 @@ When authentication is enabled, both sides independently derive the same session
 
 1. **Ed25519 to X25519 Conversion**: Each party converts their Ed25519 signing key to an X25519 key using `SigningKey::to_scalar_bytes()` and `VerifyingKey::to_montgomery()`
 2. **Diffie-Hellman**: Standard X25519 DH produces a shared secret (DH commutativity: `client_secret * server_pub == server_secret * client_pub`)
-3. **KDF**: BLAKE3 `derive_key` with domain `"TRUSTEDGE_SESSION_KEY_V1"` mixes the shared secret, challenge bytes, and both public keys (deterministically ordered)
+3. **KDF**: BLAKE3 `derive_key` with domain `"SEALEDGE_SESSION_KEY_V1"` mixes the shared secret, challenge bytes, and both public keys (deterministically ordered)
 4. **Result**: Both sides produce an identical 32-byte AES-256 session key without transmitting any key material
 
 The client uses this key automatically for encryption; the server stores it in the `ProcessingSession` for decryption. No `--key-hex` flag is needed when auth is active.
 
 ### Certificate Format
 
-TrustEdge certificates contain:
+Sealedge certificates contain:
 - **Ed25519 Public Key**: For signature verification (32 bytes)
 - **Identity String**: Human-readable client/server identity  
 - **Timestamp**: Certificate creation time
@@ -242,23 +242,23 @@ TrustEdge certificates contain:
 
 ```bash
 # Default server certificate location (current working directory)
-./trustedge-server.key    # Ed25519 private key (32 bytes + metadata)
-./trustedge-server.cert   # Self-signed certificate with identity
+./sealedge-server.key    # Ed25519 private key (32 bytes + metadata)
+./sealedge-server.cert   # Self-signed certificate with identity
 
 # Custom server certificate path
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --require-auth \
-  --server-key /opt/trustedge/server-production.key \
-  --server-identity "Production TrustEdge Server v1.0"
+  --server-key /opt/sealedge/server-production.key \
+  --server-identity "Production Sealedge Server v1.0"
 
 # Creates:
-/opt/trustedge/server-production.key   # Private key file
-/opt/trustedge/server-production.cert  # Certificate file
+/opt/sealedge/server-production.key   # Private key file
+/opt/sealedge/server-production.cert  # Certificate file
 ```
 
 **Server Certificate Generation Process:**
 
-1. **Check for Existing Certificate**: Server looks for `--server-key` path or `./trustedge-server.key`
+1. **Check for Existing Certificate**: Server looks for `--server-key` path or `./sealedge-server.key`
 2. **Generate Ed25519 Key Pair**: If missing, creates new 256-bit private key
 3. **Create Self-Signed Certificate**: Binds server identity to public key
 4. **Write to Filesystem**: Saves both private key and certificate files
@@ -270,23 +270,23 @@ TrustEdge certificates contain:
 
 ```bash
 # Default client certificate location (current working directory)
-./trustedge-client.key    # Ed25519 private key (32 bytes + metadata)
-./trustedge-client.cert   # Self-signed certificate with identity
+./sealedge-client.key    # Ed25519 private key (32 bytes + metadata)
+./sealedge-client.cert   # Self-signed certificate with identity
 
 # Custom client certificate path
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --require-auth \
-  --client-key ~/.config/trustedge/mobile-app.key \
+  --client-key ~/.config/sealedge/mobile-app.key \
   --client-identity "Executive Mobile App v2.1"
 
 # Creates:
-~/.config/trustedge/mobile-app.key   # Private key file
-~/.config/trustedge/mobile-app.cert  # Certificate file
+~/.config/sealedge/mobile-app.key   # Private key file
+~/.config/sealedge/mobile-app.cert  # Certificate file
 ```
 
 **Client Certificate Generation Process:**
 
-1. **Check for Existing Certificate**: Client looks for `--client-key` path or `./trustedge-client.key`
+1. **Check for Existing Certificate**: Client looks for `--client-key` path or `./sealedge-client.key`
 2. **Generate Ed25519 Key Pair**: If missing, creates new 256-bit private key
 3. **Create Self-Signed Certificate**: Binds client identity to public key
 4. **Write to Filesystem**: Saves both private key and certificate files
@@ -304,7 +304,7 @@ MC4CAQAwBQYDK2VwBCIEIFOr7...Ed25519PrivateKeyData...
 **Certificate File (`.cert`):**
 ```json
 {
-  "identity": "Production TrustEdge Server v1.0",
+  "identity": "Production Sealedge Server v1.0",
   "public_key": "AGd8f2V1...",
   "signature": "BDGd9f8A...",
   "created": "2025-08-30T10:15:30Z"
@@ -316,40 +316,40 @@ MC4CAQAwBQYDK2VwBCIEIFOr7...Ed25519PrivateKeyData...
 **File Permissions:**
 ```bash
 # Secure server private key (root/service account only)
-chmod 600 /opt/trustedge/server-production.key
-chown trustedge-service:trustedge-service /opt/trustedge/server-production.key
+chmod 600 /opt/sealedge/server-production.key
+chown sealedge-service:sealedge-service /opt/sealedge/server-production.key
 
 # Secure client private key (user only)  
-chmod 600 ~/.config/trustedge/mobile-app.key
+chmod 600 ~/.config/sealedge/mobile-app.key
 
 # Certificate files can be world-readable (contain only public data)
-chmod 644 /opt/trustedge/server-production.cert
-chmod 644 ~/.config/trustedge/mobile-app.cert
+chmod 644 /opt/sealedge/server-production.cert
+chmod 644 ~/.config/sealedge/mobile-app.cert
 ```
 
 **Directory Structure Examples:**
 
 ```
 # Production Server Layout
-/opt/trustedge/
-├── server-production.key     # 600 trustedge-service:trustedge-service  
-├── server-production.cert    # 644 trustedge-service:trustedge-service
+/opt/sealedge/
+├── server-production.key     # 600 sealedge-service:sealedge-service  
+├── server-production.cert    # 644 sealedge-service:sealedge-service
 ├── logs/
 └── config/
 
 # Client Application Layout  
-~/.config/trustedge/
+~/.config/sealedge/
 ├── mobile-app.key           # 600 user:user
 ├── mobile-app.cert          # 644 user:user
 ├── server-certificates/     # Trusted server cert store (optional)
 └── config.json
 
 # Development Environment
-./trustedge-core/
-├── trustedge-server.key     # 600 developer:developer
-├── trustedge-server.cert    # 644 developer:developer  
-├── trustedge-client.key     # 600 developer:developer
-├── trustedge-client.cert    # 644 developer:developer
+./sealedge-core/
+├── sealedge-server.key     # 600 developer:developer
+├── sealedge-server.cert    # 644 developer:developer  
+├── sealedge-client.key     # 600 developer:developer
+├── sealedge-client.cert    # 644 developer:developer
 └── target/release/
 ```
 
@@ -357,12 +357,12 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 
 ```bash
 # Specify custom certificate locations
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --require-auth \
-  --server-identity "Production TrustEdge" \
+  --server-identity "Production Sealedge" \
   --server-key ./certificates/production_server.key
 
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --require-auth \
   --client-identity "Mobile App v2.1" \
   --client-key ./certificates/mobile_client.key
@@ -396,13 +396,13 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 
 ```bash
 # Custom session timeout (600 seconds = 10 minutes)
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --require-auth \
   --session-timeout 600 \
   --server-identity "Long Session Server"
 
 # Default timeout (300 seconds = 5 minutes)
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --require-auth \
   --server-identity "Standard Server"
 ```
@@ -442,11 +442,11 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 #### High-Security Production
 ```bash
 # Production server with tight security
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --listen 0.0.0.0:8443 \
   --require-auth \
-  --server-identity "TrustEdge Production v2.1" \
-  --server-key /etc/trustedge/server.key \
+  --server-identity "Sealedge Production v2.1" \
+  --server-key /etc/sealedge/server.key \
   --session-timeout 180 \  # 3 minutes
   --decrypt \
   --use-keyring \
@@ -456,7 +456,7 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 #### Development Environment
 ```bash
 # Development server with longer sessions
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --listen 127.0.0.1:8080 \
   --require-auth \
   --server-identity "Development Server" \
@@ -531,7 +531,7 @@ chmod 644 ~/.config/trustedge/mobile-app.cert
 **Solution:**
 Add authentication parameters to client:
 ```bash
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --server 127.0.0.1:8080 \
   --input data.txt \
   --require-auth \
@@ -578,13 +578,13 @@ Enable verbose logging for authentication debugging:
 
 ```bash
 # Server debug
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --require-auth \
   --verbose \
   --server-identity "Debug Server"
 
 # Client debug  
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --require-auth \
   --verbose \
   --client-identity "Debug Client"
@@ -632,22 +632,22 @@ stat server_identity.cert client_identity.cert
 
 ```bash
 #!/bin/bash
-# Production TrustEdge server deployment script
+# Production Sealedge server deployment script
 
 # Security settings
-SERVER_KEY="/etc/trustedge/production_server.key"
-UPLOAD_DIR="/secure/trustedge/uploads"
-LOG_FILE="/var/log/trustedge/auth.log"
+SERVER_KEY="/etc/sealedge/production_server.key"
+UPLOAD_DIR="/secure/sealedge/uploads"
+LOG_FILE="/var/log/sealedge/auth.log"
 
 # Ensure directories exist with correct permissions
 mkdir -p "$(dirname $SERVER_KEY)" "$UPLOAD_DIR" "$(dirname $LOG_FILE)"
 chmod 700 "$(dirname $SERVER_KEY)" "$UPLOAD_DIR"
 
 # Start production server
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --listen 0.0.0.0:8443 \
   --require-auth \
-  --server-identity "TrustEdge Production Server $(date +%Y)" \
+  --server-identity "Sealedge Production Server $(date +%Y)" \
   --server-key "$SERVER_KEY" \
   --session-timeout 300 \
   --decrypt \
@@ -670,9 +670,9 @@ RUN cargo build --release
 
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/trustedge-server /usr/local/bin/
+COPY --from=builder /app/target/release/sealedge-server /usr/local/bin/
 EXPOSE 8080
-CMD ["trustedge-server", "--require-auth", "--bind-addr", "0.0.0.0:8080"]
+CMD ["sealedge-server", "--require-auth", "--bind-addr", "0.0.0.0:8080"]
 ```
 
 #### Kubernetes Configuration
@@ -681,8 +681,8 @@ CMD ["trustedge-server", "--require-auth", "--bind-addr", "0.0.0.0:8080"]
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: trustedge-certs
-  namespace: trustedge
+  name: sealedge-certs
+  namespace: sealedge
 data:
   server.cert: |
     # Server certificate content will be generated automatically
@@ -692,8 +692,8 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: trustedge-secrets
-  namespace: trustedge
+  name: sealedge-secrets
+  namespace: sealedge
 type: Opaque
 data:
   # Base64 encoded production salt and other sensitive configuration
@@ -703,25 +703,25 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trustedge-server
-  namespace: trustedge
+  name: sealedge-server
+  namespace: sealedge
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: trustedge-server
+      app: sealedge-server
   template:
     metadata:
       labels:
-        app: trustedge-server
+        app: sealedge-server
     spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
         fsGroup: 1000
       containers:
-      - name: trustedge-server
-        image: trustedge:latest
+      - name: sealedge-server
+        image: sealedge:latest
         args: 
           - "--require-auth"
           - "--bind-addr"
@@ -732,12 +732,12 @@ spec:
           - "300"
         ports:
         - containerPort: 8080
-          name: trustedge
+          name: sealedge
         env:
         - name: PRODUCTION_SALT
           valueFrom:
             secretKeyRef:
-              name: trustedge-secrets
+              name: sealedge-secrets
               key: production-salt
         volumeMounts:
         - name: certs
@@ -765,33 +765,33 @@ spec:
       volumes:
       - name: certs
         configMap:
-          name: trustedge-certs
+          name: sealedge-certs
           defaultMode: 0600
       - name: data
         persistentVolumeClaim:
-          claimName: trustedge-data
+          claimName: sealedge-data
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: trustedge-service
-  namespace: trustedge
+  name: sealedge-service
+  namespace: sealedge
 spec:
   selector:
-    app: trustedge-server
+    app: sealedge-server
   ports:
   - port: 8080
     targetPort: 8080
-    name: trustedge
+    name: sealedge
   type: ClusterIP
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: trustedge-data
-  namespace: trustedge
+  name: sealedge-data
+  namespace: sealedge
 spec:
   accessModes:
   - ReadWriteOnce
@@ -842,14 +842,14 @@ Implement certificate rotation for long-running deployments:
 ```bash
 # Generate new server key
 mv server_signing.key server_signing.key.backup
-./target/release/trustedge-server --require-auth --server-identity "Rotated Server"
+./target/release/sealedge-server --require-auth --server-identity "Rotated Server"
 # Server generates new key automatically
 ```
 
 ### Integration with PKI
 
 For enterprise deployments, consider integrating with existing PKI:
-- Use TrustEdge authentication for application-layer security
+- Use Sealedge authentication for application-layer security
 - Combine with TLS client certificates for transport-layer security
 - Implement certificate validation against enterprise CA
 
@@ -859,16 +859,16 @@ For enterprise deployments, consider integrating with existing PKI:
 
 ---
 
-This completes the TrustEdge Authentication Guide. For additional technical implementation details, refer to the source code in [`crates/core/src/`](crates/core/src/) and the integration tests in [`crates/core/tests/auth_integration.rs`](crates/core/tests/auth_integration.rs).
+This completes the Sealedge Authentication Guide. For additional technical implementation details, refer to the source code in [`crates/core/src/`](crates/core/src/) and the integration tests in [`crates/core/tests/auth_integration.rs`](crates/core/tests/auth_integration.rs).
 
 ---
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
 - **[Documentation](../README.md)** - Complete docs index
 - **[CLI Reference](cli.md)** - Command reference
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

@@ -1,16 +1,16 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
-# TrustEdge Testing Patterns
+# Sealedge Testing Patterns
 
 ## 🧪 Comprehensive Testing Strategy
 
-TrustEdge uses a multi-layered testing approach with **93 automated tests** covering all aspects of the system. This guide provides patterns and best practices for writing effective tests.
+Sealedge uses a multi-layered testing approach with **93 automated tests** covering all aspects of the system. This guide provides patterns and best practices for writing effective tests.
 
 ## 📊 Test Suite Overview
 
@@ -175,7 +175,7 @@ fn test_registry_backend_selection() -> Result<()> {
 #[test]
 fn test_comprehensive_file_roundtrip() -> Result<()> {
     let test_cases = vec![
-        ("text", "Hello, TrustEdge!", "text/plain"),
+        ("text", "Hello, Sealedge!", "text/plain"),
         ("json", r#"{"test": "data"}"#, "application/json"),
         ("binary", &[0u8, 255u8, 127u8, 128u8], "application/octet-stream"),
     ];
@@ -185,7 +185,7 @@ fn test_comprehensive_file_roundtrip() -> Result<()> {
         
         // 1. Encrypt
         let input_path = write_test_file(&format!("test_{}.dat", name), data)?;
-        let envelope_path = format!("test_{}.trst", name);
+        let envelope_path = format!("test_{}.seal", name);
         let key = generate_test_key();
         
         encrypt_file(&input_path, &envelope_path, &key)?;

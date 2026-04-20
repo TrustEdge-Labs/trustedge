@@ -1,14 +1,14 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
 # Universal Backend System
 
-The TrustEdge Universal Backend system provides a unified, capability-based approach to cryptographic operations across different backend types.
+The Sealedge Universal Backend system provides a unified, capability-based approach to cryptographic operations across different backend types.
 
 ## Design Philosophy
 
@@ -107,7 +107,7 @@ pub trait UniversalBackend: Send + Sync {
 
 **Example:**
 ```rust
-use trustedge_core::backends::yubikey::{YubiKeyBackend, YubiKeyConfig};
+use sealedge_core::backends::yubikey::{YubiKeyBackend, YubiKeyConfig};
 
 let config = YubiKeyConfig {
     pkcs11_module_path: "/usr/lib/x86_64-linux-gnu/opensc-pkcs11.so".to_string(),
@@ -147,7 +147,7 @@ let signature = yubikey.perform_operation(
 ### Basic Hash Operation
 
 ```rust
-use trustedge_core::{UniversalBackendRegistry, CryptoOperation, HashAlgorithm};
+use sealedge_core::{UniversalBackendRegistry, CryptoOperation, HashAlgorithm};
 
 let registry = UniversalBackendRegistry::with_defaults()?;
 
@@ -168,7 +168,7 @@ if let CryptoResult::Hash(hash) = result {
 ### Key Derivation
 
 ```rust
-use trustedge_core::{CryptoOperation, KeyDerivationContext};
+use sealedge_core::{CryptoOperation, KeyDerivationContext};
 
 let context = KeyDerivationContext::new(vec![1; 16]) // 16-byte salt
     .with_additional_data(b"app_context".to_vec())
@@ -207,7 +207,7 @@ if backends.is_empty() {
 ### Preference-Based Selection
 
 ```rust
-use trustedge_core::BackendPreferences;
+use sealedge_core::BackendPreferences;
 
 // Prefer hardware-backed backends
 let prefs = BackendPreferences::hardware_preferred();
@@ -300,4 +300,4 @@ The old `KeyBackend` trait remains available for backward compatibility. The Uni
 3. **Phase 3**: Migrate existing code to Universal Backend
 4. **Phase 4**: Remove old backend system
 
-The Universal Backend system represents the future of cryptographic operations in TrustEdge, providing the flexibility needed to support everything from software-only encryption to advanced hardware security modules.
+The Universal Backend system represents the future of cryptographic operations in Sealedge, providing the flexibility needed to support everything from software-only encryption to advanced hardware security modules.

@@ -1,12 +1,12 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
-# TrustEdge Testing Guide
+# Sealedge Testing Guide
 
-Comprehensive testing, validation, and verification procedures for TrustEdge with **406 total tests** covering all components.
+Comprehensive testing, validation, and verification procedures for Sealedge with **406 total tests** covering all components.
 
 ## Table of Contents
 - [Test Architecture](#test-architecture)
@@ -24,14 +24,14 @@ Comprehensive testing, validation, and verification procedures for TrustEdge wit
 
 ## Test Architecture
 
-TrustEdge employs a comprehensive 3-tier testing strategy:
+Sealedge employs a comprehensive 3-tier testing strategy:
 
 ### Test Statistics
 - **406 Total Tests** across 9 workspace crates
-- **160+ Core Tests** (trustedge-core: envelope encryption, backends, transport, receipts, auth, attestation)
-- **19+ Platform Tests** (trustedge-platform: verification engine, HTTP, CORS, router parity)
-- **18 Type Tests** (trustedge-types: shared wire type validation)
-- **28 Archive Tests** (trustedge-trst-cli: acceptance tests for wrap/verify/keygen/unwrap/emit-request)
+- **160+ Core Tests** (sealedge-core: envelope encryption, backends, transport, receipts, auth, attestation)
+- **19+ Platform Tests** (sealedge-platform: verification engine, HTTP, CORS, router parity)
+- **18 Type Tests** (sealedge-types: shared wire type validation)
+- **28 Archive Tests** (sealedge-seal-cli: acceptance tests for wrap/verify/keygen/unwrap/emit-request)
 - **45+ Security Tests** (dedicated security coverage across v2.3–v2.4)
 - **100% Feature Coverage** (all major components tested)
 
@@ -41,10 +41,10 @@ TrustEdge employs a comprehensive 3-tier testing strategy:
 ./scripts/ci-check.sh            # Runs format, lint, build, and all tests
 
 # By crate
-cargo test -p trustedge-types                     # Types (18 tests)
-cargo test -p trustedge-core --lib                # Core cryptography (160+ tests)
-cargo test -p trustedge-platform --lib            # Platform unit tests
-cargo test -p trustedge-trst-cli --test acceptance # Archive validation (28 tests)
+cargo test -p sealedge-types                     # Types (18 tests)
+cargo test -p sealedge-core --lib                # Core cryptography (160+ tests)
+cargo test -p sealedge-platform --lib            # Platform unit tests
+cargo test -p sealedge-seal-cli --test acceptance # Archive validation (28 tests)
 
 # Full workspace
 cargo test --workspace
@@ -60,7 +60,7 @@ cargo test --features yubikey --test yubikey_integration  # YubiKey hardware tes
 ## Test Categories
 
 ### 1. Core Cryptography Tests (160+ Tests)
-**Envelope System** (`trustedge-core`):
+**Envelope System** (`sealedge-core`):
 - AES-256-GCM encryption/decryption with real cryptography
 - PBKDF2 key derivation with 100,000 iterations
 - Memory-safe key handling with zeroization
@@ -80,9 +80,9 @@ cargo test --features yubikey --test yubikey_integration  # YubiKey hardware tes
 - Security configuration validation
 
 ### 2. Digital Receipt System Tests
-**Receipt Creation & Assignment** (integrated into `trustedge-core`):
+**Receipt Creation & Assignment** (integrated into `sealedge-core`):
 ```bash
-cargo test -p trustedge-core --lib
+cargo test -p sealedge-core --lib
 ```
 - **Cryptographic Security**: Real encryption/decryption with production algorithms
 - **Ownership Transfer**: Multi-party receipt assignment chains (Alice → Bob → Charlie → Dave → Eve)
@@ -229,7 +229,7 @@ cargo test tcp::tests   # TCP-specific unit tests
 
 ### Golden Test Vector
 
-TrustEdge includes comprehensive deterministic test vectors for format validation:
+Sealedge includes comprehensive deterministic test vectors for format validation:
 
 ```bash
 # Run format compliance test with golden hash verification
@@ -280,7 +280,7 @@ The test suite validates:
 
 ### Test Categories
 
-**1. Core Unit Tests (trustedge-core --lib)**
+**1. Core Unit Tests (sealedge-core --lib)**
 - Audio configuration and chunk handling
 - Keyring backend functionality
 - Universal Backend system
@@ -289,7 +289,7 @@ The test suite validates:
 - Digital receipt security (attack resistance, ownership chains)
 - Auth and attestation
 
-**2. Core Integration Tests (trustedge-core --tests)**
+**2. Core Integration Tests (sealedge-core --tests)**
 - Software HSM integration: Cross-session key persistence, CLI lifecycle, error recovery
 - Authentication integration: Certificate generation, session management, mutual auth flow
 - Roundtrip integration: End-to-end encrypt/decrypt workflows, multiple chunk sizes, byte-perfect restoration
@@ -297,16 +297,16 @@ The test suite validates:
 - Universal Backend integration: Capability-based selection, registry management
 - Domain separation security tests
 
-**3. Platform Tests (trustedge-platform)**
+**3. Platform Tests (sealedge-platform)**
 - Verification engine unit tests
 - HTTP layer: Router parity, CORS hardening, round-trip verification
 - PostgreSQL backend (optional, requires postgres feature)
 
-**4. Archive Tests (trustedge-trst-cli)**
+**4. Archive Tests (sealedge-seal-cli)**
 - Acceptance tests: keygen, wrap, verify, unwrap operations (28 tests)
 - cam.video, sensor, and other profile validation
 
-**5. Type Tests (trustedge-types)**
+**5. Type Tests (sealedge-types)**
 - Shared wire type serialization and validation (18 tests)
 
 ### Running Tests
@@ -319,28 +319,28 @@ cargo test --workspace
 cargo test --workspace -- --nocapture
 
 # Run specific crates
-cargo test -p trustedge-core --lib                # Core unit tests
-cargo test -p trustedge-types                     # Type tests (18)
-cargo test -p trustedge-trst-cli --test acceptance # Archive tests (28)
-cargo test -p trustedge-platform --lib            # Platform unit tests (18)
-cargo test -p trustedge-platform --test verify_integration           # Verify integration (9)
-cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (27)
+cargo test -p sealedge-core --lib                # Core unit tests
+cargo test -p sealedge-types                     # Type tests (18)
+cargo test -p sealedge-seal-cli --test acceptance # Archive tests (28)
+cargo test -p sealedge-platform --lib            # Platform unit tests (18)
+cargo test -p sealedge-platform --test verify_integration           # Verify integration (9)
+cargo test -p sealedge-platform --test verify_integration --features http  # All verify integration (27)
 
 # Run specific test modules within core
-cargo test -p trustedge-core --test roundtrip_integration
-cargo test -p trustedge-core --test auth_integration
-cargo test -p trustedge-core vectors::tests::golden_trst_digest_is_stable
+cargo test -p sealedge-core --test roundtrip_integration
+cargo test -p sealedge-core --test auth_integration
+cargo test -p sealedge-core vectors::tests::golden_trst_digest_is_stable
 
 # Hardware testing (requires YubiKey device)
 cargo test --features yubikey --test yubikey_integration
 
 # Run a single test with output
-cargo test -p trustedge-core test_name -- --nocapture
+cargo test -p sealedge-core test_name -- --nocapture
 ```
 
 ### Roundtrip Integration Tests
 
-The comprehensive roundtrip test suite ([`tests/roundtrip_integration.rs`](trustedge-core/tests/roundtrip_integration.rs)) provides full workflow validation with **15 tests**:
+The comprehensive roundtrip test suite ([`tests/roundtrip_integration.rs`](sealedge-core/tests/roundtrip_integration.rs)) provides full workflow validation with **15 tests**:
 
 **Test Coverage:**
 ```bash
@@ -363,7 +363,7 @@ cargo test test_comprehensive_chunk_sizes  # Extended chunk testing
 
 ### Network Integration Tests
 
-The network integration test suite ([`tests/network_integration.rs`](trustedge-core/tests/network_integration.rs)) validates client-server workflows with **7 tests**:
+The network integration test suite ([`tests/network_integration.rs`](sealedge-core/tests/network_integration.rs)) validates client-server workflows with **7 tests**:
 
 **Test Coverage:**
 ```bash
@@ -424,7 +424,7 @@ Universal Backend Integration Tests:
 
 ### Universal Backend Integration Tests
 
-The Universal Backend integration test suite ([`tests/universal_backend_integration.rs`](trustedge-core/tests/universal_backend_integration.rs)) validates the capability-based backend system with **6 tests**:
+The Universal Backend integration test suite ([`tests/universal_backend_integration.rs`](sealedge-core/tests/universal_backend_integration.rs)) validates the capability-based backend system with **6 tests**:
 
 **Test Coverage:**
 ```bash
@@ -463,12 +463,12 @@ cargo test test_universal_backend_registry_management
 ```bash
 # Quick smoke test
 echo "test data" > input.txt
-./target/release/trustedge-core \
-  --input input.txt --out output.txt --envelope test.trst \
+./target/release/sealedge-core \
+  --input input.txt --out output.txt --envelope test.seal \
   --key-hex 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
-./target/release/trustedge-core \
-  --decrypt --input test.trst --out decrypted.txt \
+./target/release/sealedge-core \
+  --decrypt --input test.seal --out decrypted.txt \
   --key-hex 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 diff input.txt decrypted.txt  # Should be identical
@@ -484,19 +484,19 @@ echo "%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj" > test.pdf
 dd if=/dev/urandom bs=1024 count=1 of=test.bin 2>/dev/null
 
 # Test encryption with format detection
-./target/release/trustedge-core --input test.json --envelope test_json.trst --key-out json.key --verbose
-./target/release/trustedge-core --input test.pdf --envelope test_pdf.trst --key-out pdf.key --verbose
-./target/release/trustedge-core --input test.bin --envelope test_bin.trst --key-out bin.key --verbose
+./target/release/sealedge-core --input test.json --envelope test_json.seal --key-out json.key --verbose
+./target/release/sealedge-core --input test.pdf --envelope test_pdf.seal --key-out pdf.key --verbose
+./target/release/sealedge-core --input test.bin --envelope test_bin.seal --key-out bin.key --verbose
 
 # Test inspection
-./target/release/trustedge-core --input test_json.trst --inspect --verbose
-./target/release/trustedge-core --input test_pdf.trst --inspect --verbose
-./target/release/trustedge-core --input test_bin.trst --inspect --verbose
+./target/release/sealedge-core --input test_json.seal --inspect --verbose
+./target/release/sealedge-core --input test_pdf.seal --inspect --verbose
+./target/release/sealedge-core --input test_bin.seal --inspect --verbose
 
 # Test decryption with format awareness
-./target/release/trustedge-core --decrypt --input test_json.trst --out restored.json --key-hex $(cat json.key) --verbose
-./target/release/trustedge-core --decrypt --input test_pdf.trst --out restored.pdf --key-hex $(cat pdf.key) --verbose
-./target/release/trustedge-core --decrypt --input test_bin.trst --out restored.bin --key-hex $(cat bin.key) --verbose
+./target/release/sealedge-core --decrypt --input test_json.seal --out restored.json --key-hex $(cat json.key) --verbose
+./target/release/sealedge-core --decrypt --input test_pdf.seal --out restored.pdf --key-hex $(cat pdf.key) --verbose
+./target/release/sealedge-core --decrypt --input test_bin.seal --out restored.bin --key-hex $(cat bin.key) --verbose
 
 # Verify format preservation
 diff test.json restored.json
@@ -533,9 +533,9 @@ file restored.pdf   # Should show PDF document
 # Test different file sizes
 for size in 100 1000 10000 100000; do
   dd if=/dev/urandom of=test_${size}.bin bs=1 count=$size
-  ./target/release/trustedge-core \
+  ./target/release/sealedge-core \
     --input test_${size}.bin \
-    --envelope test_${size}.trst \
+    --envelope test_${size}.seal \
     --key-hex $(openssl rand -hex 32)
   echo "Size $size: OK"
 done
@@ -544,18 +544,18 @@ done
 #### 2. Key Management Validation
 ```bash
 # Test keyring backend
-./target/release/trustedge-core --set-passphrase "test_passphrase"
-./target/release/trustedge-core \
+./target/release/sealedge-core --set-passphrase "test_passphrase"
+./target/release/sealedge-core \
   --input test.txt \
-  --envelope keyring_test.trst \
+  --envelope keyring_test.seal \
   --backend keyring \
   --salt-hex "1234567890abcdef1234567890abcdef" \
   --use-keyring
 
 # Verify decryption works
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input keyring_test.trst \
+  --input keyring_test.seal \
   --out keyring_decrypted.txt \
   --backend keyring \
   --salt-hex "1234567890abcdef1234567890abcdef" \
@@ -576,9 +576,9 @@ done
 **Quick Validation Tests:**
 ```bash
 # Test error reporting for common issues
-./target/release/trustedge-core --decrypt --input nonexistent.trst    # File not found
-./target/release/trustedge-core --salt-hex "invalid"                  # Invalid salt
-./target/release/trustedge-core --backend nonexistent                 # Invalid backend
+./target/release/sealedge-core --decrypt --input nonexistent.seal    # File not found
+./target/release/sealedge-core --salt-hex "invalid"                  # Invalid salt
+./target/release/sealedge-core --backend nonexistent                 # Invalid backend
 ```
 
 [↑ Back to top](#table-of-contents)
@@ -594,15 +594,15 @@ done
 dd if=/dev/urandom of=large_test.bin bs=1M count=100
 
 # Time encryption
-time ./target/release/trustedge-core \
+time ./target/release/sealedge-core \
   --input large_test.bin \
-  --envelope large_test.trst \
+  --envelope large_test.seal \
   --key-hex $(openssl rand -hex 32)
 
 # Time decryption
-time ./target/release/trustedge-core \
+time ./target/release/sealedge-core \
   --decrypt \
-  --input large_test.trst \
+  --input large_test.seal \
   --out large_decrypted.bin \
   --key-hex $(cat last_key.hex)
 ```
@@ -611,9 +611,9 @@ time ./target/release/trustedge-core \
 
 ```bash
 # Monitor memory usage during processing
-/usr/bin/time -v ./target/release/trustedge-core \
+/usr/bin/time -v ./target/release/sealedge-core \
   --input large_test.bin \
-  --envelope large_test.trst \
+  --envelope large_test.seal \
   --key-hex $(openssl rand -hex 32)
 ```
 
@@ -623,9 +623,9 @@ time ./target/release/trustedge-core \
 # Test different chunk sizes
 for chunk_size in 1024 4096 8192 16384 65536; do
   echo "Testing chunk size: $chunk_size"
-  time ./target/release/trustedge-core \
+  time ./target/release/sealedge-core \
     --input test_1mb.bin \
-    --envelope test_chunk_${chunk_size}.trst \
+    --envelope test_chunk_${chunk_size}.seal \
     --chunk $chunk_size \
     --key-hex $(openssl rand -hex 32)
 done
@@ -637,21 +637,21 @@ done
 
 ## Security Testing
 
-TrustEdge includes **comprehensive security testing** covering cryptographic attacks and security scenarios:
+Sealedge includes **comprehensive security testing** covering cryptographic attacks and security scenarios:
 
 ### Receipt System Security Tests
 
-**Production-Ready Security Testing** (integrated into `trustedge-core`):
+**Production-Ready Security Testing** (integrated into `sealedge-core`):
 ```bash
 # Run all security tests
-cargo test -p trustedge-core --lib
+cargo test -p sealedge-core --lib
 
 # Run specific security test categories
-cargo test -p trustedge-core test_cryptographic_key_isolation
-cargo test -p trustedge-core test_signature_forgery_resistance
-cargo test -p trustedge-core test_replay_attack_resistance
-cargo test -p trustedge-core test_amount_tampering_resistance
-cargo test -p trustedge-core test_chain_integrity_validation
+cargo test -p sealedge-core test_cryptographic_key_isolation
+cargo test -p sealedge-core test_signature_forgery_resistance
+cargo test -p sealedge-core test_replay_attack_resistance
+cargo test -p sealedge-core test_amount_tampering_resistance
+cargo test -p sealedge-core test_chain_integrity_validation
 ```
 
 **Security Test Categories:**
@@ -678,27 +678,27 @@ cargo test -p trustedge-core test_chain_integrity_validation
 **Manual Security Validation:**
 ```bash
 # Test envelope tampering detection
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input test.txt \
-  --envelope original.trst \
+  --envelope original.seal \
   --key-out test.key
 
 # Tamper with envelope (should fail decryption)
-dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
+dd if=/dev/urandom of=original.seal bs=1 seek=100 count=10 conv=notrunc
 
 # Verify tampering is detected
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input original.trst \
+  --input original.seal \
   --out should_fail.txt \
   --key-hex $(cat test.key)
 # Expected: Decryption failure due to tampering
   --key-hex $(openssl rand -hex 32)
 
 # Verify wrong key detection (should fail)
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input test.trst \
+  --input test.seal \
   --out should_fail.txt \
   --key-hex $(openssl rand -hex 32)
 # Expected: "AES-GCM decrypt/verify failed" error
@@ -707,9 +707,9 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 #### 2. Salt Validation Tests
 ```bash
 # Test PBKDF2 validation (should fail)
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input keyring_test.trst \
+  --input keyring_test.seal \
   --out should_fail.txt \
   --backend keyring \
   --salt-hex "deadbeefdeadbeefdeadbeefdeadbeef" \
@@ -730,7 +730,7 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 #### 1. Basic Network Flow Validation
 ```bash
 # Terminal 1: Start server
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --listen 127.0.0.1:8080 \
   --decrypt \
   --key-hex $(openssl rand -hex 32) \
@@ -738,7 +738,7 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
   --verbose
 
 # Terminal 2: Test client connection
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --server 127.0.0.1:8080 \
   --input test_audio.wav \
   --key-hex $(cat shared_key.hex) \
@@ -748,7 +748,7 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 #### 2. Network Resilience Testing
 ```bash
 # Test connection failure handling
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --server 127.0.0.1:9999 \
   --input test.wav \
   --key-hex $(openssl rand -hex 32) \
@@ -757,7 +757,7 @@ dd if=/dev/urandom of=original.trst bs=1 seek=100 count=10 conv=notrunc
 # Expected: Connection refused with retry attempts
 
 # Test authentication flow (if authentication enabled)
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --server 127.0.0.1:8080 \
   --input test.wav \
   --require-auth \
@@ -815,7 +815,7 @@ The CI pipeline runs:
 cargo build --release --features audio
 
 # Verify audio features are enabled
-./target/release/trustedge-core --help | grep -i audio
+./target/release/sealedge-core --help | grep -i audio
 ```
 
 **Install System Dependencies:**
@@ -840,7 +840,7 @@ brew install sox  # For audio testing utilities
 
 ```bash
 # Always start with device discovery
-./target/release/trustedge-core --list-audio-devices
+./target/release/sealedge-core --list-audio-devices
 ```
 
 **Expected Output Examples:**
@@ -856,18 +856,18 @@ Available audio input devices:
 
 ```bash
 # Test with system default device
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --max-duration 3 \
-  --envelope test_default_device.trst \
+  --envelope test_default_device.seal \
   --key-hex $(openssl rand -hex 32)
 
 # Test with specific device
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "hw:CARD=PCH,DEV=0" \
   --max-duration 3 \
-  --envelope test_specific_device.trst \
+  --envelope test_specific_device.seal \
   --key-hex $(openssl rand -hex 32)
 ```
 
@@ -913,11 +913,11 @@ sudo usermod -a -G audio $USER
 # Enable for Terminal or your application
 
 # Test with PulseAudio (Linux)
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "pulse" \
   --max-duration 5 \
-  --envelope test_pulse.trst \
+  --envelope test_pulse.seal \
   --key-hex $(openssl rand -hex 32)
 ```
 
@@ -937,11 +937,11 @@ alsamixer  # Linux - check capture levels
 # Windows: Sound Settings → Input → Device Properties
 
 # Test with verbose output
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "default" \
   --max-duration 5 \
-  --envelope test_levels.trst \
+  --envelope test_levels.seal \
   --key-hex $(openssl rand -hex 32) \
   --verbose
 ```
@@ -956,14 +956,14 @@ Error: Audio device "wrong_name" not found
 **Solutions:**
 ```bash
 # Always check exact device names first
-./target/release/trustedge-core --list-audio-devices
+./target/release/sealedge-core --list-audio-devices
 
 # Copy device name exactly (with quotes)
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
   --max-duration 5 \
-  --envelope test_correct_name.trst \
+  --envelope test_correct_name.seal \
   --key-hex $(openssl rand -hex 32)
 
 # Common device name patterns:
@@ -979,23 +979,23 @@ Error: Audio device "wrong_name" not found
 **Solutions:**
 ```bash
 # Check sample rate compatibility
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --sample-rate 44100 \  # Try standard rates: 44100, 48000
   --channels 1 \         # Start with mono
   --chunk-duration-ms 1000 \  # Larger chunks for stability
   --max-duration 10 \
-  --envelope test_quality.trst \
+  --envelope test_quality.seal \
   --key-hex $(openssl rand -hex 32)
 
 # Test different configurations
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --sample-rate 48000 \
   --channels 2 \
   --chunk-duration-ms 500 \
   --max-duration 10 \
-  --envelope test_hifi.trst \
+  --envelope test_hifi.seal \
   --key-hex $(openssl rand -hex 32)
 ```
 
@@ -1015,56 +1015,56 @@ Error: Audio device "wrong_name" not found
 #### Linux (ALSA/PulseAudio)
 ```bash
 # Test ALSA direct access
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "hw:CARD=PCH,DEV=0" \
   --max-duration 5 \
-  --envelope test_alsa.trst \
+  --envelope test_alsa.seal \
   --key-hex $(openssl rand -hex 32)
 
 # Test PulseAudio integration
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "pulse" \
   --max-duration 5 \
-  --envelope test_pulse.trst \
+  --envelope test_pulse.seal \
   --key-hex $(openssl rand -hex 32)
 ```
 
 #### macOS (Core Audio)
 ```bash
 # Test built-in microphone
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "Built-in Microphone" \
   --max-duration 5 \
-  --envelope test_builtin.trst \
+  --envelope test_builtin.seal \
   --key-hex $(openssl rand -hex 32)
 
 # Test USB audio device
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "USB Audio CODEC" \
   --max-duration 5 \
-  --envelope test_usb.trst \
+  --envelope test_usb.seal \
   --key-hex $(openssl rand -hex 32)
 ```
 
 #### Windows (WASAPI)
 ```bash
 # Test default microphone
-./target/release/trustedge-core.exe \
+./target/release/sealedge-core.exe \
   --live-capture \
   --max-duration 5 \
-  --envelope test_windows.trst \
+  --envelope test_windows.seal \
   --key-hex $(openssl rand -hex 32)
 
 # Test specific device
-./target/release/trustedge-core.exe \
+./target/release/sealedge-core.exe \
   --live-capture \
   --audio-device "Microphone (Realtek Audio)" \
   --max-duration 5 \
-  --envelope test_realtek.trst \
+  --envelope test_realtek.seal \
   --key-hex $(openssl rand -hex 32)
 ```
 
@@ -1073,19 +1073,19 @@ Error: Audio device "wrong_name" not found
 #### 1. Round-trip Audio Test with Format Verification
 ```bash
 # Capture audio with known parameters
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --sample-rate 44100 \
   --channels 2 \
   --max-duration 10 \
-  --envelope captured_audio.trst \
+  --envelope captured_audio.seal \
   --key-out audio_key.hex \
   --verbose
 
 # Decrypt and verify (produces raw PCM f32le data)
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input captured_audio.trst \
+  --input captured_audio.seal \
   --out recovered_audio.raw \
   --key-hex $(cat audio_key.hex) \
   --verbose
@@ -1112,19 +1112,19 @@ for sample_rate in 22050 44100 48000; do
     echo "Testing ${sample_rate}Hz, ${channels} channel(s)"
     
     # Capture with specific parameters
-    ./target/release/trustedge-core \
+    ./target/release/sealedge-core \
       --live-capture \
       --sample-rate $sample_rate \
       --channels $channels \
       --max-duration 3 \
-      --envelope test_${sample_rate}_${channels}ch.trst \
+      --envelope test_${sample_rate}_${channels}ch.seal \
       --key-hex $(openssl rand -hex 32) \
       --verbose
     
     # Decrypt to raw PCM
-    ./target/release/trustedge-core \
+    ./target/release/sealedge-core \
       --decrypt \
-      --input test_${sample_rate}_${channels}ch.trst \
+      --input test_${sample_rate}_${channels}ch.seal \
       --out test_${sample_rate}_${channels}ch.raw \
       --key-hex $(openssl rand -hex 32) \
       --verbose
@@ -1145,19 +1145,19 @@ done
 #### 3. Audio Metadata Verification
 ```bash
 # Capture with metadata logging
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --sample-rate 48000 \
   --channels 2 \
   --max-duration 5 \
-  --envelope metadata_test.trst \
+  --envelope metadata_test.seal \
   --key-hex $(openssl rand -hex 32) \
   --verbose 2>&1 | tee capture_log.txt
 
 # Decrypt with metadata extraction
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input metadata_test.trst \
+  --input metadata_test.seal \
   --out metadata_test.raw \
   --key-hex $(openssl rand -hex 32) \
   --verbose 2>&1 | tee decrypt_log.txt
@@ -1180,13 +1180,13 @@ echo "PCM size: $pcm_size, Expected: $expected_size (tolerance: ±10%)"
 #### 2. Multi-Device Testing
 ```bash
 # Test all available devices
-for device in $(./target/release/trustedge-core --list-audio-devices | grep -o '"[^"]*"'); do
+for device in $(./target/release/sealedge-core --list-audio-devices | grep -o '"[^"]*"'); do
   echo "Testing device: $device"
-  ./target/release/trustedge-core \
+  ./target/release/sealedge-core \
     --live-capture \
     --audio-device $device \
     --max-duration 3 \
-    --envelope "test_${device//[^a-zA-Z0-9]/_}.trst" \
+    --envelope "test_${device//[^a-zA-Z0-9]/_}.seal" \
     --key-hex $(openssl rand -hex 32) || echo "Failed: $device"
 done
 ```

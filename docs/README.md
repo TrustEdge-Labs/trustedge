@@ -1,19 +1,19 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Documentation Guide
+# Sealedge Documentation Guide
 
-**Complete documentation index for TrustEdge privacy-preserving edge computing.**
+**Complete documentation index for Sealedge privacy-preserving edge computing.**
 
 ---
 
 ## 🚀 Quick Start
 
-**New to TrustEdge? Start here:**
+**New to Sealedge? Start here:**
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
@@ -155,7 +155,7 @@ README.md → UNIVERSAL_BACKEND.md → DEVELOPMENT.md → TESTING.md → CONTRIB
 ```
 UNIVERSAL_BACKEND.md → FORMAT.md → PROTOCOL.md → TESTING.md
 ```
-*Technical understanding of TrustEdge system architecture*
+*Technical understanding of Sealedge system architecture*
 
 ### **Path 5: Security Analysis**
 ```
@@ -185,7 +185,7 @@ SECURITY.md → THREAT_MODEL.md → AUTHENTICATION_GUIDE.md → TESTING.md
 
 | Task | Primary Document | Supporting Documents |
 |------|-----------------|---------------------|
-| **Install TrustEdge** | [README.md](../README.md) | [TROUBLESHOOTING.md](user/troubleshooting.md) |
+| **Install Sealedge** | [README.md](../README.md) | [TROUBLESHOOTING.md](user/troubleshooting.md) |
 | **Learn CLI options** | [CLI.md](user/cli.md) | [Examples Index](user/examples/README.md) |
 | **Set up authentication** | [AUTHENTICATION_GUIDE.md](user/authentication.md) | [SECURITY.md](../SECURITY.md) |
 | **Understand architecture** | [UNIVERSAL_BACKEND.md](technical/universal-backend.md) | [FORMAT.md](technical/format.md), [PROTOCOL.md](technical/protocol.md) |
@@ -224,17 +224,17 @@ SECURITY.md → THREAT_MODEL.md → AUTHENTICATION_GUIDE.md → TESTING.md
 
 ---
 
-*This documentation index is maintained as part of the TrustEdge project. For updates or suggestions, see [CONTRIBUTING.md](../CONTRIBUTING.md).*
+*This documentation index is maintained as part of the Sealedge project. For updates or suggestions, see [CONTRIBUTING.md](../CONTRIBUTING.md).*
 
 ---
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
-- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
-- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
-- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
+- **[Sealedge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/sealedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/sealedge/issues)** - Bug reports & features
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

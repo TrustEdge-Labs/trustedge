@@ -1,11 +1,11 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Format Specification v2.0
+# Sealedge Format Specification v2.0
 
 **Version:** 2.0
 **Date:** March 2026
@@ -15,7 +15,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Overview
 
-This document defines the binary format for TrustEdge `.trst` envelope files. The format provides authenticated encryption with provenance for chunked data streams, designed for privacy-preserving edge computing.
+This document defines the binary format for Sealedge `.seal` envelope files. The format provides authenticated encryption with provenance for chunked data streams, designed for privacy-preserving edge computing.
 
 **Version 2.0 Changes:**
 - **Algorithm Agility**: Header expanded from 58 to 66 bytes with dedicated algorithm fields
@@ -26,7 +26,7 @@ This document defines the binary format for TrustEdge `.trst` envelope files. Th
 
 ## 1. File Structure
 
-A `.trst` file consists of:
+A `.seal` file consists of:
 
 ```
 [Preamble] [StreamHeader] [Record]* 
@@ -43,7 +43,7 @@ A `.trst` file consists of:
 ```
 Offset | Size | Field   | Description
 -------|------|---------|----------------------------------
-0      | 4    | MAGIC   | Magic bytes: "TRST" (0x54525354)
+0      | 4    | MAGIC   | Magic bytes: "SEAL" (0x5345414C)
 4      | 1    | VERSION | Format version: 0x02 (0x01 legacy)
 ```
 
@@ -54,7 +54,7 @@ Offset | Size | Field   | Description
 - VERSION must be `0x01` (legacy) or `0x02` (current) for this specification
 
 **Failure Modes**:
-- **Invalid Magic**: Not a TrustEdge file, abort parsing
+- **Invalid Magic**: Not a Sealedge file, abort parsing
 - **Unsupported Version**: Future/unknown format, abort parsing
 
 **Version Migration**:
@@ -150,11 +150,11 @@ struct SignedManifest {
 **Signature Domain Separation**: The Ed25519 signature is computed with domain separation to prevent cross-context signature reuse:
 
 ```
-signature_input = b"trustedge.manifest.v1" || manifest_bytes
+signature_input = b"sealedge.manifest.v1" || manifest_bytes
 signature = Ed25519.sign(signature_input)
 ```
 
-This ensures signatures are cryptographically bound to TrustEdge manifest context and cannot be reused in other protocols or systems.
+This ensures signatures are cryptographically bound to Sealedge manifest context and cannot be reused in other protocols or systems.
 
 ### 4.2. Manifest
 
@@ -288,7 +288,7 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 5. **Key ID Binding**: Manifest.key_id must equal FileHeader.key_id
 6. **Domain-Separated Signature**: Ed25519 signature must verify over domain-separated message:
    ```
-   verify_input = b"trustedge.manifest.v1" || manifest_bytes
+   verify_input = b"sealedge.manifest.v1" || manifest_bytes
    Ed25519.verify(verify_input, signature, public_key) == valid
    ```
 7. **Public Key**: Must be valid Ed25519 public key (32 bytes)
@@ -311,7 +311,7 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 
 | Error | Cause | Action |
 |-------|-------|--------|
-| `BadMagic` | MAGIC ≠ "TRST" | Abort, not a TrustEdge file |
+| `BadMagic` | MAGIC ≠ "SEAL" | Abort, not a Sealedge file |
 | `UnsupportedVersion` | VERSION ∉ {0x01, 0x02} | Abort, format not supported |
 | `HeaderLengthMismatch` | Header ≠ 66 bytes (V2) or 58 bytes (V1) | Abort, corrupted stream |
 | `HeaderHashMismatch` | Hash verification failed | Abort, corrupted/tampered |
@@ -350,7 +350,7 @@ The resulting ciphertext includes the authentication tag (16 bytes appended).
 
 ### 8.1. Deterministic Test Vector
 
-TrustEdge includes deterministic test vectors to validate format compliance:
+Sealedge includes deterministic test vectors to validate format compliance:
 
 **Test Parameters:**
 - **AES-256 Key**: `000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f` (hex)
@@ -362,7 +362,7 @@ TrustEdge includes deterministic test vectors to validate format compliance:
 
 **Golden Hash:**
 ```
-BLAKE3(.trst) = 8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c
+BLAKE3(.seal) = 8ecc3b2fcb0887dfd6ff3513c0caa3febb2150a920213fa5b622243ad530f34c
 ```
 
 **Usage:**
@@ -378,7 +378,7 @@ The implementation includes comprehensive integration tests:
 2. **Tamper Detection**: Verify corrupted envelopes fail validation  
 3. **CLI Testing**: End-to-end testing via command-line interface
 
-**Test Location**: [`src/vectors.rs`](trustedge-core/src/vectors.rs) and [`tests/roundtrip_integration.rs`](trustedge-core/tests/roundtrip_integration.rs)
+**Test Location**: [`src/vectors.rs`](sealedge-core/src/vectors.rs) and [`tests/roundtrip_integration.rs`](sealedge-core/tests/roundtrip_integration.rs)
 
 ---
 
@@ -421,7 +421,7 @@ See Section 8 for the deterministic test vector and golden hash used to validate
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2025-08-25 | Initial specification |
-| 2.0 | February 2026 | HKDF-SHA256 KDF, versioned envelope format, encrypted key files (TRUSTEDGE-KEY-V1), algorithm agility |
+| 2.0 | February 2026 | HKDF-SHA256 KDF, versioned envelope format, encrypted key files (SEALEDGE-KEY-V1), algorithm agility |
 
 ---
 
@@ -435,7 +435,7 @@ See Section 8 for the deterministic test vector and golden hash used to validate
 ---
 
 **See Also:**
-- [`src/format.rs`](trustedge-core/src/format.rs) - Reference implementation
+- [`src/format.rs`](sealedge-core/src/format.rs) - Reference implementation
 - [protocol.md](protocol.md) - Network protocol specification
 - [threat-model.md](threat-model.md) - Security analysis
 
@@ -447,6 +447,6 @@ See Section 8 for the deterministic test vector and golden hash used to validate
 
 **License**: This specification is licensed under the [Mozilla Public License 2.0 (MPL-2.0)](https://mozilla.org/MPL/2.0/).
 
-**Project**: [TrustEdge](https://github.com/TrustEdge-Labs/trustedge) — Privacy and trust at the edge.
+**Project**: [Sealedge](https://github.com/TrustEdge-Labs/sealedge) — Privacy and trust at the edge.
 
 **Standards Compliance**: This format specification implements [BLAKE3](https://github.com/BLAKE3-team/BLAKE3-specs), [Ed25519 RFC 8032](https://tools.ietf.org/html/rfc8032), [AES-GCM NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final), and [Bincode](https://docs.rs/bincode/) serialization.

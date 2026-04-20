@@ -1,12 +1,12 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
-# TrustEdge Development Guide
+# Sealedge Development Guide
 
-Development information, roadmap, and contribution guidelines for TrustEdge.
+Development information, roadmap, and contribution guidelines for Sealedge.
 
 ## Table of Contents
 - [Project Management](#project-management)
@@ -23,19 +23,19 @@ Development information, roadmap, and contribution guidelines for TrustEdge.
 
 ### 📊 GitHub Project Organization
 
-**Project Board**: [TrustEdge Development](https://github.com/TrustEdge-Labs/projects/2)
+**Project Board**: [Sealedge Development](https://github.com/TrustEdge-Labs/projects/2)
 - Visual task tracking and progress monitoring
 - Kanban-style organization (Todo, In Progress, Done)
 - Integrated with GitHub issues and milestones
 - **Note**: Issues must be manually added to project boards
 
-**Issue Tracking**: [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)
+**Issue Tracking**: [GitHub Issues](https://github.com/TrustEdge-Labs/sealedge/issues)
 - Structured issue templates for bugs, features, docs, and security
 - Comprehensive labeling system for organization
 - Milestone-based development tracking
 - All repository issues are listed here (whether on project board or not)
 
-**Development History**: TrustEdge has shipped through v3.0 with 70+ phases across 20 milestones (v1.0–v3.0). See [CLAUDE.md](../../CLAUDE.md) for current build and test commands.
+**Development History**: Sealedge has shipped through v3.0 with 70+ phases across 20 milestones (v1.0–v3.0). See [CLAUDE.md](../../CLAUDE.md) for current build and test commands.
 
 ### 🛠️ Project Management Tools
 
@@ -53,7 +53,7 @@ gh issue create --template bug-report
 
 ### 📋 Current Development Status
 
-See **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** for detailed tasks and current priorities.
+See **[GitHub Issues](https://github.com/TrustEdge-Labs/sealedge/issues)** for detailed tasks and current priorities.
 
 [↑ Back to top](#table-of-contents)
 
@@ -64,11 +64,11 @@ See **[GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** for 
 ### Core Components
 
 ```
-trustedge-core/
+sealedge-core/
 ├── src/
 │   ├── lib.rs           # Main library interface
 │   ├── main.rs          # CLI application entry point
-│   ├── format.rs        # TrustEdge format with data type metadata
+│   ├── format.rs        # Sealedge format with data type metadata
 │   ├── audio.rs         # Live audio capture implementation (feature-gated)
 │   ├── auth.rs          # Ed25519-based mutual authentication
 │   ├── vectors.rs       # Test vectors and validation
@@ -83,9 +83,9 @@ trustedge-core/
 │   │   ├── tcp.rs       # TCP transport with length framing (8 tests)
 │   │   └── quic.rs      # QUIC transport with TLS (8 tests)
 │   └── bin/
-│       ├── trustedge-client.rs  # Network client
-│       ├── trustedge-server.rs  # Network server
-│       ├── inspect-trst.rs      # Metadata inspection utility
+│       ├── sealedge-client.rs  # Network client
+│       ├── sealedge-server.rs  # Network server
+│       ├── inspect-seal.rs      # Metadata inspection utility
 │       └── software-hsm-demo.rs # Backend demonstration
 ├── tests/               # Integration test suite (65 tests)
 │   ├── yubikey_integration.rs      # YubiKey hardware tests
@@ -108,17 +108,17 @@ trustedge-core/
 **406 Total Tests** across 9 workspace crates covering all system components:
 
 **Core Tests (160+):**
-- trustedge-core: envelope encryption, Universal Backend system, receipts, auth, transport
+- sealedge-core: envelope encryption, Universal Backend system, receipts, auth, transport
 - 18 YubiKey simulation tests included
 
 **Platform Tests (19+):**
-- trustedge-platform: verification engine, HTTP round-trip, CORS, router parity
+- sealedge-platform: verification engine, HTTP round-trip, CORS, router parity
 
 **Archive Tests (28):**
-- trustedge-trst-cli: acceptance tests for wrap/verify/keygen/unwrap/emit-request operations
+- sealedge-seal-cli: acceptance tests for wrap/verify/keygen/unwrap/emit-request operations
 
 **Type Tests (18):**
-- trustedge-types: shared wire type validation
+- sealedge-types: shared wire type validation
 
 **Security Tests (45+):**
 - Dedicated security tests: timestamp validation, error handling, permissions, cryptographic correctness (v2.3–v2.4)
@@ -129,10 +129,10 @@ trustedge-core/
 ./scripts/ci-check.sh            # CI pipeline validation
 
 # Test by crate
-cargo test -p trustedge-core --lib                # Core (160+ tests)
-cargo test -p trustedge-platform --lib            # Platform unit tests
-cargo test -p trustedge-trst-cli --test acceptance # Archive validation (28)
-cargo test -p trustedge-types                     # Types (18)
+cargo test -p sealedge-core --lib                # Core (160+ tests)
+cargo test -p sealedge-platform --lib            # Platform unit tests
+cargo test -p sealedge-seal-cli --test acceptance # Archive validation (28)
+cargo test -p sealedge-types                     # Types (18)
 
 # Hardware feature testing
 cargo test --features yubikey --test yubikey_integration  # YubiKey hardware tests
@@ -140,7 +140,7 @@ cargo test --features yubikey --test yubikey_integration  # YubiKey hardware tes
 
 ### Data-Agnostic Architecture
 
-TrustEdge operates on a data-agnostic model that can encrypt any type of data while preserving relevant metadata:
+Sealedge operates on a data-agnostic model that can encrypt any type of data while preserving relevant metadata:
 
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -159,7 +159,7 @@ pub enum DataType {
 - **Metadata preservation**: Audio format details stored in manifest
 
 #### Input Abstraction
-TrustEdge uses a unified `InputReader` trait for processing different data sources:
+Sealedge uses a unified `InputReader` trait for processing different data sources:
 
 ```rust
 pub trait InputReader {
@@ -174,7 +174,7 @@ Implementations:
 
 ### Backend Architecture
 
-TrustEdge uses a modular backend system for key management:
+Sealedge uses a modular backend system for key management:
 
 ```rust
 pub trait KeyBackend {
@@ -194,7 +194,7 @@ pub trait KeyBackend {
 
 ### Chunked Encryption System
 
-TrustEdge implements chunked encryption for performance and streaming:
+Sealedge implements chunked encryption for performance and streaming:
 
 1. **Input Processing**: Files are split into configurable chunks (default 4096 bytes)
 2. **Per-Chunk Encryption**: Each chunk encrypted with AES-256-GCM
@@ -207,11 +207,11 @@ TrustEdge implements chunked encryption for performance and streaming:
 
 ## Development History
 
-TrustEdge has shipped through v2.4 with 53 phases of development across 14 milestones. All foundational, network, security, and platform features are complete.
+Sealedge has shipped through v2.4 with 53 phases of development across 14 milestones. All foundational, network, security, and platform features are complete.
 
 **Completed milestones**: v1.0 (Consolidation), v1.1 (YubiKey Overhaul), v1.2 (Scope Reduction), v1.3 (Dependency Audit), v1.4 (Placeholder Elimination), v1.5 (Platform Consolidation), v1.6 (Final Consolidation), v1.7 (Security Hardening), v1.8 (KDF Fix), v2.0 (End-to-End Demo), v2.1 (Data Lifecycle), v2.2 (Security Remediation), v2.3 (Security Testing), v2.4 (Security Review Remediation).
 
-See [CLAUDE.md](../../CLAUDE.md) for current build and test commands. See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for current priorities.
+See [CLAUDE.md](../../CLAUDE.md) for current build and test commands. See [GitHub Issues](https://github.com/TrustEdge-Labs/sealedge/issues) for current priorities.
 
 [↑ Back to top](#table-of-contents)
 
@@ -235,8 +235,8 @@ cargo install cargo-audit cargo-outdated
 
 ```bash
 # Clone repository
-git clone https://github.com/TrustEdge-Labs/trustedge.git
-cd trustedge
+git clone https://github.com/TrustEdge-Labs/sealedge.git
+cd sealedge
 
 # Build project
 # Build with audio support
@@ -283,17 +283,17 @@ cargo fmt
 
 # 4. Test end-to-end scenarios
 # Basic file encryption
-cargo run --release -- --input test.txt --envelope test.trst --key-hex $(openssl rand -hex 32)
-cargo run --release -- --decrypt --input test.trst --out roundtrip.txt
+cargo run --release -- --input test.txt --envelope test.seal --key-hex $(openssl rand -hex 32)
+cargo run --release -- --decrypt --input test.seal --out roundtrip.txt
 
 # Live audio capture (if audio features enabled)
-cargo run --release --features audio -- --audio-capture --duration 5 --envelope voice.trst --key-out key.hex
-cargo run --release --features audio -- --decrypt --input voice.trst --out restored.wav --key-hex $(cat key.hex)
+cargo run --release --features audio -- --audio-capture --duration 5 --envelope voice.seal --key-out key.hex
+cargo run --release --features audio -- --decrypt --input voice.seal --out restored.wav --key-hex $(cat key.hex)
 
 # Network mode testing
-cargo run --release --bin trustedge-server -- --port 8080 --decrypt &
+cargo run --release --bin sealedge-server -- --port 8080 --decrypt &
 SERVER_PID=$!
-cargo run --release --bin trustedge-client -- --server 127.0.0.1:8080 --input test.txt
+cargo run --release --bin sealedge-client -- --server 127.0.0.1:8080 --input test.txt
 kill $SERVER_PID
 
 # 5. Commit and push
@@ -312,12 +312,12 @@ git push origin feature/tpm-backend
 
 1. **Check Project Status**
    - Visit the [Project Board](https://github.com/TrustEdge-Labs/projects/2) for current priorities
-   - Review [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for development status
-   - Check [open issues](https://github.com/TrustEdge-Labs/trustedge/issues) for available tasks
+   - Review [GitHub Issues](https://github.com/TrustEdge-Labs/sealedge/issues) for development status
+   - Check [open issues](https://github.com/TrustEdge-Labs/sealedge/issues) for available tasks
 
 2. **Choose an Issue**
    - Look for issues labeled `good-first-issue` for newcomers
-   - Check [open issues](https://github.com/TrustEdge-Labs/trustedge/issues) for priority work
+   - Check [open issues](https://github.com/TrustEdge-Labs/sealedge/issues) for priority work
    - Assign yourself to issues you want to work on
 
 3. **Use Templates**
@@ -565,7 +565,7 @@ See [threat-model.md](../technical/threat-model.md) for complete threat analysis
    cargo bench
    
    # Memory usage profiling
-   valgrind --tool=massif ./target/release/trustedge-core
+   valgrind --tool=massif ./target/release/sealedge-core
    ```
 
 ### Continuous Integration

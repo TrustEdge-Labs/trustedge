@@ -1,11 +1,11 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Roadmap
+# Sealedge Roadmap
 
 > **Vision:** Trusted data from the edge. Capture, encrypt, and transfer data with cryptographic provenance and privacy-preserving architecture.
 
@@ -13,17 +13,17 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Current Status (v2.6)
 
-TrustEdge v2.6 is a **security-hardened, production-ready platform** with:
+Sealedge v2.6 is a **security-hardened, production-ready platform** with:
 
-- ✅ **Data-Agnostic Archives**: .trst format with generic, cam.video, sensor, audio, and log profiles
-- ✅ **Full Data Lifecycle**: `trst keygen` → `trst wrap` → `trst verify` → `trst unwrap`
+- ✅ **Data-Agnostic Archives**: .seal format with generic, cam.video, sensor, audio, and log profiles
+- ✅ **Full Data Lifecycle**: `seal keygen` → `seal wrap` → `seal verify` → `seal unwrap`
 - ✅ **Strong Cryptography**: AES-256-GCM, Ed25519, ECDSA P-256, BLAKE3, HKDF-SHA256, RSA OAEP-SHA256
-- ✅ **Encrypted Keys at Rest**: TRUSTEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM), 0600 permissions, zeroize-on-drop
-- ✅ **YubiKey Hardware Signing**: PIV ECDSA P-256 via `trst wrap --backend yubikey`
+- ✅ **Encrypted Keys at Rest**: SEALEDGE-KEY-V1 format (PBKDF2-SHA256 600k + AES-256-GCM), 0600 permissions, zeroize-on-drop
+- ✅ **YubiKey Hardware Signing**: PIV ECDSA P-256 via `seal wrap --backend yubikey`
 - ✅ **Platform Service**: Axum HTTP verification with PostgreSQL backend, 2 MB body limit, per-IP rate limiting, configurable CORS
 - ✅ **Docker Deployment**: One-command `docker compose up` with auto-migration, optional TLS termination
 - ✅ **SvelteKit Dashboard**: Verification status and receipt viewing (no client-side credentials)
-- ✅ **Browser Verification**: WASM-based .trst archive verification with working decrypt
+- ✅ **Browser Verification**: WASM-based .seal archive verification with working decrypt
 - ✅ **QUIC TLS Verified**: Real signature verification in HardwareBackedVerifier (MITM-proof)
 - ✅ **Security Validated**: 423 tests across 9 workspace crates, 16 milestones shipped (v1.0-v2.6)
 
@@ -83,7 +83,7 @@ TrustEdge v2.6 is a **security-hardened, production-ready platform** with:
 
 ## Contributing
 
-TrustEdge welcomes contributions in these areas:
+Sealedge welcomes contributions in these areas:
 
 - **Hardware Backend Development**: New crypto backend implementations
 - **Protocol Extensions**: Enhanced network protocols and formats

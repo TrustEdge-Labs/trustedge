@@ -1,13 +1,13 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Troubleshooting Guide
+# Sealedge Troubleshooting Guide
 
-Comprehensive error handling, common issues, and diagnostic procedures for TrustEdge.
+Comprehensive error handling, common issues, and diagnostic procedures for Sealedge.
 
 ## Table of Contents
 - [Common Error Messages](#common-error-messages)
@@ -37,10 +37,10 @@ Error: open envelope. Caused by: No such file or directory (os error 2)
 **Solution:**
 ```bash
 # Check file exists
-ls -la your_file.trst
+ls -la your_file.seal
 
 # Use absolute path if needed
-./target/release/trustedge-client --input /full/path/to/file.trst
+./target/release/sealedge-client --input /full/path/to/file.seal
 ```
 
 [↑ Back to top](#table-of-contents)
@@ -62,13 +62,13 @@ Required capability: AdvancedHashing
 **Solution:**
 ```bash
 # List available backends with capabilities
-trustedge-core --list-backends
+sealedge-core --list-backends
 
 # Check specific backend capabilities
-trustedge-core --backend-info universal_keyring
+sealedge-core --backend-info universal_keyring
 
 # Use backend with required capabilities
-trustedge-core --backend-preference "hashing:universal_keyring"
+sealedge-core --backend-preference "hashing:universal_keyring"
 ```
 
 ### Salt Format Issues
@@ -117,7 +117,7 @@ Caused by: universal_registry backend not available
 **Solution:**
 ```bash
 # Check registry status
-trustedge-core --list-backends
+sealedge-core --list-backends
 
 # If empty or error, verify system dependencies
 # Linux: Check keyring service
@@ -126,10 +126,10 @@ systemctl status gnome-keyring-daemon
 systemctl status kwallet
 
 # Reset registry configuration
-rm -rf ~/.config/trustedge/backend_registry.json
+rm -rf ~/.config/sealedge/backend_registry.json
 
 # Force registry reinitialization
-trustedge-core --backend-info universal_registry
+sealedge-core --backend-info universal_registry
 ```
 
 #### `Backend registration failed: capability conflict`
@@ -145,13 +145,13 @@ Caused by: Capability 'KeyDerivation' conflicts with existing backend 'universal
 **Solution:**
 ```bash
 # Check current backend registrations
-trustedge-core --list-backends
+sealedge-core --list-backends
 
 # Manually specify backend preferences to resolve conflicts
-trustedge-core --backend-preference "keyderivation:universal_keyring"
+sealedge-core --backend-preference "keyderivation:universal_keyring"
 
 # Or use explicit backend selection
-trustedge-core --backend-info universal_keyring
+sealedge-core --backend-info universal_keyring
 ```
 
 #### `Registry corruption detected`
@@ -170,16 +170,16 @@ Caused by: Invalid registry state - checksum mismatch
 **Solution:**
 ```bash
 # Backup current registry (if recoverable)
-cp ~/.config/trustedge/backend_registry.json ~/.config/trustedge/backend_registry.json.backup
+cp ~/.config/sealedge/backend_registry.json ~/.config/sealedge/backend_registry.json.backup
 
 # Remove corrupted registry
-rm -rf ~/.config/trustedge/backend_registry.json
+rm -rf ~/.config/sealedge/backend_registry.json
 
 # Force clean reinitialization
-trustedge-core --list-backends --verbose
+sealedge-core --list-backends --verbose
 
 # Verify registry health
-trustedge-core --backend-info universal_registry
+sealedge-core --backend-info universal_registry
 ```
 
 ### Capability Mismatch Errors
@@ -197,13 +197,13 @@ Caused by: Backend 'basic_keyring' does not support capability 'AdvancedHashing'
 **Solution:**
 ```bash
 # Check which backends support the required capability
-trustedge-core --list-backends | grep -A 5 "Capabilities.*Hashing"
+sealedge-core --list-backends | grep -A 5 "Capabilities.*Hashing"
 
 # Use a backend with the required capability
-trustedge-core --backend-preference "hashing:universal_keyring"
+sealedge-core --backend-preference "hashing:universal_keyring"
 
 # Or let the registry auto-select
-trustedge-core --show-operation-flow
+sealedge-core --show-operation-flow
 ```
 
 #### `Capability version mismatch`
@@ -219,13 +219,13 @@ Caused by: Required KeyDerivation v2.0, but backend provides v1.5
 **Solution:**
 ```bash
 # Check available capability versions
-trustedge-core --backend-info universal_keyring | grep -A 10 "Capabilities"
+sealedge-core --backend-info universal_keyring | grep -A 10 "Capabilities"
 
 # Update to a backend with newer capability versions
-trustedge-core --backend-preference "keyderivation:universal_keyring"
+sealedge-core --backend-preference "keyderivation:universal_keyring"
 
 # Check if system updates are available
-# Update TrustEdge to latest version for newest capabilities
+# Update Sealedge to latest version for newest capabilities
 ```
 
 #### `No backend available for operation`
@@ -241,12 +241,12 @@ Caused by: No registered backend supports capability 'QuantumResistantHashing'
 **Solution:**
 ```bash
 # List all available backends and their capabilities
-trustedge-core --list-backends
+sealedge-core --list-backends
 
 # Check if a fallback capability can be used
-trustedge-core --backend-preference "hashing:universal_keyring"
+sealedge-core --backend-preference "hashing:universal_keyring"
 
-# For future capabilities, check for TrustEdge updates
+# For future capabilities, check for Sealedge updates
 # Some capabilities may require specific backend plugins
 ```
 
@@ -268,16 +268,16 @@ Caused by: Registry timeout after 30 seconds
 **Solution:**
 ```bash
 # Check backend health status
-trustedge-core --backend-info universal_registry | grep -A 20 "Health Monitoring"
+sealedge-core --backend-info universal_registry | grep -A 20 "Health Monitoring"
 
 # Manually specify a known-good backend
-trustedge-core --backend-preference "keyderivation:keyring"
+sealedge-core --backend-preference "keyderivation:keyring"
 
 # Reduce timeout for testing
-trustedge-core --backend-config "selection_timeout=10"
+sealedge-core --backend-config "selection_timeout=10"
 
 # Check system resources
-top -p $(pgrep trustedge)
+top -p $(pgrep sealedge)
 ```
 
 #### `Circular backend dependency detected`
@@ -293,14 +293,14 @@ Caused by: Circular dependency: universal_keyring -> keyring -> universal_keyrin
 **Solution:**
 ```bash
 # Check current backend routing configuration
-trustedge-core --backend-info universal_registry | grep -A 15 "Operation Routing"
+sealedge-core --backend-info universal_registry | grep -A 15 "Operation Routing"
 
 # Reset to default routing preferences
-rm -rf ~/.config/trustedge/backend_preferences.json
+rm -rf ~/.config/sealedge/backend_preferences.json
 
 # Use explicit, non-circular preferences
-trustedge-core --backend-preference "keyderivation:universal_keyring"
-trustedge-core --backend-preference "storage:keyring"
+sealedge-core --backend-preference "keyderivation:universal_keyring"
+sealedge-core --backend-preference "storage:keyring"
 ```
 
 #### `Backend performance degradation`
@@ -317,16 +317,16 @@ Switching to fallback backend 'keyring'
 **Diagnostic Steps:**
 ```bash
 # Check detailed performance metrics
-trustedge-core --backend-info universal_registry | grep -A 20 "Performance Analysis"
+sealedge-core --backend-info universal_registry | grep -A 20 "Performance Analysis"
 
 # Monitor real-time performance
-trustedge-core --backend-config "performance_monitoring=detailed" --verbose
+sealedge-core --backend-config "performance_monitoring=detailed" --verbose
 
 # Check system resources affecting the backend
 # Memory usage
 free -h
 # CPU usage
-top -p $(pgrep trustedge)
+top -p $(pgrep sealedge)
 # Disk I/O
 iostat -x 1 5
 ```
@@ -334,14 +334,14 @@ iostat -x 1 5
 **Solutions:**
 ```bash
 # Optimize backend configuration for performance
-trustedge-core --backend-config "pbkdf2_iterations=100000"  # Reduce iterations
-trustedge-core --backend-config "argon2_memory=32768"      # Reduce memory usage
+sealedge-core --backend-config "pbkdf2_iterations=100000"  # Reduce iterations
+sealedge-core --backend-config "argon2_memory=32768"      # Reduce memory usage
 
 # Use performance-optimized backend preference
-trustedge-core --backend-preference "keyderivation:keyring"  # Faster backend
+sealedge-core --backend-preference "keyderivation:keyring"  # Faster backend
 
 # Increase performance thresholds if acceptable
-trustedge-core --backend-config "performance_threshold=2000"  # 2 second threshold
+sealedge-core --backend-config "performance_threshold=2000"  # 2 second threshold
 ```
 
 ### Registry Maintenance and Recovery
@@ -352,23 +352,23 @@ trustedge-core --backend-config "performance_threshold=2000"  # 2 second thresho
 # Complete registry reset (nuclear option)
 echo "Performing complete backend registry reset..."
 
-# 1. Stop any running TrustEdge processes
-pkill trustedge
+# 1. Stop any running Sealedge processes
+pkill sealedge
 
 # 2. Backup current configuration
-mkdir -p ~/.config/trustedge/backup/$(date +%Y%m%d_%H%M%S)
-cp -r ~/.config/trustedge/*.json ~/.config/trustedge/backup/$(date +%Y%m%d_%H%M%S)/ 2>/dev/null || true
+mkdir -p ~/.config/sealedge/backup/$(date +%Y%m%d_%H%M%S)
+cp -r ~/.config/sealedge/*.json ~/.config/sealedge/backup/$(date +%Y%m%d_%H%M%S)/ 2>/dev/null || true
 
 # 3. Remove all registry files
-rm -rf ~/.config/trustedge/backend_registry.json
-rm -rf ~/.config/trustedge/backend_preferences.json
-rm -rf ~/.config/trustedge/backend_cache.json
+rm -rf ~/.config/sealedge/backend_registry.json
+rm -rf ~/.config/sealedge/backend_preferences.json
+rm -rf ~/.config/sealedge/backend_cache.json
 
 # 4. Reinitialize with defaults
-trustedge-core --list-backends
+sealedge-core --list-backends
 
 # 5. Verify registry health
-trustedge-core --backend-info universal_registry
+sealedge-core --backend-info universal_registry
 ```
 
 #### Registry Health Check Script
@@ -377,26 +377,26 @@ trustedge-core --backend-info universal_registry
 #!/bin/bash
 # Backend Health Check Script
 
-echo "🔍 TrustEdge Backend Health Check"
+echo "🔍 Sealedge Backend Health Check"
 echo "================================="
 
 # Check registry status
 echo "📊 Registry Status:"
-if trustedge-core --list-backends >/dev/null 2>&1; then
+if sealedge-core --list-backends >/dev/null 2>&1; then
     echo "  ✅ Registry accessible"
     
     # Count registered backends
-    BACKEND_COUNT=$(trustedge-core --list-backends 2>/dev/null | grep -c "✓.*Backend")
+    BACKEND_COUNT=$(sealedge-core --list-backends 2>/dev/null | grep -c "✓.*Backend")
     echo "  📊 Backends registered: $BACKEND_COUNT"
     
     # Check each backend health
     echo "🔍 Backend Health:"
-    trustedge-core --backend-info universal_registry | grep -A 5 "Backend Health"
+    sealedge-core --backend-info universal_registry | grep -A 5 "Backend Health"
     
     # Performance check
     echo "⚡ Performance Check:"
     START_TIME=$(date +%s%N)
-    trustedge-core --backend-info keyring >/dev/null 2>&1
+    sealedge-core --backend-info keyring >/dev/null 2>&1
     END_TIME=$(date +%s%N)
     DURATION=$((($END_TIME - $START_TIME) / 1000000))  # Convert to milliseconds
     
@@ -408,14 +408,14 @@ if trustedge-core --list-backends >/dev/null 2>&1; then
     
 else
     echo "  ❌ Registry inaccessible - requires attention"
-    echo "  💡 Try: trustedge-core --list-backends --verbose"
+    echo "  💡 Try: sealedge-core --list-backends --verbose"
 fi
 
 echo ""
 echo "🎯 Quick Fix Commands:"
-echo "  Reset registry: rm ~/.config/trustedge/backend_registry.json"
-echo "  Reinitialize: trustedge-core --list-backends"
-echo "  Health check: trustedge-core --backend-info universal_registry"
+echo "  Reset registry: rm ~/.config/sealedge/backend_registry.json"
+echo "  Reinitialize: sealedge-core --list-backends"
+echo "  Health check: sealedge-core --backend-info universal_registry"
 ```
 
 [↑ Back to top](#table-of-contents)
@@ -447,7 +447,7 @@ Connection attempt 1 failed: connection refused
 **Solutions:**
 ```bash
 # Start server on correct port
-./target/release/trustedge-server --listen 127.0.0.1:8080
+./target/release/sealedge-server --listen 127.0.0.1:8080
 
 # Check firewall rules
 sudo ufw status
@@ -462,13 +462,13 @@ Connection attempt 2 failed: timeout after 15s
 **Solutions:**
 ```bash
 # Increase timeout for slow networks
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --server remote.example.com:8080 \
   --connect-timeout 30 \
   --retry-attempts 3
 
 # Use retry logic for unstable networks
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --retry-attempts 5 \
   --retry-delay 3
 ```
@@ -478,7 +478,7 @@ Connection attempt 2 failed: timeout after 15s
 #### Server Startup Problems
 **Check server logs with verbose mode:**
 ```bash
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --listen 0.0.0.0:8080 \
   --verbose \
   --decrypt
@@ -504,7 +504,7 @@ Connection attempt 2 failed: timeout after 15s
 **Solution:**
 ```bash
 # Add authentication to client
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --server 127.0.0.1:8080 \
   --input data.wav \
   --require-auth \
@@ -523,12 +523,12 @@ Connection attempt 2 failed: timeout after 15s
 rm *_identity.cert *.key
 
 # Regenerate with verbose logging
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --require-auth \
   --verbose \
   --server-identity "Debug Server"
 
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --require-auth \
   --verbose \
   --client-identity "Debug Client"
@@ -540,10 +540,10 @@ rm *_identity.cert *.key
 **Solutions:**
 ```bash
 # Reconnect with fresh authentication
-./target/release/trustedge-client --require-auth --client-identity "Client"
+./target/release/sealedge-client --require-auth --client-identity "Client"
 
 # Use longer session timeout for server
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --require-auth \
   --session-timeout 600  # 10 minutes
 ```
@@ -557,12 +557,12 @@ rm *_identity.cert *.key
 ### Audio Device Problems
 
 #### `No audio input devices found`
-**Cause:** System audio drivers not available or TrustEdge built without audio features.
+**Cause:** System audio drivers not available or Sealedge built without audio features.
 
 **Solutions:**
 ```bash
 # Verify audio features are enabled
-./target/release/trustedge-core --help | grep -i audio
+./target/release/sealedge-core --help | grep -i audio
 
 # If missing, rebuild with audio features
 cargo build --release --features audio
@@ -585,7 +585,7 @@ sudo usermod -a -G audio $USER
 groups $USER
 
 # Test with PulseAudio
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "pulse" \
   --max-duration 5
@@ -597,16 +597,16 @@ groups $USER
 **Solutions:**
 ```bash
 # Always check available devices first
-./target/release/trustedge-core --list-audio-devices
+./target/release/sealedge-core --list-audio-devices
 
 # Copy device name exactly from the list
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
   --max-duration 5
 
 # Use system default as fallback
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --max-duration 5
 ```
@@ -624,13 +624,13 @@ arecord -d 3 test_system.wav  # Linux
 sox -d test_system.wav trim 0 3  # macOS/Linux
 
 # Use verbose output for debugging
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --max-duration 5 \
   --verbose
 
 # Try different sample rates
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --sample-rate 44100 \
   --max-duration 5
@@ -639,16 +639,16 @@ sox -d test_system.wav trim 0 3  # macOS/Linux
 #### Decrypted Audio Not Playable
 **Cause:** Live audio captures output raw PCM data, not playable audio files.
 
-**Important:** TrustEdge decryption behavior varies by input type:
+**Important:** Sealedge decryption behavior varies by input type:
 - **File inputs** (MP3, WAV, etc.): Original format preserved
 - **Live audio captures** (`--live-capture`): Outputs **raw PCM data** (32-bit float, little-endian)
 
 **Solutions:**
 ```bash
 # For live audio captures: Always use .raw extension for clarity
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input live_audio.trst \
+  --input live_audio.seal \
   --out audio.raw \
   --key-hex $KEY \
   --verbose
@@ -660,9 +660,9 @@ sox -d test_system.wav trim 0 3  # macOS/Linux
 ffmpeg -f f32le -ar 44100 -ac 2 -i audio.raw audio.wav
 
 # For file inputs: Use original extension
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input music_file.trst \
+  --input music_file.seal \
   --out music_file.mp3 \
   --key-hex $KEY
 # Output will be playable MP3 file (original format preserved)
@@ -683,43 +683,43 @@ ffmpeg -f f32le -ar 44100 -ac 2 -i audio.raw audio.wav
 1. **Wrong key**: Key doesn't match encryption key
 2. **Wrong passphrase/salt**: PBKDF2 derivation mismatch  
 3. **File corruption**: Encrypted data has been modified
-4. **Format mismatch**: File isn't a valid .trst file
+4. **Format mismatch**: File isn't a valid .seal file
 
 **Diagnostic Steps:**
 ```bash
-# 1. Verify file is valid .trst format
-file encrypted.trst
-hexdump -C encrypted.trst | head -1
+# 1. Verify file is valid .seal format
+file encrypted.seal
+hexdump -C encrypted.seal | head -1
 # Should start with magic bytes
 
 # 2. Test with known good key
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input encrypted.trst \
+  --input encrypted.seal \
   --out test.txt \
   --key-hex "known_good_key_64_hex_chars"
 
 # 3. Test passphrase/salt combination
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input encrypted.trst \
+  --input encrypted.seal \
   --out test.txt \
   --use-keyring \
   --salt-hex "original_salt_used_for_encryption"
 ```
 
 #### `bad magic`
-**Cause:** File is not a valid TrustEdge envelope format.
+**Cause:** File is not a valid Sealedge envelope format.
 
 **Solutions:**
 ```bash
 # Check file format
-file suspicious_file.trst
+file suspicious_file.seal
 
 # Verify file wasn't corrupted
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input original_file.txt \
-  --envelope new_envelope.trst \
+  --envelope new_envelope.seal \
   --key-hex $(openssl rand -hex 32)
 ```
 
@@ -737,7 +737,7 @@ file suspicious_file.trst
 **Diagnosis:**
 ```bash
 # Inspect file format detection
-./target/release/trustedge-core --input file.trst --inspect --verbose
+./target/release/sealedge-core --input file.seal --inspect --verbose
 
 # Check original file extension and content
 file original_file.pdf  # Should show PDF document
@@ -750,7 +750,7 @@ hexdump -C original_file.pdf | head -2  # Check file headers
 # but will show as binary data. This is expected behavior.
 
 # To verify correct handling:
-./target/release/trustedge-core --decrypt --input file.trst --out restored_file.pdf --key-hex $KEY
+./target/release/sealedge-core --decrypt --input file.seal --out restored_file.pdf --key-hex $KEY
 file restored_file.pdf  # Should match original type
 diff original_file.pdf restored_file.pdf  # Should be identical
 ```
@@ -766,7 +766,7 @@ diff original_file.pdf restored_file.pdf  # Should be identical
 **Verification:**
 ```bash
 # Check what MIME type was detected
-./target/release/trustedge-core --input file.trst --inspect
+./target/release/sealedge-core --input file.seal --inspect
 
 # Expected output:
 # MIME Type: application/pdf  (for PDF files)
@@ -780,11 +780,11 @@ diff original_file.pdf restored_file.pdf  # Should be identical
 
 ```bash
 # Inspect encrypted archive
-./target/release/trustedge-core --input suspicious_file.trst --inspect --verbose
+./target/release/sealedge-core --input suspicious_file.seal --inspect --verbose
 
 # Example output:
-# TrustEdge Archive Information:
-#   File: suspicious_file.trst
+# Sealedge Archive Information:
+#   File: suspicious_file.seal
 #   Format Version: 1
 #   Algorithm: AES-256-GCM
 #   Data Type: File
@@ -800,12 +800,12 @@ diff original_file.pdf restored_file.pdf  # Should be identical
 **Test for header corruption:**
 ```bash
 # Verify file magic bytes
-hexdump -C file.trst | head -1
+hexdump -C file.seal | head -1
 # Should show expected magic bytes
 
 # Test with known good file
-cp known_good.trst test_copy.trst
-./target/release/trustedge-core --decrypt --input test_copy.trst
+cp known_good.seal test_copy.seal
+./target/release/sealedge-core --decrypt --input test_copy.seal
 ```
 
 #### Record Tampering Detection
@@ -817,15 +817,15 @@ cp known_good.trst test_copy.trst
 echo "test data" > test.txt
 
 # Encrypt
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input test.txt \
-  --envelope test.trst \
+  --envelope test.seal \
   --key-hex $(openssl rand -hex 32)
 
 # Verify encryption worked
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input test.trst \
+  --input test.seal \
   --out recovered.txt \
   --key-hex $(cat last_key.hex)
 
@@ -841,7 +841,7 @@ diff test.txt recovered.txt
 **Diagnosis:**
 ```bash
 # Check what type of data was originally encrypted
-./target/release/trustedge-core --input file.trst --inspect
+./target/release/sealedge-core --input file.seal --inspect
 
 # For file inputs (MP3, WAV, etc.):
 # Data Type: File
@@ -858,11 +858,11 @@ diff test.txt recovered.txt
 **Solution:**
 ```bash
 # File inputs preserve format automatically
-./target/release/trustedge-core --decrypt --input music.trst --out music.mp3 --key-hex $KEY
+./target/release/sealedge-core --decrypt --input music.seal --out music.mp3 --key-hex $KEY
 # Output: Playable MP3 file
 
 # Live audio requires conversion
-./target/release/trustedge-core --decrypt --input live_capture.trst --out audio.raw --key-hex $KEY
+./target/release/sealedge-core --decrypt --input live_capture.seal --out audio.raw --key-hex $KEY
 ffmpeg -f f32le -ar 44100 -ac 1 -i audio.raw audio.wav
 ```
 
@@ -870,12 +870,12 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i audio.raw audio.wav
 **Test for header corruption:**
 ```bash
 # Verify file magic bytes
-hexdump -C file.trst | head -1
+hexdump -C file.seal | head -1
 # Should show expected magic bytes
 
 # Test with known good file
-cp known_good.trst test_copy.trst
-./target/release/trustedge-core --decrypt --input test_copy.trst
+cp known_good.seal test_copy.seal
+./target/release/sealedge-core --decrypt --input test_copy.seal
 ```
 
 #### Record Tampering Detection
@@ -887,15 +887,15 @@ cp known_good.trst test_copy.trst
 echo "test data" > test.txt
 
 # Encrypt
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input test.txt \
-  --envelope test.trst \
+  --envelope test.seal \
   --key-hex $(openssl rand -hex 32)
 
 # Verify encryption worked
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input test.trst \
+  --input test.seal \
   --out recovered.txt \
   --key-hex $(cat last_key.hex)
 
@@ -915,21 +915,21 @@ Enable verbose output for detailed troubleshooting:
 
 ```bash
 # Server with debug output
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --listen 127.0.0.1:8080 \
   --verbose \
   --decrypt
 
 # Client with debug output  
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --server 127.0.0.1:8080 \
   --input file.txt \
   --verbose
 
 # File encryption/decryption with format details
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input file.trst \
+  --input file.seal \
   --out restored.txt \
   --key-hex $KEY \
   --verbose
@@ -946,21 +946,21 @@ Enable verbose output for detailed troubleshooting:
 
 ```bash
 # Quick format check (no decryption)
-./target/release/trustedge-core --input file.trst --inspect
+./target/release/sealedge-core --input file.seal --inspect
 
 # Detailed format inspection
-./target/release/trustedge-core --input file.trst --inspect --verbose
+./target/release/sealedge-core --input file.seal --inspect --verbose
 
 # Compare multiple files
-for file in *.trst; do
+for file in *.seal; do
   echo "=== $file ==="
-  ./target/release/trustedge-core --input "$file" --inspect
+  ./target/release/sealedge-core --input "$file" --inspect
   echo
 done
 ```
 
 # Authentication debug
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --require-auth \
   --verbose \
   --server-identity "Debug Server"
@@ -971,15 +971,15 @@ done
 Gather system information for bug reports:
 
 ```bash
-# TrustEdge version
-./target/release/trustedge-core --version
+# Sealedge version
+./target/release/sealedge-core --version
 
 # System information
 uname -a
 rustc --version
 
 # Network connectivity
-netstat -tlnp | grep trustedge
+netstat -tlnp | grep sealedge
 ss -tlnp | grep :8080
 
 # Certificate files
@@ -995,20 +995,20 @@ Create clean test environment:
 
 ```bash
 # Clean slate for testing
-rm -f *.trst *.hex *_identity.cert *.key
+rm -f *.seal *.hex *_identity.cert *.key
 
 # Generate test data
-echo "Hello TrustEdge Testing" > test_input.txt
+echo "Hello Sealedge Testing" > test_input.txt
 
 # Test basic encryption/decryption
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input test_input.txt \
-  --envelope test.trst \
+  --envelope test.seal \
   --key-out test.key
 
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input test.trst \
+  --input test.seal \
   --out test_output.txt \
   --key-hex $(cat test.key)
 
@@ -1022,7 +1022,7 @@ Test network components in isolation:
 
 ```bash
 # Test server startup
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --listen 127.0.0.1:8080 \
   --verbose &
 SERVER_PID=$!
@@ -1047,8 +1047,8 @@ If issues persist after following this guide:
 
 1. **Check logs**: Always run with `--verbose` for detailed output
 2. **Test minimal case**: Use simplest possible command that reproduces issue
-3. **Environment**: Note OS, Rust version, and TrustEdge version
-4. **Create issue**: Use [GitHub issue templates](https://github.com/TrustEdge-Labs/trustedge/issues/new/choose)
+3. **Environment**: Note OS, Rust version, and Sealedge version
+4. **Create issue**: Use [GitHub issue templates](https://github.com/TrustEdge-Labs/sealedge/issues/new/choose)
 
 ### Issue Report Template
 
@@ -1056,11 +1056,11 @@ If issues persist after following this guide:
 **System Information:**
 - OS: [e.g., Ubuntu 22.04]
 - Rust version: [e.g., 1.75.0]
-- TrustEdge version: [output of --version]
+- Sealedge version: [output of --version]
 
 **Command that failed:**
 ```bash
-./target/release/trustedge-client --server 127.0.0.1:8080 --input file.txt
+./target/release/sealedge-client --server 127.0.0.1:8080 --input file.txt
 ```
 
 **Error output:**
@@ -1081,16 +1081,16 @@ If issues persist after following this guide:
 
 ---
 
-This troubleshooting guide covers the most common TrustEdge issues. For authentication-specific problems, also see [AUTHENTICATION_GUIDE.md](authentication.md#troubleshooting).
+This troubleshooting guide covers the most common Sealedge issues. For authentication-specific problems, also see [AUTHENTICATION_GUIDE.md](authentication.md#troubleshooting).
 
 ---
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
 - **[Documentation](../README.md)** - Complete docs index
 - **[CLI Reference](cli.md)** - Command reference
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

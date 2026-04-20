@@ -1,13 +1,13 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Coding Standards
+# Sealedge Coding Standards
 
-This document defines the coding standards and conventions for the TrustEdge project. Following these standards ensures consistency, maintainability, and a professional codebase.
+This document defines the coding standards and conventions for the Sealedge project. Following these standards ensures consistency, maintainability, and a professional codebase.
 
 ## 🦀 Rust Code Standards
 
@@ -54,7 +54,7 @@ enum DataType;
 **Constants**: `SCREAMING_SNAKE_CASE`
 ```rust
 const DEFAULT_CHUNK_SIZE: usize = 4096;
-const MAGIC_BYTES: &[u8] = b"TRST";
+const MAGIC_BYTES: &[u8] = b"SEAL";
 ```
 
 **Modules**: `snake_case`
@@ -316,7 +316,7 @@ let mut buffer = Vec::new();
 ///
 /// # Example
 /// ```rust
-/// use trustedge_core::{encrypt_file, generate_key};
+/// use sealedge_core::{encrypt_file, generate_key};
 /// 
 /// let key = generate_key()?;
 /// let result = encrypt_file("audio.mp3", &key)?;

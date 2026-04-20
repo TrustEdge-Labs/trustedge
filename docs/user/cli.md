@@ -1,28 +1,28 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge CLI Reference
+# Sealedge CLI Reference
 
-Complete command-line interface documentation for TrustEdge, covering both the core encryption system and the .trst archive format.
+Complete command-line interface documentation for Sealedge, covering both the core encryption system and the .seal archive format.
 
 ## Table of Contents
 - [Overview](#overview)
-- [Point Attestation (.te-attestation.json)](#point-attestation-te-attestationjson)
-  - [trst attest-sbom - Create SBOM Attestation](#trst-attest-sbom---create-sbom-attestation)
-  - [trst verify-attestation - Verify Attestation](#trst-verify-attestation---verify-attestation)
-- [Archive System (.trst)](#archive-system-trst)
-  - [trst keygen - Generate Key Pair](#trst-keygen---generate-key-pair)
-  - [trst wrap - Create Archives](#trst-wrap---create-archives)
-  - [trst verify - Verify Archives](#trst-verify---verify-archives)
-  - [trst unwrap - Decrypt Archives](#trst-unwrap---decrypt-archives)
-  - [trst emit-request - Submit for Verification](#trst-emit-request---submit-for-verification)
+- [Point Attestation (.se-attestation.json)](#point-attestation-te-attestationjson)
+  - [seal attest-sbom - Create SBOM Attestation](#seal-attest-sbom---create-sbom-attestation)
+  - [seal verify-attestation - Verify Attestation](#seal-verify-attestation---verify-attestation)
+- [Archive System (.seal)](#archive-system-trst)
+  - [seal keygen - Generate Key Pair](#seal-keygen---generate-key-pair)
+  - [seal wrap - Create Archives](#seal-wrap---create-archives)
+  - [seal verify - Verify Archives](#seal-verify---verify-archives)
+  - [seal unwrap - Decrypt Archives](#seal-unwrap---decrypt-archives)
+  - [seal emit-request - Submit for Verification](#seal-emit-request---submit-for-verification)
 - [Encrypted Key Files](#encrypted-key-files)
 - [Core Encryption System](#core-encryption-system)
-  - [trustedge - Envelope Encryption](#trustedge---envelope-encryption)
+  - [sealedge - Envelope Encryption](#sealedge---envelope-encryption)
   - [Network Operations](#network-operations)
 - [Complete Workflows](#complete-workflows)
 - [Error Handling](#error-handling)
@@ -31,25 +31,25 @@ Complete command-line interface documentation for TrustEdge, covering both the c
 
 ## Overview
 
-TrustEdge provides two complementary CLI tools:
+Sealedge provides two complementary CLI tools:
 
-1. **`trst`** - Archive + attestation CLI (keygen, wrap, verify, unwrap, emit-request, attest-sbom, verify-attestation)
-2. **`trustedge`** - Core envelope encryption and network operations
+1. **`seal`** - Archive + attestation CLI (keygen, wrap, verify, unwrap, emit-request, attest-sbom, verify-attestation)
+2. **`sealedge`** - Core envelope encryption and network operations
 
 Both tools are built after running `cargo build --workspace --release`.
 
 ---
 
-## Point Attestation (.te-attestation.json)
+## Point Attestation (.se-attestation.json)
 
-Point attestation creates a lightweight JSON document that cryptographically binds two artifacts together (e.g., an SBOM and a binary). The attestation is self-contained: it includes the Ed25519 signature, BLAKE3 hashes, a random nonce, and the signer's public key. Any third party can verify it without access to TrustEdge infrastructure.
+Point attestation creates a lightweight JSON document that cryptographically binds two artifacts together (e.g., an SBOM and a binary). The attestation is self-contained: it includes the Ed25519 signature, BLAKE3 hashes, a random nonce, and the signer's public key. Any third party can verify it without access to Sealedge infrastructure.
 
-### trst attest-sbom - Create SBOM Attestation
+### seal attest-sbom - Create SBOM Attestation
 
 Bind a CycloneDX SBOM to a binary artifact and sign the binding with an Ed25519 key.
 
 ```bash
-trst attest-sbom --binary <path> --sbom <path> \
+seal attest-sbom --binary <path> --sbom <path> \
   --device-key <key-path> --device-pub <pub-path> \
   --out <output-path>
 ```
@@ -62,7 +62,7 @@ trst attest-sbom --binary <path> --sbom <path> \
 | `--sbom` | Yes | Path to the CycloneDX JSON SBOM (the evidence) |
 | `--device-key` | Yes | Path to Ed25519 private key file |
 | `--device-pub` | Yes | Path to Ed25519 public key file |
-| `--out` | No | Output path (default: `attestation.te-attestation.json`) |
+| `--out` | No | Output path (default: `attestation.se-attestation.json`) |
 | `--unencrypted` | No | Read key without passphrase prompt (for CI/automation) |
 
 **Input validation:**
@@ -71,7 +71,7 @@ trst attest-sbom --binary <path> --sbom <path> \
 - SBOM must be valid JSON
 - Key file must exist and be readable
 
-**Output:** A `.te-attestation.json` file containing:
+**Output:** A `.se-attestation.json` file containing:
 - `format`: `"te-point-attestation-v1"`
 - `subject`: BLAKE3 hash, filename, and label ("binary") of the binary artifact
 - `evidence`: BLAKE3 hash, filename, and label ("sbom") of the SBOM
@@ -83,24 +83,24 @@ trst attest-sbom --binary <path> --sbom <path> \
 **Example:**
 
 ```bash
-trst attest-sbom --binary target/release/myapp --sbom bom.cdx.json \
+seal attest-sbom --binary target/release/myapp --sbom bom.cdx.json \
   --device-key build.key --device-pub build.pub
-# Output: attestation.te-attestation.json
+# Output: attestation.se-attestation.json
 ```
 
-### trst verify-attestation - Verify Attestation
+### seal verify-attestation - Verify Attestation
 
 Verify an attestation document's Ed25519 signature, with optional file hash checking.
 
 ```bash
-trst verify-attestation <attestation-path> --device-pub <pub-key>
+seal verify-attestation <attestation-path> --device-pub <pub-key>
 ```
 
 **Arguments:**
 
 | Flag | Required | Description |
 |------|----------|-------------|
-| `<attestation-path>` | Yes | Path to `.te-attestation.json` file |
+| `<attestation-path>` | Yes | Path to `.se-attestation.json` file |
 | `--device-pub` | Yes | Public key string (`ed25519:...`) or path to `.pub` file |
 | `--binary` | No | Path to binary file for hash verification |
 | `--sbom` | No | Path to SBOM file for hash verification |
@@ -114,27 +114,27 @@ trst verify-attestation <attestation-path> --device-pub <pub-key>
 
 ```bash
 # Signature verification only
-trst verify-attestation attestation.te-attestation.json \
+seal verify-attestation attestation.se-attestation.json \
   --device-pub "$(cat build.pub)"
 
 # Signature + file hash verification
-trst verify-attestation attestation.te-attestation.json \
+seal verify-attestation attestation.se-attestation.json \
   --device-pub "$(cat build.pub)" \
   --binary target/release/myapp --sbom bom.cdx.json
 ```
 
 ---
 
-## Archive System (.trst)
+## Archive System (.seal)
 
-The `trst` command provides secure archival capabilities with Ed25519 digital signatures and cryptographic chunk verification.
+The `seal` command provides secure archival capabilities with Ed25519 digital signatures and cryptographic chunk verification.
 
-### trst keygen - Generate Key Pair
+### seal keygen - Generate Key Pair
 
 Generate a device Ed25519 signing key pair for archive signing.
 
 ```bash
-trst keygen --out-key <KEY_PATH> --out-pub <PUB_PATH> [--unencrypted]
+seal keygen --out-key <KEY_PATH> --out-pub <PUB_PATH> [--unencrypted]
 ```
 
 | Option | Description |
@@ -145,18 +145,18 @@ trst keygen --out-key <KEY_PATH> --out-pub <PUB_PATH> [--unencrypted]
 
 ```bash
 # Generate encrypted key (passphrase prompted)
-trst keygen --out-key device.key --out-pub device.pub
+seal keygen --out-key device.key --out-pub device.pub
 
 # Generate unencrypted key for CI/automation
-trst keygen --out-key device.key --out-pub device.pub --unencrypted
+seal keygen --out-key device.key --out-pub device.pub --unencrypted
 ```
 
-### trst wrap - Create Archives
+### seal wrap - Create Archives
 
-Create a signed .trst archive from input data.
+Create a signed .seal archive from input data.
 
 ```bash
-trst wrap --in <INPUT> --out <OUTPUT> [OPTIONS]
+seal wrap --in <INPUT> --out <OUTPUT> [OPTIONS]
 ```
 
 #### Required Arguments
@@ -164,7 +164,7 @@ trst wrap --in <INPUT> --out <OUTPUT> [OPTIONS]
 | Option | Description | Example |
 |--------|-------------|---------|
 | `--in <PATH>` | Input file or data stream | `--in video.bin` |
-| `--out <PATH>` | Output .trst archive directory | `--out recording.trst` |
+| `--out <PATH>` | Output .seal archive directory | `--out recording.seal` |
 
 #### Archive Options
 
@@ -203,12 +203,12 @@ trst wrap --in <INPUT> --out <OUTPUT> [OPTIONS]
 
 ```bash
 # Basic archive creation
-trst wrap --in recording.bin --out recording.trst
+seal wrap --in recording.bin --out recording.seal
 
 # High-quality security camera archive
-trst wrap \
+seal wrap \
   --in security_feed.bin \
-  --out evidence.trst \
+  --out evidence.seal \
   --profile cam.video \
   --fps 60 \
   --resolution 3840x2160 \
@@ -216,25 +216,25 @@ trst wrap \
   --device-id "CAM-LOBBY-01"
 
 # Continuous recording with linking
-trst wrap \
+seal wrap \
   --in segment_002.bin \
-  --out segment_002.trst \
+  --out segment_002.seal \
   --prev-archive-hash "$(cat segment_001.hash)"
 ```
 
-### trst verify - Verify Archives
+### seal verify - Verify Archives
 
-Verify the cryptographic integrity of a .trst archive.
+Verify the cryptographic integrity of a .seal archive.
 
 ```bash
-trst verify <ARCHIVE> --device-pub <PUBLIC_KEY>
+seal verify <ARCHIVE> --device-pub <PUBLIC_KEY>
 ```
 
 #### Arguments
 
 | Argument | Description | Example |
 |----------|-------------|---------|
-| `<ARCHIVE>` | Path to .trst archive directory | `recording.trst` |
+| `<ARCHIVE>` | Path to .seal archive directory | `recording.seal` |
 | `--device-pub <KEY>` | Device public key for verification | `--device-pub "ed25519:GAUpGXoor5gP..."` |
 
 #### Verification Process
@@ -250,10 +250,10 @@ The verify command performs comprehensive validation:
 
 ```bash
 # Basic verification
-trst verify recording.trst --device-pub "ed25519:GAUpGXoor5gP6JDkeVtj/PV4quuyLlZlojizplendEUlSU="
+seal verify recording.seal --device-pub "ed25519:GAUpGXoor5gP6JDkeVtj/PV4quuyLlZlojizplendEUlSU="
 
 # Verify with stored public key
-trst verify evidence.trst --device-pub "$(cat device.pub)"
+seal verify evidence.seal --device-pub "$(cat device.pub)"
 ```
 
 #### Verification Output
@@ -264,62 +264,62 @@ Continuity: PASS
 Segments: 16  Duration(s): 32.0  Chunk(s): 2.0
 ```
 
-### trst unwrap - Decrypt Archives
+### seal unwrap - Decrypt Archives
 
-Decrypt a .trst archive and recover the original data.
+Decrypt a .seal archive and recover the original data.
 
 ```bash
-trst unwrap <ARCHIVE> --device-key <KEY_PATH> --out <OUTPUT> [--unencrypted]
+seal unwrap <ARCHIVE> --device-key <KEY_PATH> --out <OUTPUT> [--unencrypted]
 ```
 
 | Argument | Description |
 |----------|-------------|
-| `<ARCHIVE>` | Path to .trst archive directory |
+| `<ARCHIVE>` | Path to .seal archive directory |
 | `--device-key <PATH>` | Path to device private key file |
 | `--out <PATH>` | Output path for recovered data |
 | `--unencrypted` | Read key without passphrase prompt (CI/automation only) |
 
 ```bash
 # Recover data from an archive (passphrase prompted if key is encrypted)
-trst unwrap recording.trst --device-key device.key --out recovered.bin
+seal unwrap recording.seal --device-key device.key --out recovered.bin
 
 # Recover without passphrase (unencrypted key)
-trst unwrap recording.trst --device-key device.key --out recovered.bin --unencrypted
+seal unwrap recording.seal --device-key device.key --out recovered.bin --unencrypted
 ```
 
-### trst emit-request - Submit for Verification
+### seal emit-request - Submit for Verification
 
-Submit an archive to a TrustEdge platform server for remote verification.
+Submit an archive to a Sealedge platform server for remote verification.
 
 ```bash
-trst emit-request --archive <PATH> --device-pub <KEY> --out <PATH> [--post <URL>]
+seal emit-request --archive <PATH> --device-pub <KEY> --out <PATH> [--post <URL>]
 ```
 
 | Option | Description |
 |--------|-------------|
-| `--archive <PATH>` | Path to .trst archive directory |
+| `--archive <PATH>` | Path to .seal archive directory |
 | `--device-pub <KEY>` | Device public key (ed25519: prefixed string) |
 | `--out <PATH>` | Output path for the JSON verification request |
 | `--post <URL>` | POST the request to this platform endpoint |
 
 ```bash
 # Write request to file
-trst emit-request --archive archive.trst --device-pub device.pub --out request.json
+seal emit-request --archive archive.seal --device-pub device.pub --out request.json
 
 # Submit directly to platform server
-trst emit-request --archive archive.trst --device-pub device.pub --out request.json --post http://localhost:3001/v1/verify
+seal emit-request --archive archive.seal --device-pub device.pub --out request.json --post http://localhost:3001/v1/verify
 ```
 
 ---
 
 ## Encrypted Key Files
 
-Device private keys are encrypted at rest using PBKDF2-HMAC-SHA256 (600k iterations) + AES-256-GCM (format: `TRUSTEDGE-KEY-V1`). A passphrase is prompted at runtime.
+Device private keys are encrypted at rest using PBKDF2-HMAC-SHA256 (600k iterations) + AES-256-GCM (format: `SEALEDGE-KEY-V1`). A passphrase is prompted at runtime.
 
 For CI/automation where interactive prompts are not possible, use `--unencrypted`:
-- `trst keygen --unencrypted` — generates plaintext key file
-- `trst wrap --unencrypted` — reads key without passphrase prompt
-- `trst unwrap --unencrypted` — reads key without passphrase prompt
+- `seal keygen --unencrypted` — generates plaintext key file
+- `seal wrap --unencrypted` — reads key without passphrase prompt
+- `seal unwrap --unencrypted` — reads key without passphrase prompt
 
 **Production devices should always use encrypted key files.** The `--unencrypted` flag is an explicit escape hatch.
 
@@ -327,14 +327,14 @@ For CI/automation where interactive prompts are not possible, use `--unencrypted
 
 ## Core Encryption System
 
-The `trustedge` command provides envelope encryption, key management, and network operations.
+The `sealedge` command provides envelope encryption, key management, and network operations.
 
-### trustedge - Envelope Encryption
+### sealedge - Envelope Encryption
 
 Encrypt and decrypt files using AES-256-GCM with metadata preservation.
 
 ```bash
-trustedge [OPTIONS]
+sealedge [OPTIONS]
 ```
 
 #### Core Operations
@@ -343,7 +343,7 @@ trustedge [OPTIONS]
 |--------|-------------|---------|
 | `-i, --input <INPUT>` | Input file (any binary data) | `--input document.pdf` |
 | `-o, --out <OUT>` | Output file path | `--out decrypted.pdf` |
-| `--envelope <ENVELOPE>` | Write encrypted envelope to .trst file | `--envelope encrypted.trst` |
+| `--envelope <ENVELOPE>` | Write encrypted envelope to .seal file | `--envelope encrypted.seal` |
 | `--decrypt` | Decrypt mode (read from --input, write to --out) | `--decrypt` |
 
 #### Chunk Configuration
@@ -375,27 +375,27 @@ trustedge [OPTIONS]
 
 ```bash
 # Basic file encryption
-trustedge --input document.pdf --envelope encrypted.trst --key-out mykey.hex
+sealedge --input document.pdf --envelope encrypted.seal --key-out mykey.hex
 
 # Decrypt file
-trustedge --decrypt --input encrypted.trst --out recovered.pdf --key-hex $(cat mykey.hex)
+sealedge --decrypt --input encrypted.seal --out recovered.pdf --key-hex $(cat mykey.hex)
 
 # Encrypt with keyring
-trustedge --set-passphrase "my_secure_passphrase"
-trustedge --input file.txt --envelope file.trst --use-keyring --salt-hex "abcdef1234567890abcdef1234567890"
+sealedge --set-passphrase "my_secure_passphrase"
+sealedge --input file.txt --envelope file.seal --use-keyring --salt-hex "abcdef1234567890abcdef1234567890"
 
 # Inspect without decryption
-trustedge --input encrypted.trst --inspect
+sealedge --input encrypted.seal --inspect
 ```
 
 ### Network Operations
 
-TrustEdge supports secure client-server communication with mutual authentication.
+Sealedge supports secure client-server communication with mutual authentication.
 
 #### Server Mode
 
 ```bash
-trustedge-server --listen <ADDRESS> [OPTIONS]
+sealedge-server --listen <ADDRESS> [OPTIONS]
 ```
 
 | Option | Description | Example |
@@ -408,7 +408,7 @@ trustedge-server --listen <ADDRESS> [OPTIONS]
 #### Client Mode
 
 ```bash
-trustedge-client --server <ADDRESS> [OPTIONS]
+sealedge-client --server <ADDRESS> [OPTIONS]
 ```
 
 | Option | Description | Example |
@@ -422,10 +422,10 @@ trustedge-client --server <ADDRESS> [OPTIONS]
 
 ```bash
 # Start authenticated server
-trustedge-server --listen 127.0.0.1:8080 --require-auth --decrypt --key-hex $(openssl rand -hex 32)
+sealedge-server --listen 127.0.0.1:8080 --require-auth --decrypt --key-hex $(openssl rand -hex 32)
 
 # Connect with authenticated client
-trustedge-client --server 127.0.0.1:8080 --input file.txt --require-auth --key-hex $(cat shared.key)
+sealedge-client --server 127.0.0.1:8080 --input file.txt --require-auth --key-hex $(cat shared.key)
 ```
 
 ---
@@ -438,15 +438,15 @@ Create a cryptographically linked chain of evidence archives:
 
 ```bash
 # First archive
-trst wrap --in evidence_001.bin --out evidence_001.trst --device-id "CAM-COURT-01"
-HASH_001=$(blake3sum evidence_001.trst/manifest.json | cut -d' ' -f1)
+seal wrap --in evidence_001.bin --out evidence_001.seal --device-id "CAM-COURT-01"
+HASH_001=$(blake3sum evidence_001.seal/manifest.json | cut -d' ' -f1)
 
 # Linked archive
-trst wrap --in evidence_002.bin --out evidence_002.trst --device-id "CAM-COURT-01" --prev-archive-hash "$HASH_001"
+seal wrap --in evidence_002.bin --out evidence_002.seal --device-id "CAM-COURT-01" --prev-archive-hash "$HASH_001"
 
 # Verify chain
-trst verify evidence_001.trst --device-pub "$(cat device.pub)"
-trst verify evidence_002.trst --device-pub "$(cat device.pub)"
+seal verify evidence_001.seal --device-pub "$(cat device.pub)"
+seal verify evidence_002.seal --device-pub "$(cat device.pub)"
 ```
 
 ### Hybrid Encryption + Archive
@@ -455,16 +455,16 @@ Combine envelope encryption with archive format:
 
 ```bash
 # Encrypt sensitive data
-trustedge --input sensitive.pdf --envelope encrypted.trst --key-out secret.key
+sealedge --input sensitive.pdf --envelope encrypted.seal --key-out secret.key
 
 # Archive the encrypted envelope
-trst wrap --in encrypted.trst --out archived.trst --profile data.secure
+seal wrap --in encrypted.seal --out archived.seal --profile data.secure
 
 # Verify archive integrity
-trst verify archived.trst --device-pub "$(cat device.pub)"
+seal verify archived.seal --device-pub "$(cat device.pub)"
 
 # Recover data
-trustedge --decrypt --input encrypted.trst --out recovered.pdf --key-hex $(cat secret.key)
+sealedge --decrypt --input encrypted.seal --out recovered.pdf --key-hex $(cat secret.key)
 ```
 
 ### Network + Archive Pipeline
@@ -473,14 +473,14 @@ Stream encrypted data over network and archive:
 
 ```bash
 # Server: receive and archive
-trustedge-server --listen 127.0.0.1:8080 --decrypt --key-hex $(cat shared.key) &
+sealedge-server --listen 127.0.0.1:8080 --decrypt --key-hex $(cat shared.key) &
 SERVER_PID=$!
 
 # Client: send encrypted data
-trustedge-client --server 127.0.0.1:8080 --input data.bin --key-hex $(cat shared.key)
+sealedge-client --server 127.0.0.1:8080 --input data.bin --key-hex $(cat shared.key)
 
 # Archive received data
-trst wrap --in received_data.bin --out network_archive.trst
+seal wrap --in received_data.bin --out network_archive.seal
 
 # Cleanup
 kill $SERVER_PID
@@ -505,7 +505,7 @@ kill $SERVER_PID
 |------------|-------------|----------|
 | `Invalid key length` | AES key not 32 bytes (64 hex chars) | Verify key format and length |
 | `Decryption failed` | Wrong key or corrupted data | Check key correctness, file integrity |
-| `Format error` | Unrecognized envelope format | Verify file is TrustEdge format |
+| `Format error` | Unrecognized envelope format | Verify file is Sealedge format |
 
 ### Network Errors
 
@@ -513,16 +513,16 @@ kill $SERVER_PID
 |------------|-------------|----------|
 | `Connection refused` | Server not reachable | Check server status, network connectivity |
 | `Authentication failed` | Mutual auth rejected | Verify certificates, key compatibility |
-| `Protocol error` | Communication protocol mismatch | Ensure compatible TrustEdge versions |
+| `Protocol error` | Communication protocol mismatch | Ensure compatible Sealedge versions |
 
 ### Debugging Commands
 
 ```bash
 # Run with debug logging
-RUST_LOG=debug trustedge --input file.txt --envelope test.trst --key-out test.key 2>&1 | head -20
+RUST_LOG=debug sealedge --input file.txt --envelope test.seal --key-out test.key 2>&1 | head -20
 
 # Test archive validation
-cargo test -p trustedge-trst-cli --test acceptance -- --nocapture
+cargo test -p sealedge-seal-cli --test acceptance -- --nocapture
 
 # Check network connectivity
 telnet 127.0.0.1 8080
@@ -544,15 +544,15 @@ For additional examples and advanced usage, see [Examples Index](examples/README
 
 ---
 
-*This document is part of the TrustEdge project documentation.*
+*This document is part of the Sealedge project documentation.*
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
-- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
-- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
-- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
+- **[Sealedge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/sealedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/sealedge/issues)** - Bug reports & features
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

@@ -1,12 +1,12 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
-# TrustEdge Threat Model
+# Sealedge Threat Model
 
 **Version**: 2.2
 **Date**: 2026-03-20
@@ -18,20 +18,20 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## System Overview
 
-TrustEdge is a cryptographic provenance system for edge device data. It proves that data — captured at an edge device — has not been tampered with from capture through to verification, using BLAKE3 continuity chains, Ed25519/ECDSA P-256 signatures, and verifiable receipts. The system provides encryption, attestation, and tamper-evidence for any data type (video, audio, sensor, logs). Device keys are passphrase-protected at rest; hardware-backed keys via YubiKey PIV are also supported.
+Sealedge is a cryptographic provenance system for edge device data. It proves that data — captured at an edge device — has not been tampered with from capture through to verification, using BLAKE3 continuity chains, Ed25519/ECDSA P-256 signatures, and verifiable receipts. The system provides encryption, attestation, and tamper-evidence for any data type (video, audio, sensor, logs). Device keys are passphrase-protected at rest; hardware-backed keys via YubiKey PIV are also supported.
 
 ---
 
 ## Architecture
 
 ```
-[Edge Device / CLI (trst)]
-    |-- keygen: TRUSTEDGE-KEY-V1 (PBKDF2-HMAC-SHA256 600k + AES-256-GCM, passphrase-protected)
+[Edge Device / CLI (seal)]
+    |-- keygen: SEALEDGE-KEY-V1 (PBKDF2-HMAC-SHA256 600k + AES-256-GCM, passphrase-protected)
     |-- wrap: chunk data -> XChaCha20-Poly1305 + BLAKE3 chain -> Ed25519/ECDSA P-256 sign
     |-- unwrap: verify signature + BLAKE3 chain -> HKDF key derivation -> decrypt chunks
          |
          v
-[.trst Archive] ─── HTTP POST /v1/verify ───> [Platform Server (Axum)]
+[.seal Archive] ─── HTTP POST /v1/verify ───> [Platform Server (Axum)]
                                                      |-- JWT bearer auth (Secret<T>, ZeroizeOnDrop)
                                                      |-- BLAKE3 + Ed25519/ECDSA P-256 verify
                                                      |-- PostgreSQL (receipts, devices, orgs)
@@ -41,10 +41,10 @@ TrustEdge is a cryptographic provenance system for edge device data. It proves t
                                               [Cryptographic Receipt (JWS)]
                                                      |
                                               [Dashboard (SvelteKit + nginx)]
-                                              [Browser WASM (trst-wasm)]
+                                              [Browser WASM (seal-wasm)]
 
 [Network Transport (optional)]
-    |-- TCP with framing (trustedge-core transport)
+    |-- TCP with framing (sealedge-core transport)
     |-- QUIC with TLS (webpki-roots trust store, secure-by-default)
          insecure-tls feature: compile-time blocked in release builds (build.rs guard)
 ```
@@ -63,7 +63,7 @@ platform-server (Rust, Axum HTTP) <-> postgres (internal network, no external po
 | Asset | Protection Mechanism |
 |-------|---------------------|
 | Archive content (plaintext data) | XChaCha20-Poly1305 per-chunk encryption at rest and in transit |
-| Device private keys | TRUSTEDGE-KEY-V1: PBKDF2-HMAC-SHA256 (600k iterations, 32-byte salt) + AES-256-GCM |
+| Device private keys | SEALEDGE-KEY-V1: PBKDF2-HMAC-SHA256 (600k iterations, 32-byte salt) + AES-256-GCM |
 | Verification receipts | JWS-signed by platform server |
 | Platform JWT secret | Secret<T> wrapper with ZeroizeOnDrop; never serialized or logged |
 | PostgreSQL credentials | Secret<T> wrapper with ZeroizeOnDrop |
@@ -77,12 +77,12 @@ platform-server (Rust, Axum HTTP) <-> postgres (internal network, no external po
 |-----------|-----------|-----------|-------|
 | Signing (software) | Ed25519 | Archive manifest signing, mutual auth | `ed25519-dalek`; "ed25519:BASE64" wire prefix |
 | Signing (hardware) | ECDSA P-256 | YubiKey PIV slot 9c, YubiKey-generated X.509 certs | `yubikey` crate; "ecdsa-p256:BASE64" wire prefix |
-| Symmetric encryption | AES-256-GCM | Per-chunk envelope encryption; TRUSTEDGE-KEY-V1 key-at-rest | Authenticated encryption with 128-bit tags |
-| Symmetric encryption | XChaCha20-Poly1305 | .trst chunk encryption (crypto.rs) | Extended nonce variant, resistant to nonce misuse |
-| Key derivation (envelope) | HKDF-SHA256 (RFC 5869) | v2 envelope key derivation | Single Extract+Expand, 40-byte OKM (32-byte AES key + 8-byte nonce prefix); info = "TRUSTEDGE_ENVELOPE_V1" |
-| Key derivation (at rest) | PBKDF2-HMAC-SHA256 | TRUSTEDGE-KEY-V1 key-at-rest; Keyring backend | 600,000 iterations (OWASP 2023); 32-byte salt; min 300,000 enforced |
+| Symmetric encryption | AES-256-GCM | Per-chunk envelope encryption; SEALEDGE-KEY-V1 key-at-rest | Authenticated encryption with 128-bit tags |
+| Symmetric encryption | XChaCha20-Poly1305 | .seal chunk encryption (crypto.rs) | Extended nonce variant, resistant to nonce misuse |
+| Key derivation (envelope) | HKDF-SHA256 (RFC 5869) | v2 envelope key derivation | Single Extract+Expand, 40-byte OKM (32-byte AES key + 8-byte nonce prefix); info = "SEALEDGE_ENVELOPE_V1" |
+| Key derivation (at rest) | PBKDF2-HMAC-SHA256 | SEALEDGE-KEY-V1 key-at-rest; Keyring backend | 600,000 iterations (OWASP 2023); 32-byte salt; min 300,000 enforced |
 | Session key derivation | X25519 ECDH | Mutual-auth network transport session keys | BLAKE3 domain-separated KDF post-ECDH |
-| Hash / chain | BLAKE3 | Continuity chain (genesis seed: blake3("trustedge:genesis")), segment linking, receipt binding | Non-cryptographic-signing usage; collision resistance only |
+| Hash / chain | BLAKE3 | Continuity chain (genesis seed: blake3("sealedge:genesis")), segment linking, receipt binding | Non-cryptographic-signing usage; collision resistance only |
 | Hybrid encryption | RSA-OAEP-SHA256 | Asymmetric encryption in hybrid.rs | Oaep::new::<sha2::Sha256>(); PKCS#1 v1.5 eliminated in v2.2 |
 
 ---
@@ -99,22 +99,22 @@ platform-server (Rust, Axum HTTP) <-> postgres (internal network, no external po
 
 **Mitigations**:
 - AES-GCM authentication tags on each chunk — any modification is detected before decryption
-- Ed25519 or ECDSA P-256 signature over the canonical manifest.json — signature verification is the first step in `trst verify` and `/v1/verify`
+- Ed25519 or ECDSA P-256 signature over the canonical manifest.json — signature verification is the first step in `seal verify` and `/v1/verify`
 - BLAKE3 continuity chain — any missing, reordered, or substituted chunk breaks the chain from genesis seed
-- `trst unwrap` enforces verify-then-decrypt: signature and chain must pass before any chunk is decrypted
+- `seal unwrap` enforces verify-then-decrypt: signature and chain must pass before any chunk is decrypted
 
 ---
 
 ### T2: Data Tampering at Rest
 
-**Description**: An adversary modifies a .trst archive after it has been written to disk or object storage.
+**Description**: An adversary modifies a .seal archive after it has been written to disk or object storage.
 
 **Attack Vectors**: Direct filesystem access, storage layer manipulation, corrupt-and-replace.
 
 **Status**: MITIGATED
 
 **Mitigations**:
-- .trst archives are tamper-evident read-only bundles: manifest.json + detached signature + encrypted chunks
+- .seal archives are tamper-evident read-only bundles: manifest.json + detached signature + encrypted chunks
 - Ed25519/ECDSA P-256 signature over manifest.json; any manifest change invalidates the signature
 - BLAKE3 continuity chain links all chunks back to the genesis seed — any chunk substitution or addition breaks the chain
 - Chunk filenames are zero-padded indices; gaps or reordering are detected during verification
@@ -130,7 +130,7 @@ platform-server (Rust, Axum HTTP) <-> postgres (internal network, no external po
 **Status**: MITIGATED (v2.2)
 
 **Mitigations**:
-- TRUSTEDGE-KEY-V1 format: private key encrypted with AES-256-GCM; encryption key derived via PBKDF2-HMAC-SHA256 (600,000 iterations, 32-byte salt per OWASP 2023)
+- SEALEDGE-KEY-V1 format: private key encrypted with AES-256-GCM; encryption key derived via PBKDF2-HMAC-SHA256 (600,000 iterations, 32-byte salt per OWASP 2023)
 - Passphrase prompted at runtime via `rpassword` — never stored on disk or in environment variables
 - `--unencrypted` flag available as explicit opt-in for CI/automation environments; requires conscious operator choice
 - Hardware option: YubiKey PIV slot 9c — private key is generated on hardware and never extractable; software only holds the public certificate
@@ -158,7 +158,7 @@ See **RSA Vulnerability History** section for full timeline.
 
 **Description**: An adversary performs offline brute-force or dictionary attacks against stored key material, or exploits incorrect use of a KDF for its input type.
 
-**Attack Vectors**: Offline dictionary attack against TRUSTEDGE-KEY-V1 files, rainbow tables, GPU brute-force.
+**Attack Vectors**: Offline dictionary attack against SEALEDGE-KEY-V1 files, rainbow tables, GPU brute-force.
 
 **Status**: MITIGATED
 
@@ -180,7 +180,7 @@ See **RSA Vulnerability History** section for full timeline.
 **Mitigations**:
 - v1 envelope format removed entirely in v2.2 — no code path produces or consumes v1 envelopes
 - Codebase is v2-only: single HKDF derivation per envelope, deterministic counter nonces (nonce_prefix[8] || chunk_index[3] || last_flag[1] = 12-byte nonce), no per-chunk re-derivation
-- HKDF domain separation: info parameter = "TRUSTEDGE_ENVELOPE_V1" binds the derived key to TrustEdge context
+- HKDF domain separation: info parameter = "SEALEDGE_ENVELOPE_V1" binds the derived key to Sealedge context
 
 ---
 
@@ -287,15 +287,15 @@ See **RSA Vulnerability History** section for full timeline.
 
 ## RSA Vulnerability History
 
-This section documents the full lifecycle of RUSTSEC-2023-0071 (Marvin Attack) in TrustEdge.
+This section documents the full lifecycle of RUSTSEC-2023-0071 (Marvin Attack) in Sealedge.
 
 **The advisory**: The `rsa` crate's PKCS#1 v1.5 decryption (`Pkcs1v15Encrypt`) is vulnerable to a timing side-channel attack (Marvin Attack) that enables adaptive chosen-ciphertext recovery of RSA private keys. Published 2023; CVE pending.
 
 **v1.3 (2026-02-13) — Risk Accepted**
 
-During cargo-audit integration, RUSTSEC-2023-0071 was identified against the `rsa` crate used in `hybrid.rs`. At the time, TrustEdge's RSA usage was limited to `hybrid.rs`, which was used for non-production asymmetric encryption scenarios. The advisory was risk-accepted with documented rationale and added to `.cargo/audit.toml` ignore list.
+During cargo-audit integration, RUSTSEC-2023-0071 was identified against the `rsa` crate used in `hybrid.rs`. At the time, Sealedge's RSA usage was limited to `hybrid.rs`, which was used for non-production asymmetric encryption scenarios. The advisory was risk-accepted with documented rationale and added to `.cargo/audit.toml` ignore list.
 
-Rationale: TrustEdge's primary encryption path (AES-256-GCM) was unaffected. RSA in `hybrid.rs` was not used in the primary data lifecycle. Risk was acknowledged as a known limitation.
+Rationale: Sealedge's primary encryption path (AES-256-GCM) was unaffected. RSA in `hybrid.rs` was not used in the primary data lifecycle. Risk was acknowledged as a known limitation.
 
 **v1.3 through v2.1 — Carried as Known Risk**
 

@@ -1,15 +1,15 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/johnzilla/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/johnzilla/sealedge
 -->
 
-# TrustEdge Secure Node MVP (ESP32-WROOM-32SE)
+# Sealedge Secure Node MVP (ESP32-WROOM-32SE)
 
-The Secure Node MVP is a small ESP32-based reference board that demonstrates how to run TrustEdge on a device with a hardware secure element and a verifiable boot chain.
+The Secure Node MVP is a small ESP32-based reference board that demonstrates how to run Sealedge on a device with a hardware secure element and a verifiable boot chain.
 
-It uses an **ESP32-WROOM-32SE** module (ESP32 + Microchip ATECC608A secure element) and exposes TrustEdge over both USB (for development) and a dedicated UART header for host devices.
+It uses an **ESP32-WROOM-32SE** module (ESP32 + Microchip ATECC608A secure element) and exposes Sealedge over both USB (for development) and a dedicated UART header for host devices.
 
 ---
 
@@ -26,7 +26,7 @@ It uses an **ESP32-WROOM-32SE** module (ESP32 + Microchip ATECC608A secure eleme
 
 - **Connectivity:**  
   - USB‑C → CP2102N → ESP32 UART0 (flashing + debug console).  
-  - 4‑pin 2.54 mm header exposing UART2 (TXD2/RXD2, 3V3, GND) as the **host interface** for TrustEdge.
+  - 4‑pin 2.54 mm header exposing UART2 (TXD2/RXD2, 3V3, GND) as the **host interface** for Sealedge.
 
 - **User I/O:**  
   - Buttons: **BOOT**, **Reset**, **Secure Reset/Provision**.  
@@ -46,7 +46,7 @@ It uses an **ESP32-WROOM-32SE** module (ESP32 + Microchip ATECC608A secure eleme
 
 - **Host integration:**  
   - External MCU or SBC connects over UART2 and treats the board as a “crypto + attestation module on a cable.”  
-  - Planned TrustEdge UART protocol operations:
+  - Planned Sealedge UART protocol operations:
     - Request attestation report  
     - Sign/verify blobs  
     - Encrypt/decrypt payloads under device/session keys.
@@ -76,7 +76,7 @@ A full 3e8‑generated schematic and BOM live alongside this file (see `/hardwar
 1. **Assemble board** (or order assembled): solder SMD passives, buck converter, CP2102N, ESP32-WROOM-32SE, then USB‑C, buttons, LEDs, headers.  
 2. **Power‑on test:** supply 5 V over USB‑C, verify 3.3 V rail and Power LED.  
 3. **Development mode:**
-   - Use USB (CP2102N) to flash ESP‑IDF “blink” and then TrustEdge firmware.  
+   - Use USB (CP2102N) to flash ESP‑IDF “blink” and then Sealedge firmware.  
    - Keep debug headers populated; secure boot/flash encryption in **development** mode.  
 4. **Production‑like mode:**
    - Burn eFuses for Secure Boot v2 and Flash Encryption with production keys.  
@@ -85,12 +85,12 @@ A full 3e8‑generated schematic and BOM live alongside this file (see `/hardwar
 
 ---
 
-## TrustEdge mapping
+## Sealedge mapping
 
-Firmware on this board is a thin hardware backend for TrustEdge:
+Firmware on this board is a thin hardware backend for Sealedge:
 
 - Uses ESP-IDF crypto + ATECC608A for AES‑GCM, hashing, and ECDSA.  
-- Implements the TrustEdge “universal backend” over UART2 and/or Wi‑Fi (mTLS) so higher‑level TrustEdge clients can offload crypto and retrieve attestation reports.
+- Implements the Sealedge “universal backend” over UART2 and/or Wi‑Fi (mTLS) so higher‑level Sealedge clients can offload crypto and retrieve attestation reports.
 
 See the `hardware/` and `examples/` directories for firmware and host‑side examples (WIP).
 
