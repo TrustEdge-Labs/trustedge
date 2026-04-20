@@ -306,7 +306,7 @@ mod tests {
     #[test]
     fn test_decrypt_roundtrip() {
         let key_b64 = generate_key();
-        let plaintext = "hello, trustedge wasm crypto";
+        let plaintext = "hello, sealedge wasm crypto";
         let encrypted = encrypt_native(plaintext, &key_b64).expect("encrypt failed");
         let recovered = decrypt_native(&encrypted, &key_b64).expect("decrypt failed");
         assert_eq!(recovered, plaintext);

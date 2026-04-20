@@ -41,7 +41,7 @@ fn env_lock() -> &'static Mutex<()> {
 ///
 /// In verify-only mode (no postgres feature) all env vars are optional:
 /// - PORT defaults to 3001
-/// - JWT_AUDIENCE defaults to "trustedge-platform"
+/// - JWT_AUDIENCE defaults to "sealedge-platform"
 #[tokio::test]
 async fn test_config_from_env_defaults() {
     let _guard = env_lock().lock().unwrap_or_else(|p| p.into_inner());
@@ -53,8 +53,8 @@ async fn test_config_from_env_defaults() {
 
     assert_eq!(config.port, 3001, "default port should be 3001");
     assert_eq!(
-        config.jwt_audience, "trustedge-platform",
-        "default jwt_audience should be 'trustedge-platform'"
+        config.jwt_audience, "sealedge-platform",
+        "default jwt_audience should be 'sealedge-platform'"
     );
 }
 

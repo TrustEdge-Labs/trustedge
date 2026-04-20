@@ -1,7 +1,7 @@
 {
   "name": "@sealedge/wasm",
   "version": "0.1.0",
-  "description": "WebAssembly bindings for TrustEdge cryptographic operations",
+  "description": "WebAssembly bindings for sealedge cryptographic operations",
   "main": "js/sealedge-node.js",
   "browser": "js/sealedge.js",
   "types": "js/sealedge.d.ts",
@@ -26,18 +26,18 @@
     "encryption",
     "aes",
     "security",
-    "trustedge"
+    "sealedge"
   ],
   "author": "TrustEdge Labs <dev@trustedgelabs.com>",
   "license": "MPL-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/trustedge-labs/trustedge.git",
-    "directory": "wasm"
+    "url": "https://github.com/TrustEdge-Labs/sealedge.git",
+    "directory": "crates/wasm"
   },
-  "homepage": "https://github.com/trustedge-labs/trustedge#readme",
+  "homepage": "https://github.com/TrustEdge-Labs/sealedge#readme",
   "bugs": {
-    "url": "https://github.com/trustedge-labs/trustedge/issues"
+    "url": "https://github.com/TrustEdge-Labs/sealedge/issues"
   },
   "engines": {
     "node": ">=16.0.0"

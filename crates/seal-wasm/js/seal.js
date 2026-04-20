@@ -1,6 +1,6 @@
 /**
- * TrustEdge WASM JavaScript SDK
- * High-level wrapper for TrustEdge cryptographic operations
+ * Sealedge WASM JavaScript SDK
+ * High-level wrapper for Sealedge cryptographic operations
  */
 
 import init, {
@@ -23,14 +23,14 @@ import init, {
     validate_nonce
 } from '../pkg/sealedge_seal_wasm.js';
 
-class TrustEdge {
+class Sealedge {
     constructor() {
         this.initialized = false;
         this.wasmModule = null;
     }
 
     /**
-     * Initialize the TrustEdge WASM module
+     * Initialize the Sealedge WASM module
      * Must be called before using any cryptographic functions
      */
     async init() {
@@ -41,11 +41,11 @@ class TrustEdge {
         try {
             this.wasmModule = await init();
             this.initialized = true;
-            console.log('TrustEdge WASM initialized successfully');
+            console.log('Sealedge WASM initialized successfully');
             return this;
         } catch (error) {
-            console.error('Failed to initialize TrustEdge WASM:', error);
-            throw new Error(`TrustEdge initialization failed: ${error.message}`);
+            console.error('Failed to initialize Sealedge WASM:', error);
+            throw new Error(`Sealedge initialization failed: ${error.message}`);
         }
     }
 
@@ -57,7 +57,7 @@ class TrustEdge {
     }
 
     /**
-     * Get the version of TrustEdge WASM
+     * Get the version of Sealedge WASM
      */
     getVersion() {
         this._ensureInitialized();
@@ -221,18 +221,18 @@ class TrustEdge {
      */
     _ensureInitialized() {
         if (!this.initialized) {
-            throw new Error('TrustEdge WASM module not initialized. Call init() first.');
+            throw new Error('Sealedge WASM module not initialized. Call init() first.');
         }
     }
 }
 
 // Export the main class and individual functions
-export default TrustEdge;
+export default Sealedge;
 export {
-    TrustEdge,
+    Sealedge,
     EncryptedData,
     Timer
 };
 
 // Create a default instance for convenience
-export const seal = new TrustEdge();
+export const seal = new Sealedge();

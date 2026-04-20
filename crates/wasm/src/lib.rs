@@ -68,21 +68,21 @@ extern "C" {
 // Export a `greet` function from Rust to JavaScript
 #[wasm_bindgen]
 pub fn greet(name: &str) {
-    alert(&format!("Hello, {}! TrustEdge WASM is working!", name));
+    alert(&format!("Hello, {}! Sealedge WASM is working!", name));
 }
 
 // Initialize panic hook for better error messages
 #[wasm_bindgen(start)]
 pub fn init() {
     console_error_panic_hook::set_once();
-    console_log!("TrustEdge WASM module initialized successfully");
+    console_log!("Sealedge WASM module initialized successfully");
 }
 
 // Basic test function to verify WASM is working
 #[wasm_bindgen]
 pub fn test_basic_functionality() -> String {
     console_log!("Testing basic WASM functionality");
-    "TrustEdge WASM is working correctly!".to_string()
+    "Sealedge WASM is working correctly!".to_string()
 }
 
 // Version information

@@ -1,6 +1,6 @@
 /**
- * TrustEdge WASM TypeScript Definitions
- * Type definitions for TrustEdge cryptographic operations
+ * Sealedge WASM TypeScript Definitions
+ * Type definitions for Sealedge cryptographic operations
  */
 
 /**
@@ -42,16 +42,16 @@ export class Timer {
 }
 
 /**
- * Main TrustEdge class providing high-level cryptographic operations
+ * Main Sealedge class providing high-level cryptographic operations
  */
-export class TrustEdge {
+export class Sealedge {
     constructor();
     
     /**
-     * Initialize the TrustEdge WASM module
+     * Initialize the Sealedge WASM module
      * Must be called before using any cryptographic functions
      */
-    init(): Promise<TrustEdge>;
+    init(): Promise<Sealedge>;
     
     /**
      * Check if the module is initialized
@@ -59,7 +59,7 @@ export class TrustEdge {
     isInitialized(): boolean;
     
     /**
-     * Get the version of TrustEdge WASM
+     * Get the version of Sealedge WASM
      */
     getVersion(): string;
     
@@ -155,9 +155,9 @@ export interface EncryptedDataLike {
 }
 
 /**
- * Configuration options for TrustEdge operations
+ * Configuration options for Sealedge operations
  */
-export interface TrustEdgeConfig {
+export interface SealedgeConfig {
     /**
      * Enable debug logging
      */
@@ -170,19 +170,19 @@ export interface TrustEdgeConfig {
 }
 
 /**
- * Error types that can be thrown by TrustEdge operations
+ * Error types that can be thrown by Sealedge operations
  */
-export class TrustEdgeError extends Error {
+export class SealedgeError extends Error {
     constructor(message: string, cause?: Error);
     readonly cause?: Error;
 }
 
 /**
- * Default TrustEdge instance for convenience
+ * Default Sealedge instance for convenience
  */
-export const sealedge: TrustEdge;
+export const sealedge: Sealedge;
 
 /**
  * Export the main class as default
  */
-export default TrustEdge;
+export default Sealedge;

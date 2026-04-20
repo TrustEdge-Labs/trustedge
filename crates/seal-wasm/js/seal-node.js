@@ -1,6 +1,6 @@
 /**
- * TrustEdge WASM Node.js SDK
- * Node.js-specific wrapper for TrustEdge cryptographic operations
+ * Sealedge WASM Node.js SDK
+ * Node.js-specific wrapper for Sealedge cryptographic operations
  */
 
 import init, {
@@ -30,14 +30,14 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-class TrustEdgeNode {
+class SealedgeNode {
     constructor() {
         this.initialized = false;
         this.wasmModule = null;
     }
 
     /**
-     * Initialize the TrustEdge WASM module for Node.js
+     * Initialize the Sealedge WASM module for Node.js
      * Automatically loads the WASM binary
      */
     async init() {
@@ -52,11 +52,11 @@ class TrustEdgeNode {
             
             this.wasmModule = await init(wasmBinary);
             this.initialized = true;
-            console.log('TrustEdge WASM initialized successfully (Node.js)');
+            console.log('Sealedge WASM initialized successfully (Node.js)');
             return this;
         } catch (error) {
-            console.error('Failed to initialize TrustEdge WASM:', error);
-            throw new Error(`TrustEdge initialization failed: ${error.message}`);
+            console.error('Failed to initialize Sealedge WASM:', error);
+            throw new Error(`Sealedge initialization failed: ${error.message}`);
         }
     }
 
@@ -68,7 +68,7 @@ class TrustEdgeNode {
     }
 
     /**
-     * Get the version of TrustEdge WASM
+     * Get the version of Sealedge WASM
      */
     getVersion() {
         this._ensureInitialized();
@@ -223,18 +223,18 @@ class TrustEdgeNode {
      */
     _ensureInitialized() {
         if (!this.initialized) {
-            throw new Error('TrustEdge WASM module not initialized. Call init() first.');
+            throw new Error('Sealedge WASM module not initialized. Call init() first.');
         }
     }
 }
 
 // Export the main class and individual functions
-export default TrustEdgeNode;
+export default SealedgeNode;
 export {
-    TrustEdgeNode,
+    SealedgeNode,
     EncryptedData,
     Timer
 };
 
 // Create a default instance for convenience
-export const seal = new TrustEdgeNode();
+export const seal = new SealedgeNode();
