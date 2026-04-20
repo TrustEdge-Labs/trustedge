@@ -506,7 +506,7 @@ async fn test_real_transport_timeout_scenarios() -> Result<()> {
 #[tokio::test]
 async fn test_real_network_chunk_serialization() -> Result<()> {
     // Create test data with real content
-    let original_data = b"TrustEdge NetworkChunk serialization test";
+    let original_data = b"sealedge NetworkChunk serialization test";
     let sequence = 42;
     let manifest = format!(
         r#"{{"sequence":{},"timestamp":"2025-09-10T12:00:00Z","size":{}}}"#,
@@ -570,7 +570,7 @@ async fn test_transport_security_configuration() -> Result<()> {
 #[tokio::test]
 async fn test_transport_data_integrity() -> Result<()> {
     // Create test data with known pattern
-    let original_data = b"TrustEdge integrity test data with pattern 0123456789";
+    let original_data = b"sealedge integrity test data with pattern 0123456789";
     let sequence = 1;
     let manifest = format!(
         r#"{{"sequence":{},"length":{}}}"#,

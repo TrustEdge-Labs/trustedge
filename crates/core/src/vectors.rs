@@ -61,17 +61,18 @@ mod tests {
     const TEST_KEY_ID: [u8; 16] = *b"TEST_KEY_ID_16B!";
 
     /// Deterministic device id hash (we derive at runtime from fixed inputs).
-    const TEST_DEVICE_ID: &[u8] = b"trustedge-test-device";
-    const TEST_SALT: &[u8] = b"trustedge-test-salt";
+    const TEST_DEVICE_ID: &[u8] = b"sealedge-test-device";
+    const TEST_SALT: &[u8] = b"sealedge-test-salt";
 
     /// Deterministic timestamp used in manifests for tests.
     const TEST_TS_MS: u64 = 1_700_000_000_000;
 
     /// Replace this after first run (see test output).
     /// const GOLDEN_TRST_BLAKE3: &str = "<fill-me-after-first-run>";
-    /// Updated for Phase 85 MAGIC rename: b"TRST" -> b"SEAL"
+    /// Updated for Phase 85 Plan 01 MAGIC rename: b"TRST" -> b"SEAL"
+    /// Updated for Phase 85 Plan 05 test-vector rename: b"trustedge-test-*" -> b"sealedge-test-*"
     const GOLDEN_TRST_BLAKE3: &str =
-        "d432874a3e59bb5ea8d0b00d8f32fe64296ac36a36de9562416b6552ced28079";
+        "f2ee31599f7b279363f0024ed1390e299cff7669c9036b425af91a2fb242c17b";
 
     // ----------------------------
     // Helpers

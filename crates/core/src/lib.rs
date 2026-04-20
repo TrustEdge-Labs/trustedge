@@ -173,7 +173,7 @@ pub use sealedge_seal_protocols::archive::manifest::{
 };
 pub use transport::{Transport, TransportConfig, TransportFactory};
 
-// Shared wire types — re-exported from trustedge-types for downstream access
+// Shared wire types — re-exported from sealedge-types for downstream access
 // Downstream crates can use `sealedge_core::sealedge_types::*` or the
 // convenience re-exports `sealedge_core::Uuid` and `sealedge_core::DateTime`.
 pub use sealedge_types;

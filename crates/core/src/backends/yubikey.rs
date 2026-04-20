@@ -380,7 +380,7 @@ impl YubiKeyBackend {
         // publicly exported by the yubikey crate (v0.7). Use ykman CLI instead.
 
         Err(BackendError::UnsupportedOperation(
-            "Key generation is not supported by TrustEdge. \
+            "Key generation is not supported by Sealedge. \
              Use the YubiKey Manager CLI instead: \
              `ykman piv keys generate -a ECCP256 9a pubkey.pem`"
                 .to_string(),

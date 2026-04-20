@@ -98,7 +98,7 @@ fn derive_shared_encryption_key(
     let hkdf = Hkdf::<Sha256>::new(Some(salt), shared_secret.as_bytes());
 
     // HKDF-Expand: derive 40 bytes of output key material with domain separation.
-    // The info parameter binds the derived key to the TrustEdge envelope v2 context.
+    // The info parameter binds the derived key to the sealedge envelope v2 context.
     // Layout: bytes 0..32 = AES-256-GCM encryption key, bytes 32..40 = 8-byte nonce prefix.
     let info = b"SEALEDGE_ENVELOPE_V1";
     let mut okm = [0u8; 40];

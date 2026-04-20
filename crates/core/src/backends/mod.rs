@@ -4,7 +4,7 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
 //
 // Project: sealedge — Privacy and trust at the edge.
-// GitHub: https://github.com/johnzilla/trustedge
+// GitHub: https://github.com/TrustEdge-Labs/sealedge
 //
 
 //! Backend abstraction for key management
@@ -68,24 +68,24 @@ impl BackendRegistry {
             #[cfg(not(feature = "keyring"))]
             "keyring" => Err(anyhow::anyhow!("Keyring backend requires the 'keyring' feature. Build with: --features keyring")),
             "pubky" => Err(anyhow::anyhow!(
-                "❌ Pubky backend not available in trustedge-core.\n\
+                "❌ Pubky backend not available in sealedge-core.\n\
                 \n\
-                🔗 Use the separate 'trustedge-pubky' binary for Pubky operations:\n\
+                🔗 Use the separate 'sealedge-pubky' binary for Pubky operations:\n\
                 \n\
                 ● Generate identity:\n\
-                  trustedge-pubky generate --output my-key.txt\n\
+                  sealedge-pubky generate --output my-key.txt\n\
                 \n\
                 ● Encrypt for someone:\n\
-                  trustedge-pubky encrypt --input <file> --output <envelope> --recipient <pubky-id>\n\
+                  sealedge-pubky encrypt --input <file> --output <envelope> --recipient <pubky-id>\n\
                 \n\
                 ● Decrypt received file:\n\
-                  trustedge-pubky decrypt --input <envelope> --output <file> --key <private-key>\n\
+                  sealedge-pubky decrypt --input <envelope> --output <file> --key <private-key>\n\
                 \n\
                 ● Resolve Pubky ID:\n\
-                  trustedge-pubky resolve <pubky-id> --info\n\
+                  sealedge-pubky resolve <pubky-id> --info\n\
                 \n\
                 ● Get help:\n\
-                  trustedge-pubky --help"
+                  sealedge-pubky --help"
             )),
             // Future backends:
             // "tpm" => Ok(Box::new(TpmBackend::new(device_path)?)),
@@ -106,7 +106,7 @@ impl BackendRegistry {
             vec![]
         }
 
-        // Note: pubky backend is available via separate trustedge-pubky binary
+        // Note: pubky backend is available via separate sealedge-pubky binary
         // Future: detect TPM, HSM availability
         // if tpm_available() { backends.push("tpm"); }
         // if hsm_available() { backends.push("hsm"); }

@@ -305,7 +305,7 @@ fn list_audio_devices() -> Result<()> {
     println!("✖ Audio support not available in this build");
     println!("● To enable audio support:");
     println!("   1. Install audio libraries: sudo apt install libasound2-dev pkg-config");
-    println!("   2. Rebuild with: cargo build -p trustedge-cli --features audio");
+    println!("   2. Rebuild with: cargo build -p sealedge-cli --features audio");
     Ok(())
 }
 
@@ -1053,7 +1053,7 @@ fn main() -> Result<()> {
             #[cfg(not(feature = "audio"))]
             {
                 return Err(anyhow!(
-                    "Audio capture not available - rebuild with: cargo build -p trustedge-cli --features audio"
+                    "Audio capture not available - rebuild with: cargo build -p sealedge-cli --features audio"
                 ));
             }
         }

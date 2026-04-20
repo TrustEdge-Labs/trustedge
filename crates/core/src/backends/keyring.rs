@@ -4,7 +4,7 @@
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
 //
 // Project: sealedge — Privacy and trust at the edge.
-// GitHub: https://github.com/johnzilla/trustedge
+// GitHub: https://github.com/TrustEdge-Labs/sealedge
 //
 
 //! Keyring backend implementation
@@ -29,7 +29,7 @@ impl KeyringBackend {
     /// Create a new keyring backend with default service/username
     pub fn new() -> Result<Self> {
         Ok(Self {
-            service_name: "trustedge".to_string(),
+            service_name: "sealedge".to_string(),
             username: "encryption_key".to_string(),
         })
     }
