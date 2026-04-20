@@ -1,11 +1,132 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Migration Guide
+# Sealedge Migration Guide
+
+This guide documents breaking changes for users upgrading across major versions of Sealedge (formerly trustedge). Migration sections are listed newest-first. The v6.0 section below covers the trustedge → sealedge rebrand.
+
+## v6.0: trustedge → sealedge rebrand — clean break
+
+v6.0 is a trademark-driven rename from "trustedge" to "sealedge". **There is no backward-compatibility path.** Existing `.trst` archives, `.te-attestation.json` files, `TRUSTEDGE-KEY-V1` encrypted key files, and active TCP/QUIC sessions fail cleanly under the new magic bytes and domain-separation constants.
+
+### What renamed
+
+| Surface | Before (v5.x) | After (v6.0) |
+|---|---|---|
+| Workspace crate prefix | `trustedge-*` | `sealedge-*` |
+| Main CLI binary | `trustedge` | `sealedge` |
+| Archive CLI binary | `trst` | `seal` |
+| Archive inspector binary | `inspect-trst` | `inspect-seal` |
+| Network server binary | `trustedge-server` | `sealedge-server` |
+| Network client binary | `trustedge-client` | `sealedge-client` |
+| Platform HTTP server binary | `trustedge-platform-server` | `sealedge-platform-server` |
+| Archive file extension | `.trst` | `.seal` |
+| Attestation file extension | `.te-attestation.json` | `.se-attestation.json` |
+| Env-var prefix | `TRUSTEDGE_*` | `SEALEDGE_*` |
+| Encrypted-key header | `TRUSTEDGE-KEY-V1` | `SEALEDGE-KEY-V1` |
+| Envelope domain | `TRUSTEDGE_ENVELOPE_V1` | `SEALEDGE_ENVELOPE_V1` |
+| Chunk-key domain | `TRUSTEDGE_SEAL_CHUNK_KEY` | `SEALEDGE_SEAL_CHUNK_KEY` |
+| Session-key domain | `TRUSTEDGE_SESSION_KEY_V1` | `SEALEDGE_SESSION_KEY_V1` |
+| Genesis seed | `trustedge:genesis` | `sealedge:genesis` |
+| Manifest domain | `trustedge.manifest.v1` | `sealedge.manifest.v1` |
+| Archive magic bytes | `TRST` | `SEAL` |
+| X25519 derivation (experimental) | `TRUSTEDGE_X25519_DERIVATION` | `SEALEDGE_X25519_DERIVATION` |
+| V2 session key (experimental) | `TRUSTEDGE_V2_SESSION_KEY` | `SEALEDGE_V2_SESSION_KEY` |
+| V2 audio domain (experimental) | `TRUSTEDGE_AUDIO_V2` | `SEALEDGE_AUDIO_V2` |
+| GitHub repo URL | `TrustEdge-Labs/trustedge` | `TrustEdge-Labs/sealedge` |
+
+Preserved unchanged:
+- `TrustEdge-Labs` (GitHub organization name)
+- `TRUSTEDGE LABS LLC` (legal entity in copyright lines)
+- `trustedgelabs.com` (company domain)
+
+### Clean-break behavior (no silent migration)
+
+Under v6.0, the following inputs fail cleanly instead of being silently upgraded:
+
+- A `.trst` archive read by `seal verify` fails with a clear magic-byte error — there is no shim that accepts `TRST` magic and rewrites it as `SEAL`.
+- A `TRUSTEDGE-KEY-V1` encrypted key file read by v6.0 tooling fails with a header-mismatch error.
+- An envelope using the v5.x HKDF domain `TRUSTEDGE_ENVELOPE_V1` decrypts to different OKM under v6.0's `SEALEDGE_ENVELOPE_V1` domain — tags will fail to verify.
+- Networking sessions using the v5.x session-key domain fail handshake under v6.0 peers.
+
+This is intentional. The solo-dev threshold here is: no production users depend on cross-version decrypt, and keeping dual code paths forever is worse than requiring a re-wrap.
+
+### How to upgrade
+
+Any data you want to carry forward must be re-wrapped under v6.0:
+
+1. **Regenerate device keys** under the new encrypted-key header:
+   ```bash
+   # Interactive (passphrase prompted)
+   cargo run -p sealedge-seal-cli -- keygen --out-key device.key --out-pub device.pub
+
+   # CI / automation (unencrypted key file)
+   cargo run -p sealedge-seal-cli -- keygen --out-key device.key --out-pub device.pub --unencrypted
+   ```
+
+2. **Re-wrap existing plaintext source data** into `.seal` archives:
+   ```bash
+   cargo run -p sealedge-seal-cli -- wrap \
+     --in source.bin \
+     --out archive.seal \
+     --device-key device.key \
+     --device-pub device.pub
+   ```
+
+   If the only copy you have is an old `.trst` archive, unwrap it with the v5.x `trst` binary on the old branch first, then re-wrap the recovered plaintext with the v6.0 `seal` binary.
+
+3. **Re-attest SBOMs** so `.se-attestation.json` files are produced under the new Ed25519 key:
+   ```bash
+   cargo run -p sealedge-seal-cli -- attest-sbom \
+     --binary target/release/seal \
+     --sbom bom.cdx.json \
+     --device-key build.key \
+     --device-pub build.pub \
+     --out attestation.se-attestation.json
+   ```
+
+4. **Update env-var exports** in shell profiles, systemd units, Docker compose files, and CI workflows:
+   ```bash
+   # Before
+   export TRUSTEDGE_DEVICE_ID=…
+   export TRUSTEDGE_SALT=…
+
+   # After
+   export SEALEDGE_DEVICE_ID=…
+   export SEALEDGE_SALT=…
+   ```
+
+5. **Update Cargo.toml dependencies** in any consumer crate:
+   ```toml
+   # Before
+   [dependencies]
+   trustedge-core = { version = "0.5", features = ["audio"] }
+
+   # After
+   [dependencies]
+   sealedge-core = { version = "0.6", features = ["audio"] }
+   ```
+
+6. **Update repository URL** if you have a local clone:
+   ```bash
+   git remote set-url origin https://github.com/TrustEdge-Labs/sealedge.git
+   ```
+   (GitHub's automatic redirect continues to resolve the old URL during the transition, but the canonical URL now points at `sealedge`.)
+
+### If you hit a verification failure after upgrade
+
+The following errors are all the expected clean-break signal:
+
+- `verify failed: archive magic mismatch — expected SEAL, got TRST`
+- `key file header mismatch — expected SEALEDGE-KEY-V1`
+- `AEAD tag verification failed` on an envelope that decrypts under the old domain
+- `handshake failed: peer session-key domain mismatch`
+
+These are not bugs. Regenerate keys and re-wrap your data under v6.0.
 
 ## Migrating from 0.2.x to 0.3.x: Crate Consolidation
 
