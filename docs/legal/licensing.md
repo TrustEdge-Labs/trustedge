@@ -1,12 +1,12 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
-# TrustEdge Dual Licensing Strategy
+# Sealedge Dual Licensing Strategy
 
 **Balancing open source community growth with commercial sustainability**
 
@@ -14,7 +14,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Overview
 
-TrustEdge employs a dual licensing model that enables both open source community adoption and commercial enterprise revenue. This strategy follows proven models used successfully by MongoDB, GitLab, Elastic, and other leading infrastructure companies.
+Sealedge employs a dual licensing model that enables both open source community adoption and commercial enterprise revenue. This strategy follows proven models used successfully by MongoDB, GitLab, Elastic, and other leading infrastructure companies.
 
 ## Licensing Structure
 
@@ -22,7 +22,7 @@ TrustEdge employs a dual licensing model that enables both open source community
 **Target Audience**: Developers, startups, open source projects, academic research
 
 **License**: Mozilla Public License 2.0 (MPL-2.0)
-- **File-level copyleft**: Modifications to TrustEdge files must be shared
+- **File-level copyleft**: Modifications to Sealedge files must be shared
 - **Commercial use allowed**: No restrictions on commercial usage
 - **Patent protection**: Built-in patent grant protects users
 - **Larger works permitted**: Can integrate into proprietary applications
@@ -96,7 +96,7 @@ TrustEdge employs a dual licensing model that enables both open source community
 
 #### **Core Components (MPL-2.0)**
 ```
-trustedge-core/
+sealedge-core/
 ├── src/
 │   ├── crypto/          # Core encryption algorithms
 │   ├── backends/        # Universal backend system
@@ -110,7 +110,7 @@ trustedge-core/
 
 #### **Enterprise Components (Commercial)**
 ```
-trustedge-enterprise/
+sealedge-enterprise/
 ├── src/
 │   ├── backends/
 │   │   └── tpm.rs       # TPM 2.0 integration
@@ -149,7 +149,7 @@ All contributors must sign a CLA that:
 - **Perpetual license** for specific software versions
 - **Modification rights** without disclosure requirements
 - **Sublicensing rights** for software vendors (additional fee)
-- **Indemnification** against IP claims related to TrustEdge
+- **Indemnification** against IP claims related to Sealedge
 - **Warranty** and support obligations clearly defined
 
 ---
@@ -261,7 +261,7 @@ All contributors must sign a CLA that:
 
 ## Conclusion
 
-The dual licensing strategy positions TrustEdge for both community growth and commercial success. By providing a strong open source foundation while offering compelling enterprise value, we can build a sustainable business that continues to innovate and serve both communities.
+The dual licensing strategy positions Sealedge for both community growth and commercial success. By providing a strong open source foundation while offering compelling enterprise value, we can build a sustainable business that continues to innovate and serve both communities.
 
 **Key Principles**:
 - **Community First**: Open source success drives commercial opportunity
@@ -270,4 +270,4 @@ The dual licensing strategy positions TrustEdge for both community growth and co
 - **Continuous Innovation**: Revenue funds continued development
 - **Win-Win**: Both communities and commercial customers benefit
 
-This strategy has been proven successful by multiple infrastructure companies and aligns with TrustEdge's mission to provide privacy-preserving edge computing for all users, from individual developers to large enterprises.
+This strategy has been proven successful by multiple infrastructure companies and aligns with Sealedge's mission to provide privacy-preserving edge computing for all users, from individual developers to large enterprises.

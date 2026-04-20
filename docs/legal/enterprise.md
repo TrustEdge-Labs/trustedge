@@ -1,12 +1,12 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
-# TrustEdge Enterprise Solutions
+# Sealedge Enterprise Solutions
 
 **Privacy-preserving edge computing for enterprise environments**
 
@@ -14,7 +14,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Enterprise Licensing & Support
 
-TrustEdge offers commercial licensing and enterprise support for organizations requiring advanced features, professional support, and legal protections beyond the open source MPL-2.0 license.
+Sealedge offers commercial licensing and enterprise support for organizations requiring advanced features, professional support, and legal protections beyond the open source MPL-2.0 license.
 
 ### Commercial License Benefits
 
@@ -52,7 +52,7 @@ TrustEdge offers commercial licensing and enterprise support for organizations r
 
 ### **Step 2: Technical Discovery Call**
 - **Duration**: 60 minutes
-- **Participants**: Your technical team + TrustEdge architects
+- **Participants**: Your technical team + Sealedge architects
 - **Agenda**: 
   - Use case deep dive
   - Technical requirements analysis
@@ -103,20 +103,20 @@ TrustEdge offers commercial licensing and enterprise support for organizations r
 
 ## Pricing & Licensing Models
 
-### **TrustEdge Professional**
+### **Sealedge Professional**
 - **$25,000/year** per deployment environment
 - Commercial license for proprietary modifications
 - Standard support (business hours, 48-hour response)
 - Basic enterprise features (TPM, monitoring)
 
-### **TrustEdge Enterprise**
+### **Sealedge Enterprise**
 - **$100,000/year** per enterprise deployment
 - All Professional features plus:
 - Premium support (24/7, 4-hour critical response)
 - Advanced enterprise features (HA, LDAP, compliance)
 - Quarterly business reviews and roadmap input
 
-### **TrustEdge Platinum**
+### **Sealedge Platinum**
 - **Custom pricing** for large-scale deployments
 - All Enterprise features plus:
 - Dedicated support engineer
@@ -179,7 +179,7 @@ TrustEdge offers commercial licensing and enterprise support for organizations r
 1. **Contact us** at [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com)
 2. **Schedule** a technical discovery call
 3. **Receive** a custom evaluation environment
-4. **Test** TrustEdge in your specific use case
+4. **Test** Sealedge in your specific use case
 5. **Deploy** with confidence and enterprise support
 
 ### **Resources**

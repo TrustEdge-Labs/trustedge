@@ -1,15 +1,15 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Contributor License Agreement (CLA)
+# Sealedge Contributor License Agreement (CLA)
 
-Thank you for your interest in contributing to TrustEdge ("we" or "us").
+Thank you for your interest in contributing to Sealedge ("we" or "us").
 
-This contributor license agreement ("Agreement") documents the rights granted by contributors to Us. To make this document effective, please sign it and send it to Us by electronic submission, following the instructions at [GitHub CLA Process](https://github.com/TrustEdge-Labs/trustedge/blob/main/CONTRIBUTING.md#contributor-license-agreement-cla). This is a legally binding document, so please read it carefully before agreeing to it. The Agreement may cover more than one software project managed by Us.
+This contributor license agreement ("Agreement") documents the rights granted by contributors to Us. To make this document effective, please sign it and send it to Us by electronic submission, following the instructions at [GitHub CLA Process](https://github.com/TrustEdge-Labs/sealedge/blob/main/CONTRIBUTING.md#contributor-license-agreement-cla). This is a legally binding document, so please read it carefully before agreeing to it. The Agreement may cover more than one software project managed by Us.
 
 ## 1. Definitions
 

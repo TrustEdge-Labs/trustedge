@@ -1,17 +1,17 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Copyright Management
+# Sealedge Copyright Management
 
-This document describes the automated copyright header management system for TrustEdge.
+This document describes the automated copyright header management system for Sealedge.
 
 ## Overview
 
-TrustEdge uses automated tools to ensure all source files have proper copyright headers, protecting your intellectual property and ensuring compliance with the MPL-2.0 license.
+Sealedge uses automated tools to ensure all source files have proper copyright headers, protecting your intellectual property and ensuring compliance with the MPL-2.0 license.
 
 ## Automated Systems
 
@@ -79,7 +79,7 @@ git commit -m "my changes"  # Will fail if headers missing
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/
 //
-// Project: trustedge — Privacy and trust at the edge.
+// Project: sealedge — Privacy and trust at the edge.
 //
 ```
 
@@ -88,8 +88,8 @@ git commit -m "my changes"  # Will fail if headers missing
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 ```
 
@@ -97,7 +97,7 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 ```yaml
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 ```
 
 ## Workflow Integration
