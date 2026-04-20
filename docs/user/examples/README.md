@@ -1,17 +1,17 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Examples
+# Sealedge Examples
 
-Real-world examples and use cases for TrustEdge privacy-preserving edge computing.
+Real-world examples and use cases for Sealedge privacy-preserving edge computing.
 
 ## 🚀 Getting Started
 
-**New to TrustEdge? Start here:**
+**New to Sealedge? Start here:**
 
 | Guide | Description | Best For |
 |-------|-------------|----------|
@@ -23,7 +23,7 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 ### File & Data Processing
 | Guide | Description | Use Cases |
 |-------|-------------|-----------|
-| **[.trst Archives](trst-archives.md)** | Secure archival with digital signatures | Evidence collection, security cameras |
+| **[.seal Archives](trst-archives.md)** | Secure archival with digital signatures | Evidence collection, security cameras |
 | **[Audio Processing](audio.md)** | Live audio capture and processing | Voice notes, interviews, streaming |
 
 ### Network & Authentication
@@ -64,12 +64,12 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 ## 🛠️ By Technical Level
 
 ### **Beginner** (New Users)
-1. [Installation Guide](installation.md) - Set up TrustEdge
+1. [Installation Guide](installation.md) - Set up Sealedge
 2. [Basic File Encryption](getting-started.md#simple-file-encryption) - First encryption
 3. [Format-Aware Operations](getting-started.md#format-aware-operations) - Inspect data
 
 ### **Intermediate** (Regular Users)
-1. [.trst Archive Creation](trst-archives.md#basic-archive-creation-and-verification) - Secure archival
+1. [.seal Archive Creation](trst-archives.md#basic-archive-creation-and-verification) - Secure archival
 2. [Network Client-Server](network.md#network-mode-quick-start) - Distributed encryption
 3. [Audio Capture](audio.md#live-audio-capture) - Media processing
 
@@ -81,10 +81,10 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 ## 📋 Reference Information
 
 ### **Command Reference**
-- **Core encryption**: `trustedge-core --help`
-- **Network server**: `trustedge-server --help`
-- **Network client**: `trustedge-client --help`
-- **Archive tool**: `trst --help`
+- **Core encryption**: `sealedge-core --help`
+- **Network server**: `sealedge-server --help`
+- **Network client**: `sealedge-client --help`
+- **Archive tool**: `seal --help`
 
 ### **Related Documentation**
 - **[CLI Reference](../cli.md)** - Complete command documentation
@@ -103,11 +103,11 @@ Real-world examples and use cases for TrustEdge privacy-preserving edge computin
 ---
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
 - **[Documentation](../../README.md)** - Complete docs index
 - **[CLI Reference](../cli.md)** - Command reference
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

@@ -1,13 +1,13 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Installation Guide
+# Sealedge Installation Guide
 
-Complete installation instructions for TrustEdge with all features.
+Complete installation instructions for Sealedge with all features.
 
 ## Basic Installation
 
@@ -21,8 +21,8 @@ source ~/.cargo/env
 **Basic Installation (Core Features Only):**
 ```bash
 # Clone the repository
-git clone https://github.com/TrustEdge-Labs/trustedge.git
-cd trustedge
+git clone https://github.com/TrustEdge-Labs/sealedge.git
+cd sealedge
 
 # Build core features only (file encryption, basic operations)
 cargo build --workspace --release --no-default-features
@@ -44,7 +44,7 @@ sudo apt-get install libasound2-dev pkg-config
 # No additional packages needed
 
 # Build with audio features
-cargo build --package trustedge-core --release --features audio
+cargo build --package sealedge-core --release --features audio
 ```
 
 **YubiKey Hardware Support:**
@@ -60,7 +60,7 @@ brew install opensc
 # Download and install OpenSC from https://github.com/OpenSC/OpenSC/releases
 
 # Build with YubiKey hardware backend
-cargo build --package trustedge-core --release --features yubikey
+cargo build --package sealedge-core --release --features yubikey
 
 # Or build with all features
 cargo build --workspace --release --features audio,yubikey
@@ -69,15 +69,15 @@ cargo build --workspace --release --features audio,yubikey
 **Verification:**
 ```bash
 # Verify installation
-./target/release/trustedge-core --version
-./target/release/trustedge-server --version
-./target/release/trustedge-client --version
-./target/release/trst --version
+./target/release/sealedge-core --version
+./target/release/sealedge-server --version
+./target/release/sealedge-client --version
+./target/release/seal --version
 
 # Test basic functionality
-echo "Hello TrustEdge!" > test.txt
-./target/release/trustedge-core --input test.txt --envelope test.trst --key-out test.key
-./target/release/trustedge-core --decrypt --input test.trst --out recovered.txt --key-hex $(cat test.key)
+echo "Hello Sealedge!" > test.txt
+./target/release/sealedge-core --input test.txt --envelope test.seal --key-out test.key
+./target/release/sealedge-core --decrypt --input test.seal --out recovered.txt --key-hex $(cat test.key)
 diff test.txt recovered.txt  # Should show no differences
 ```
 
@@ -87,15 +87,15 @@ diff test.txt recovered.txt  # Should show no differences
 
 ---
 
-*This document is part of the TrustEdge project documentation.*
+*This document is part of the Sealedge project documentation.*
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
-- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
-- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
-- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
+- **[Sealedge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/sealedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/sealedge/issues)** - Bug reports & features
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

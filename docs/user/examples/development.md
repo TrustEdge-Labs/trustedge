@@ -1,8 +1,8 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 # Development Examples
@@ -23,10 +23,10 @@ cargo build --release
 cargo test
 
 # Create attestation for development build
-./target/release/trustedge-attest \
+./target/release/sealedge-attest \
   --file target/release/my-app \
   --builder-id "dev-$(whoami)" \
-  --output dev-attestation.trst
+  --output dev-attestation.seal
 
 echo "✔ Development build attested"
 ```
@@ -35,15 +35,15 @@ echo "✔ Development build attested"
 
 ```bash
 # Debug mode with verbose logging
-RUST_LOG=debug ./target/release/trustedge-core \
+RUST_LOG=debug ./target/release/sealedge-core \
   --input test.txt \
-  --envelope debug.trst \
+  --envelope debug.seal \
   --key-out debug.key \
   --verbose
 
 # Inspect internal state
-./target/release/trustedge-core \
-  --input debug.trst \
+./target/release/sealedge-core \
+  --input debug.seal \
   --inspect \
   --verbose \
   --debug-chunks
@@ -56,18 +56,18 @@ RUST_LOG=debug ./target/release/trustedge-core \
 #!/bin/bash
 set -e
 
-echo "Running TrustEdge integration tests..."
+echo "Running Sealedge integration tests..."
 
 # Test basic encryption/decryption
 echo "Test data" > test_input.txt
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input test_input.txt \
-  --envelope test.trst \
+  --envelope test.seal \
   --key-out test.key
 
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input test.trst \
+  --input test.seal \
   --out test_output.txt \
   --key-hex $(cat test.key)
 
@@ -80,7 +80,7 @@ else
 fi
 
 # Cleanup
-rm test_input.txt test.trst test.key test_output.txt
+rm test_input.txt test.seal test.key test_output.txt
 echo "✔ All tests passed"
 ```
 
@@ -100,11 +100,11 @@ fi
 cargo build --release --all-features
 
 # Create attestations for all binaries
-for binary in trustedge-core trustedge-server trustedge-client trst; do
-  ./target/release/trustedge-attest \
+for binary in sealedge-core sealedge-server sealedge-client seal; do
+  ./target/release/sealedge-attest \
     --file "target/release/$binary" \
     --builder-id "release-$VERSION" \
-    --output "release/$binary-$VERSION.trst"
+    --output "release/$binary-$VERSION.seal"
 done
 
 echo "✔ Release $VERSION prepared with attestations"
@@ -122,9 +122,9 @@ for size in 1M 10M 100M; do
   dd if=/dev/urandom of="test_$size.bin" bs=1 count=$size 2>/dev/null
 
   start_time=$(date +%s.%N)
-  ./target/release/trustedge-core \
+  ./target/release/sealedge-core \
     --input "test_$size.bin" \
-    --envelope "test_$size.trst" \
+    --envelope "test_$size.seal" \
     --key-out "key_$size.hex" \
     --quiet
   end_time=$(date +%s.%N)
@@ -133,7 +133,7 @@ for size in 1M 10M 100M; do
   echo "$size file: ${duration}s"
 
   # Cleanup
-  rm "test_$size.bin" "test_$size.trst" "key_$size.hex"
+  rm "test_$size.bin" "test_$size.seal" "key_$size.hex"
 done
 ```
 
@@ -144,15 +144,15 @@ done
 
 ---
 
-*This document is part of the TrustEdge project documentation.*
+*This document is part of the Sealedge project documentation.*
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
-- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
-- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
-- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
+- **[Sealedge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/sealedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/sealedge/issues)** - Bug reports & features
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

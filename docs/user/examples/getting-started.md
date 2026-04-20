@@ -1,36 +1,36 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 # Getting Started Examples
 
-Basic examples to get you started with TrustEdge encryption and decryption.
+Basic examples to get you started with Sealedge encryption and decryption.
 
-> **📦 Workspace Note**: TrustEdge is organized as a Cargo workspace. Use `cargo run -p package-name` for development, or `./target/release/binary-name` for installed binaries.
+> **📦 Workspace Note**: Sealedge is organized as a Cargo workspace. Use `cargo run -p package-name` for development, or `./target/release/binary-name` for installed binaries.
 
 ## Simple File Encryption
 
 **Basic file encryption with random key:**
 ```bash
 # Development (from workspace root)
-cargo run -p trustedge-core -- \
+cargo run -p sealedge-core -- \
   --input document.txt \
-  --envelope document.trst \
+  --envelope document.seal \
   --key-out mykey.hex
 
 # OR using installed binary
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input document.txt \
-  --envelope document.trst \
+  --envelope document.seal \
   --key-out mykey.hex
 
 # Decrypt the document
-cargo run -p trustedge-core -- \
+cargo run -p sealedge-core -- \
   --decrypt \
-  --input document.trst \
+  --input document.seal \
   --out recovered.txt \
   --key-hex $(cat mykey.hex) \
   --verbose
@@ -48,19 +48,19 @@ diff document.txt recovered.txt  # Should be identical
 **Keyring-based encryption (password-derived keys):**
 ```bash
 # One-time setup: store passphrase in OS keyring
-cargo run -p trustedge-core -- --set-passphrase "my secure passphrase"
+cargo run -p sealedge-core -- --set-passphrase "my secure passphrase"
 
 # Encrypt using keyring-derived key
-cargo run -p trustedge-core -- \
+cargo run -p sealedge-core -- \
   --input file.txt \
-  --envelope file.trst \
+  --envelope file.seal \
   --use-keyring \
   --salt-hex $(openssl rand -hex 16)
 
 # Decrypt using keyring (you'll be prompted for passphrase if needed)
-cargo run -p trustedge-core -- \
+cargo run -p sealedge-core -- \
   --decrypt \
-  --input file.trst \
+  --input file.seal \
   --out recovered.txt \
   --use-keyring \
   --salt-hex <same-salt-as-encryption>
@@ -71,17 +71,17 @@ cargo run -p trustedge-core -- \
 **Inspect encrypted data without decrypting:**
 ```bash
 # Create sample data
-echo '{"message": "Hello TrustEdge!", "timestamp": 1234567890}' > data.json
+echo '{"message": "Hello Sealedge!", "timestamp": 1234567890}' > data.json
 
 # Encrypt the JSON file
-cargo run -p trustedge-core -- --input data.json --envelope data.trst --key-out key.hex
+cargo run -p sealedge-core -- --input data.json --envelope data.seal --key-out key.hex
 
 # Inspect without decrypting
-cargo run -p trustedge-core -- --input data.trst --inspect --verbose
+cargo run -p sealedge-core -- --input data.seal --inspect --verbose
 
 # Example output:
-# TrustEdge Archive Information:
-#   File: data.trst
+# Sealedge Archive Information:
+#   File: data.seal
 #   Data Type: File
 #   MIME Type: application/json
 #   Original Size: 58 bytes
@@ -92,9 +92,9 @@ cargo run -p trustedge-core -- --input data.trst --inspect --verbose
 **Format-aware decryption:**
 ```bash
 # Decrypt preserves original format
-cargo run -p trustedge-core -- \
+cargo run -p sealedge-core -- \
   --decrypt \
-  --input data.trst \
+  --input data.seal \
   --out recovered.json \
   --key-hex $(cat key.hex)
 
@@ -107,7 +107,7 @@ cat recovered.json | jq .  # Pretty-print JSON
 **Basic audio capture:**
 ```bash
 # List available audio devices
-./target/release/trustedge-core --list-audio-devices
+./target/release/sealedge-core --list-audio-devices
 
 # Example output:
 # Available Audio Devices:
@@ -116,16 +116,16 @@ cat recovered.json | jq .  # Pretty-print JSON
 #   2: USB Audio Device
 
 # Capture 10 seconds of audio
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
-  --envelope voice_note.trst \
+  --envelope voice_note.seal \
   --key-out voice_key.hex \
   --max-duration 10
 
 # Decrypt captured audio (produces raw PCM data)
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input voice_note.trst \
+  --input voice_note.seal \
   --out recovered_audio.raw \
   --key-hex $(cat voice_key.hex)
 
@@ -136,21 +136,21 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
 **Advanced audio capture with specific device and quality:**
 ```bash
 # High-quality stereo capture from specific device
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
   --audio-device "hw:CARD=USB_AUDIO,DEV=0" \
   --sample-rate 48000 \
   --channels 2 \
-  --envelope stereo_voice.trst \
+  --envelope stereo_voice.seal \
   --use-keyring \
   --max-duration 30
 
 # The captured audio maintains format information
-./target/release/trustedge-core --input stereo_voice.trst --inspect
+./target/release/sealedge-core --input stereo_voice.seal --inspect
 
 # Example output:
-# TrustEdge Archive Information:
-#   File: stereo_voice.trst
+# Sealedge Archive Information:
+#   File: stereo_voice.seal
 #   Data Type: Audio
 #   Sample Rate: 48000 Hz
 #   Channels: 2 (Stereo)
@@ -163,7 +163,7 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
 **Authenticated server setup:**
 ```bash
 # Start server with authentication required
-./target/release/trustedge-server \
+./target/release/sealedge-server \
   --listen 127.0.0.1:8080 \
   --require-auth \
   --decrypt \
@@ -175,7 +175,7 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
 **Authenticated client connection:**
 ```bash
 # Connect client with authentication
-./target/release/trustedge-client \
+./target/release/sealedge-client \
   --server 127.0.0.1:8080 \
   --input file.txt \
   --require-auth \
@@ -190,15 +190,15 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw recovered_audio.wav
 
 ---
 
-*This document is part of the TrustEdge project documentation.*
+*This document is part of the Sealedge project documentation.*
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
-- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
-- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
-- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
+- **[Sealedge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/sealedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/sealedge/issues)** - Bug reports & features
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

@@ -1,25 +1,25 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 # Audio Examples
 
-Live audio capture, processing, and streaming examples for TrustEdge.
+Live audio capture, processing, and streaming examples for Sealedge.
 
 ## Live Audio Capture
 
 **Basic audio capture:**
 ```bash
 # List available audio devices
-./target/release/trustedge-core --list-audio-devices
+./target/release/sealedge-core --list-audio-devices
 
 # Capture 10 seconds of audio
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --live-capture \
-  --envelope voice_note.trst \
+  --envelope voice_note.seal \
   --key-out voice_key.hex \
   --max-duration 10
 ```
@@ -30,10 +30,10 @@ Live audio capture, processing, and streaming examples for TrustEdge.
 
 ```bash
 # Quick voice note with system keyring
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --audio-capture \
   --duration 30 \
-  --envelope voice_note_$(date +%Y%m%d_%H%M%S).trst \
+  --envelope voice_note_$(date +%Y%m%d_%H%M%S).seal \
   --backend keyring \
   --salt-hex "voice_notes_salt_1234567890abcdef" \
   --use-keyring
@@ -43,16 +43,16 @@ Live audio capture, processing, and streaming examples for TrustEdge.
 
 ```bash
 # Professional audio recording with device selection
-./target/release/trustedge-core --list-devices
+./target/release/sealedge-core --list-devices
 
 # Record from professional interface
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --audio-capture \
   --device 1 \
   --duration 1800 \
   --sample-rate 48000 \
   --channels 2 \
-  --envelope studio_session.trst \
+  --envelope studio_session.seal \
   --key-out session_key.hex \
   --verbose
 ```
@@ -64,14 +64,14 @@ Live audio capture, processing, and streaming examples for TrustEdge.
 #### Discovering Available Audio Devices
 ```bash
 # List all available audio input devices
-./target/release/trustedge-core --list-audio-devices --verbose
+./target/release/sealedge-core --list-audio-devices --verbose
 
 # Cross-platform device discovery
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --audio-device "Microphone (Realtek Audio)" \
   --sample-rate 44100 \
   --channels 1 \
-  --envelope test_audio.trst \
+  --envelope test_audio.seal \
   --key-out test.key
 ```
 
@@ -84,10 +84,10 @@ Live audio capture, processing, and streaming examples for TrustEdge.
 #### Testing Audio Device Access
 ```bash
 # Test minimal audio capture
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --audio-capture \
   --duration 1 \
-  --envelope audio_test.trst \
+  --envelope audio_test.seal \
   --key-out test.key \
   --verbose
 ```
@@ -112,15 +112,15 @@ ffmpeg -f f32le -ar 44100 -ac 1 -i recovered_audio.raw -b:a 128k recovered_audio
 
 ---
 
-*This document is part of the TrustEdge project documentation.*
+*This document is part of the Sealedge project documentation.*
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
-- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
-- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
-- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
+- **[Sealedge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/sealedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/sealedge/issues)** - Bug reports & features
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

@@ -1,8 +1,8 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 # Backend Examples
@@ -15,9 +15,9 @@ Universal Backend system and hardware integration examples.
 
 ```bash
 # Use software HSM for key generation
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input document.txt \
-  --envelope document.trst \
+  --envelope document.seal \
   --backend software-hsm \
   --key-out generated.key
 ```
@@ -26,12 +26,12 @@ Universal Backend system and hardware integration examples.
 
 ```bash
 # Store passphrase in OS keyring
-./target/release/trustedge-core --set-passphrase "my secure passphrase"
+./target/release/sealedge-core --set-passphrase "my secure passphrase"
 
 # Use keyring-derived keys
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input file.txt \
-  --envelope file.trst \
+  --envelope file.seal \
   --backend keyring \
   --salt-hex $(openssl rand -hex 16)
 ```
@@ -73,12 +73,12 @@ The CLI supports YubiKey through the backend system:
 
 ```bash
 # List available backends (includes yubikey if compiled with feature)
-./target/release/trustedge-core --list-backends
+./target/release/sealedge-core --list-backends
 
 # Use YubiKey backend for encryption (requires backend implementation)
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input sensitive.pdf \
-  --envelope sensitive.trst \
+  --envelope sensitive.seal \
   --backend yubikey \
   --backend-config "pin=YOUR_PIN" \
   --backend-config "slot=9c"
@@ -90,16 +90,16 @@ The CLI supports YubiKey through the backend system:
 
 ```bash
 # Generate with software HSM
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --input data.txt \
-  --envelope data.trst \
+  --envelope data.seal \
   --backend software-hsm \
   --key-out sw-key.hex
 
 # Decrypt with keyring (after importing key)
-./target/release/trustedge-core \
+./target/release/sealedge-core \
   --decrypt \
-  --input data.trst \
+  --input data.seal \
   --out recovered.txt \
   --backend keyring \
   --key-hex $(cat sw-key.hex)
@@ -112,15 +112,15 @@ The CLI supports YubiKey through the backend system:
 
 ---
 
-*This document is part of the TrustEdge project documentation.*
+*This document is part of the Sealedge project documentation.*
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
-- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
-- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
-- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
+- **[Sealedge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/sealedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/sealedge/issues)** - Bug reports & features
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)

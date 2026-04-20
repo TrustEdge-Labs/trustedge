@@ -1,8 +1,8 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 # Software Attestation Examples
@@ -18,35 +18,35 @@ Create and verify cryptographically signed software "birth certificates":
 cargo build --release
 
 # Create an attestation for the binary
-trustedge-attest --file target/release/my-app \
+sealedge-attest --file target/release/my-app \
                  --builder-id "developer@company.com" \
-                 --output my-app.trst \
+                 --output my-app.seal \
                  --verbose
 
 # Example output:
-# ● TrustEdge Software Attestation Tool
+# ● Sealedge Software Attestation Tool
 # =====================================
 # ● Artifact: target/release/my-app
 # ● Builder: developer@company.com
-# ● Output: my-app.trst
+# ● Output: my-app.seal
 # ● Analyzing artifact and repository...
 # ✔ Attestation created:
 #    ● Artifact: my-app
 #    ● Hash: a1b2c3d4e5f6789a...
 #    ● Commit: 0a9a9c9fa2e8b1c4...
 #    ● Timestamp: 2025-09-19T14:30:00Z
-# ✔ Sealed attestation created: my-app.trst
+# ✔ Sealed attestation created: my-app.seal
 
 # Verify the attestation
-trustedge-verify --artifact target/release/my-app \
-                 --attestation-file my-app.trst \
+sealedge-verify --artifact target/release/my-app \
+                 --attestation-file my-app.seal \
                  --verbose
 
 # Example output:
-# ● TrustEdge Attestation Verification Tool
+# ● Sealedge Attestation Verification Tool
 # ==========================================
 # ● Artifact: target/release/my-app
-# ● Attestation: my-app.trst
+# ● Attestation: my-app.seal
 # ● Reading attestation (trying envelope first, JSON fallback)...
 # ● Computing artifact hash...
 # ✔ VERIFICATION SUCCESSFUL
@@ -77,14 +77,14 @@ CI_JOB_ID="${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}"
 ARTIFACT_NAME="my-app-${GITHUB_REF_NAME}"
 
 # Create attestation with CI context
-trustedge-attest --file "target/release/my-app" \
+sealedge-attest --file "target/release/my-app" \
                  --builder-id "ci-job-${CI_JOB_ID}" \
-                 --output "${ARTIFACT_NAME}.trst" \
+                 --output "${ARTIFACT_NAME}.seal" \
                  --verbose
 
 # Upload both artifact and attestation
 aws s3 cp "target/release/my-app" "s3://releases/${ARTIFACT_NAME}"
-aws s3 cp "${ARTIFACT_NAME}.trst" "s3://releases/${ARTIFACT_NAME}.trst"
+aws s3 cp "${ARTIFACT_NAME}.seal" "s3://releases/${ARTIFACT_NAME}.seal"
 
 echo "✔ Release ${ARTIFACT_NAME} uploaded with attestation"
 ```
@@ -96,11 +96,11 @@ Verify software throughout the supply chain:
 ```bash
 # Download artifact and attestation
 aws s3 cp "s3://releases/my-app-v1.0.0" ./my-app
-aws s3 cp "s3://releases/my-app-v1.0.0.trst" ./my-app.trst
+aws s3 cp "s3://releases/my-app-v1.0.0.seal" ./my-app.seal
 
 # Verify integrity and provenance
-trustedge-verify --artifact my-app \
-                 --attestation-file my-app.trst \
+sealedge-verify --artifact my-app \
+                 --attestation-file my-app.seal \
                  --verbose
 
 # Check exit code for automation
@@ -120,7 +120,7 @@ Create JSON-only attestations for debugging and inspection:
 
 ```bash
 # Create JSON attestation (no cryptographic envelope)
-trustedge-attest --file target/release/my-app \
+sealedge-attest --file target/release/my-app \
                  --builder-id "debug-build" \
                  --output attestation.json \
                  --json-only
@@ -138,7 +138,7 @@ cat attestation.json | jq .
 # }
 
 # Verify JSON attestation
-trustedge-verify --artifact target/release/my-app \
+sealedge-verify --artifact target/release/my-app \
                  --attestation-file attestation.json \
                  --json-input
 ```
@@ -161,9 +161,9 @@ for target in "${TARGETS[@]}"; do
     cargo build --release --target "$target"
 
     # Create attestation for this target
-    trustedge-attest --file "target/${target}/release/my-app" \
+    sealedge-attest --file "target/${target}/release/my-app" \
                      --builder-id "${BUILDER_ID}-${target}" \
-                     --output "releases/my-app-${target}.trst" \
+                     --output "releases/my-app-${target}.seal" \
                      --verbose
 
     echo "✔ Attestation created for $target"
@@ -180,15 +180,15 @@ ls -la releases/
 
 ---
 
-*This document is part of the TrustEdge project documentation.*
+*This document is part of the Sealedge project documentation.*
 
 **📖 Links:**
-- **[TrustEdge Home](https://github.com/TrustEdge-Labs/trustedge)** - Main repository
-- **[TrustEdge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
-- **[Documentation](https://github.com/TrustEdge-Labs/trustedge/tree/main/docs)** - Complete docs
-- **[Issues](https://github.com/TrustEdge-Labs/trustedge/issues)** - Bug reports & features
+- **[Sealedge Home](https://github.com/TrustEdge-Labs/sealedge)** - Main repository
+- **[Sealedge Labs](https://github.com/TrustEdge-Labs)** - Organization profile
+- **[Documentation](https://github.com/TrustEdge-Labs/sealedge/tree/main/docs)** - Complete docs
+- **[Issues](https://github.com/TrustEdge-Labs/sealedge/issues)** - Bug reports & features
 
 **⚖️ Legal:**
-- **Copyright**: © 2025 TrustEdge Labs LLC
+- **Copyright**: © 2025 Sealedge Labs LLC
 - **License**: Mozilla Public License 2.0 ([MPL-2.0](https://mozilla.org/MPL/2.0/))
 - **Commercial**: [Enterprise licensing available](mailto:enterprise@trustedgelabs.com)
