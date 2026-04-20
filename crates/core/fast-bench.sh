@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Fast benchmark runner for TrustEdge (Local Development)
+# Fast benchmark runner for sealedge (Local Development)
 # Usage: ./fast-bench.sh [crypto|network|all]
 #
 # This script runs benchmarks in "fast mode" for quick performance checks
@@ -11,7 +11,7 @@ set -e
 
 cd "$(dirname "$0")"
 
-echo "🚀 TrustEdge Fast Benchmarks (Local Development)"
+echo "🚀 Sealedge Fast Benchmarks (Local Development)"
 echo "=============================================="
 echo "💡 Note: These are quick checks, not statistically rigorous"
 echo "   For full accuracy, run: cargo bench"

@@ -96,7 +96,7 @@ pub struct PointAttestation {
     /// Format identifier — always `"te-point-attestation-v1"`.
     pub format: String,
     /// Crate version at signing time.
-    pub trustedge_version: String,
+    pub sealedge_version: String,
     /// ISO 8601 timestamp with millisecond precision.
     pub timestamp: String,
     /// Hex-encoded 16 random bytes for replay resistance.
@@ -150,7 +150,7 @@ impl PointAttestation {
 
         let mut attestation = PointAttestation {
             format: FORMAT_V1.to_string(),
-            trustedge_version: env!("CARGO_PKG_VERSION").to_string(),
+            sealedge_version: env!("CARGO_PKG_VERSION").to_string(),
             timestamp,
             nonce,
             subject: ArtifactRef {

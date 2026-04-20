@@ -54,7 +54,7 @@ fn main() -> Result<()> {
     let args = Args::parse();
 
     if args.verbose {
-        println!("● TrustEdge Software Attestation Tool");
+        println!("● Sealedge Software Attestation Tool");
         println!("=====================================");
         println!("● Artifact: {}", args.file.display());
         println!("● Builder: {}", args.builder_id);

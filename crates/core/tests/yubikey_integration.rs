@@ -214,7 +214,7 @@ fn test_certificate_generation_round_trip() {
 
     // Step 1: Generate certificate using hardware-backed signing
     let cert_der = backend
-        .generate_certificate("9c", "TrustEdge Test Certificate")
+        .generate_certificate("9c", "Sealedge Test Certificate")
         .expect("Certificate generation should succeed");
 
     assert!(!cert_der.is_empty(), "Certificate DER must not be empty");
@@ -261,8 +261,8 @@ fn test_certificate_generation_round_trip() {
     // Step 7: Verify subject contains expected CN
     let subject_string = cert.tbs_certificate.subject.to_string();
     assert!(
-        subject_string.contains("TrustEdge Test Certificate"),
-        "Certificate subject '{}' should contain 'TrustEdge Test Certificate'",
+        subject_string.contains("Sealedge Test Certificate"),
+        "Certificate subject '{}' should contain 'Sealedge Test Certificate'",
         subject_string
     );
     println!("✔ Certificate subject verified: {}", subject_string);

@@ -13,12 +13,12 @@ use sealedge_core::{NetworkChunk, TransportConfig, TransportFactory};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("● TrustEdge Transport Demo");
+    println!("● Sealedge Transport Demo");
 
     // Create a sample NetworkChunk for testing
     let test_chunk = NetworkChunk::new(
         1,
-        b"Hello, TrustEdge!".to_vec(),
+        b"Hello, Sealedge!".to_vec(),
         b"manifest".to_vec(),
         [1u8; 12],
     );

@@ -18,7 +18,7 @@ fn main() -> anyhow::Result<()> {
         CryptoOperation, CryptoResult, UniversalBackend,
     };
 
-    println!("🔑 TrustEdge YubiKey Verification Test");
+    println!("🔑 Sealedge YubiKey Verification Test");
     println!("=====================================\n");
 
     // Configure YubiKey backend with default slot
@@ -99,7 +99,7 @@ fn main() -> anyhow::Result<()> {
         println!("   ykman piv keys generate 9c /tmp/pubkey.pem --algorithm ECCP256");
         println!("   ykman piv certificates generate 9c /tmp/pubkey.pem --subject \"CN=Test\"");
     } else {
-        println!("\n✅ SUCCESS! Your YubiKey is working with TrustEdge!");
+        println!("\n✅ SUCCESS! Your YubiKey is working with Sealedge!");
         println!("\nNext steps:");
         println!("   • Try: cargo run --example yubikey_demo --features yubikey");
         println!("   • Try: cargo run --example yubikey_certificate_demo --features yubikey");

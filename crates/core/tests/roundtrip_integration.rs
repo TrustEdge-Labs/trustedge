@@ -131,11 +131,11 @@ fn get_binary_path() -> std::path::PathBuf {
     let manifest_path = std::path::PathBuf::from(manifest_dir);
     let workspace_root = manifest_path.parent().unwrap().parent().unwrap(); // crates/core -> crates -> workspace root
 
-    let release_path = workspace_root.join("target/release/trustedge");
+    let release_path = workspace_root.join("target/release/sealedge");
     if release_path.exists() {
         release_path
     } else {
-        workspace_root.join("target/debug/trustedge")
+        workspace_root.join("target/debug/sealedge")
     }
 }
 
@@ -229,7 +229,7 @@ fn test_medium_file_roundtrip() -> Result<()> {
 
 #[test]
 fn test_text_file_roundtrip() -> Result<()> {
-    let test_content = "Hello, TrustEdge!\nThis is a test text file.\nIt contains multiple lines.\n■ Security test ■\n";
+    let test_content = "Hello, Sealedge!\nThis is a test text file.\nIt contains multiple lines.\n■ Security test ■\n";
     let test_data = create_text_data(test_content);
     test_roundtrip(test_data, "Text file")
 }
@@ -321,7 +321,7 @@ fn test_inspect_encrypted_file() -> Result<()> {
 
     // Verify inspection output contains expected information
     assert!(
-        inspect_stdout.contains("TrustEdge Archive Information")
+        inspect_stdout.contains("Sealedge Archive Information")
             || inspect_stdout.contains("File")
             || inspect_stdout.contains("MIME")
             || inspect_stdout.contains("Data Type"),

@@ -18,7 +18,7 @@ use sealedge_core::{
 };
 
 fn main() -> Result<()> {
-    println!("● TrustEdge Universal Backend System Demo");
+    println!("● Sealedge Universal Backend System Demo");
     println!("==========================================\n");
 
     // Create a registry with default backends

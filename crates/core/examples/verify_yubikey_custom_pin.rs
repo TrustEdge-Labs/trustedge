@@ -18,7 +18,7 @@ fn main() -> anyhow::Result<()> {
         CryptoOperation, CryptoResult, UniversalBackend,
     };
 
-    println!("🔑 TrustEdge YubiKey Verification (Custom PIN)");
+    println!("🔑 Sealedge YubiKey Verification (Custom PIN)");
     println!("==============================================\n");
 
     let args: Vec<String> = std::env::args().collect();
@@ -124,7 +124,7 @@ fn main() -> anyhow::Result<()> {
     println!("   Total keys found: {}/{}", found_keys, slots.len());
 
     if found_keys > 0 {
-        println!("\n✅ SUCCESS! Your YubiKey is working with TrustEdge!");
+        println!("\n✅ SUCCESS! Your YubiKey is working with Sealedge!");
         println!("\nNext steps:");
         println!("   • Try: cargo run --example yubikey_demo --features yubikey");
         println!("   • Try: cargo run --example yubikey_certificate_demo --features yubikey");

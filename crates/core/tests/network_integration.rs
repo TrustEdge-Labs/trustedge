@@ -33,7 +33,7 @@ fn get_server_binary_path() -> PathBuf {
         .unwrap()
         .parent() // workspace root
         .unwrap()
-        .join("target/debug/trustedge-server")
+        .join("target/debug/sealedge-server")
 }
 
 /// Test helper to get the path to the client binary
@@ -45,7 +45,7 @@ fn get_client_binary_path() -> PathBuf {
         .unwrap()
         .parent() // workspace root
         .unwrap()
-        .join("target/debug/trustedge-client")
+        .join("target/debug/sealedge-client")
 }
 
 /// Test helper to create test data of specified size with pattern

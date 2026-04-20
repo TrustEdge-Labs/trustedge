@@ -17,7 +17,7 @@ use rand_core::OsRng;
 use sealedge_core::{assign_receipt, create_receipt, verify_receipt_chain};
 
 fn main() -> Result<()> {
-    println!("🏢 TrustEdge Receipt Demo: The Office Analogy in Action\n");
+    println!("🏢 Sealedge Receipt Demo: The Office Analogy in Action\n");
 
     // Create our characters (signing keys)
     println!("👥 Setting up our office characters...");
@@ -136,13 +136,13 @@ fn main() -> Result<()> {
 
     // Demonstrate the separation of concerns
     println!("● Architecture Summary: Separation of Concerns");
-    println!("   ● Contract Writer (trustedge-receipts):");
+    println!("   ● Contract Writer (sealedge-receipts):");
     println!("      - Handles business logic (amounts, ownership, descriptions)");
     println!("      - Validates business rules (non-zero amounts, valid timestamps)");
     println!("      - Creates receipt chains and verifies ownership transfers");
     println!("      - Never worries about cryptography or security details");
     println!();
-    println!("   ● Security Guard (trustedge-core Envelope):");
+    println!("   ● Security Guard (sealedge-core Envelope):");
     println!("      - Provides cryptographic security (encryption, signing, hashing)");
     println!("      - Ensures tamper-proof containers for any payload");
     println!("      - Handles nonces, chunks, manifests, and network protocols");

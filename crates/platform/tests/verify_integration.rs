@@ -1265,7 +1265,7 @@ mod http_tests {
         // Build a minimal JSON that parses as PointAttestation but with wrong format
         let wrong_format_json = serde_json::json!({
             "format": "wrong-format-v99",
-            "trustedge_version": "0.1.0",
+            "sealedge_version": "0.1.0",
             "timestamp": "2025-01-01T00:00:00.000Z",
             "nonce": "deadbeefdeadbeef",
             "subject": {

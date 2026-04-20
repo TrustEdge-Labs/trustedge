@@ -8,7 +8,7 @@ use std::io::Write;
 use tempfile::tempdir;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("● TrustEdge Software Attestation Demo");
+    println!("● Sealedge Software Attestation Demo");
     println!("=====================================");
 
     // Create a temporary artifact
@@ -68,7 +68,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  • Build environment details");
     println!("  • Builder identity and timestamp");
 
-    println!("\n✔ TrustEdge attestation demo complete!");
+    println!("\n✔ Sealedge attestation demo complete!");
     println!("Use the cargo examples (attest/verify_attestation) for CLI use.");
 
     Ok(())

@@ -10,7 +10,7 @@
 use sealedge_core::{open_envelope, seal_for_recipient, AsymmetricAlgorithm, KeyPair};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🔐 TrustEdge Core Hybrid Encryption API Demo");
+    println!("🔐 Sealedge Core Hybrid Encryption API Demo");
     println!("=============================================\n");
 
     // Step 1: Generate key pairs for Alice and Bob
