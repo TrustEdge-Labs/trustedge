@@ -15,7 +15,7 @@ use std::path::PathBuf;
 
 /// Verify software attestation
 #[derive(Parser, Debug)]
-#[command(name = "trustedge-verify", version, about)]
+#[command(name = "sealedge-verify", version, about)]
 struct Args {
     /// Path to the software artifact to verify
     #[arg(short, long)]

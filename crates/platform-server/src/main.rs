@@ -25,9 +25,9 @@ use sealedge_platform::database::{create_connection_pool, run_migrations};
 /// TrustEdge Platform Server — boots the TrustEdge platform HTTP service.
 #[derive(Parser)]
 #[command(
-    name = "trustedge-platform-server",
+    name = "sealedge-platform-server",
     version = env!("CARGO_PKG_VERSION"),
-    about = "TrustEdge Platform Server — privacy and trust at the edge"
+    about = "Sealedge Platform Server — privacy and trust at the edge"
 )]
 struct Cli {
     #[command(subcommand)]
@@ -64,7 +64,7 @@ async fn serve() -> Result<()> {
     let mode = "verify-only";
 
     tracing::info!(
-        "trustedge-platform-server v{} starting",
+        "sealedge-platform-server v{} starting",
         env!("CARGO_PKG_VERSION")
     );
     tracing::info!("Port: {}", config.port);

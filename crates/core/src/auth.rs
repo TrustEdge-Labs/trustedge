@@ -684,7 +684,7 @@ pub async fn client_authenticate(
     server_pubkey: &[u8; 32],
 ) -> Result<ClientAuthResult> {
     // Send client hello
-    let hello_msg = AuthMessage::new(AuthMessageType::ClientHello, &"TrustEdge Client v1.0")?;
+    let hello_msg = AuthMessage::new(AuthMessageType::ClientHello, &"Sealedge Client v1.0")?;
     let hello_bytes = bincode::serialize(&hello_msg)?;
 
     stream.write_u32_le(hello_bytes.len() as u32).await?;

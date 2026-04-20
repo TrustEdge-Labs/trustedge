@@ -128,7 +128,7 @@ impl InputReader for AudioInputReader {
 
 /// CLI Arguments
 #[derive(Parser, Debug)]
-#[command(name = "trustedge", version, about)]
+#[command(name = "sealedge", version, about)]
 struct Args {
     /// Input file (opaque bytes)
     #[arg(short, long)]
@@ -653,7 +653,7 @@ fn inspect_envelope(args: &Args) -> Result<()> {
     let hh = blake3::hash(&sh.header);
     anyhow::ensure!(hh.as_bytes() == &sh.header_hash, "header_hash mismatch");
 
-    println!("TrustEdge Archive Information:");
+    println!("Sealedge Archive Information:");
     println!("  File: {}", input.display());
     println!("  Format Version: {}", fh.version);
 

@@ -24,9 +24,9 @@ use sealedge_core::{server_authenticate, NetworkChunk, SessionManager};
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "trustedge-server",
+    name = "sealedge-server",
     version,
-    about = "TrustEdge network processing server"
+    about = "sealedge network processing server"
 )]
 struct Args {
     /// Address to listen on
@@ -66,7 +66,7 @@ struct Args {
     require_auth: bool,
 
     /// Server identity for certificate generation
-    #[arg(long, default_value = "TrustEdge Server")]
+    #[arg(long, default_value = "Sealedge Server")]
     server_identity: String,
 
     /// Path to server signing key file (optional, generates if not found)
@@ -145,7 +145,7 @@ async fn main() -> Result<()> {
         .await
         .with_context(|| format!("Failed to bind to {}", args.listen))?;
 
-    println!("[SRV] TrustEdge server listening on {}", args.listen);
+    println!("[SRV] Sealedge server listening on {}", args.listen);
     println!(
         "[DIR] Output directory: {:?}",
         args.output_dir

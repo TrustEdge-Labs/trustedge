@@ -54,7 +54,7 @@ const CHUNK_SEND_TIMEOUT: Duration = Duration::from_secs(30);
 const ACK_READ_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(Parser, Debug)]
-#[command(name = "trustedge-client", version, about = "TrustEdge network client")]
+#[command(name = "sealedge-client", version, about = "sealedge network client")]
 struct Args {
     /// Server address to connect to
     #[arg(short, long, default_value = "127.0.0.1:8080")]
@@ -117,7 +117,7 @@ struct Args {
     client_cert: Option<PathBuf>,
 
     /// Client identity for certificate generation (if cert doesn't exist)
-    #[arg(long, default_value = "TrustEdge Client")]
+    #[arg(long, default_value = "Sealedge Client")]
     client_identity: String,
 
     /// Enable authentication with server certificate verification
@@ -202,7 +202,7 @@ async fn main() -> Result<()> {
         }
     }
 
-    println!("Connecting to TrustEdge server at {}", args.server);
+    println!("Connecting to sealedge server at {}", args.server);
     let mut stream = connect_with_retry(
         args.server,
         Duration::from_secs(args.connect_timeout),

@@ -15,7 +15,7 @@ use std::path::PathBuf;
 
 /// Create software attestation (birth certificate)
 #[derive(Parser, Debug)]
-#[command(name = "trustedge-attest", version, about)]
+#[command(name = "sealedge-attest", version, about)]
 struct Args {
     /// Path to the software artifact to attest
     #[arg(short, long)]
