@@ -186,7 +186,12 @@ Plans:
   2. Developer docs under `docs/` (architecture.md, cli.md, development.md, testing.md, user/*) reflect the new crate names, binary names, file extensions, and env var prefixes
   3. `cargo doc --workspace --no-deps` produces rustdoc output where module-level and item-level doc comments render "sealedge" — no stale `trustedge` references remain in the rendered docs
   4. Scripts in `scripts/` and examples under `examples/cam.video/` invoke the new binary names and reference the new attestation file extension
-**Plans**: TBD
+**Plans:** 5 plans
+- [ ] 86-01-PLAN.md — Root .md sweep (11 files) with hybrid treatment of CHANGELOG.md + MIGRATION.md v6.0 section
+- [ ] 86-02-PLAN.md — docs/** sweep (37 files across docs/, developer/, designs/, hardware/, legal/, technical/, user/)
+- [ ] 86-03-PLAN.md — Crate READMEs + .github/ + deploy/ + web/demo/ + examples/cam.video/README.md + scripts/*.md (21 files)
+- [ ] 86-04-PLAN.md — Rustdoc /// and //! sweep across crates/**/*.rs + examples/**/*.rs (16 files) + cargo test --doc gate
+- [ ] 86-05-PLAN.md — scripts/*.sh prose carve-outs + D-13 repo-wide grep audit + D-14 cargo doc grep-clean audit
 
 ### Phase 87: GitHub Repository Rename
 **Goal**: The monorepo lives at `TrustEdge-Labs/sealedge` on GitHub with working redirects from the old URL, local git remotes updated, and in-repo links pointing at the new location.
