@@ -1,13 +1,13 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# Contributing to TrustEdge
+# Contributing to Sealedge
 
-Thank you for your interest in contributing to TrustEdge! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to Sealedge! This document provides guidelines for contributing to the project.
 
 ## 🤝 Ways to Contribute
 
@@ -20,10 +20,10 @@ Thank you for your interest in contributing to TrustEdge! This document provides
 
 ## 📋 Before You Start
 
-1. **Check existing work**: Search [issues](https://github.com/TrustEdge-Labs/trustedge/issues) and [PRs](https://github.com/TrustEdge-Labs/trustedge/pulls)
+1. **Check existing work**: Search [issues](https://github.com/TrustEdge-Labs/sealedge/issues) and [PRs](https://github.com/TrustEdge-Labs/sealedge/pulls)
 2. **Read the docs**: Review [docs/developer/development.md](./docs/developer/development.md) for technical details
 3. **Review coding standards**: See [docs/developer/coding-standards.md](./docs/developer/coding-standards.md) for style guidelines
-4. **Check progress**: See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for current status
+4. **Check progress**: See [GitHub Issues](https://github.com/TrustEdge-Labs/sealedge/issues) for current status
 5. **Understand the code**: Review the codebase structure and patterns
 
 ## 🐛 Reporting Issues
@@ -38,7 +38,7 @@ Use our issue templates for consistent reporting:
 ### Bug Report Best Practices
 
 - **Be specific**: Include exact error messages and steps to reproduce
-- **Provide context**: OS, Rust version, TrustEdge version
+- **Provide context**: OS, Rust version, Sealedge version
 - **Include logs**: Add relevant command output or error logs
 - **Test thoroughly**: Verify the issue exists in the latest version
 
@@ -56,9 +56,9 @@ When requesting features:
 ### Development Setup
 
 1. **Install Rust**: Use the latest stable version
-2. **Clone the repo**: `git clone https://github.com/TrustEdge-Labs/trustedge.git`
+2. **Clone the repo**: `git clone https://github.com/TrustEdge-Labs/sealedge.git`
 3. **Enable git hooks**: `git config core.hooksPath .githooks`
-4. **Build workspace**: `cd trustedge && cargo build --workspace`
+4. **Build workspace**: `cd sealedge && cargo build --workspace`
 5. **Run tests**: `cargo test --workspace` and `cargo clippy --workspace -- -D warnings`
 
 ### Local CI Verification
@@ -76,7 +76,7 @@ The pre-commit hook (step 3 above) automatically checks copyright headers and fo
 
 **Important**: GitHub project boards require manual addition of issues.
 
-- **View project board**: [TrustEdge Development](https://github.com/TrustEdge-Labs/projects/2)
+- **View project board**: [Sealedge Development](https://github.com/TrustEdge-Labs/projects/2)
 - **Add issues to board**: Use `./scripts/project/manage-board.sh`
 - **GitHub Issues vs Project Board**: All issues are in `/issues`, but only manually added ones appear on the project board
 
@@ -165,7 +165,7 @@ Closes #issue-number
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Project: trustedge — Privacy and trust at the edge.
+// Project: sealedge — Privacy and trust at the edge.
 //
 ```
 
@@ -175,7 +175,7 @@ Closes #issue-number
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Project: trustedge — Privacy and trust at the edge.
+// Project: sealedge — Privacy and trust at the edge.
 //
 ```
 
@@ -185,7 +185,7 @@ Closes #issue-number
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Project: trustedge — Privacy and trust at the edge.
+// Project: sealedge — Privacy and trust at the edge.
 //
 ```
 
@@ -254,7 +254,7 @@ When reviewing PRs:
 
 ### Why We Require a CLA
 
-All code contributions to TrustEdge require signing our Contributor License Agreement (CLA). We want to be transparent about why this is necessary and what it means for you as a contributor.
+All code contributions to Sealedge require signing our Contributor License Agreement (CLA). We want to be transparent about why this is necessary and what it means for you as a contributor.
 
 **TL;DR**: You keep the copyright to your work, but you give the project permission to use it in flexible ways that help sustain the project long-term.
 
@@ -270,7 +270,7 @@ The CLA grants TrustEdge Labs LLC a broad, perpetual, and irrevocable license to
 - Sublicense your contribution under different terms when necessary
 
 #### 💼 **Why This Matters: Dual-Licensing Strategy**
-TrustEdge uses a **dual-licensing model** to ensure project sustainability:
+Sealedge uses a **dual-licensing model** to ensure project sustainability:
 
 - **Open-Source License (MPL-2.0)**: Free for everyone to use, modify, and distribute
 - **Commercial License**: Available for organizations that need different licensing terms
@@ -292,7 +292,7 @@ Without the CLA, we couldn't offer commercial licenses, which would limit our ab
 
 ### 📋 CLA Document
 
-The full CLA document is available here: **[TrustEdge CLA](https://github.com/TrustEdge-Labs/trustedge/blob/main/docs/legal/cla.md)** 
+The full CLA document is available here: **[Sealedge CLA](https://github.com/TrustEdge-Labs/sealedge/blob/main/docs/legal/cla.md)** 
 
 ### Questions About the CLA?
 
@@ -302,7 +302,7 @@ We believe in transparency. If you have questions about:
 - Why the CLA is structured this way
 - Your copyright protections
 
-Please [open a discussion](https://github.com/TrustEdge-Labs/trustedge/discussions) or reach out via [email](mailto:contact@trustedgelabs.com). We're happy to explain our approach and reasoning.
+Please [open a discussion](https://github.com/TrustEdge-Labs/sealedge/discussions) or reach out via [email](mailto:contact@trustedgelabs.com). We're happy to explain our approach and reasoning.
 
 ---
 
@@ -317,7 +317,7 @@ Please [open a discussion](https://github.com/TrustEdge-Labs/trustedge/discussio
 
 ### Reporting Vulnerabilities
 
-- **Sensitive issues**: Use [private security advisory](https://github.com/TrustEdge-Labs/trustedge/security/advisories/new)
+- **Sensitive issues**: Use [private security advisory](https://github.com/TrustEdge-Labs/sealedge/security/advisories/new)
 - **General security**: Use [security issue template](./.github/ISSUE_TEMPLATE/security.yml)
 - **Follow responsible disclosure**: Don't publish exploits publicly
 
@@ -351,9 +351,9 @@ Help improve test coverage:
 
 ## 🎯 Current Priorities
 
-**Current Status**: v2.4 released (March 2026)
+**Current Status**: v6.0 released (2026)
 
-TrustEdge has shipped through v2.4 with 53 phases of development. See [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues) for current priorities and open work items.
+Sealedge has shipped through v6.0 with phases of development. See [GitHub Issues](https://github.com/TrustEdge-Labs/sealedge/issues) for current priorities and open work items.
 
 **Good First Contributions**:
 - Documentation improvements and examples
@@ -369,8 +369,8 @@ TrustEdge has shipped through v2.4 with 53 phases of development. See [GitHub Is
 
 ## 📄 License
 
-By contributing to TrustEdge, you agree that your contributions will be licensed under the [Mozilla Public License 2.0 (MPL-2.0)](LICENSE).
+By contributing to Sealedge, you agree that your contributions will be licensed under the [Mozilla Public License 2.0 (MPL-2.0)](LICENSE).
 
 ---
 
-Thank you for contributing to TrustEdge! 🚀
+Thank you for contributing to Sealedge! 🚀

@@ -1,20 +1,20 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge WebAssembly (WASM) Guide
+# Sealedge WebAssembly (WASM) Guide
 
-Complete guide to building, testing, and deploying TrustEdge WebAssembly modules for browser and Node.js environments.
+Complete guide to building, testing, and deploying Sealedge WebAssembly modules for browser and Node.js environments.
 
 ## 📋 Overview
 
-TrustEdge provides two WASM packages:
+Sealedge provides two WASM packages:
 
-1. **`trustedge-wasm`** - Core cryptographic operations (AES-256-GCM, key derivation)
-2. **`trustedge-trst-wasm`** - .trst archive verification (Ed25519, BLAKE3, continuity chains)
+1. **`sealedge-wasm`** - Core cryptographic operations (AES-256-GCM, key derivation)
+2. **`sealedge-seal-wasm`** - .seal archive verification (Ed25519, BLAKE3, continuity chains)
 
 Both compile to `wasm32-unknown-unknown` and use `wasm-bindgen` for JavaScript interop.
 
@@ -45,22 +45,22 @@ wasm-pack --version  # Should show v0.12+ or higher
 cd web/demo && npx serve .
 
 # Open browser to http://localhost:3000
-# Drag a .trst archive directory into the browser to verify
+# Drag a .seal archive directory into the browser to verify
 ```
 
 **Expected Output**:
 ```
-🔧 Building TrustEdge P0 WASM Demo...
-📦 Building WASM module...
+Building Sealedge WASM Demo...
+Building WASM module...
 [INFO]: ✨   Done in 4.90s
-✅ WASM module built successfully!
+WASM module built successfully!
 ```
 
 ---
 
 ## 🏗️ Building WASM Modules
 
-### Core WASM (`trustedge-wasm`)
+### Core WASM (`sealedge-wasm`)
 
 **Purpose**: General cryptographic operations for browser/Node.js
 
@@ -73,9 +73,9 @@ wasm-pack build crates/wasm --target web --release
 
 # Output directory
 ls crates/wasm/pkg/
-# trustedge_wasm.js
-# trustedge_wasm_bg.wasm
-# trustedge_wasm.d.ts
+# sealedge_wasm.js
+# sealedge_wasm_bg.wasm
+# sealedge_wasm.d.ts
 # package.json
 ```
 
@@ -98,19 +98,19 @@ ls -lh crates/wasm/pkg/*.wasm
 
 ---
 
-### Archive Verification WASM (`trustedge-trst-wasm`)
+### Archive Verification WASM (`sealedge-seal-wasm`)
 
-**Purpose**: Client-side .trst archive verification
+**Purpose**: Client-side .seal archive verification
 
 ```bash
 # Build for web demo (automatic output directory)
-wasm-pack build crates/trst-wasm --target web --out-dir ../../web/demo/pkg
+wasm-pack build crates/seal-wasm --target web --out-dir ../../web/demo/pkg
 
 # Check output
 ls web/demo/pkg/
-# trustedge_trst_wasm.js
-# trustedge_trst_wasm_bg.wasm
-# trustedge_trst_wasm.d.ts
+# sealedge_seal_wasm.js
+# sealedge_seal_wasm_bg.wasm
+# sealedge_seal_wasm.d.ts
 # package.json
 ```
 
@@ -130,11 +130,11 @@ ls web/demo/pkg/
 ```bash
 # Chrome (headless)
 wasm-pack test crates/wasm --chrome --headless
-wasm-pack test crates/trst-wasm --chrome --headless
+wasm-pack test crates/seal-wasm --chrome --headless
 
 # Firefox (headless)
 wasm-pack test crates/wasm --firefox --headless
-wasm-pack test crates/trst-wasm --firefox --headless
+wasm-pack test crates/seal-wasm --firefox --headless
 
 # All browsers (CI mode)
 make test-wasm  # Runs Chrome and Firefox
@@ -192,7 +192,7 @@ cd web/demo && npx serve .
 **Browser Console Test**:
 ```javascript
 // Load the WASM module
-import init, { verify_archive } from './pkg/trustedge_trst_wasm.js';
+import init, { verify_archive } from './pkg/sealedge_seal_wasm.js';
 
 await init();
 
@@ -205,7 +205,7 @@ console.log(JSON.parse(result));
 
 ## 📦 WASM Module APIs
 
-### `trustedge-wasm` API
+### `sealedge-wasm` API
 
 Located in `crates/wasm/src/lib.rs`:
 
@@ -222,7 +222,7 @@ pub fn derive_key(password: &str, salt: &[u8]) -> Result<Vec<u8>, JsValue>;
 
 **JavaScript Usage**:
 ```javascript
-import init, { encrypt, decrypt, derive_key } from './pkg/trustedge_wasm.js';
+import init, { encrypt, decrypt, derive_key } from './pkg/sealedge_wasm.js';
 
 await init();
 
@@ -234,9 +234,9 @@ const decrypted = decrypt(ciphertext, key);
 
 ---
 
-### `trustedge-trst-wasm` API
+### `sealedge-seal-wasm` API
 
-Located in `crates/trst-wasm/src/lib.rs`:
+Located in `crates/seal-wasm/src/lib.rs`:
 
 ```rust
 #[wasm_bindgen]
@@ -252,7 +252,7 @@ pub fn verify_signature(
 
 **JavaScript Usage**:
 ```javascript
-import init, { verify_archive } from './pkg/trustedge_trst_wasm.js';
+import init, { verify_archive } from './pkg/sealedge_seal_wasm.js';
 
 await init();
 
@@ -282,17 +282,17 @@ console.log(result);
 
 ```bash
 # Edit Rust source
-vim crates/trst-wasm/src/lib.rs
+vim crates/seal-wasm/src/lib.rs
 ```
 
 ### 2. Rebuild WASM
 
 ```bash
 # Quick rebuild
-wasm-pack build crates/trst-wasm --target web --out-dir ../../web/demo/pkg
+wasm-pack build crates/seal-wasm --target web --out-dir ../../web/demo/pkg
 
 # With optimization
-wasm-pack build crates/trst-wasm --target web --release --out-dir ../../web/demo/pkg
+wasm-pack build crates/seal-wasm --target web --release --out-dir ../../web/demo/pkg
 ```
 
 ### 3. Test in Browser
@@ -308,10 +308,10 @@ cd web/demo && npx serve .
 
 ```bash
 # Test changes
-wasm-pack test crates/trst-wasm --chrome --headless
+wasm-pack test crates/seal-wasm --chrome --headless
 
 # If tests pass, commit
-git add crates/trst-wasm/src/lib.rs
+git add crates/seal-wasm/src/lib.rs
 git commit -m "feat(wasm): add new verification feature"
 ```
 
@@ -322,8 +322,8 @@ git commit -m "feat(wasm): add new verification feature"
 ### Binary Size Optimization
 
 **Current Sizes** (after `wasm-opt`):
-- `trustedge-wasm`: ~250KB (release)
-- `trustedge-trst-wasm`: ~180KB (release)
+- `sealedge-wasm`: ~250KB (release)
+- `sealedge-seal-wasm`: ~180KB (release)
 
 **Optimization Techniques**:
 
@@ -342,7 +342,7 @@ wasm-strip pkg/*.wasm  # If wasm-strip is installed
 
 3. **Check Size**:
 ```bash
-ls -lh crates/trst-wasm/../../web/demo/pkg/*.wasm
+ls -lh crates/seal-wasm/../../web/demo/pkg/*.wasm
 ```
 
 ---
@@ -385,10 +385,10 @@ ls -lh crates/trst-wasm/../../web/demo/pkg/*.wasm
 
 ```bash
 # 1. Build for bundler target
-wasm-pack build crates/trst-wasm --target bundler
+wasm-pack build crates/seal-wasm --target bundler
 
 # 2. Update package.json
-cd crates/trst-wasm/pkg
+cd crates/seal-wasm/pkg
 vim package.json  # Update version, description
 
 # 3. Publish to NPM
@@ -396,7 +396,7 @@ npm login
 npm publish
 
 # Users can then:
-# npm install @trustedge/trst-wasm
+# npm install @sealedge/seal-wasm
 ```
 
 ---
@@ -408,7 +408,7 @@ After NPM publication, your package is automatically available:
 ```html
 <!-- Load from CDN -->
 <script type="module">
-  import init from 'https://cdn.jsdelivr.net/npm/@trustedge/trst-wasm@latest/trustedge_trst_wasm.js';
+  import init from 'https://cdn.jsdelivr.net/npm/@sealedge/seal-wasm@latest/sealedge_seal_wasm.js';
   
   await init();
   // Use WASM functions

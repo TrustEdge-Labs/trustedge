@@ -1,24 +1,24 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Feature Flags Reference
+# Sealedge Feature Flags Reference
 
-This document provides a comprehensive guide to all feature flags in the TrustEdge workspace and how they work together.
+This document provides a comprehensive guide to all feature flags in the Sealedge workspace and how they work together.
 
 ## 📋 Overview
 
-TrustEdge uses Cargo feature flags to make optional dependencies and functionality opt-in. This keeps the default build fast and CI-friendly while allowing users to enable advanced features as needed.
+Sealedge uses Cargo feature flags to make optional dependencies and functionality opt-in. This keeps the default build fast and CI-friendly while allowing users to enable advanced features as needed.
 
 **Default Philosophy**: The default build has **no features enabled** to ensure:
 - Fast CI builds (no audio/hardware dependencies)
 - Minimal binary size
 - Maximum portability across platforms
 
-## 🎯 Core Crate Features (`trustedge-core`)
+## 🎯 Core Crate Features (`sealedge-core`)
 
 ### Default Configuration
 ```toml
@@ -41,12 +41,12 @@ default = []  # Empty by default - explicitly opt-in to features
 
 **Build Command**:
 ```bash
-cargo build -p trustedge-core --features audio
+cargo build -p sealedge-core --features audio
 ```
 
 **Test Command**:
 ```bash
-cargo test -p trustedge-core --features audio
+cargo test -p sealedge-core --features audio
 ```
 
 **What It Enables**:
@@ -56,7 +56,7 @@ cargo test -p trustedge-core --features audio
 
 **Example Usage**:
 ```rust
-use trustedge_core::AudioCapture;
+use sealedge_core::AudioCapture;
 
 let capture = AudioCapture::new()?;
 let chunks = capture.start_recording()?;
@@ -82,16 +82,16 @@ for chunk in chunks {
 
 **Build Command**:
 ```bash
-cargo build -p trustedge-core --features yubikey
+cargo build -p sealedge-core --features yubikey
 ```
 
 **Test Command**:
 ```bash
 # Hardware detection tests (safe without YubiKey)
-cargo test -p trustedge-core --features yubikey
+cargo test -p sealedge-core --features yubikey
 
 # Real hardware tests (requires YubiKey inserted)
-cargo test -p trustedge-core --features yubikey yubikey_hardware_tests
+cargo test -p sealedge-core --features yubikey yubikey_hardware_tests
 ```
 
 **What It Enables**:
@@ -103,7 +103,7 @@ cargo test -p trustedge-core --features yubikey yubikey_hardware_tests
 
 **Example Usage**:
 ```rust
-use trustedge_core::backends::{YubiKeyBackend, YubiKeyConfig, UniversalBackend};
+use sealedge_core::backends::{YubiKeyBackend, YubiKeyConfig, UniversalBackend};
 
 let config = YubiKeyConfig {
     default_slot: "9a",
@@ -120,7 +120,7 @@ let result = backend.perform_operation("9a", CryptoOperation::Sign {
 
 **Binary Requirement**: The `yubikey-demo` binary is gated behind this feature:
 ```bash
-cargo run -p trustedge-core --features yubikey --bin yubikey-demo
+cargo run -p sealedge-core --features yubikey --bin yubikey-demo
 ```
 
 **CI Note**: This feature is tested in CI but skips actual hardware operations.
@@ -131,14 +131,14 @@ cargo run -p trustedge-core --features yubikey --bin yubikey-demo
 
 #### Build Everything (Full Features)
 ```bash
-cargo build -p trustedge-core --all-features
+cargo build -p sealedge-core --all-features
 # Equivalent to:
-cargo build -p trustedge-core --features audio,yubikey
+cargo build -p sealedge-core --features audio,yubikey
 ```
 
 #### Test Everything
 ```bash
-cargo test -p trustedge-core --all-features
+cargo test -p sealedge-core --all-features
 ```
 
 #### CI Check Script
@@ -158,7 +158,7 @@ This runs:
 
 ## 🌐 WASM Crate Features
 
-### `trustedge-wasm` (Core WASM Bindings)
+### `sealedge-wasm` (Core WASM Bindings)
 
 ```toml
 [features]
@@ -184,22 +184,22 @@ wasm-pack test crates/wasm --chrome --headless
 
 ---
 
-### `trustedge-trst-wasm` (Archive Verification WASM)
+### `sealedge-seal-wasm` (Archive Verification WASM)
 
 ```toml
 [features]
 # No features defined - always builds the same
 ```
 
-**Purpose**: WebAssembly bindings for `.trst` archive verification in browsers.
+**Purpose**: WebAssembly bindings for `.seal` archive verification in browsers.
 
 **Build Command**:
 ```bash
-wasm-pack build crates/trst-wasm --target web --out-dir ../../web/demo/pkg
+wasm-pack build crates/seal-wasm --target web --out-dir ../../web/demo/pkg
 ```
 
 **What It Provides**:
-- `verify_archive()` - Browser-side .trst verification
+- `verify_archive()` - Browser-side .seal verification
 - Ed25519 signature validation
 - BLAKE3 continuity chain checking
 - Chunk hash verification
@@ -219,7 +219,7 @@ cd web/demo && npx serve .     # Serve at http://localhost:3000
 The `BackendInfo` struct provides runtime feature detection:
 
 ```rust
-use trustedge_core::backends::{UniversalBackend, BackendInfo};
+use sealedge_core::backends::{UniversalBackend, BackendInfo};
 
 let backend = /* ... */;
 let info = backend.backend_info();
@@ -232,7 +232,7 @@ println!("Attestation: {}", info.supports_attestation);
 ### Capability-Based Operations
 
 ```rust
-use trustedge_core::backends::{CryptoOperation, SignatureAlgorithm};
+use sealedge_core::backends::{CryptoOperation, SignatureAlgorithm};
 
 let operation = CryptoOperation::Sign {
     data: b"test".to_vec(),
@@ -265,17 +265,17 @@ cargo test --workspace   # No features
 
 ### Production Deployment (Audio-Enabled Edge Device)
 ```bash
-cargo build --release -p trustedge-core --features audio
+cargo build --release -p sealedge-core --features audio
 ```
 
 ### Production Deployment (Hardware-Backed Security)
 ```bash
-cargo build --release -p trustedge-core --features yubikey
+cargo build --release -p sealedge-core --features yubikey
 ```
 
 ### Browser/WASM Deployment
 ```bash
-wasm-pack build crates/trst-wasm --target web --release
+wasm-pack build crates/seal-wasm --target web --release
 ```
 
 ---

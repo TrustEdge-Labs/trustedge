@@ -1,8 +1,8 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
@@ -23,20 +23,20 @@ cargo build --workspace --release
 cargo test --workspace
 
 # Test specific crates
-cargo test -p trustedge-types                     # Shared wire types (12 tests)
-cargo test -p trustedge-core --lib                # Core cryptography + attestation (199 tests)
-cargo test -p trustedge-trst-cli --test acceptance # Archive + attestation validation (36 tests)
-cargo test -p trustedge-platform --lib            # Platform unit tests (18 tests)
-cargo test -p trustedge-platform --test verify_integration           # Verify integration (9 tests)
-cargo test -p trustedge-platform --test verify_integration --features http  # All verify integration (27 tests)
+cargo test -p sealedge-types                     # Shared wire types (12 tests)
+cargo test -p sealedge-core --lib                # Core cryptography + attestation (199 tests)
+cargo test -p sealedge-seal-cli --test acceptance # Archive + attestation validation (36 tests)
+cargo test -p sealedge-platform --lib            # Platform unit tests (18 tests)
+cargo test -p sealedge-platform --test verify_integration           # Verify integration (9 tests)
+cargo test -p sealedge-platform --test verify_integration --features http  # All verify integration (27 tests)
 
 # Run a single test
-cargo test -p trustedge-core test_name -- --nocapture
+cargo test -p sealedge-core test_name -- --nocapture
 
 # Build/test with optional features
-cargo build -p trustedge-cli --features audio                        # Live audio capture CLI
-cargo build -p trustedge-core --features yubikey                     # YubiKey hardware support
-cargo build -p trustedge-platform --features "http,postgres,ca"      # Full platform service
+cargo build -p sealedge-cli --features audio                        # Live audio capture CLI
+cargo build -p sealedge-core --features yubikey                     # YubiKey hardware support
+cargo build -p sealedge-platform --features "http,postgres,ca"      # Full platform service
 cargo test --features yubikey --test yubikey_integration
 ```
 
@@ -60,23 +60,23 @@ The dashboard is a SvelteKit app that provides a web UI for managing devices and
 
 ## Architecture Overview
 
-TrustEdge is a Cargo workspace with 9 crates under `crates/` (plus `examples/cam.video`):
+Sealedge is a Cargo workspace with 9 crates under `crates/` (plus `examples/cam.video`):
 
 **Core Platform:**
-- `trustedge-types` - Shared wire types for platform services (verification, receipts, policies); re-exported from trustedge-core
-- `trustedge-core` - Core cryptographic library: envelope encryption (AES-256-GCM), Universal Backend system, network client/server, auth, receipts, attestation; re-exports trustedge-types
-- `trustedge-platform` - Consolidated verification and CA service: BLAKE3+Ed25519 verify engine, JWKS key manager, Axum HTTP layer, PostgreSQL multi-tenant backend; feature flags: `http`, `postgres`, `ca`, `yubikey`, `openapi`
-- `trustedge-platform-server` - Standalone HTTP server binary (Axum + clap CLI)
-- `trustedge-cli` - Main CLI for envelope encryption (binary: `trustedge`)
-- `trustedge-wasm` - WebAssembly bindings for browser integration
+- `sealedge-types` - Shared wire types for platform services (verification, receipts, policies); re-exported from sealedge-core
+- `sealedge-core` - Core cryptographic library: envelope encryption (AES-256-GCM), Universal Backend system, network client/server, auth, receipts, attestation; re-exports sealedge-types
+- `sealedge-platform` - Consolidated verification and CA service: BLAKE3+Ed25519 verify engine, JWKS key manager, Axum HTTP layer, PostgreSQL multi-tenant backend; feature flags: `http`, `postgres`, `ca`, `yubikey`, `openapi`
+- `sealedge-platform-server` - Standalone HTTP server binary (Axum + clap CLI)
+- `sealedge-cli` - Main CLI for envelope encryption (binary: `sealedge`)
+- `sealedge-wasm` - WebAssembly bindings for browser integration
 
-**Archive System (.trst format):**
-- `trustedge-trst-protocols` - Canonical cam.video manifest types (WASM-compatible, minimal dependencies)
-- `trustedge-trst-cli` - CLI tool (binary: `trst`) for wrap/verify operations
-- `trustedge-trst-wasm` - Browser verification (imports manifest types from trst-protocols)
+**Archive System (.seal format):**
+- `sealedge-seal-protocols` - Canonical cam.video manifest types (WASM-compatible, minimal dependencies)
+- `sealedge-seal-cli` - CLI tool (binary: `seal`) for wrap/verify operations
+- `sealedge-seal-wasm` - Browser verification (imports manifest types from seal-protocols)
 
 **Experimental Crates:**
-- Experimental community crates (`trustedge-pubky`, `trustedge-pubky-advanced`) live in `crates/experimental/` as a separate standalone workspace. They are not part of the root workspace or CI pipeline.
+- Experimental community crates (`sealedge-pubky`, `sealedge-pubky-advanced`) live in `crates/experimental/` as a separate standalone workspace. They are not part of the root workspace or CI pipeline.
 
 **Web Dashboard:**
 - `web/dashboard/` - SvelteKit admin dashboard for device management and receipt viewing
@@ -90,9 +90,9 @@ TrustEdge is a Cargo workspace with 9 crates under `crates/` (plus `examples/cam
 | `envelope.rs` | **Core envelope format** - Ed25519 signed, AES-256-GCM encrypted chunks (used by receipts, attestation) |
 | `crypto.rs` | XChaCha20-Poly1305 encryption, Ed25519 signing |
 | `chain.rs` | BLAKE3-based continuity chain with genesis seed |
-| `archive.rs` | .trst archive read/write and validation |
+| `archive.rs` | .seal archive read/write and validation |
 | `auth.rs` | Ed25519 mutual authentication with X25519 ECDH session key derivation |
-| `point_attestation.rs` | **Point attestation format** - Ed25519 signed, BLAKE3 hashed binding of two artifacts (`.te-attestation.json`) |
+| `point_attestation.rs` | **Point attestation format** - Ed25519 signed, BLAKE3 hashed binding of two artifacts (`.se-attestation.json`) |
 | `audio.rs` | Live audio capture (feature-gated) |
 | `hybrid.rs` | RSA hybrid encryption (asymmetric operations) |
 
@@ -107,7 +107,7 @@ TrustEdge is a Cargo workspace with 9 crates under `crates/` (plus `examples/cam
 ### GitHub Organization
 
 The TrustEdge-Labs GitHub org contains 3 repos:
-- **trustedge** — This monorepo: Rust workspace + SvelteKit dashboard
+- **sealedge** — This monorepo: Rust workspace + SvelteKit dashboard
 - **trustedgelabs-website** — Product website
 - **shipsecure** — Separate product
 
@@ -127,7 +127,7 @@ The TrustEdge-Labs GitHub org contains 3 repos:
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-// Project: trustedge — Privacy and trust at the edge.
+// Project: sealedge — Privacy and trust at the edge.
 //
 ```
 
@@ -144,10 +144,10 @@ if backend.supports_operation(&operation) {
 }
 ```
 
-### .trst Archive Structure
+### .seal Archive Structure
 
 ```
-clip-<id>.trst/
+clip-<id>.seal/
 ├── manifest.json           # Canonical cam.video manifest
 ├── signatures/
 │   └── manifest.sig        # Detached Ed25519 signature
@@ -156,15 +156,15 @@ clip-<id>.trst/
     └── ...
 ```
 
-### Encrypted Key Files (TRUSTEDGE-KEY-V1)
+### Encrypted Key Files (SEALEDGE-KEY-V1)
 
 Device private keys are encrypted at rest using PBKDF2-HMAC-SHA256 (600k iterations) + AES-256-GCM.
-The format header is `TRUSTEDGE-KEY-V1`. A passphrase is prompted at runtime via `rpassword`.
+The format header is `SEALEDGE-KEY-V1`. A passphrase is prompted at runtime via `rpassword`.
 
 For CI/automation where interactive prompts are not possible, use `--unencrypted`:
-- `trst keygen --unencrypted` — generates plaintext key file
-- `trst wrap --unencrypted` — reads key without passphrase prompt
-- `trst unwrap --unencrypted` — reads key without passphrase prompt
+- `seal keygen --unencrypted` — generates plaintext key file
+- `seal wrap --unencrypted` — reads key without passphrase prompt
+- `seal unwrap --unencrypted` — reads key without passphrase prompt
 
 Production devices should always use encrypted key files. The `--unencrypted` flag is an
 explicit escape hatch and is never the default.
@@ -173,55 +173,55 @@ explicit escape hatch and is never the default.
 
 ```bash
 # Generate a signing key (unencrypted for CI, encrypted by default for interactive use)
-cargo run -p trustedge-trst-cli -- keygen --out-key build.key --out-pub build.pub --unencrypted
+cargo run -p sealedge-seal-cli -- keygen --out-key build.key --out-pub build.pub --unencrypted
 
 # Create SBOM attestation (binds SBOM to binary with Ed25519 signature)
-cargo run -p trustedge-trst-cli -- attest-sbom --binary target/release/trst --sbom bom.cdx.json \
-  --device-key build.key --device-pub build.pub --out attestation.te-attestation.json
+cargo run -p sealedge-seal-cli -- attest-sbom --binary target/release/seal --sbom bom.cdx.json \
+  --device-key build.key --device-pub build.pub --out attestation.se-attestation.json
 
 # Verify attestation locally
-cargo run -p trustedge-trst-cli -- verify-attestation attestation.te-attestation.json \
+cargo run -p sealedge-seal-cli -- verify-attestation attestation.se-attestation.json \
   --device-pub "$(cat build.pub)"
 
 # Verify with file hash checking (confirms binary and SBOM match attestation)
-cargo run -p trustedge-trst-cli -- verify-attestation attestation.te-attestation.json \
-  --device-pub "$(cat build.pub)" --binary target/release/trst --sbom bom.cdx.json
+cargo run -p sealedge-seal-cli -- verify-attestation attestation.se-attestation.json \
+  --device-pub "$(cat build.pub)" --binary target/release/seal --sbom bom.cdx.json
 
 # Submit to platform server for verification receipt
 curl -X POST http://localhost:3001/v1/verify-attestation \
   -H "Content-Type: application/json" \
-  -d @attestation.te-attestation.json
+  -d @attestation.se-attestation.json
 ```
 
 ### Working with Archives
 
 ```bash
 # Generate device keypair (encrypted at rest — passphrase prompted)
-cargo run -p trustedge-trst-cli -- keygen --out-key device.key --out-pub device.pub
+cargo run -p sealedge-seal-cli -- keygen --out-key device.key --out-pub device.pub
 
 # For CI/automation (unencrypted key file — no passphrase)
-cargo run -p trustedge-trst-cli -- keygen --out-key device.key --out-pub device.pub --unencrypted
+cargo run -p sealedge-seal-cli -- keygen --out-key device.key --out-pub device.pub --unencrypted
 
 # Create archive (generic profile, default; passphrase prompted if key is encrypted)
-cargo run -p trustedge-trst-cli -- wrap --in sample.bin --out archive.trst --device-key device.key --device-pub device.pub
+cargo run -p sealedge-seal-cli -- wrap --in sample.bin --out archive.seal --device-key device.key --device-pub device.pub
 
 # Create archive (cam.video profile)
-cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in sample.bin --out archive.trst --device-key device.key --device-pub device.pub
+cargo run -p sealedge-seal-cli -- wrap --profile cam.video --in sample.bin --out archive.seal --device-key device.key --device-pub device.pub
 
 # Create archive (sensor profile with geo)
-cargo run -p trustedge-trst-cli -- wrap --profile sensor --in data.csv --out archive.trst --sample-rate 100 --unit celsius --sensor-model DHT22 --latitude 40.7 --longitude=-74.0 --device-key device.key --device-pub device.pub
+cargo run -p sealedge-seal-cli -- wrap --profile sensor --in data.csv --out archive.seal --sample-rate 100 --unit celsius --sensor-model DHT22 --latitude 40.7 --longitude=-74.0 --device-key device.key --device-pub device.pub
 
 # Verify archive locally
-cargo run -p trustedge-trst-cli -- verify archive.trst --device-pub "ed25519:..."
+cargo run -p sealedge-seal-cli -- verify archive.seal --device-pub "ed25519:..."
 
 # Decrypt and recover original data
-cargo run -p trustedge-trst-cli -- unwrap archive.trst --device-key device.key --out recovered.bin
+cargo run -p sealedge-seal-cli -- unwrap archive.seal --device-key device.key --out recovered.bin
 
 # Sign with YubiKey hardware (requires yubikey feature)
-cargo run -p trustedge-trst-cli --features yubikey -- wrap --backend yubikey --in data.bin --out archive.trst --device-key device.key
+cargo run -p sealedge-seal-cli --features yubikey -- wrap --backend yubikey --in data.bin --out archive.seal --device-key device.key
 
 # Submit to platform server for verification
-cargo run -p trustedge-trst-cli -- emit-request --archive archive.trst --device-pub device.pub --out request.json --post http://localhost:3001/v1/verify
+cargo run -p sealedge-seal-cli -- emit-request --archive archive.seal --device-pub device.pub --out request.json --post http://localhost:3001/v1/verify
 ```
 
 ### Running the Demo
@@ -236,7 +236,7 @@ cargo run -p trustedge-trst-cli -- emit-request --archive archive.trst --device-
 
 ## Feature Flags
 
-### trustedge-core
+### sealedge-core
 
 | Feature | Purpose | Dependencies |
 |---------|---------|--------------|
@@ -246,28 +246,28 @@ cargo run -p trustedge-trst-cli -- emit-request --archive archive.trst --device-
 | `keyring` | OS keyring integration for key storage | keyring |
 | `insecure-tls` | Skip TLS certificate verification (development only) | (no new deps) |
 
-### trustedge-platform
+### sealedge-platform
 
 | Feature | Purpose | Dependencies |
 |---------|---------|--------------|
 | `http` | Axum HTTP layer (verify, jwks, health endpoints) | axum, tower, tower-http, tokio |
 | `postgres` | PostgreSQL multi-tenant backend (devices, receipts, orgs) | sqlx, bcrypt |
-| `ca` | Certificate Authority service via UniversalBackend | trustedge-core, x509-parser |
+| `ca` | Certificate Authority service via UniversalBackend | sealedge-core, x509-parser |
 | `openapi` | OpenAPI schema generation | utoipa |
-| `yubikey` | YubiKey-backed CA operations | trustedge-core/yubikey |
+| `yubikey` | YubiKey-backed CA operations | sealedge-core/yubikey |
 | `test-utils` | Exports `create_test_app` for integration tests | (no new deps) |
 
 Default build has no features enabled for fast CI and maximum portability.
 
 ## Platform Environment Variables
 
-The `trustedge-platform-server` binary reads configuration from environment variables (or a `.env` file via `dotenvy`):
+The `sealedge-platform-server` binary reads configuration from environment variables (or a `.env` file via `dotenvy`):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3001` | HTTP server port. Must be a valid port number (0–65535); fails fast with error if invalid. |
 | `RECEIPT_TTL_SECS` | `3600` | Verification receipt TTL in seconds (1 hour). Must be a valid integer. |
-| `JWT_AUDIENCE` | `trustedge-platform` | Expected JWT audience claim for verification tokens. |
+| `JWT_AUDIENCE` | `sealedge-platform` | Expected JWT audience claim for verification tokens. |
 | `DATABASE_URL` | (required in release) | PostgreSQL connection URL. Required in release builds; defaults to localhost in debug. Requires `postgres` feature. |
 
 See `deploy/.env.example` for the full template with all variables documented.
@@ -276,11 +276,11 @@ See `deploy/.env.example` for the full template with all variables documented.
 
 | Binary | Source | Purpose |
 |--------|--------|---------|
-| `trustedge` | `crates/trustedge-cli/src/main.rs` | Main envelope encryption CLI |
-| `trustedge-server` | `crates/core/src/bin/trustedge-server.rs` | Network server (TCP/QUIC transport) |
-| `trustedge-client` | `crates/core/src/bin/trustedge-client.rs` | Network client |
-| `trustedge-platform-server` | `crates/platform-server/src/main.rs` | Platform HTTP server (verify, verify-attestation, JWKS, health, verify page) |
-| `trst` | `crates/trst-cli/src/main.rs` | Archive + attestation CLI (keygen/wrap/verify/unwrap/emit-request/attest-sbom/verify-attestation) |
+| `sealedge` | `crates/cli/src/main.rs` | Main envelope encryption CLI |
+| `sealedge-server` | `crates/core/src/bin/sealedge-server.rs` | Network server (TCP/QUIC transport) |
+| `sealedge-client` | `crates/core/src/bin/sealedge-client.rs` | Network client |
+| `sealedge-platform-server` | `crates/platform-server/src/main.rs` | Platform HTTP server (verify, verify-attestation, JWKS, health, verify page) |
+| `seal` | `crates/seal-cli/src/main.rs` | Archive + attestation CLI (keygen/wrap/verify/unwrap/emit-request/attest-sbom/verify-attestation) |
 
 ## Common Tasks
 
@@ -296,17 +296,17 @@ See `deploy/.env.example` for the full template with all variables documented.
 ```bash
 # With authentication (ECDH-derived session key - no --key-hex needed):
 # Terminal 1: Server
-./target/release/trustedge-server --listen 127.0.0.1:8080 --require-auth --decrypt
+./target/release/sealedge-server --listen 127.0.0.1:8080 --require-auth --decrypt
 
 # Terminal 2: Client
-./target/release/trustedge-client --server 127.0.0.1:8080 --input test.txt --enable-auth --server-cert server.cert
+./target/release/sealedge-client --server 127.0.0.1:8080 --input test.txt --enable-auth --server-cert server.cert
 
 # Without authentication (manual key sharing):
 # Terminal 1: Server
-./target/release/trustedge-server --listen 127.0.0.1:8080 --decrypt --key-hex $(openssl rand -hex 32)
+./target/release/sealedge-server --listen 127.0.0.1:8080 --decrypt --key-hex $(openssl rand -hex 32)
 
 # Terminal 2: Client
-./target/release/trustedge-client --server 127.0.0.1:8080 --input test.txt --key-hex $(cat shared.key)
+./target/release/sealedge-client --server 127.0.0.1:8080 --input test.txt --key-hex $(cat shared.key)
 ```
 
 ### Debugging

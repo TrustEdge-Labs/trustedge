@@ -1,13 +1,13 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 # YubiKey Verification Guide
 
-Step-by-step guide to verify YubiKey integration with TrustEdge.
+Step-by-step guide to verify YubiKey integration with Sealedge.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ Step-by-step guide to verify YubiKey integration with TrustEdge.
    brew install ykman
    ```
 
-2. **OpenSC PKCS#11 Module** - Required for TrustEdge:
+2. **OpenSC PKCS#11 Module** - Required for Sealedge:
    ```bash
    # Ubuntu/Debian
    sudo apt install opensc-pkcs11
@@ -57,12 +57,12 @@ ykman piv info
 - If slot 9c shows "Key present: Yes" → You have a key
 - If it shows certificate info → Even better, you have a full cert
 
-## Step 3: Run TrustEdge YubiKey Example
+## Step 3: Run Sealedge YubiKey Example
 
 The simplest working example to test:
 
 ```bash
-cd /path/to/trustedge
+cd /path/to/sealedge
 
 # Run the basic YubiKey demo
 cargo run --example yubikey_demo --features yubikey
@@ -100,7 +100,7 @@ find /usr/local/lib -name "opensc-pkcs11.so" 2>/dev/null
 ykman piv keys generate 9c /tmp/pubkey_9c.pem --algorithm ECCP256
 
 # Generate a self-signed certificate for the key
-ykman piv certificates generate 9c /tmp/pubkey_9c.pem --subject "CN=TrustEdge Test"
+ykman piv certificates generate 9c /tmp/pubkey_9c.pem --subject "CN=Sealedge Test"
 
 # Verify it's there
 ykman piv info
@@ -114,7 +114,7 @@ Create a test file `test_yubikey.rs`:
 
 ```rust
 use anyhow::Result;
-use trustedge_core::{
+use sealedge_core::{
     backends::yubikey::{YubiKeyBackend, YubiKeyConfig},
     CryptoOperation, CryptoResult, UniversalBackend,
 };
@@ -195,7 +195,7 @@ NOT as a CLI with arguments like `--list-slots`.
 Run this one-liner to test everything:
 
 ```bash
-cd /path/to/trustedge && \
+cd /path/to/sealedge && \
   ykman piv info && \
   echo "---" && \
   cargo run --example yubikey_demo --features yubikey 2>&1 | head -50
@@ -203,19 +203,19 @@ cd /path/to/trustedge && \
 
 This will:
 1. Show your YubiKey PIV status
-2. Run the TrustEdge demo
+2. Run the Sealedge demo
 3. Display first 50 lines of output
 
 ## Success Criteria
 
 ✅ **YubiKey working correctly if you see:**
 ```
-● TrustEdge YubiKey Integration Demo
+● Sealedge YubiKey Integration Demo
 ===================================
 ...
 ✔ YubiKey backend initialized successfully
 
-🔍 Scanning PIV Slots for Keys:
+Scanning PIV Slots for Keys:
    9a (PIV Authentication): ✔ Key found (91 bytes)
    9c (Key Management): ✔ Key found (91 bytes)
    ...

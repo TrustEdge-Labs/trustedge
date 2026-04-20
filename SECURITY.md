@@ -1,40 +1,40 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
-# TrustEdge Security Policy
+# Sealedge Security Policy
 
 ## Supported Versions
 
-TrustEdge is currently in active development. Security updates are provided for:
+Sealedge is currently in active development. Security updates are provided for:
 
 | Version | Status | Support Level |
 | ------- | ------ | ------------- |
-| v2.4.x | ✅ Current | Active security fixes |
+| v6.0.x | ✅ Current | Active security fixes |
 | main branch | 🔄 Development | Active security fixes |
-| v1.0–v2.3 | ⏳ Legacy | Best effort |
+| v1.0–v5.x | ⏳ Legacy | Best effort |
 | < v1.0 | ❌ Unsupported | No security support |
 
-**Note**: As of v1.0, TrustEdge follows semantic versioning. Security fixes will be backported to the latest release.
+**Note**: As of v1.0, Sealedge follows semantic versioning. Security fixes will be backported to the latest release.
 
 ## Security Considerations
 
 ### Cryptographic Implementation
 
-TrustEdge implements privacy-preserving edge data encryption with the following security properties:
+Sealedge implements privacy-preserving edge data encryption with the following security properties:
 
 - **Encryption**: AES-256-GCM authenticated encryption
-- **Key Derivation**: PBKDF2-HMAC-SHA256 (600k iterations + AES-256-GCM) for encrypted key files at rest (TRUSTEDGE-KEY-V1 format); HKDF-SHA256 for envelope key derivation (v1.8+)
+- **Key Derivation**: PBKDF2-HMAC-SHA256 (600k iterations + AES-256-GCM) for encrypted key files at rest (SEALEDGE-KEY-V1 format); HKDF-SHA256 for envelope key derivation (v1.8+)
 - **Digital Signatures**: Ed25519 for manifest integrity with domain separation
 - **Hashing**: BLAKE3 for content verification
 - **Nonce Management**: Deterministic 12-byte nonces (4-byte random prefix + 8-byte counter)
 - **Asymmetric Encryption**: RSA OAEP-SHA256 for hybrid encryption (v2.2+)
 
-**Domain Separation**: Manifest signatures use cryptographic domain separation (`b"trustedge.manifest.v1"`) to prevent signature reuse across different contexts or protocols, ensuring signatures cannot be substituted from other systems.
+**Domain Separation**: Manifest signatures use cryptographic domain separation (`b"sealedge.manifest.v1"`) to prevent signature reuse across different contexts or protocols, ensuring signatures cannot be substituted from other systems.
 
 ### Known Limitations
 
@@ -42,14 +42,14 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 2. **Memory Safety**: Relies on Rust's memory safety guarantees
 3. **External Audit**: No third-party security audit completed yet
 
-### Current Security Status (v2.4)
+### Current Security Status (v6.0)
 
 **✅ Implemented Security Features:**
 - AES-256-GCM authenticated encryption
 - Ed25519 digital signatures for provenance with domain separation
 - **X25519 ECDH Session Key Exchange**: Automated key derivation during auth handshake with BLAKE3 domain-separated KDF
 - **Secret<T> Wrapper Type**: Zeroize-on-drop protection with redacted Debug for all sensitive fields (PINs, passphrases, JWT secrets, passwords)
-- **Encrypted Key Files at Rest**: TRUSTEDGE-KEY-V1 format — PBKDF2-HMAC-SHA256 (600k iterations) + AES-256-GCM (v2.2+)
+- **Encrypted Key Files at Rest**: SEALEDGE-KEY-V1 format — PBKDF2-HMAC-SHA256 (600k iterations) + AES-256-GCM (v2.2+)
 - **HKDF-SHA256 Envelope KDF**: Versioned envelope key derivation replacing legacy PBKDF2 usage (v1.8+)
 - **RSA OAEP-SHA256**: Hybrid asymmetric encryption replacing PKCS#1v1.5 padding (v2.2+)
 - Connection timeouts and retry logic
@@ -82,7 +82,7 @@ TrustEdge implements privacy-preserving edge data encryption with the following 
 
 ### DoS Protection & Resource Bounds
 
-TrustEdge implements comprehensive defense-in-depth against denial-of-service attacks:
+Sealedge implements comprehensive defense-in-depth against denial-of-service attacks:
 
 **Stream-Level Limits:**
 - Maximum chunk size: 128MB per chunk
@@ -116,7 +116,7 @@ We take security vulnerabilities seriously. Please follow responsible disclosure
 
 For **sensitive security vulnerabilities** that could be exploited:
 
-1. **GitHub Security Advisories**: [Create Private Advisory](https://github.com/TrustEdge-Labs/trustedge/security/advisories/new)
+1. **GitHub Security Advisories**: [Create Private Advisory](https://github.com/TrustEdge-Labs/sealedge/security/advisories/new)
 2. **Direct Contact**: Email security concerns to security@[PLACEHOLDER] (planned)
 
 **Do not** disclose sensitive vulnerabilities publicly until we've had time to address them.
@@ -135,7 +135,7 @@ When reporting security issues, please include:
 - **Description**: Clear description of the vulnerability
 - **Impact**: Potential security impact and attack scenarios
 - **Reproduction**: Steps to reproduce the issue
-- **Environment**: TrustEdge version, OS, Rust version
+- **Environment**: Sealedge version, OS, Rust version
 - **Mitigation**: Suggested fixes or workarounds (if any)
 
 ### ⏱️ Response Timeline
@@ -147,7 +147,7 @@ When reporting security issues, please include:
 
 ### 🏆 Recognition
 
-We appreciate security researchers who help improve TrustEdge security:
+We appreciate security researchers who help improve Sealedge security:
 
 - **Security Hall of Fame**: Recognition for responsible disclosure
 - **Attribution**: Credit in release notes (with permission)
@@ -178,7 +178,7 @@ We appreciate security researchers who help improve TrustEdge security:
    - Consider VPN or other transport security
 
 3. **System Security**:
-   - Keep TrustEdge updated
+   - Keep Sealedge updated
    - Use on systems with full disk encryption
    - Monitor for unusual network activity
    - Regular security audits of infrastructure
@@ -203,7 +203,7 @@ We appreciate security researchers who help improve TrustEdge security:
 
 ## Compliance and Standards
 
-TrustEdge aims to align with:
+Sealedge aims to align with:
 
 - **NIST Cryptographic Standards**: AES, SHA-3 family (BLAKE3)
 - **RFC Standards**: Ed25519 (RFC 8032), relevant IETF standards
@@ -224,7 +224,7 @@ TrustEdge aims to align with:
 
 ---
 
-*This document is part of the TrustEdge project documentation.*
+*This document is part of the Sealedge project documentation.*
 
 *Copyright (c) 2025 TRUSTEDGE LABS LLC. Licensed under the Mozilla Public License 2.0 (MPL-2.0).*
 *See LICENSE file for full license terms.*
