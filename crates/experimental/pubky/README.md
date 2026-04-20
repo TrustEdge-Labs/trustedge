@@ -1,21 +1,21 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Pubky Adapter
+# Sealedge Pubky Adapter
 
 > **EXPERIMENTAL** -- This crate is Tier 2 (experimental). Community-contributed Pubky network adapter. No maintenance commitment.
 
-**Clean bridge between TrustEdge core cryptographic functions and the Pubky decentralized network.**
+**Clean bridge between sealedge core cryptographic functions and the Pubky decentralized network.**
 
-[![Crates.io](https://img.shields.io/crates/v/trustedge-pubky.svg)](https://crates.io/crates/trustedge-pubky)
-[![Documentation](https://docs.rs/trustedge-pubky/badge.svg)](https://docs.rs/trustedge-pubky)
+[![Crates.io](https://img.shields.io/crates/v/sealedge-pubky.svg)](https://crates.io/crates/sealedge-pubky)
+[![Documentation](https://docs.rs/sealedge-pubky/badge.svg)](https://docs.rs/sealedge-pubky)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 
-> **Community/Experimental**: This crate provides integration with the [Pubky](https://pubky.org) decentralized network. It is maintained as a community contribution and is not part of the core TrustEdge product. For core TrustEdge functionality (receipts, attestation, envelope encryption), use `trustedge-core` directly.
+> **Community/Experimental**: This crate provides integration with the [Pubky](https://pubky.org) decentralized network. It is maintained as a community contribution and is not part of the core sealedge product. For core sealedge functionality (receipts, attestation, envelope encryption), use `sealedge-core` directly.
 
 ---
 
@@ -23,10 +23,10 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 | Crate | Use Case |
 |-------|----------|
-| **trustedge-pubky** (this crate) | Simple key publishing/resolution using existing TrustEdge keys |
-| **trustedge-pubky-advanced** | Hybrid encryption with X25519 ECDH, forward secrecy, large file handling |
+| **sealedge-pubky** (this crate) | Simple key publishing/resolution using existing sealedge keys |
+| **sealedge-pubky-advanced** | Hybrid encryption with X25519 ECDH, forward secrecy, large file handling |
 
-**Choose this crate if:** You want a lightweight adapter for publishing and resolving TrustEdge public keys via the Pubky network, using your existing Ed25519 keys.
+**Choose this crate if:** You want a lightweight adapter for publishing and resolving sealedge public keys via the Pubky network, using your existing Ed25519 keys.
 
 **Choose pubky-advanced if:** You need hybrid encryption (X25519 + Ed25519 dual keys), perfect forward secrecy, or are building a new system that can adopt the V2 envelope format.
 
@@ -34,18 +34,18 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 ## Overview
 
-TrustEdge Pubky Adapter provides a **clean, simple bridge** between TrustEdge's core cryptographic primitives and the Pubky decentralized network. It maintains clean architecture by keeping Pubky network logic separate from core crypto operations while enabling seamless integration.
+Sealedge Pubky Adapter provides a **clean, simple bridge** between sealedge's core cryptographic primitives and the Pubky decentralized network. It maintains clean architecture by keeping Pubky network logic separate from core crypto operations while enabling seamless integration.
 
 ### Key Features
 
-- **🌐 Decentralized Key Discovery**: Publish and resolve TrustEdge public keys via Pubky network
-- **🔗 Clean Architecture**: Maintains separation between crypto primitives and network operations
-- **🚀 Simple API**: Easy-to-use functions for common Pubky integration patterns
-- **⚡ Async/Sync Support**: Both asynchronous and synchronous operation modes
-- **🔐 Universal Backend Integration**: Works with TrustEdge's Universal Backend system
-- **📋 Key Management**: Automatic serialization and deserialization of TrustEdge keys
-- **🛡️ Error Handling**: Comprehensive error types for network and crypto operations
-- **🧪 Mock Support**: Built-in mock backend for testing and development
+- **Decentralized Key Discovery**: Publish and resolve sealedge public keys via Pubky network
+- **Clean Architecture**: Maintains separation between crypto primitives and network operations
+- **Simple API**: Easy-to-use functions for common Pubky integration patterns
+- **Async/Sync Support**: Both asynchronous and synchronous operation modes
+- **Universal Backend Integration**: Works with sealedge's Universal Backend system
+- **Key Management**: Automatic serialization and deserialization of sealedge keys
+- **Error Handling**: Comprehensive error types for network and crypto operations
+- **Mock Support**: Built-in mock backend for testing and development
 
 ---
 
@@ -55,8 +55,8 @@ The adapter follows a clean separation of concerns:
 
 ```mermaid
 graph TD
-    A[TrustEdge Application] --> B[Pubky Adapter]
-    B --> C[TrustEdge Core]
+    A[Sealedge Application] --> B[Pubky Adapter]
+    B --> C[Sealedge Core]
     B --> D[Pubky Network]
     
     C --> E[Cryptographic Operations]
@@ -94,8 +94,8 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-trustedge-pubky = "0.1.0"
-trustedge-core = "0.2.0"
+sealedge-pubky = "0.1.0"
+sealedge-core = "0.2.0"
 pubky = "0.1"
 tokio = { version = "1.0", features = ["full"] }
 ```
@@ -103,8 +103,8 @@ tokio = { version = "1.0", features = ["full"] }
 ### Basic Usage
 
 ```rust
-use trustedge_pubky::{PubkyBackend, create_pubky_backend_random};
-use trustedge_core::{KeyPair, AsymmetricAlgorithm};
+use sealedge_pubky::{PubkyBackend, create_pubky_backend_random};
+use sealedge_core::{KeyPair, AsymmetricAlgorithm};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -112,7 +112,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let alice_adapter = create_pubky_backend_random()?;
     let bob_adapter = create_pubky_backend_random()?;
     
-    // Generate TrustEdge key pairs
+    // Generate sealedge key pairs
     let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
     let bob_keypair = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
     
@@ -120,14 +120,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let alice_pubky_id = alice_adapter.publish_public_key(&alice_keypair.public).await?;
     let bob_pubky_id = bob_adapter.publish_public_key(&bob_keypair.public).await?;
     
-    println!("✅ Alice's Pubky ID: {}", alice_pubky_id);
-    println!("✅ Bob's Pubky ID: {}", bob_pubky_id);
+    println!("Alice's Pubky ID: {}", alice_pubky_id);
+    println!("Bob's Pubky ID: {}", bob_pubky_id);
     
     // Resolve Bob's public key from his Pubky ID
     let resolved_key = alice_adapter.resolve_public_key(&bob_pubky_id).await?;
     assert_eq!(resolved_key.key_bytes, bob_keypair.public.key_bytes);
     
-    println!("✅ Successfully resolved Bob's key from Pubky network");
+    println!("Successfully resolved Bob's key from Pubky network");
     Ok(())
 }
 ```
@@ -137,7 +137,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 For common patterns, use the simplified high-level functions:
 
 ```rust
-use trustedge_pubky::{send_trusted_data, receive_trusted_data};
+use sealedge_pubky::{send_trusted_data, receive_trusted_data};
 
 // Alice sends encrypted data to Bob via Pubky resolution
 let encrypted_envelope = send_trusted_data(
@@ -178,16 +178,16 @@ pub struct PubkyBackend {
 **Key Methods:**
 - `new()` - Create backend with existing Pubky keypair (async)
 - `new_sync()` - Create backend synchronously
-- `publish_public_key()` - Publish TrustEdge key to network
-- `resolve_public_key()` - Resolve Pubky ID to TrustEdge key
+- `publish_public_key()` - Publish sealedge key to network
+- `resolve_public_key()` - Resolve Pubky ID to sealedge key
 - `our_pubky_id()` - Get our Pubky network identifier
 
-#### `TrustEdgeKeyRecord`
+#### `SealedgeKeyRecord`
 
-Serializable record for storing TrustEdge keys in Pubky network:
+Serializable record for storing sealedge keys in Pubky network:
 
 ```rust
-pub struct TrustEdgeKeyRecord {
+pub struct SealedgeKeyRecord {
     pub public_key: PublicKeyData,
     pub created_at: u64,
     pub metadata: Option<HashMap<String, String>>,
@@ -203,7 +203,7 @@ pub enum PubkyAdapterError {
     Network(anyhow::Error),
     KeyResolutionFailed(String),
     InvalidPubkyId(String),
-    CoreError(trustedge_core::TrustEdgeError),
+    CoreError(sealedge_core::SealedgeError),
     SerializationError(serde_json::Error),
 }
 ```
@@ -250,15 +250,15 @@ pub async fn receive_trusted_data(
 ### Example 1: Key Publishing and Resolution
 
 ```rust
-use trustedge_pubky::{PubkyBackend, create_pubky_backend_random};
-use trustedge_core::{KeyPair, AsymmetricAlgorithm};
+use sealedge_pubky::{PubkyBackend, create_pubky_backend_random};
+use sealedge_core::{KeyPair, AsymmetricAlgorithm};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create adapter
     let adapter = create_pubky_backend_random()?;
     
-    // Generate TrustEdge keypair
+    // Generate sealedge keypair
     let keypair = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
     
     // Publish to network
@@ -269,7 +269,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let resolved_key = adapter.resolve_public_key(&pubky_id).await?;
     assert_eq!(resolved_key.key_bytes, keypair.public.key_bytes);
     
-    println!("✅ Key resolution successful");
+    println!("Key resolution successful");
     Ok(())
 }
 ```
@@ -277,8 +277,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Example 2: Encrypted Communication
 
 ```rust
-use trustedge_pubky::{send_trusted_data, receive_trusted_data, create_pubky_backend_random};
-use trustedge_core::{KeyPair, AsymmetricAlgorithm};
+use sealedge_pubky::{send_trusted_data, receive_trusted_data, create_pubky_backend_random};
+use sealedge_core::{KeyPair, AsymmetricAlgorithm};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -309,7 +309,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ).await?;
     
     assert_eq!(decrypted_message, message);
-    println!("✅ Encrypted communication successful");
+    println!("Encrypted communication successful");
     Ok(())
 }
 ```
@@ -317,8 +317,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Example 3: Synchronous Operations
 
 ```rust
-use trustedge_pubky::create_pubky_backend_random;
-use trustedge_core::{KeyPair, AsymmetricAlgorithm};
+use sealedge_pubky::create_pubky_backend_random;
+use sealedge_core::{KeyPair, AsymmetricAlgorithm};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create adapter (sync)
@@ -331,22 +331,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Resolve key synchronously
     let resolved_key = adapter.resolve_public_key_sync(&pubky_id)?;
-    println!("✅ Sync resolution successful");
+    println!("Sync resolution successful");
     Ok(())
 }
 ```
 
 ---
 
-## Integration with TrustEdge Core
+## Integration with Sealedge Core
 
 ### Universal Backend Integration
 
-The Pubky adapter integrates with TrustEdge's Universal Backend system:
+The Pubky adapter integrates with sealedge's Universal Backend system:
 
 ```rust
-use trustedge_core::backends::UniversalBackend;
-use trustedge_pubky::PubkyBackend;
+use sealedge_core::backends::UniversalBackend;
+use sealedge_pubky::PubkyBackend;
 
 // Create Pubky backend
 let pubky_backend = create_pubky_backend_random()?;
@@ -359,13 +359,13 @@ registry.register_backend("pubky", Box::new(pubky_backend));
 let result = registry.perform_operation("pubky", "key_1", operation)?;
 ```
 
-### With TrustEdge Receipts
+### With Sealedge Receipts
 
 Combine with the receipt system for decentralized receipt management:
 
 ```rust
-use trustedge_receipts::create_receipt;
-use trustedge_pubky::{send_trusted_data, create_pubky_backend_random};
+use sealedge_receipts::create_receipt;
+use sealedge_pubky::{send_trusted_data, create_pubky_backend_random};
 
 // Create receipt
 let receipt_envelope = create_receipt(&alice_key, &bob_key.verifying_key(), 1000, None)?;
@@ -389,7 +389,7 @@ let transmitted_envelope = send_trusted_data(
 For testing and development, use the built-in mock backend:
 
 ```rust
-use trustedge_pubky::mock::MockPubkyBackend;
+use sealedge_pubky::mock::MockPubkyBackend;
 
 #[tokio::test]
 async fn test_key_resolution() {
@@ -421,14 +421,14 @@ cargo run --example your_exact_api
 
 ```bash
 # Run all tests
-cargo test -p trustedge-pubky
+cargo test -p sealedge-pubky
 
 # Run with network features (requires network access)
-cargo test -p trustedge-pubky --features network-tests
+cargo test -p sealedge-pubky --features network-tests
 
 # Run specific test categories
-cargo test -p trustedge-pubky test_key_resolution
-cargo test -p trustedge-pubky test_encrypted_communication
+cargo test -p sealedge-pubky test_key_resolution
+cargo test -p sealedge-pubky test_encrypted_communication
 ```
 
 ---
@@ -480,7 +480,7 @@ impl KeyCache {
 The adapter provides comprehensive error handling:
 
 ```rust
-use trustedge_pubky::{PubkyAdapterError, resolve_public_key};
+use sealedge_pubky::{PubkyAdapterError, resolve_public_key};
 
 match resolve_public_key(&invalid_pubky_id).await {
     Ok(key) => println!("Resolved key: {:?}", key),
@@ -508,7 +508,7 @@ match resolve_public_key(&invalid_pubky_id).await {
 
 - **Key Authenticity**: Always verify resolved keys match expected values
 - **Network Trust**: Pubky network provides decentralized trust, but validate critical operations
-- **Replay Protection**: Use TrustEdge's built-in replay protection for sensitive operations
+- **Replay Protection**: Use sealedge's built-in replay protection for sensitive operations
 
 ### Best Practices
 
@@ -529,7 +529,7 @@ if let Some(expected_fingerprint) = known_fingerprints.get(&pubky_id) {
 
 ## Contributing
 
-We welcome contributions to the TrustEdge Pubky Adapter:
+We welcome contributions to the Sealedge Pubky Adapter:
 
 1. **Network Optimizations**: Improve performance and reliability
 2. **Additional Backends**: Support for other decentralized networks
@@ -542,17 +542,17 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
 
 ```bash
 # Clone the repository
-git clone https://github.com/TrustEdge-Labs/trustedge.git
-cd trustedge
+git clone https://github.com/TrustEdge-Labs/sealedge.git
+cd sealedge
 
 # Run Pubky adapter tests
-cargo test -p trustedge-pubky
+cargo test -p sealedge-pubky
 
 # Run examples
-cargo run -p trustedge-pubky --example clean_adapter_demo
+cargo run -p sealedge-pubky --example clean_adapter_demo
 
 # Check code formatting
-cargo fmt --package trustedge-pubky
+cargo fmt --package sealedge-pubky
 ```
 
 ---
@@ -560,24 +560,24 @@ cargo fmt --package trustedge-pubky
 ## Roadmap
 
 ### Current Features (v0.1.0)
-- ✅ Basic key publishing and resolution
-- ✅ High-level send/receive API
-- ✅ Async/sync operation support
-- ✅ Mock backend for testing
-- ✅ Universal Backend integration
+- Basic key publishing and resolution
+- High-level send/receive API
+- Async/sync operation support
+- Mock backend for testing
+- Universal Backend integration
 
 ### Planned Features (v0.2.0)
-- 🔄 Key caching and optimization
-- 🔄 Batch operations support
-- 🔄 Advanced metadata handling
-- 🔄 Connection pooling
-- 🔄 Metrics and monitoring
+- Key caching and optimization
+- Batch operations support
+- Advanced metadata handling
+- Connection pooling
+- Metrics and monitoring
 
 ### Future Considerations
-- 🔮 Support for additional decentralized networks
-- 🔮 Advanced key rotation mechanisms
-- 🔮 Integration with decentralized identity systems
-- 🔮 Performance optimizations for high-throughput scenarios
+- Support for additional decentralized networks
+- Advanced key rotation mechanisms
+- Integration with decentralized identity systems
+- Performance optimizations for high-throughput scenarios
 
 ---
 
@@ -591,11 +591,11 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 
 ## Related Documentation
 
-- **[TrustEdge Core](../core/)** - Core cryptographic library
-- **[TrustEdge Pubky Advanced](../pubky-advanced/)** - Advanced Pubky integration features
+- **[Sealedge Core](../core/)** - Core cryptographic library
+- **[Sealedge Pubky Advanced](../pubky-advanced/)** - Advanced Pubky integration features
 - **[Universal Backend Guide](../UNIVERSAL_BACKEND.md)** - Backend system architecture
 - **[Examples](../EXAMPLES.md)** - Real-world usage scenarios
 
 ---
 
-*TrustEdge Pubky Adapter - Bridging cryptographic privacy with decentralized networks.*
+*Sealedge Pubky Adapter - Bridging cryptographic privacy with decentralized networks.*

@@ -1,53 +1,53 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Core
+# Sealedge Core
 
 > **STABLE** -- This crate is Tier 1 (Stable). Production-committed, tested in CI, and actively maintained.
 
 **Core cryptographic library and CLI tools for privacy-preserving edge computing.**
 
-[![Crates.io](https://img.shields.io/crates/v/trustedge-core.svg)](https://crates.io/crates/trustedge-core)
-[![Documentation](https://docs.rs/trustedge-core/badge.svg)](https://docs.rs/trustedge-core)
+[![Crates.io](https://img.shields.io/crates/v/sealedge-core.svg)](https://crates.io/crates/sealedge-core)
+[![Documentation](https://docs.rs/sealedge-core/badge.svg)](https://docs.rs/sealedge-core)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 
 ---
 
 ## Overview
 
-TrustEdge Core is the **foundational crate** of the TrustEdge ecosystem, providing production-ready cryptographic primitives, CLI applications, and system architecture for privacy-preserving edge computing. It implements data-agnostic encryption, universal backend systems, and secure network operations.
+Sealedge Core is the **foundational crate** of the sealedge ecosystem, providing production-ready cryptographic primitives, CLI applications, and system architecture for privacy-preserving edge computing. It implements data-agnostic encryption, universal backend systems, and secure network operations.
 
 ### Key Features
 
-- **🔐 Production Cryptography**: AES-256-GCM encryption with PBKDF2 key derivation (100k iterations)
-- **🏗️ Universal Backend System**: Pluggable crypto operations (Software HSM, Keyring, YubiKey)
-- **🎵 Live Audio Capture**: Real-time microphone input with configurable quality and device selection
-- **🌐 Network Operations**: Secure client-server communication with mutual authentication
-- **🔑 Hardware Integration**: Full YubiKey PKCS#11 support with real hardware signing
-- **⚡ Algorithm Agility**: Configurable cryptographic algorithms with forward compatibility
-- **📋 Format-Aware Processing**: MIME type detection and format-preserving encryption/decryption
-- **🛡️ Memory Safety**: Proper key material cleanup with zeroization
+- **Production Cryptography**: AES-256-GCM encryption with PBKDF2 key derivation (100k iterations)
+- **Universal Backend System**: Pluggable crypto operations (Software HSM, Keyring, YubiKey)
+- **Live Audio Capture**: Real-time microphone input with configurable quality and device selection
+- **Network Operations**: Secure client-server communication with mutual authentication
+- **Hardware Integration**: Full YubiKey PKCS#11 support with real hardware signing
+- **Algorithm Agility**: Configurable cryptographic algorithms with forward compatibility
+- **Format-Aware Processing**: MIME type detection and format-preserving encryption/decryption
+- **Memory Safety**: Proper key material cleanup with zeroization
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
 ## Architecture
 
-TrustEdge Core provides both a **library** and **CLI applications**:
+Sealedge Core provides both a **library** and **CLI applications**:
 
 ```
-trustedge-core/
+sealedge-core/
 ├── src/lib.rs                   # Core library exports
 ├── src/bin/                     # CLI tools
-│   ├── trustedge-server.rs      # Network server
-│   ├── trustedge-client.rs      # Network client
+│   ├── sealedge-server.rs       # Network server
+│   ├── sealedge-client.rs       # Network client
 │   ├── software-hsm-demo.rs     # Software HSM demonstration
-│   ├── inspect-trst.rs          # .trst archive inspector
+│   ├── inspect-seal.rs          # .seal archive inspector
 │   └── yubikey-demo.rs          # YubiKey hardware operations
 ├── src/backends/                # Universal Backend system
 ├── src/transport/               # Network transport layer
@@ -67,7 +67,7 @@ trustedge-core/
 | **asymmetric** | Public key cryptography | `KeyPair`, `PrivateKey`, `PublicKey` |
 | **format** | Data format handling | `DataType`, `NetworkChunk` |
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
@@ -79,13 +79,13 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-trustedge-core = "0.2.0"
+sealedge-core = "0.2.0"
 ```
 
 **Basic encryption/decryption:**
 
 ```rust
-use trustedge_core::Envelope;
+use sealedge_core::Envelope;
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
 
@@ -105,14 +105,14 @@ assert_eq!(decrypted, data);
 **Universal Backend usage:**
 
 ```rust
-use trustedge_core::backends::{UniversalBackend, CryptoOperation};
+use sealedge_core::backends::{UniversalBackend, CryptoOperation};
 
 // Create backend
 let backend = UniversalBackend::keyring()?;
 
 // Perform operations
 let operation = CryptoOperation::DeriveKey {
-    domain: "trustedge".to_string(),
+    domain: "sealedge".to_string(),
     purpose: "encryption".to_string(),
 };
 let result = backend.perform_operation("my_key", operation)?;
@@ -120,31 +120,31 @@ let result = backend.perform_operation("my_key", operation)?;
 
 ### CLI Applications
 
-**Main CLI (`trustedge-core`):**
+**Main CLI (`sealedge-core`):**
 ```bash
 # Encrypt a file
-./target/release/trustedge-core --input document.txt --envelope document.trst --key-out key.hex
+./target/release/sealedge --input document.txt --envelope document.seal --key-out key.hex
 
 # Decrypt a file
-./target/release/trustedge-core --decrypt --input document.trst --out recovered.txt --key-hex $(cat key.hex)
+./target/release/sealedge --decrypt --input document.seal --out recovered.txt --key-hex $(cat key.hex)
 
 # Live audio capture
-./target/release/trustedge-core --live-capture --envelope voice.trst --key-out voice.key --max-duration 10
+./target/release/sealedge --live-capture --envelope voice.seal --key-out voice.key --max-duration 10
 ```
 
 **Network Server:**
 ```bash
 # Start authenticated server
-./target/release/trustedge-server --listen 127.0.0.1:8080 --require-auth --decrypt
+./target/release/sealedge-server --listen 127.0.0.1:8080 --require-auth --decrypt
 ```
 
 **Network Client:**
 ```bash
 # Connect with authentication
-./target/release/trustedge-client --server 127.0.0.1:8080 --input file.txt --require-auth
+./target/release/sealedge-client --server 127.0.0.1:8080 --input file.txt --require-auth
 ```
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
@@ -155,7 +155,7 @@ let result = backend.perform_operation("my_key", operation)?;
 The Universal Backend provides **pluggable cryptographic operations** across different backends:
 
 ```rust
-use trustedge_core::backends::{UniversalBackend, BackendCapabilities};
+use sealedge_core::backends::{UniversalBackend, BackendCapabilities};
 
 // Discover available backends
 let registry = UniversalBackend::registry();
@@ -176,10 +176,10 @@ if yubikey_backend.supports_operation(&operation) {
 
 ### Envelope System
 
-TrustEdge uses a **secure envelope format** for data protection:
+Sealedge uses a **secure envelope format** for data protection:
 
 ```rust
-use trustedge_core::Envelope;
+use sealedge_core::Envelope;
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
 
@@ -206,7 +206,7 @@ println!("Beneficiary: {:?}", envelope.beneficiary());
 Real-time audio capture with **format-aware processing**:
 
 ```rust
-use trustedge_core::{AudioCapture, AudioConfig};
+use sealedge_core::{AudioCapture, AudioConfig};
 
 // Configure audio capture
 let config = AudioConfig {
@@ -228,7 +228,7 @@ let envelope = Envelope::seal(&audio_data, &sender_private, &recipient_public)?;
 **Mutual authentication** with Ed25519 signatures:
 
 ```rust
-use trustedge_core::auth::{SessionManager, ServerCertificate};
+use sealedge_core::auth::{SessionManager, ServerCertificate};
 
 // Server setup
 let server_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
@@ -239,55 +239,55 @@ let client_keys = KeyPair::generate(AsymmetricAlgorithm::Ed25519)?;
 let auth_result = client_authenticate(&client_keys, &server_cert)?;
 ```
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
 ## CLI Applications
 
-### Main CLI (`trustedge-core`)
+### Main CLI (`sealedge`)
 
-The primary command-line interface for TrustEdge operations:
+The primary command-line interface for sealedge operations:
 
 **File Operations:**
 ```bash
 # Basic encryption
-trustedge-core --input file.txt --envelope file.trst --key-out key.hex
+sealedge --input file.txt --envelope file.seal --key-out key.hex
 
 # Keyring-based encryption
-trustedge-core --input file.txt --envelope file.trst --use-keyring --salt-hex $(openssl rand -hex 16)
+sealedge --input file.txt --envelope file.seal --use-keyring --salt-hex $(openssl rand -hex 16)
 
 # Format inspection
-trustedge-core --input file.trst --inspect --verbose
+sealedge --input file.seal --inspect --verbose
 ```
 
 **Audio Operations:**
 ```bash
 # List audio devices
-trustedge-core --list-audio-devices
+sealedge --list-audio-devices
 
 # Capture with specific device
-trustedge-core --live-capture --audio-device "hw:CARD=USB,DEV=0" --envelope audio.trst --key-out audio.key
+sealedge --live-capture --audio-device "hw:CARD=USB,DEV=0" --envelope audio.seal --key-out audio.key
 ```
 
 ### Network Applications
 
-**Server (`trustedge-server`):**
+**Server (`sealedge-server`):**
 ```bash
 # Basic server
-trustedge-server --listen 0.0.0.0:8080
+sealedge-server --listen 0.0.0.0:8080
 
 # Authenticated server with decryption
-trustedge-server --listen 0.0.0.0:8080 --require-auth --decrypt --verbose
+sealedge-server --listen 0.0.0.0:8080 --require-auth --decrypt --verbose
 ```
 
-**Client (`trustedge-client`):**
+**Client (`sealedge-client`):**
 ```bash
 # Send file to server
-trustedge-client --server 192.168.1.100:8080 --input document.txt
+sealedge-client --server 192.168.1.100:8080 --input document.txt
 
 # Authenticated transfer
-trustedge-client --server 192.168.1.100:8080 --input document.txt --require-auth
+sealedge-client --server 192.168.1.100:8080 --input document.txt --require-auth
 ```
 
 ### Hardware Demonstrations
@@ -298,7 +298,7 @@ trustedge-client --server 192.168.1.100:8080 --input document.txt --require-auth
 software-hsm-demo generate-key my_key ed25519
 
 # Sign data
-software-hsm-demo sign my_key "Hello TrustEdge!"
+software-hsm-demo sign my_key "Hello sealedge!"
 
 # List keys
 software-hsm-demo list-keys
@@ -313,7 +313,7 @@ yubikey-demo -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so -v capabilities
 yubikey-demo -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so generate-cert
 ```
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
@@ -322,7 +322,7 @@ yubikey-demo -p /usr/lib/x86_64-linux-gnu/opensc-pkcs11.so generate-cert
 ### Example 1: Basic Library Usage
 
 ```rust
-use trustedge_core::Envelope;
+use sealedge_core::Envelope;
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
 
@@ -339,7 +339,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let decrypted = envelope.unseal(&bob_key)?;
     assert_eq!(decrypted, message);
     
-    println!("✅ Encryption/decryption successful");
+    println!("✔ Encryption/decryption successful");
     Ok(())
 }
 ```
@@ -347,7 +347,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Example 2: Universal Backend
 
 ```rust
-use trustedge_core::backends::{UniversalBackend, CryptoOperation};
+use sealedge_core::backends::{UniversalBackend, CryptoOperation};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create keyring backend
@@ -355,12 +355,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Derive key
     let operation = CryptoOperation::DeriveKey {
-        domain: "trustedge".to_string(),
+        domain: "sealedge".to_string(),
         purpose: "file_encryption".to_string(),
     };
     
     let result = backend.perform_operation("user_key", operation)?;
-    println!("✅ Key derivation successful");
+    println!("✔ Key derivation successful");
     Ok(())
 }
 ```
@@ -369,7 +369,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 #[cfg(feature = "audio")]
-use trustedge_core::{AudioCapture, AudioConfig, Envelope};
+use sealedge_core::{AudioCapture, AudioConfig, Envelope};
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
 
@@ -392,7 +392,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let key = SigningKey::generate(&mut OsRng);
     let envelope = Envelope::seal(&audio_data, &key, &key.verifying_key())?;
     
-    println!("✅ Audio capture and encryption successful");
+    println!("✔ Audio capture and encryption successful");
     Ok(())
 }
 
@@ -405,7 +405,7 @@ fn main() {
 ### Example 4: Network Operations
 
 ```rust
-use trustedge_core::auth::{SessionManager, ServerCertificate};
+use sealedge_core::auth::{SessionManager, ServerCertificate};
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
 
@@ -419,12 +419,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Client setup
     let client_key = SigningKey::generate(&mut OsRng);
     
-    println!("✅ Network authentication setup complete");
+    println!("✔ Network authentication setup complete");
     Ok(())
 }
 ```
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
@@ -477,13 +477,13 @@ brew install opensc
 # Download OpenSC from https://github.com/OpenSC/OpenSC/releases
 ```
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
 ## Testing
 
-TrustEdge Core includes **160 comprehensive tests** covering all functionality:
+Sealedge Core includes **160 comprehensive tests** covering all functionality:
 
 ```bash
 # Run all tests
@@ -523,7 +523,7 @@ cargo bench
 cargo run --example transport_demo --release
 ```
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
@@ -569,21 +569,21 @@ impl AudioCapture {
 
 ### Error Handling
 
-TrustEdge Core provides comprehensive error types:
+Sealedge Core provides comprehensive error types:
 
 ```rust
-use trustedge_core::TrustEdgeError;
+use sealedge_core::SealedgeError;
 
 match operation_result {
     Ok(data) => println!("Success: {} bytes", data.len()),
-    Err(TrustEdgeError::CryptographicError(e)) => eprintln!("Crypto error: {}", e),
-    Err(TrustEdgeError::NetworkError(e)) => eprintln!("Network error: {}", e),
-    Err(TrustEdgeError::AudioError(e)) => eprintln!("Audio error: {}", e),
+    Err(SealedgeError::CryptographicError(e)) => eprintln!("Crypto error: {}", e),
+    Err(SealedgeError::NetworkError(e)) => eprintln!("Network error: {}", e),
+    Err(SealedgeError::AudioError(e)) => eprintln!("Audio error: {}", e),
     Err(e) => eprintln!("Other error: {}", e),
 }
 ```
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
@@ -591,7 +591,7 @@ match operation_result {
 
 ### Benchmarks
 
-TrustEdge Core is optimized for performance:
+Sealedge Core is optimized for performance:
 
 | Operation | Throughput | Latency |
 |-----------|------------|---------|
@@ -634,11 +634,11 @@ for file in files {
 
 ## Integration
 
-### With Other TrustEdge Crates
+### With Other Sealedge Crates
 
 ```rust
 // Receipts (now consolidated in core)
-use trustedge_core::create_receipt;
+use sealedge_core::create_receipt;
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
 
@@ -646,14 +646,14 @@ let key = SigningKey::generate(&mut OsRng);
 let receipt = create_receipt(&key, &key.verifying_key(), 1000, None)?;
 
 // Attestation (now consolidated in core)
-use trustedge_core::{create_signed_attestation, AttestationConfig};
+use sealedge_core::{create_signed_attestation, AttestationConfig};
 
-// With trustedge-wasm
-use trustedge_core::Envelope;
+// With sealedge-wasm
+use sealedge_core::Envelope;
 // Export envelope functionality to WebAssembly
 
-// With trustedge-pubky (community/experimental)
-use trustedge_core::backends::UniversalBackend;
+// With sealedge-pubky (community/experimental)
+use sealedge_core::backends::UniversalBackend;
 // Use core backends with Pubky network integration
 ```
 
@@ -662,24 +662,24 @@ use trustedge_core::backends::UniversalBackend;
 ```rust
 // With tokio for async operations
 use tokio::fs;
-use trustedge_core::Envelope;
+use sealedge_core::Envelope;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let data = fs::read("file.txt").await?;
     let envelope = Envelope::seal(&data, &sender_private, &recipient_public)?;
-    fs::write("file.trst", envelope.serialize()?).await?;
+    fs::write("file.seal", envelope.serialize()?).await?;
     Ok(())
 }
 ```
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
 ## Contributing
 
-We welcome contributions to TrustEdge Core:
+We welcome contributions to Sealedge Core:
 
 1. **Core Cryptography**: Improve encryption/decryption performance
 2. **Backend Development**: Add new Universal Backend implementations
@@ -693,8 +693,8 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
 
 ```bash
 # Clone repository
-git clone https://github.com/TrustEdge-Labs/trustedge.git
-cd trustedge/trustedge-core
+git clone https://github.com/TrustEdge-Labs/sealedge.git
+cd sealedge/sealedge-core
 
 # Run tests
 cargo test
@@ -710,7 +710,7 @@ cargo run --example transport_demo
 cargo fmt --check
 ```
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
@@ -728,7 +728,7 @@ cargo fmt --check
 - **[Examples](../../EXAMPLES.md)** - Real-world usage examples
 - **[Universal Backend Guide](../../UNIVERSAL_BACKEND.md)** - Backend system architecture
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
@@ -738,7 +738,7 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 
 **Commercial Licensing**: Enterprise licenses available for commercial use without source disclosure requirements. Contact [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com).
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
@@ -748,8 +748,8 @@ For security issues, please follow our [responsible disclosure policy](../SECURI
 
 **Security Contact**: [security@trustedgelabs.com](mailto:security@trustedgelabs.com)
 
-[↑ Back to top](#trustedge-core)
+[↑ Back to top](#sealedge-core)
 
 ---
 
-*TrustEdge Core - The foundation of privacy-preserving edge computing.*
+*Sealedge Core - The foundation of privacy-preserving edge computing.*

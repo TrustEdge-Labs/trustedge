@@ -1,8 +1,8 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
@@ -116,22 +116,22 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured
 
 ## Key Testing Insights
 
-### 🔍 **P-256 Signature Behavior**
+### **P-256 Signature Behavior**
 - Implementation uses **deterministic** signatures (valid ECDSA behavior)
 - Tests adapted to handle both deterministic and randomized implementations
 - All signatures verify correctly regardless of determinism
 
-### 🛡️ **Error Robustness**  
+### **Error Robustness**  
 - Comprehensive error detection for all failure modes
 - Graceful degradation with corrupted files
 - Clear error messages for debugging
 
-### 📊 **Performance Characteristics**
+### **Performance Characteristics**
 - Handles 100+ keys efficiently  
 - 1MB data signing works without issues
 - Cross-session loading scales well with key count
 
-### 🔧 **CLI Integration**
+### **CLI Integration**
 - Full CLI workflow validation
 - Key lifecycle management through demo tool
 - Integration with file-based operations

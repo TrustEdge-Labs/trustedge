@@ -1,18 +1,18 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
-# TrustEdge Performance Benchmarking
+# Sealedge Performance Benchmarking
 
-This document provides an overview of the comprehensive performance benchmarking infrastructure implemented for the TrustEdge project.
+This document provides an overview of the comprehensive performance benchmarking infrastructure implemented for the sealedge project.
 
 ## Overview
 
-The TrustEdge project now includes comprehensive performance benchmarking capabilities to measure and monitor the performance of cryptographic operations, network streaming, and general system performance.
+The sealedge project now includes comprehensive performance benchmarking capabilities to measure and monitor the performance of cryptographic operations, network streaming, and general system performance.
 
 ## Benchmark Suites
 
@@ -130,9 +130,9 @@ BENCH_FAST=1 cargo bench --bench network    # Fast network only (~15 seconds)
 - **After algorithmic changes** - Verify performance impact
 
 **NOT recommended:**
-- ❌ In CI/CD pipelines (too slow, can be flaky)
-- ❌ On every commit (unnecessary overhead)
-- ❌ For functional testing (use regular tests instead)
+- In CI/CD pipelines (too slow, can be flaky)
+- On every commit (unnecessary overhead)
+- For functional testing (use regular tests instead)
 
 ### Benchmark Output
 
@@ -160,17 +160,17 @@ Benchmarks generate:
 
 ### Local Development Only
 Benchmarks are intentionally **not integrated with CI/CD** to avoid:
-- ❌ Slow CI build times (15+ minutes)
-- ❌ Flaky test results due to CI environment variations
-- ❌ Resource contention with other CI jobs
-- ❌ Unnecessary complexity in the build pipeline
+- Slow CI build times (15+ minutes)
+- Flaky test results due to CI environment variations
+- Resource contention with other CI jobs
+- Unnecessary complexity in the build pipeline
 
 ### Manual Performance Monitoring
 Instead, performance monitoring relies on:
-- ✅ **Developer-driven benchmarking** before releases
-- ✅ **Performance documentation** of major changes
-- ✅ **Baseline tracking** through local benchmark runs
-- ✅ **Performance-aware code review** practices
+- **Developer-driven benchmarking** before releases
+- **Performance documentation** of major changes
+- **Baseline tracking** through local benchmark runs
+- **Performance-aware code review** practices
 
 ## Future Enhancements
 
@@ -197,4 +197,4 @@ The benchmarking infrastructure uses:
 - **Standard library** crypto implementations where possible
 - **Serde** ecosystem for serialization benchmarks
 
-This comprehensive benchmarking suite ensures that performance remains a first-class concern in the TrustEdge project development process.
+This comprehensive benchmarking suite ensures that performance remains a first-class concern in the sealedge project development process.

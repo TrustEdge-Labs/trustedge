@@ -1,18 +1,18 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
-# TrustEdge Benchmarking Setup - Summary
+# Sealedge Benchmarking Setup - Summary
 
-## 🎯 **Final Configuration: Local Development Only**
+## **Final Configuration: Local Development Only**
 
 The benchmarking infrastructure is now configured for **local development workflows only** - no CI integration.
 
-## 📊 **Two Benchmark Modes**
+## **Two Benchmark Modes**
 
 ### 1. **Full Accuracy Mode** (Default)
 ```bash
@@ -26,14 +26,14 @@ cargo bench
 ```bash
 BENCH_FAST=1 cargo bench
 # OR
-../scripts/fast-bench.sh       # From trustedge-core/
+../scripts/fast-bench.sh       # From sealedge-core/
 ./scripts/fast-bench.sh        # From project root
 ```
 - **Runtime**: ~1 minute total
 - **Purpose**: Quick performance checks during development
 - **Accuracy**: Basic trending (15-20 samples per test)
 
-## 🛠️ **Available Commands**
+## **Available Commands**
 
 ```bash
 # Full benchmarks (slow but accurate)
@@ -43,27 +43,27 @@ cargo bench --bench network_benchmarks  # Network only (~5 min)
 
 # Fast benchmarks (quick checks)
 BENCH_FAST=1 cargo bench               # All fast (~1 min)
-../scripts/fast-bench.sh               # Same as above (from trustedge-core/)
+../scripts/fast-bench.sh               # Same as above (from crates/core/)
 ./scripts/fast-bench.sh                # Same as above (from project root)
 ../scripts/fast-bench.sh crypto        # Fast crypto (~45s)
 ../scripts/fast-bench.sh network       # Fast network (~15s)
 ```
 
-## 🚫 **What's NOT Included**
+## **What's NOT Included**
 
-- ❌ **No CI/CD integration** - benchmarks don't run on push/PR
-- ❌ **No automatic regression testing** - manual performance monitoring
-- ❌ **No scheduled benchmark runs** - purely on-demand
-- ❌ **No benchmark failure blocking** - development workflow unaffected
+- No CI/CD integration - benchmarks don't run on push/PR
+- No automatic regression testing - manual performance monitoring
+- No scheduled benchmark runs - purely on-demand
+- No benchmark failure blocking - development workflow unaffected
 
-## ✅ **Recommended Workflow**
+## **Recommended Workflow**
 
 1. **During Development**: Use `../scripts/fast-bench.sh` for quick performance checks
 2. **Before Optimization**: Run `cargo bench` to establish baseline
 3. **After Optimization**: Run `cargo bench` again to measure improvement
 4. **Before Releases**: Run full benchmarks to document performance characteristics
 
-## 📈 **What Gets Measured**
+## **What Gets Measured**
 
 ### Cryptographic Operations
 - AES-256-GCM encryption/decryption (~1.5 GiB/s)
@@ -79,15 +79,15 @@ BENCH_FAST=1 cargo bench               # All fast (~1 min)
 - Memory allocation patterns
 - Binary encoding comparisons (raw vs bincode vs JSON)
 
-## 🎛️ **Benefits of This Approach**
+## **Benefits of This Approach**
 
-✅ **Fast CI/CD** - No benchmark overhead in automated builds
-✅ **Reliable Development** - No flaky benchmark failures blocking PRs
-✅ **Flexible Performance Testing** - Run when you need performance data
-✅ **Developer Control** - Choose between fast checks and thorough analysis
-✅ **Resource Efficient** - No wasted CI minutes on performance testing
+- Fast CI/CD - No benchmark overhead in automated builds
+- Reliable Development - No flaky benchmark failures blocking PRs
+- Flexible Performance Testing - Run when you need performance data
+- Developer Control - Choose between fast checks and thorough analysis
+- Resource Efficient - No wasted CI minutes on performance testing
 
-## 📝 **Documentation**
+## **Documentation**
 
 - **Full details**: See `PERFORMANCE.md`
 - **Benchmark results**: Terminal output + HTML reports in `target/criterion/`

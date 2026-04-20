@@ -1,18 +1,18 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 
-# TrustEdge WASM
+# Sealedge WASM
 
-> **EXPERIMENTAL** -- This crate is Tier 2 (experimental). General WASM bindings for TrustEdge. No maintenance commitment. For browser archive verification, use `trustedge-trst-wasm` (Tier 1) instead.
+> **EXPERIMENTAL** -- This crate is Tier 2 (experimental). General WASM bindings for sealedge. No maintenance commitment. For browser archive verification, use `sealedge-seal-wasm` (Tier 1) instead.
 
-WebAssembly bindings for TrustEdge cryptographic operations, providing high-performance encryption and decryption in web browsers and Node.js environments.
+WebAssembly bindings for sealedge cryptographic operations, providing high-performance encryption and decryption in web browsers and Node.js environments.
 
-> **📚 Complete WASM Guide**: See **[WASM.md](../../WASM.md)** for comprehensive build, test, and deployment documentation.
+> **Complete WASM Guide**: See **[WASM.md](../../WASM.md)** for comprehensive build, test, and deployment documentation.
 
 ## Features
 
@@ -29,7 +29,7 @@ WebAssembly bindings for TrustEdge cryptographic operations, providing high-perf
 ### NPM Package (Coming Soon)
 
 ```bash
-npm install @trustedge/wasm
+npm install @sealedge/wasm
 ```
 
 ### Direct Usage
@@ -42,10 +42,10 @@ wasm-pack build --target web --out-dir pkg
 2. Include in your HTML:
 ```html
 <script type="module">
-import TrustEdge from './js/trustedge.js';
+import Sealedge from './js/sealedge.js';
 
-const trustedge = new TrustEdge();
-await trustedge.init();
+const sealedge = new Sealedge();
+await sealedge.init();
 
 // Ready to use!
 </script>
@@ -56,21 +56,21 @@ await trustedge.init();
 ### Basic Encryption/Decryption
 
 ```javascript
-import TrustEdge from '@trustedge/wasm';
+import Sealedge from '@sealedge/wasm';
 
 // Initialize
-const trustedge = new TrustEdge();
-await trustedge.init();
+const sealedge = new Sealedge();
+await sealedge.init();
 
 // Generate a key
-const key = trustedge.generateKey();
+const key = sealedge.generateKey();
 
 // Encrypt data
-const encrypted = trustedge.encryptSimple("Hello, World!", key);
+const encrypted = sealedge.encryptSimple("Hello, World!", key);
 console.log('Encrypted:', encrypted);
 
 // Decrypt data
-const decrypted = trustedge.decrypt(encrypted, key);
+const decrypted = sealedge.decrypt(encrypted, key);
 console.log('Decrypted:', decrypted); // "Hello, World!"
 ```
 
@@ -78,37 +78,37 @@ console.log('Decrypted:', decrypted); // "Hello, World!"
 
 ```javascript
 // Generate custom nonce
-const nonce = trustedge.generateNonce();
+const nonce = sealedge.generateNonce();
 
 // Encrypt with custom nonce
-const encrypted = trustedge.encrypt("Secret data", key, nonce);
+const encrypted = sealedge.encrypt("Secret data", key, nonce);
 
 // Validate key format
-if (trustedge.validateKey(key)) {
+if (sealedge.validateKey(key)) {
     console.log('Key is valid');
 }
 
 // Generate random bytes
-const randomBytes = trustedge.generateRandomBytes(32);
+const randomBytes = sealedge.generateRandomBytes(32);
 
 // Performance timing
-const timer = trustedge.createTimer();
+const timer = sealedge.createTimer();
 // ... perform operations ...
 console.log('Operation took:', timer.elapsed(), 'ms');
 ```
 
 ## API Reference
 
-### TrustEdge Class
+### Sealedge Class
 
 #### Constructor
 ```typescript
-const trustedge = new TrustEdge();
+const sealedge = new Sealedge();
 ```
 
 #### Methods
 
-##### `init(): Promise<TrustEdge>`
+##### `init(): Promise<Sealedge>`
 Initialize the WASM module. Must be called before using any cryptographic functions.
 
 ##### `generateKey(): string`
@@ -169,17 +169,17 @@ See `examples/basic-usage.html` for a complete interactive example.
 ### Node.js Example
 
 ```javascript
-import TrustEdge from '@trustedge/wasm';
+import Sealedge from '@sealedge/wasm';
 
 async function example() {
-    const trustedge = new TrustEdge();
-    await trustedge.init();
+    const sealedge = new Sealedge();
+    await sealedge.init();
     
-    const key = trustedge.generateKey();
+    const key = sealedge.generateKey();
     const data = "Sensitive information";
     
-    const encrypted = trustedge.encryptSimple(data, key);
-    const decrypted = trustedge.decrypt(encrypted, key);
+    const encrypted = sealedge.encryptSimple(data, key);
+    const decrypted = sealedge.decrypt(encrypted, key);
     
     console.log('Original:', data);
     console.log('Decrypted:', decrypted);
@@ -191,7 +191,7 @@ example().catch(console.error);
 
 ## Performance
 
-TrustEdge WASM provides excellent performance for cryptographic operations:
+Sealedge WASM provides excellent performance for cryptographic operations:
 
 - **Encryption**: ~0.1-0.5ms per operation (1KB data)
 - **Decryption**: ~0.1-0.5ms per operation (1KB data)
@@ -263,8 +263,8 @@ Contributions are welcome! Please see [CONTRIBUTING.md](../../CONTRIBUTING.md) f
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/TrustEdge-Labs/trustedge/issues)
-- **Documentation**: [TrustEdge Docs](https://github.com/TrustEdge-Labs/trustedge#readme)
+- **Issues**: [GitHub Issues](https://github.com/TrustEdge-Labs/sealedge/issues)
+- **Documentation**: [Sealedge Docs](https://github.com/TrustEdge-Labs/sealedge#readme)
 - **Enterprise**: [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com)
 
 ## Changelog

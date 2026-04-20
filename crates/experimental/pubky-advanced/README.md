@@ -1,21 +1,21 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Pubky Advanced
+# Sealedge Pubky Advanced
 
 > **EXPERIMENTAL** -- This crate is Tier 2 (experimental). Community-contributed Pubky hybrid encryption. No maintenance commitment.
 
-**Advanced Pubky integration with hybrid encryption and decentralized key discovery for TrustEdge.**
+**Advanced Pubky integration with hybrid encryption and decentralized key discovery for sealedge.**
 
-[![Crates.io](https://img.shields.io/crates/v/trustedge-pubky-advanced.svg)](https://crates.io/crates/trustedge-pubky-advanced)
-[![Documentation](https://docs.rs/trustedge-pubky-advanced/badge.svg)](https://docs.rs/trustedge-pubky-advanced)
+[![Crates.io](https://img.shields.io/crates/v/sealedge-pubky-advanced.svg)](https://crates.io/crates/sealedge-pubky-advanced)
+[![Documentation](https://docs.rs/sealedge-pubky-advanced/badge.svg)](https://docs.rs/sealedge-pubky-advanced)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 
-> **Community/Experimental**: This crate provides advanced integration with the [Pubky](https://pubky.org) decentralized network, including hybrid encryption with forward secrecy. It is maintained as a community contribution and is not part of the core TrustEdge product. For core TrustEdge functionality (receipts, attestation, envelope encryption), use `trustedge-core` directly.
+> **Community/Experimental**: This crate provides advanced integration with the [Pubky](https://pubky.org) decentralized network, including hybrid encryption with forward secrecy. It is maintained as a community contribution and is not part of the core sealedge product. For core sealedge functionality (receipts, attestation, envelope encryption), use `sealedge-core` directly.
 
 ---
 
@@ -23,31 +23,31 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 
 | Crate | Use Case |
 |-------|----------|
-| **trustedge-pubky** | Simple key publishing/resolution using existing TrustEdge keys |
-| **trustedge-pubky-advanced** (this crate) | Hybrid encryption with X25519 ECDH, forward secrecy, large file handling |
+| **sealedge-pubky** | Simple key publishing/resolution using existing sealedge keys |
+| **sealedge-pubky-advanced** (this crate) | Hybrid encryption with X25519 ECDH, forward secrecy, large file handling |
 
 **Choose this crate if:** You need hybrid encryption with perfect forward secrecy, are handling large files, or are building a new system that benefits from dual-key architecture (Ed25519 for identity + X25519 for encryption).
 
-**Choose trustedge-pubky if:** You just need to publish/resolve public keys on the Pubky network using your existing TrustEdge Ed25519 keys.
+**Choose sealedge-pubky if:** You just need to publish/resolve public keys on the Pubky network using your existing sealedge Ed25519 keys.
 
 ---
 
 ## Overview
 
-TrustEdge Pubky Advanced implements **next-generation hybrid encryption** with seamless Pubky network integration. It features a dual key architecture, V2 envelope format, and advanced cryptographic capabilities designed for decentralized, censorship-resistant communication.
+Sealedge Pubky Advanced implements **next-generation hybrid encryption** with seamless Pubky network integration. It features a dual key architecture, V2 envelope format, and advanced cryptographic capabilities designed for decentralized, censorship-resistant communication.
 
 ### Key Features
 
-- **🔐 Hybrid Encryption**: X25519 ECDH key exchange + AES-256-GCM payload encryption
-- **🔑 Dual Key Architecture**: Ed25519 identity keys + X25519 encryption keys
-- **🌐 Pubky Integration**: Decentralized key discovery and censorship resistance
-- **📦 V2 Envelope Format**: Next-generation envelope with improved security and usability
-- **⚡ High Performance**: Optimized for large payloads with chunked processing
-- **🛡️ Forward Secrecy**: Ephemeral keys provide perfect forward secrecy
-- **🔒 Memory Safety**: Secure key material handling with automatic zeroization
-- **🧪 Battle-Tested**: Comprehensive security testing and validation
+- **Hybrid Encryption**: X25519 ECDH key exchange + AES-256-GCM payload encryption
+- **Dual Key Architecture**: Ed25519 identity keys + X25519 encryption keys
+- **Pubky Integration**: Decentralized key discovery and censorship resistance
+- **V2 Envelope Format**: Next-generation envelope with improved security and usability
+- **High Performance**: Optimized for large payloads with chunked processing
+- **Forward Secrecy**: Ephemeral keys provide perfect forward secrecy
+- **Memory Safety**: Secure key material handling with automatic zeroization
+- **Battle-Tested**: Comprehensive security testing and validation
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -88,7 +88,7 @@ graph TD
 - **PubkyIdentity**: Serializable identity for network storage
 - **PubkyClient**: Advanced client for decentralized operations
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -100,8 +100,8 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-trustedge-pubky-advanced = "0.1.0"
-trustedge-core = "0.2.0"
+sealedge-pubky-advanced = "0.1.0"
+sealedge-core = "0.2.0"
 ed25519-dalek = "2.0"
 x25519-dalek = "2.0"
 tokio = { version = "1.0", features = ["full"] }
@@ -110,7 +110,7 @@ tokio = { version = "1.0", features = ["full"] }
 ### Basic Usage
 
 ```rust
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Generate dual key pairs for Alice and Bob
@@ -129,13 +129,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &bob_keys.pubky_identity()
     )?;
     
-    println!("✅ Envelope created with {} chunks", envelope.chunks.len());
+    println!("Envelope created with {} chunks", envelope.chunks.len());
     
     // Bob decrypts the data
     let decrypted_data = envelope.unseal(&bob_keys)?;
     assert_eq!(decrypted_data, secret_data);
     
-    println!("✅ Hybrid encryption/decryption successful!");
+    println!("Hybrid encryption/decryption successful!");
     Ok(())
 }
 ```
@@ -143,7 +143,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Advanced Example with Pubky Network
 
 ```rust
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2, PubkyClient};
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2, PubkyClient};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -175,12 +175,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let decrypted_data = envelope.unseal(&bob_keys)?;
     assert_eq!(decrypted_data, confidential_data);
     
-    println!("✅ Decentralized hybrid encryption successful!");
+    println!("Decentralized hybrid encryption successful!");
     Ok(())
 }
 ```
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -275,7 +275,7 @@ pub fn unseal(&self, recipient_keys: &DualKeyPair) -> Result<Vec<u8>>
 4. Decrypt and reassemble chunks
 5. Return original payload
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -304,7 +304,7 @@ pub fn unseal(&self, recipient_keys: &DualKeyPair) -> Result<Vec<u8>>
 
 ```bash
 # Run comprehensive security tests
-cargo test -p trustedge-pubky-advanced
+cargo test -p sealedge-pubky-advanced
 
 # Run specific security categories
 cargo test test_hybrid_encryption_security
@@ -313,7 +313,7 @@ cargo test test_signature_verification
 cargo test test_key_exchange_security
 ```
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -324,7 +324,7 @@ cargo test test_key_exchange_security
 The V2 envelope format efficiently handles large payloads:
 
 ```rust
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 // Encrypt large file (automatically chunked)
 let large_file_data = std::fs::read("large_video.mp4")?;
@@ -347,7 +347,7 @@ assert_eq!(decrypted_file, large_file_data);
 Add custom metadata to identities:
 
 ```rust
-use trustedge_pubky_advanced::{DualKeyPair, IdentityMetadata};
+use sealedge_pubky_advanced::{DualKeyPair, IdentityMetadata};
 
 let keys = DualKeyPair::generate();
 let identity = keys.to_pubky_identity(Some("Alice Smith".to_string()));
@@ -365,7 +365,7 @@ if let Some(metadata) = &identity.metadata {
 For real-time data streams:
 
 ```rust
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 // Encrypt streaming audio data
 let audio_stream_chunk = capture_audio_chunk()?;
@@ -380,7 +380,7 @@ let envelope = EnvelopeV2::seal(
 send_to_recipient(&envelope)?;
 ```
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -421,19 +421,19 @@ let envelopes: Result<Vec<_>, _> = payloads
     .collect();
 ```
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
 ## Integration Examples
 
-### With TrustEdge Core
+### With Sealedge Core
 
-Seamless integration with core TrustEdge features:
+Seamless integration with core sealedge features:
 
 ```rust
-use trustedge_core::UniversalBackend;
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
+use sealedge_core::UniversalBackend;
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 // Use with Universal Backend
 let backend = UniversalBackend::software_hsm()?;
@@ -444,13 +444,13 @@ let envelope = EnvelopeV2::seal(data, &keys, &recipient_key, &recipient_id)?;
 let serialized = envelope.serialize()?;
 ```
 
-### With TrustEdge Receipts
+### With Sealedge Receipts
 
 Create encrypted receipt systems:
 
 ```rust
-use trustedge_receipts::create_receipt;
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
+use sealedge_receipts::create_receipt;
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 // Create receipt
 let receipt_envelope = create_receipt(&issuer_key, &recipient_key, 1000, None)?;
@@ -471,7 +471,7 @@ Use in browser environments:
 
 ```rust
 use wasm_bindgen::prelude::*;
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 #[wasm_bindgen]
 pub fn encrypt_for_web(
@@ -484,7 +484,7 @@ pub fn encrypt_for_web(
 }
 ```
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -493,7 +493,7 @@ pub fn encrypt_for_web(
 ### Example 1: Basic Hybrid Encryption
 
 ```rust
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Generate keys
@@ -513,7 +513,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let decrypted = envelope.unseal(&bob_keys)?;
     assert_eq!(decrypted, data);
     
-    println!("✅ Hybrid encryption successful");
+    println!("Hybrid encryption successful");
     Ok(())
 }
 ```
@@ -521,7 +521,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Example 2: Decentralized Communication
 
 ```rust
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2, PubkyClient};
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2, PubkyClient};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -549,7 +549,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let decrypted = envelope.unseal(&bob_keys)?;
     assert_eq!(decrypted, message);
     
-    println!("✅ Decentralized communication successful");
+    println!("Decentralized communication successful");
     Ok(())
 }
 ```
@@ -557,7 +557,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Example 3: Large File Encryption
 
 ```rust
-use trustedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
+use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sender_keys = DualKeyPair::generate();
@@ -588,12 +588,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Decryption took: {:?}", decrypt_time);
     assert_eq!(decrypted.len(), large_data.len());
     
-    println!("✅ Large file encryption successful");
+    println!("Large file encryption successful");
     Ok(())
 }
 ```
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -603,49 +603,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```bash
 # All advanced Pubky tests
-cargo test -p trustedge-pubky-advanced
+cargo test -p sealedge-pubky-advanced
 
 # Specific test categories
-cargo test -p trustedge-pubky-advanced test_dual_key_generation
-cargo test -p trustedge-pubky-advanced test_hybrid_encryption
-cargo test -p trustedge-pubky-advanced test_envelope_v2
-cargo test -p trustedge-pubky-advanced test_pubky_integration
+cargo test -p sealedge-pubky-advanced test_dual_key_generation
+cargo test -p sealedge-pubky-advanced test_hybrid_encryption
+cargo test -p sealedge-pubky-advanced test_envelope_v2
+cargo test -p sealedge-pubky-advanced test_pubky_integration
 
 # Performance benchmarks
-cargo test -p trustedge-pubky-advanced --release test_performance
+cargo test -p sealedge-pubky-advanced --release test_performance
 
 # With verbose output
-cargo test -p trustedge-pubky-advanced -- --nocapture
+cargo test -p sealedge-pubky-advanced -- --nocapture
 ```
 
 ### Example Demos
 
 ```bash
 # Run the hybrid encryption demo
-cargo run -p trustedge-pubky-advanced --example hybrid_encryption_demo
-
-# Expected output:
-# 🔐 TrustEdge Pubky Hybrid Encryption Demo
-# ==========================================
-# 
-# 📋 Step 1: Generating dual key pairs...
-# ✅ Alice's Pubky ID: a1b2c3d4...
-# ✅ Bob's Pubky ID: e5f6g7h8...
-# 
-# 📋 Step 2: Creating sample data...
-# ✅ Sample data size: 1048576 bytes
-# 
-# 📋 Step 3: Alice encrypts data for Bob...
-# ✅ Envelope created successfully!
+cargo run -p sealedge-pubky-advanced --example hybrid_encryption_demo
 ```
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
 ## Contributing
 
-We welcome contributions to TrustEdge Pubky Advanced:
+We welcome contributions to Sealedge Pubky Advanced:
 
 1. **Cryptographic Reviews**: Help audit hybrid encryption implementations
 2. **Performance Optimizations**: Improve encryption/decryption speed
@@ -658,47 +644,47 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
 
 ```bash
 # Clone the repository
-git clone https://github.com/TrustEdge-Labs/trustedge.git
-cd trustedge
+git clone https://github.com/TrustEdge-Labs/sealedge.git
+cd sealedge
 
 # Run advanced Pubky tests
-cargo test -p trustedge-pubky-advanced
+cargo test -p sealedge-pubky-advanced
 
 # Run examples
-cargo run -p trustedge-pubky-advanced --example hybrid_encryption_demo
+cargo run -p sealedge-pubky-advanced --example hybrid_encryption_demo
 
 # Check code formatting
-cargo fmt --package trustedge-pubky-advanced
+cargo fmt --package sealedge-pubky-advanced
 ```
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
 ## Roadmap
 
 ### Current Features (v0.1.0)
-- ✅ Dual key architecture (Ed25519 + X25519)
-- ✅ Hybrid encryption (ECDH + AES-256-GCM)
-- ✅ V2 envelope format
-- ✅ Perfect forward secrecy
-- ✅ Large file support with chunking
-- ✅ Pubky network integration
+- Dual key architecture (Ed25519 + X25519)
+- Hybrid encryption (ECDH + AES-256-GCM)
+- V2 envelope format
+- Perfect forward secrecy
+- Large file support with chunking
+- Pubky network integration
 
 ### Planned Features (v0.2.0)
-- 🔄 Post-quantum cryptography support
-- 🔄 Advanced key rotation mechanisms
-- 🔄 Multi-recipient encryption
-- 🔄 Streaming encryption APIs
-- 🔄 Enhanced metadata support
+- Post-quantum cryptography support
+- Advanced key rotation mechanisms
+- Multi-recipient encryption
+- Streaming encryption APIs
+- Enhanced metadata support
 
 ### Future Considerations
-- 🔮 Integration with other decentralized networks
-- 🔮 Hardware security module support
-- 🔮 Advanced identity management
-- 🔮 Cross-platform mobile SDKs
+- Integration with other decentralized networks
+- Hardware security module support
+- Advanced identity management
+- Cross-platform mobile SDKs
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -720,7 +706,7 @@ The advanced Pubky integration has undergone comprehensive security review:
 - **Encryption**: AES-256-GCM provides authenticated encryption with strong security guarantees
 - **Signatures**: Ed25519 provides fast, secure digital signatures
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
@@ -730,19 +716,19 @@ This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 
 **Commercial Licensing**: Enterprise licenses available for commercial use without source disclosure requirements. Contact [enterprise@trustedgelabs.com](mailto:enterprise@trustedgelabs.com).
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
 ## Related Documentation
 
-- **[TrustEdge Core](../core/)** - Core cryptographic library
-- **[TrustEdge Pubky](../pubky/)** - Basic Pubky adapter
+- **[Sealedge Core](../core/)** - Core cryptographic library
+- **[Sealedge Pubky](../pubky/)** - Basic Pubky adapter
 - **[Universal Backend Guide](../UNIVERSAL_BACKEND.md)** - Backend system architecture
 - **[Security Model](../SECURITY.md)** - Overall security architecture
 
-[↑ Back to top](#trustedge-pubky-advanced)
+[↑ Back to top](#sealedge-pubky-advanced)
 
 ---
 
-*TrustEdge Pubky Advanced - Next-generation hybrid encryption for the decentralized web.*
+*Sealedge Pubky Advanced - Next-generation hybrid encryption for the decentralized web.*
