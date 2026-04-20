@@ -1584,7 +1584,7 @@ fn test_jwks_default_not_target_dev() -> Result<()> {
 
     // The default path must be in the system temp dir, not target/dev/
     let expected_default = std::env::temp_dir()
-        .join("trustedge_signing_key.json")
+        .join("sealedge_signing_key.json")
         .to_string_lossy()
         .into_owned();
 

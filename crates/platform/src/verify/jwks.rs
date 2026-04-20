@@ -37,7 +37,7 @@ impl KeyManager {
     pub fn new() -> Result<Self> {
         let key_path = std::env::var("JWKS_KEY_PATH").unwrap_or_else(|_| {
             std::env::temp_dir()
-                .join("trustedge_signing_key.json")
+                .join("sealedge_signing_key.json")
                 .to_string_lossy()
                 .into_owned()
         });

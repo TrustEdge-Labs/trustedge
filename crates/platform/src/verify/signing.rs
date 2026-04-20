@@ -33,7 +33,7 @@ pub async fn sign_receipt_jws(
     let exp = now + ttl_secs as i64;
 
     let payload = JwsPayload {
-        iss: "trustedge-verify-service".to_string(),
+        iss: "sealedge-verify-service".to_string(),
         sub: receipt.device_id.clone(),
         iat: now,
         exp,

@@ -95,9 +95,9 @@ pub struct CAConfigBuilder {
 impl Default for CAConfigBuilder {
     fn default() -> Self {
         Self {
-            database_url: "postgresql://localhost/trustedge_ca".to_string(),
+            database_url: "postgresql://localhost/sealedge_ca".to_string(),
             jwt_secret: "your-secret-key".to_string(),
-            ca_name: "TrustEdge Enterprise CA".to_string(),
+            ca_name: "Sealedge Enterprise CA".to_string(),
             ca_organization: "TrustEdge Labs LLC".to_string(),
             ca_country: "US".to_string(),
             certificate_validity_days: 365,

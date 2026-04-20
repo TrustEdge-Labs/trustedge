@@ -72,7 +72,7 @@ async fn serve() -> Result<()> {
     tracing::info!("Receipt TTL: {}s", config.receipt_ttl_secs);
     let jwks_key_path = std::env::var("JWKS_KEY_PATH").unwrap_or_else(|_| {
         std::env::temp_dir()
-            .join("trustedge_signing_key.json")
+            .join("sealedge_signing_key.json")
             .to_string_lossy()
             .into_owned()
     });
