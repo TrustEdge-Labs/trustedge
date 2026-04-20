@@ -1,4 +1,4 @@
-# TrustEdge Verifier — DigitalOcean App Platform Deployment
+# Sealedge Verifier — DigitalOcean App Platform Deployment
 <!-- Copyright (c) 2025 TRUSTEDGE LABS LLC - MPL-2.0: https://mozilla.org/MPL/2.0/ -->
 
 Verify-only platform server. No database. No auth. Stateless.
@@ -43,10 +43,10 @@ doctl apps update <app-id> --spec deploy/digitalocean/app.yaml
 
 ```bash
 # Build the verify-only image
-docker build -f deploy/digitalocean/Dockerfile -t trustedge-verifier .
+docker build -f deploy/digitalocean/Dockerfile -t sealedge-verifier .
 
 # Run locally
-docker run -p 3001:3001 trustedge-verifier
+docker run -p 3001:3001 sealedge-verifier
 
 # Verify
 curl http://localhost:3001/healthz

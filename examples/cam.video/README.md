@@ -1,13 +1,13 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
 # cam.video P0 Implementation Demo
 
-This directory contains a complete end-to-end demonstration of the TrustEdge P0 `.trst` archive format using the `cam.video` profile. The P0 implementation provides the locked specification with cryptographic signatures, continuity chains, and encrypted storage.
+This directory contains a complete end-to-end demonstration of the Sealedge P0 `.seal` archive format using the `cam.video` profile. The P0 implementation provides the locked specification with cryptographic signatures, continuity chains, and encrypted storage.
 
 ## 🚀 5-Minute Quick Start
 
@@ -37,19 +37,19 @@ openssl rand 33554432 > examples/cam.video/sample.bin
 
 ### 3) Wrap using CLI
 ```bash
-cargo run -p trustedge-trst-cli -- wrap --profile cam.video --in examples/cam.video/sample.bin --out ./clip.trst
+cargo run -p sealedge-seal-cli -- wrap --profile cam.video --in examples/cam.video/sample.bin --out ./clip.seal
 ```
 
 ### 4) Verify using CLI
 ```bash
-cargo run -p trustedge-trst-cli -- verify ./clip.trst --device-pub $(cat device.pub)
+cargo run -p sealedge-seal-cli -- verify ./clip.seal --device-pub $(cat device.pub)
 ```
 
 ## 📋 Expected Output
 
 ### Wrap Command Output:
 ```
-Archive: ./clip.trst
+Archive: ./clip.seal
 Signature: ed25519:A1B2C3D4E5F6...
 Segments: 32
 Generated device key: device.key
@@ -69,7 +69,7 @@ This directory also includes two Rust examples that demonstrate direct use of th
 
 ### `record_and_wrap.rs` - Programmatic Archive Creation
 ```bash
-cargo run -p trustedge-cam-video-examples --bin record_and_wrap
+cargo run -p sealedge-cam-video-examples --bin record_and_wrap
 ```
 
 This example shows how to:
@@ -78,15 +78,15 @@ This example shows how to:
 - Encrypt each chunk with XChaCha20-Poly1305
 - Build BLAKE3 continuity chains
 - Create and sign cam.video manifests
-- Write complete .trst archive structures
+- Write complete .seal archive structures
 
 ### `verify_cli.rs` - Programmatic Archive Verification
 ```bash
-cargo run -p trustedge-cam-video-examples --bin verify_cli [archive_path] [device_pub_path]
+cargo run -p sealedge-cam-video-examples --bin verify_cli [archive_path] [device_pub_path]
 ```
 
 This example demonstrates:
-- Reading .trst archive structures
+- Reading .seal archive structures
 - Verifying Ed25519 signatures against canonical manifest bytes
 - Validating BLAKE3 continuity chain integrity
 - Checking chunk file hash consistency
@@ -94,9 +94,9 @@ This example demonstrates:
 
 ## 📁 Archive Structure
 
-The generated `.trst` archives follow this structure:
+The generated `.seal` archives follow this structure:
 ```
-clip.trst/
+clip.seal/
 ├── manifest.json          # Signed cam.video manifest
 ├── signatures/
 │   └── manifest.sig        # Detached signature
@@ -127,15 +127,15 @@ The `cam.video` profile implements:
 
 Run the integration tests to verify P0 compliance:
 ```bash
-cargo test -p trustedge-trst-cli
+cargo test -p sealedge-seal-cli
 ```
 
 ## 📚 Further Documentation
 
 - **[P0 Implementation Status](../../P0_IMPLEMENTATION.md)** - Complete P0 checklist and progress
 - **[Core Module Documentation](../../crates/core/src/)** - Low-level API reference
-- **[CLI Documentation](../../crates/trst-cli/)** - Command-line interface guide
+- **[CLI Documentation](../../crates/seal-cli/)** - Command-line interface guide
 
 ---
 
-*This example demonstrates the P0 implementation of the TrustEdge .trst specification, locked for the cam.video golden profile.*
+*This example demonstrates the P0 implementation of the Sealedge .seal specification, locked for the cam.video golden profile.*

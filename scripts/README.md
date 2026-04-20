@@ -1,13 +1,13 @@
 <!--
 Copyright (c) 2025 TRUSTEDGE LABS LLC
 MPL-2.0: https://mozilla.org/MPL/2.0/
-Project: trustedge — Privacy and trust at the edge.
-GitHub: https://github.com/TrustEdge-Labs/trustedge
+Project: sealedge — Privacy and trust at the edge.
+GitHub: https://github.com/TrustEdge-Labs/sealedge
 -->
 
-# TrustEdge Scripts
+# Sealedge Scripts
 
-Utility scripts for TrustEdge project management, testing, and development workflows.
+Utility scripts for Sealedge project management, testing, and development workflows.
 
 ## 📁 Directory Structure
 
@@ -105,7 +105,7 @@ Quick performance benchmarks for local development (no CI integration).
 - **Basic accuracy** (suitable for performance trend monitoring)
 - **Automatic environment setup** (sets BENCH_FAST=1)
 
-For full statistical accuracy, use `cargo bench` in the `trustedge-core/` directory.
+For full statistical accuracy, use `cargo bench` in the `crates/core/` directory.
 
 ## 🛠️ Adding New Scripts
 
