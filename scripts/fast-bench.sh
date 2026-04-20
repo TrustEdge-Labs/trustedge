@@ -10,7 +10,7 @@
 
 set -e
 
-# Change to the sealedge core crate directory (Phase 83 renamed crates/trustedge-core → crates/core)
+# Change to the sealedge-core crate directory
 SCRIPT_DIR="$(dirname "$0")"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 AUDIO_DIR="$PROJECT_ROOT/crates/core"

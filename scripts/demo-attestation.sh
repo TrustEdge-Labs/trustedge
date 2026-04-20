@@ -27,7 +27,7 @@ NC='\033[0m'
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 FORCE_LOCAL=false
-ENDPOINT="https://verify.trustedge.dev"
+ENDPOINT="https://verify.sealedge.dev"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
