@@ -4,14 +4,14 @@ milestone: v5.0
 milestone_name: Portfolio Polish
 status: executing
 stopped_at: v6.0 roadmap created — phases 83-89 defined, awaiting Phase 83 planning
-last_updated: "2026-04-18T22:39:44.428Z"
-last_activity: 2026-04-18 -- Phase 84 complete (crypto constants + attestation extension rename)
+last_updated: "2026-04-20T04:43:47.476Z"
+last_activity: 2026-04-20 -- Phase 86 planning complete
 progress:
-  total_phases: 2
-  completed_phases: 1
-  total_plans: 10
-  completed_plans: 4
-  percent: 40
+  total_phases: 4
+  completed_phases: 2
+  total_plans: 21
+  completed_plans: 10
+  percent: 48
 ---
 
 <!--
@@ -34,8 +34,8 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 Phase: 85 (code-sweep-headers-text-metadata) — COMPLETE
 Plan: All 6 plans complete (85-01/02/03/04/05/06) + verifier gap fixes (wiring.rs JWT audience test + WASM crates swept)
-Status: Verification passed with documented deferrals (7 categories flagged for Phase 86 / follow-up — all non-blocker)
-Last activity: 2026-04-19 -- Phase 85 complete (300 tests green, all 5 ROADMAP success criteria met modulo documented Phase 86 scope residue)
+Status: Ready to execute
+Last activity: 2026-04-20 -- Phase 86 planning complete
 
 ## Performance Metrics
 
