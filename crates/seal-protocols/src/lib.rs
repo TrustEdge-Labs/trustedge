@@ -6,12 +6,12 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! # TrustEdge Protocols
+//! # Sealedge Protocols
 //!
-//! Protocol and format definitions for TrustEdge archives and capture profiles.
+//! Protocol and format definitions for sealedge archives and capture profiles.
 //!
 //! This crate provides the single source of truth for protocol types used
-//! by both the browser WASM verifier and the main trustedge-core library.
+//! by both the browser WASM verifier and the main sealedge-core library.
 //! It has minimal dependencies suitable for WASM compilation.
 //!
 //! ## Modules

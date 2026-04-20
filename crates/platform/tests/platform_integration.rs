@@ -8,13 +8,13 @@
 
 //! Integration tests for the consolidated platform HTTP layer and database.
 //!
-//! Migrated from trustedge-platform-api/platform-api/tests/integration_test.rs.
+//! Migrated from the v5.x trustedge-platform-api crate (renamed to sealedge-platform in v6.0)/platform-api/tests/integration_test.rs.
 //!
 //! ALL tests are marked `#[ignore]` — they require a running PostgreSQL instance.
-//! Run with: `cargo test -p trustedge-platform --test platform_integration
+//! Run with: `cargo test -p sealedge-platform --test platform_integration
 //!            --features "http,postgres,test-utils" -- --include-ignored`
 //!
-//! Environment variable: TEST_DATABASE_URL (default: postgres://postgres:password@localhost:5432/trustedge_test)
+//! Environment variable: TEST_DATABASE_URL (default: postgres://postgres:password@localhost:5432/sealedge_test)
 //!
 //! Behavioral changes from original platform-api tests:
 //! - test_jwks_proxy: original expected 502 (proxy to verify-core). Now expects 200 (local JWKS).

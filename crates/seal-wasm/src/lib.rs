@@ -6,10 +6,10 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! WASM bindings for TrustEdge .trst archive verification.
+//! WASM bindings for sealedge .seal archive verification.
 //!
-//! This crate provides browser-compatible verification of .trst archives
-//! using the canonical manifest types from `trustedge-trst-protocols`.
+//! This crate provides browser-compatible verification of .seal archives
+//! using the canonical manifest types from `sealedge-seal-protocols`.
 
 use serde::Serialize;
 use serde_wasm_bindgen::to_value;

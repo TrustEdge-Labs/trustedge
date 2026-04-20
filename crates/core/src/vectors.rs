@@ -5,16 +5,16 @@
 //
 // Project: sealedge — Privacy and trust at the edge.
 //
-/// Deterministic test vectors for the TrustEdge envelope format.
+/// Deterministic test vectors for the sealedge envelope format.
 ///
 /// Fix *all* randomness (AES key, signing key, nonce prefix, header fields,
-/// timestamp) so `.trst` bytes are **identical** on every run under test.
+/// timestamp) so `.seal` bytes are **identical** on every run under test.
 ///
-/// First run: the test will print a BLAKE3 digest of the generated .trst buffer.
+/// First run: the test will print a BLAKE3 digest of the generated .seal buffer.
 /// Copy that digest into `GOLDEN_TRST_BLAKE3` below and commit. When the format/crypto
 /// changes intentionally, re-run, copy the new digest (rebase the golden), and commit.
 ///
-/// Test vectors for the TrustEdge envelope format.
+/// Test vectors for the sealedge envelope format.
 #[cfg(test)]
 mod tests {
     use std::io::Write;
@@ -70,7 +70,7 @@ mod tests {
     /// Replace this after first run (see test output).
     /// const GOLDEN_TRST_BLAKE3: &str = "<fill-me-after-first-run>";
     /// Updated for Phase 85 Plan 01 MAGIC rename: b"TRST" -> b"SEAL"
-    /// Updated for Phase 85 Plan 05 test-vector rename: b"trustedge-test-*" -> b"sealedge-test-*"
+    /// Post-v6.0 test vectors: b"sealedge-test-*" (v5.x-shaped b"trustedge-test-*" vectors rejected by clean-break checks).
     const GOLDEN_TRST_BLAKE3: &str =
         "f2ee31599f7b279363f0024ed1390e299cff7669c9036b425af91a2fb242c17b";
 

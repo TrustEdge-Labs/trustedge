@@ -8,7 +8,7 @@
 
 //! Integration tests for the consolidated verify module.
 //!
-//! Migrated from trustedge-verify-core/tests/integration_tests.rs.
+//! Migrated from the v5.x trustedge-verify-core crate (merged into sealedge-platform in v6.0)/tests/integration_tests.rs.
 //!
 //! Test groupings:
 //! - HTTP endpoint tests (feature = "http"): health, JWKS, CORS parity, verify round-trip

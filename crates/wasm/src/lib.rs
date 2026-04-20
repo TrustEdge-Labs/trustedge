@@ -6,12 +6,12 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! # TrustEdge WebAssembly
+//! # Sealedge WebAssembly
 //!
-//! WebAssembly bindings for TrustEdge cryptographic operations, enabling privacy-preserving
+//! WebAssembly bindings for sealedge cryptographic operations, enabling privacy-preserving
 //! edge computing in browser and Node.js environments.
 //!
-//! This crate provides JavaScript/TypeScript bindings for core TrustEdge functionality,
+//! This crate provides JavaScript/TypeScript bindings for core sealedge functionality,
 //! allowing web applications to perform secure encryption, decryption, and key management
 //! operations directly in the browser.
 //!
@@ -26,7 +26,7 @@
 //! ## Usage
 //!
 //! ```javascript
-//! import init, { encrypt_data, decrypt_data } from 'trustedge-wasm';
+//! import init, { encrypt_data, decrypt_data } from 'sealedge-wasm';
 //!
 //! async function example() {
 //!     await init();

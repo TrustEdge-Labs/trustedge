@@ -5,7 +5,7 @@
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-/// Project: trustedge — Privacy and trust at the edge.
+/// Project: sealedge — Privacy and trust at the edge.
 ///
 use aes_gcm::{
     aead::{Aead, KeyInit, OsRng, Payload},
@@ -50,7 +50,7 @@ use sealedge_core::{
     VERSION,
 };
 
-/// Input source for the trustedge application
+/// Input source for the sealedge application
 #[derive(Debug)]
 enum InputSource {
     File(PathBuf),

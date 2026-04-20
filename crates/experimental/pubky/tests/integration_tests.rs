@@ -2,7 +2,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! Integration tests for trustedge-pubky CLI and library functionality
+//! Integration tests for sealedge-pubky CLI and library functionality
 //!
 //! These tests validate real functionality without mocks or fake data.
 

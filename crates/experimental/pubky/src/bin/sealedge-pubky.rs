@@ -5,9 +5,9 @@
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //
-/// Project: trustedge — Privacy and trust at the edge.
+/// Project: sealedge — Privacy and trust at the edge.
 ///
-/// TrustEdge Pubky CLI - Decentralized key management and hybrid encryption
+/// Sealedge Pubky CLI - Decentralized key management and hybrid encryption
 ///
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
@@ -133,7 +133,7 @@ enum Commands {
         ///
         /// The recipient's public Pubky ID. Their public key will be automatically
         /// resolved from the Pubky network. Get this from the recipient or use
-        /// 'trustedge-pubky resolve' to verify it exists.
+        /// 'sealedge-pubky resolve' to verify it exists.
         #[arg(short, long, help = "Recipient's Pubky ID (64 hex chars)")]
         recipient: String,
 
@@ -175,7 +175,7 @@ enum Commands {
 
         /// Your private key file (32 bytes as hex)
         ///
-        /// The private key file created with 'trustedge-pubky generate'.
+        /// The private key file created with 'sealedge-pubky generate'.
         /// Must correspond to the Pubky ID the sender used as recipient.
         #[arg(short, long, help = "Your private key file (64 hex chars)")]
         key: PathBuf,

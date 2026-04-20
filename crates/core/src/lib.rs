@@ -8,11 +8,11 @@
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-//! # TrustEdge Core
+//! # Sealedge Core
 //!
 //! Core cryptographic library and CLI tools for privacy-preserving edge computing.
 //!
-//! TrustEdge Core provides production-ready cryptographic primitives, universal backend systems,
+//! Sealedge Core provides production-ready cryptographic primitives, universal backend systems,
 //! and secure network operations for data-agnostic encryption at the edge.
 //!
 //! ## Key Features
@@ -50,7 +50,7 @@
 //!
 //! ## Architecture
 //!
-//! TrustEdge Core is organized into several key modules:
+//! Sealedge Core is organized into several key modules:
 //!
 //! - [`envelope`] - Cryptographic envelope format for secure data packaging
 //! - [`backends`] - Universal Backend system for pluggable crypto operations
@@ -62,7 +62,7 @@
 //!
 //! ## Feature Flags
 //!
-//! TrustEdge Core uses `default = []` (no features enabled) for fast CI and maximum portability.
+//! Sealedge Core uses `default = []` (no features enabled) for fast CI and maximum portability.
 //! Enable features as needed for your deployment:
 //!
 //! ### Backend Features
@@ -83,7 +83,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! trustedge-core = { version = "0.2", features = ["audio"] }
+//! sealedge-core = { version = "0.2", features = ["audio"] }
 //! ```
 
 use serde::{Deserialize, Serialize};

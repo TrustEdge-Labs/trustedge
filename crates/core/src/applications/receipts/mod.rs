@@ -6,11 +6,11 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! # TrustEdge OwnershipReceipts - The Contract Writer
+//! # Sealedge OwnershipReceipts - The Contract Writer
 //!
 //! This module represents the "Contract Writer" in our office analogy.
 //! It handles business logic for transferable claims (receipts) without worrying
-//! about cryptographic details. That's the job of the "Security Guard" (trustedge-core).
+//! about cryptographic details. That's the job of the "Security Guard" (sealedge-core).
 //!
 //! ## The OwnershipReceipt System
 //!
@@ -45,7 +45,7 @@ use anyhow::{Context, Result};
 use ed25519_dalek::{SigningKey, VerifyingKey};
 use serde::{Deserialize, Serialize};
 
-/// Represents a transferable claim, forming the payload of a TrustEdge Envelope.
+/// Represents a transferable claim, forming the payload of a Sealedge Envelope.
 ///
 /// This is the "contract" that the Contract Writer creates. It contains all the
 /// business logic about ownership, amounts, and chain links, but no cryptographic details.
@@ -57,7 +57,7 @@ pub struct OwnershipReceipt {
     pub beneficiary: [u8; 32],
     /// The value being claimed.
     pub amount: u64,
-    /// A hash of the previous trustedge::Envelope in the chain.
+    /// A hash of the previous sealedge::Envelope in the chain.
     /// This is `None` if the receipt is the origin of the chain.
     pub prev_envelope_hash: Option<[u8; 32]>,
     /// Optional description or metadata for this receipt

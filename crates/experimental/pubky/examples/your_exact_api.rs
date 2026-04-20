@@ -21,7 +21,7 @@ use std::sync::{Arc, Mutex};
 
 /// This is your exact API specification!
 ///
-/// Inside the new `trustedge-pubky` crate:
+/// Inside the `sealedge-pubky` crate:
 /// - Uses the pubky client to resolve the ID and get the public key
 /// - Calls the core library function to perform the hybrid encryption
 pub fn send_trusted_data(
