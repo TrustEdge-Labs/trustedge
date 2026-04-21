@@ -59,7 +59,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 - [x] **Phase 84: Crypto Constants & File Extension** - Replace `TRUSTEDGE-KEY-V1` / `TRUSTEDGE_ENVELOPE_V1` with sealedge equivalents (clean break, no backward-compat decrypt) and rename `.te-attestation.json` file extension to the sealedge form everywhere (completed 2026-04-18)
 - [x] **Phase 85: Code Sweep — Headers, Text, Metadata** - Update all copyright/license headers, user-facing text (errors, logs, help, env vars, UI labels), and Cargo.toml metadata (description, repository, homepage, documentation) across the workspace (completed 2026-04-19 — 6 plans, ~25 commits)
 - [x] **Phase 86: Documentation Sweep** - Update root project docs (README, CLAUDE.md, DEPENDENCIES.md, SECURITY.md), developer docs (docs/**), code doc comments (`///`, `//!`), and scripts/examples to reflect sealedge naming (completed 2026-04-20 — 5 plans)
-- [ ] **Phase 87: GitHub Repository Rename** - Rename monorepo `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` with GitHub's automatic redirect enabled; update local git remotes
+- [x] **Phase 87: GitHub Repository Rename** - Rename monorepo `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` with GitHub's automatic redirect enabled; update local git remotes (completed 2026-04-21)
 - [ ] **Phase 88: External Action & Product Website** - Publish new GitHub Action repo under sealedge naming with SHA256 checksum verification; deprecate old `attest-sbom-action` marketplace listing with redirect; update product references on trustedgelabs.com
 - [ ] **Phase 89: Final Validation** - Full workspace test suite, all GitHub Actions workflows, WASM + dashboard + Docker stack all green end-to-end under the new names
 
@@ -201,11 +201,11 @@ Plans:
   1. The repo is accessible at `https://github.com/TrustEdge-Labs/sealedge`; requests to `https://github.com/TrustEdge-Labs/trustedge` automatically redirect (GitHub's built-in redirect) and do not 404
   2. The local working clone's `origin` remote URL points to the new `sealedge` repo; `git push` and `git pull` operate against the renamed repo without manual URL fixes
   3. In-repo markdown and Cargo.toml references to the repository URL (now updated in Phase 85–86) resolve correctly against the renamed repo
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 87-01-PLAN.md — Straggler URL cleanup commit — 3 tracked files (.github/ISSUE_TEMPLATE/config.yml, .github/workflows/cla.yml, deploy/digitalocean/app.yaml) updated and pushed before the rename
-- [ ] 87-02-PLAN.md — User-gated `gh repo rename` + local remote URL update + D-13 4-check verification gate (curl 301 redirect, git fetch/remote, CI green post-rename, DO App Platform auto-deploy) + 87-VERIFICATION.md evidence capture
+- [x] 87-01-PLAN.md — Straggler URL cleanup commit — 3 tracked files (.github/ISSUE_TEMPLATE/config.yml, .github/workflows/cla.yml, deploy/digitalocean/app.yaml) updated and pushed before the rename
+- [x] 87-02-PLAN.md — User-gated `gh repo rename` + local remote URL update + D-13 4-check verification gate (curl 301 redirect, git fetch/remote, CI green post-rename, DO App Platform auto-deploy) + 87-VERIFICATION.md evidence capture
 
 ### Phase 88: External Action & Product Website
 **Goal**: Sealedge's external distribution surface — the GitHub Action and the product references on trustedgelabs.com — matches the new brand, with the old action clearly deprecated and redirected so existing users can migrate without breakage.
@@ -244,6 +244,6 @@ Plans:
 | 84. Crypto Constants & File Extension | v6.0 | 0/? | Not started | - |
 | 85. Code Sweep — Headers, Text, Metadata | v6.0 | 0/? | Not started | - |
 | 86. Documentation Sweep | v6.0 | 0/? | Not started | - |
-| 87. GitHub Repository Rename | v6.0 | 0/2 | Not started | - |
+| 87. GitHub Repository Rename | v6.0 | 2/2 | Complete    | 2026-04-21 |
 | 88. External Action & Product Website | v6.0 | 0/? | Not started | - |
 | 89. Final Validation | v6.0 | 0/? | Not started | - |
