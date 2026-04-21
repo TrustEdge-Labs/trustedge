@@ -102,7 +102,13 @@ Plans:
   1. The README displays an embedded GIF that shows the complete attest-sbom → verify-attestation flow from a real terminal session
   2. The GIF is recorded from `scripts/demo.sh --local` (or the updated demo script) and reflects the actual CLI output — no staged or edited content
   3. The GIF is visible without clicking any links — embedded directly in the README at or near the top
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 88-01-PLAN.md — Action source + monorepo folder rename + REQUIREMENTS amendment (wave 1, autonomous, EXT-02/EXT-03)
+- [ ] 88-02-PLAN.md — ci.yml release-job extension (seal + seal.sha256 upload) + dogfood conversion to @v2 (wave 2, autonomous, EXT-02)
+- [ ] 88-03-PLAN.md — External gh repo rename + @v2 tag cut + Marketplace check + 88-VERIFICATION.md (wave 3, checkpoints, EXT-02/EXT-03)
+- [ ] 88-04-PLAN.md — Cross-repo trustedgelabs-website product-name sweep + SealVerifier rename + live-preview check (wave 1, checkpoints, EXT-04)
 **UI hint**: yes
 
 ### Phase 82: Product Landing Page (Punted — post-rename)
@@ -114,7 +120,13 @@ Plans:
   2. The page includes a copy-pasteable quick start showing how to install the Sealedge CLI and run its attestation command in three or fewer commands
   3. The page links directly to the live public verifier so a visitor can verify an attestation without leaving the page context
   4. The page links to the GitHub Action marketplace listing so a visitor can add attestation to their own CI immediately
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 88-01-PLAN.md — Action source + monorepo folder rename + REQUIREMENTS amendment (wave 1, autonomous, EXT-02/EXT-03)
+- [ ] 88-02-PLAN.md — ci.yml release-job extension (seal + seal.sha256 upload) + dogfood conversion to @v2 (wave 2, autonomous, EXT-02)
+- [ ] 88-03-PLAN.md — External gh repo rename + @v2 tag cut + Marketplace check + 88-VERIFICATION.md (wave 3, checkpoints, EXT-02/EXT-03)
+- [ ] 88-04-PLAN.md — Cross-repo trustedgelabs-website product-name sweep + SealVerifier rename + live-preview check (wave 1, checkpoints, EXT-04)
 **UI hint**: yes
 
 ### Phase 83: Crate & Binary Rename
@@ -215,7 +227,13 @@ Plans:
   1. A new GitHub Action repo exists under sealedge naming and is published to the GitHub Marketplace with equivalent functionality to the old `attest-sbom-action`, including SHA256 checksum verification of the downloaded binary (separate repo work — cross-repo deliverable)
   2. The old `TrustEdge-Labs/attest-sbom-action` marketplace listing is marked deprecated and its README redirects readers to the new listing; existing consumers of `@v1` are not silently broken but are clearly told to migrate
   3. Product-page content on `trustedgelabs.com` (served from the `trustedgelabs-website` repo, which itself is not renamed) advertises the product as "Sealedge" — any in-repo website-content files referencing the product name are updated
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 88-01-PLAN.md — Action source + monorepo folder rename + REQUIREMENTS amendment (wave 1, autonomous, EXT-02/EXT-03)
+- [ ] 88-02-PLAN.md — ci.yml release-job extension (seal + seal.sha256 upload) + dogfood conversion to @v2 (wave 2, autonomous, EXT-02)
+- [ ] 88-03-PLAN.md — External gh repo rename + @v2 tag cut + Marketplace check + 88-VERIFICATION.md (wave 3, checkpoints, EXT-02/EXT-03)
+- [ ] 88-04-PLAN.md — Cross-repo trustedgelabs-website product-name sweep + SealVerifier rename + live-preview check (wave 1, checkpoints, EXT-04)
 
 ### Phase 89: Final Validation
 **Goal**: End-to-end proof that nothing functional regressed during the rebrand — every test, every CI workflow, and every runtime deployment target works under the new names.
