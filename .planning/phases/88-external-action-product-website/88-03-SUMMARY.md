@@ -175,7 +175,10 @@ None - no external service configuration required by this plan.
 
 - **Phase 89 (Final Validation):** Phase 89's first green post-v6.0.0 release run proves end-to-end function of the dogfooded `@v2` action (D-11, D-14). If that run succeeds, @v2 is implicitly smoke-tested in production.
 - **Phase 88 close (orchestrator):** ROADMAP.md Phase 88 goal text + success criterion #1 need a one-line amendment to match the amended EXT-02/EXT-03 (pre-amendment wording mentions "published to the GitHub Marketplace" / "old listing marked deprecated"; both conflict with the rename-in-place approach + Marketplace deferral). Tracked as VERIFICATION.md Deferred Finding #3.
-- **Post-plan-close (this session):** Restore the user's stashed WIP via `git stash pop` — straggler rebrand edits on `web/demo/`, `web/verify/`, and `crates/experimental/pubky/`. If pop conflicts, note in the plan-close message.
+- **Post-plan-close (this session):** Attempted `git stash pop` to restore user's stashed WIP (straggler rebrand edits on `web/demo/`, `web/verify/`, and `crates/experimental/pubky/`). **Pop failed with merge conflict on `.claude/settings.local.json`** — the stashed version would overwrite uncommitted working-tree changes in that file. **The stash entry is preserved** (`stash@{0}`) — no data loss. Resolve manually when convenient:
+  1. Decide whether to keep the working-tree `.claude/settings.local.json` or the stashed version (`git stash show -p stash@{0} -- .claude/settings.local.json`)
+  2. Either commit or discard the working-tree `.claude/settings.local.json`, then re-run `git stash pop`
+  3. The stash contains the intended straggler rebrand edits — restoring it is worth doing before Phase 89 picks up.
 
 **Deferred (not blocking):**
 
