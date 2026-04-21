@@ -1,6 +1,8 @@
-# TrustEdge SBOM Attestation Action
+# Sealedge SBOM Attestation Action
 
-> Attest a binary artifact with its CycloneDX SBOM using TrustEdge — one YAML line, cryptographic proof.
+> **Renamed from `TrustEdge-Labs/attest-sbom-action`.** This repo was renamed in v6.0 to match the Sealedge product name. `@v1` stays frozen as the pre-rebrand behavior; `@v2+` uses Sealedge binary/URL naming. GitHub's built-in 301 redirect covers existing `uses: TrustEdge-Labs/attest-sbom-action@v1` references.
+
+> Attest a binary artifact with its CycloneDX SBOM using Sealedge — one YAML line, cryptographic proof.
 
 ## Usage
 
@@ -19,7 +21,7 @@ key is embedded in the attestation file, so verification is self-contained.
 
 - name: Attest SBOM
   id: attest
-  uses: TrustEdge-Labs/attest-sbom-action@v1
+  uses: TrustEdge-Labs/sealedge-attest-sbom-action@v2
   with:
     binary: ./target/release/my-app
     sbom: sbom.cdx.json
@@ -32,7 +34,7 @@ across builds — useful when you want attestations traceable to the same device
 
 ```yaml
 - name: Restore signing key
-  run: echo "${{ secrets.TRUSTEDGE_KEY }}" | base64 -d > build.key
+  run: echo "${{ secrets.SEALEDGE_KEY }}" | base64 -d > build.key
 
 - name: Generate SBOM
   uses: anchore/sbom-action@v0
@@ -43,12 +45,12 @@ across builds — useful when you want attestations traceable to the same device
 
 - name: Attest SBOM
   id: attest
-  uses: TrustEdge-Labs/attest-sbom-action@v1
+  uses: TrustEdge-Labs/sealedge-attest-sbom-action@v2
   with:
     binary: ./target/release/my-app
     sbom: sbom.cdx.json
     key: ./build.key
-    trst-version: 'v4.0.0'
+    seal-version: 'v6.0.0'
 
 - name: Upload attestation
   env:
@@ -59,18 +61,18 @@ across builds — useful when you want attestations traceable to the same device
       --clobber
 ```
 
-To generate a key for the `TRUSTEDGE_KEY` secret, run locally:
+To generate a key for the `SEALEDGE_KEY` secret, run locally:
 
 ```bash
-trst keygen --out-key build.key --out-pub build.pub --unencrypted
-base64 -w0 build.key   # paste this as TRUSTEDGE_KEY secret
+seal keygen --out-key build.key --out-pub build.pub --unencrypted
+base64 -w0 build.key   # paste this as SEALEDGE_KEY secret
 ```
 
 ## What you get
 
 The action writes a `.se-attestation.json` file to `$RUNNER_TEMP` and exposes its path
 via `steps.<id>.outputs.attestation-path`. This file is a local cryptographic proof — no
-network calls are made. To get a signed receipt from the TrustEdge platform, POST the
+network calls are made. To get a signed receipt from the Sealedge platform, POST the
 file to your platform instance (optional follow-on step).
 
 ## Inputs
@@ -80,7 +82,7 @@ file to your platform instance (optional follow-on step).
 | `binary` | yes | — | Path to the binary artifact to attest |
 | `sbom` | yes | — | Path to CycloneDX JSON SBOM file |
 | `key` | no | `''` | Path to Ed25519 device key file. Generates an ephemeral keypair when not provided. |
-| `trst-version` | no | `'latest'` | TrustEdge release version to download (e.g., `v4.0.0`). |
+| `seal-version` | no | `'latest'` | Sealedge release version to download (e.g., `v6.0.0`). |
 
 ## Outputs
 
@@ -90,9 +92,9 @@ file to your platform instance (optional follow-on step).
 
 ## How it works
 
-1. Downloads the `trst` binary from [TrustEdge-Labs/trustedge releases](https://github.com/TrustEdge-Labs/trustedge/releases) and verifies its SHA256 checksum (skips verification with a warning if no checksum file is present in the release).
+1. Downloads the `seal` binary from [TrustEdge-Labs/sealedge releases](https://github.com/TrustEdge-Labs/sealedge/releases) and verifies its SHA256 checksum (skips verification with a warning if no checksum file is present in the release).
 2. Generates an ephemeral Ed25519 keypair (unless you provide a persistent `key`).
-3. Runs `trst attest-sbom` to create a cryptographically signed attestation that binds:
+3. Runs `seal attest-sbom` to create a cryptographically signed attestation that binds:
    - The binary artifact (via BLAKE3 hash)
    - The CycloneDX SBOM (via BLAKE3 hash)
    - Ed25519 signature over the attestation payload
@@ -103,24 +105,24 @@ file to your platform instance (optional follow-on step).
 Verify an attestation locally:
 
 ```bash
-trst verify-attestation my-app.se-attestation.json \
+seal verify-attestation my-app.se-attestation.json \
   --device-pub "ed25519:..." \
   --binary ./my-app \
   --sbom sbom.cdx.json
 ```
 
-Or submit to the public TrustEdge verifier:
+Or submit to the public Sealedge verifier:
 
 ```bash
-curl -X POST https://verify.trustedge.dev/v1/verify-attestation \
+curl -X POST https://verify.sealedge.dev/v1/verify-attestation \
   -H "Content-Type: application/json" \
   -d @my-app.se-attestation.json
 ```
 
 ## Links
 
-- [TrustEdge repository](https://github.com/TrustEdge-Labs/trustedge)
-- [TrustEdge public verifier](https://verify.trustedge.dev)
+- [Sealedge repository](https://github.com/TrustEdge-Labs/sealedge)
+- [Sealedge public verifier](https://verify.sealedge.dev)
 - [CycloneDX SBOM specification](https://cyclonedx.org/)
 - [anchore/sbom-action](https://github.com/anchore/sbom-action)
 
