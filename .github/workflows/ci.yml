@@ -187,6 +187,19 @@ jobs:
       - name: Build seal binary
         run: cargo build -p sealedge-seal-cli --release --locked
 
+      - name: Compute seal binary SHA256 checksum
+        run: |
+          sha256sum ./target/release/seal | awk '{print $1 "  seal"}' > seal.sha256
+
+      - name: Upload seal binary + checksum to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.ref_name }}" \
+            ./target/release/seal \
+            seal.sha256 \
+            --clobber
+
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
@@ -195,28 +208,17 @@ jobs:
           output-file: seal-sbom.cdx.json
           upload-artifact: false
 
-      - name: Generate ephemeral Ed25519 keypair
-        run: |
-          ./target/release/seal keygen \
-            --out-key ephemeral.key \
-            --out-pub build.pub \
-            --unencrypted
+      - name: Attest SBOM (dogfood sealedge-attest-sbom-action)
+        id: attest
+        uses: TrustEdge-Labs/sealedge-attest-sbom-action@v2  # TODO: pin to commit SHA after first @v2.0.0 tag (Plan 03)
+        with:
+          binary: ./target/release/seal
+          sbom: seal-sbom.cdx.json
 
-      - name: Create SBOM attestation
-        run: |
-          ./target/release/seal attest-sbom \
-            --binary ./target/release/seal \
-            --sbom seal-sbom.cdx.json \
-            --device-key ephemeral.key \
-            --device-pub build.pub \
-            --out seal.te-attestation.json \
-            --unencrypted
-
-      - name: Upload attestation assets
+      - name: Upload attestation to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ github.ref_name }}" \
-            seal.te-attestation.json \
-            build.pub \
+            "${{ steps.attest.outputs.attestation-path }}" \
             --clobber
