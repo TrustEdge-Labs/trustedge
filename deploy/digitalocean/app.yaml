@@ -15,7 +15,7 @@ services:
     dockerfile_path: deploy/digitalocean/Dockerfile
     source_dir: /
     github:
-      repo: TrustEdge-Labs/trustedge
+      repo: TrustEdge-Labs/sealedge
       branch: main
       deploy_on_push: true
     instance_size_slug: basic-xxs
