@@ -6,7 +6,7 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! TrustEdge Platform Server — thin entry point for the Axum HTTP service.
+//! Sealedge Platform Server — thin entry point for the Axum HTTP service.
 //!
 //! All routing logic lives in `sealedge_platform::http::create_router`. This binary
 //! is responsible only for: CLI parsing, env config loading, AppState wiring,
@@ -22,7 +22,7 @@ use tokio::sync::RwLock;
 #[cfg(feature = "postgres")]
 use sealedge_platform::database::{create_connection_pool, run_migrations};
 
-/// TrustEdge Platform Server — boots the TrustEdge platform HTTP service.
+/// Sealedge Platform Server — boots the Sealedge platform HTTP service.
 #[derive(Parser)]
 #[command(
     name = "sealedge-platform-server",

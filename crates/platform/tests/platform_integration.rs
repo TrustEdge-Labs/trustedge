@@ -34,7 +34,7 @@ use uuid::Uuid;
 
 async fn setup_test_db() -> (PgPool, Uuid, String) {
     let database_url = std::env::var("TEST_DATABASE_URL").unwrap_or_else(|_| {
-        "postgres://postgres:password@localhost:5432/trustedge_test".to_string()
+        "postgres://postgres:password@localhost:5432/sealedge_test".to_string()
     });
 
     let pool = create_connection_pool(&database_url).await.unwrap();

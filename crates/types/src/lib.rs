@@ -6,9 +6,9 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! Shared wire types for TrustEdge platform services.
+//! Shared wire types for Sealedge platform services.
 //!
-//! This crate provides the canonical type definitions used across TrustEdge
+//! This crate provides the canonical type definitions used across Sealedge
 //! services for verification, receipts, and policy. Types are serializable
 //! via serde and have JSON schema support via schemars.
 //!

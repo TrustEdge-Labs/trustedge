@@ -6,7 +6,7 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! Axum router composition for the TrustEdge Platform HTTP layer.
+//! Axum router composition for the Sealedge Platform HTTP layer.
 //!
 //! Routes:
 //!   POST  /v1/verify              — verify archive (always available)
@@ -45,7 +45,7 @@ pub fn build_base_router() -> Router<AppState> {
         .route("/verify", get(verify_page_handler))
 }
 
-/// Compose the full Axum router for the TrustEdge Platform service.
+/// Compose the full Axum router for the Sealedge Platform service.
 ///
 /// Applies:
 /// - `RequestBodyLimitLayer` (2 MB) on all routes to prevent body-flood DoS.

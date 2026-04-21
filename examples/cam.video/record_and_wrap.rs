@@ -17,7 +17,7 @@ use std::error::Error;
 use std::fs;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    println!("TrustEdge P0 cam.video Example: Record and Wrap");
+    println!("Sealedge P0 cam.video Example: Record and Wrap");
 
     // Generate device keypair
     let device_keypair = DeviceKeypair::generate()?;

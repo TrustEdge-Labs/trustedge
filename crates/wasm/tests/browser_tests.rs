@@ -6,7 +6,7 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! Browser Integration Tests for TrustEdge WASM
+//! Browser Integration Tests for Sealedge WASM
 //!
 //! These tests run in actual browser environments using wasm-bindgen-test.
 //! They verify that the WASM module functions correctly in browser contexts
@@ -28,13 +28,13 @@ fn test_wasm_module_initialization() {
 
     // Test basic functionality works
     let result = test_basic_functionality();
-    assert_eq!(result, "TrustEdge WASM is working correctly!");
+    assert_eq!(result, "Sealedge WASM is working correctly!");
 }
 
 #[wasm_bindgen_test]
 fn test_browser_crypto_operations() {
     // Test AES-256-GCM encryption/decryption in browser environment
-    let test_data = "Hello, TrustEdge WASM in browser!";
+    let test_data = "Hello, Sealedge WASM in browser!";
     let key = generate_key();
 
     // Validate key generation

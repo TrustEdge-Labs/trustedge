@@ -5,7 +5,7 @@
 //
 /// Project: sealedge — Privacy and trust at the edge.
 //
-/// transport/mod.rs - Transport abstraction for TrustEdge
+/// transport/mod.rs - Transport abstraction for Sealedge
 //
 /// Provides pluggable transport implementations (TCP, QUIC) with a unified interface.
 use crate::NetworkChunk;
@@ -55,7 +55,7 @@ pub trait Transport: Send + Sync {
 ///   with margin while preventing indefinite blocking.
 /// - **Idle timeout (5 min):** Reclaims connections that completed their transfer but
 ///   weren't explicitly closed. Shorter than typical HTTP keep-alive (which serves
-///   connection reuse) because TrustEdge connections are single-purpose data transfers.
+///   connection reuse) because Sealedge connections are single-purpose data transfers.
 ///   Set to 0 to disable (not recommended in production).
 #[derive(Debug, Clone)]
 pub struct TransportConfig {

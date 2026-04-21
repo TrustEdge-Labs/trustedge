@@ -29,7 +29,7 @@ use sealedge_core::{
 };
 use serde::Serialize;
 use std::time::Instant;
-// Shared wire types from trustedge-types (accessed via trustedge-core re-export or directly).
+// Shared wire types from sealedge-types (accessed via sealedge-core re-export or directly).
 // SegmentRef, VerifyOptions, VerifyRequest use the shared canonical definitions.
 use sealedge_types::verification::{SegmentRef, VerifyOptions, VerifyRequest};
 
@@ -96,7 +96,7 @@ struct VerifyReport {
 }
 
 #[derive(Parser, Debug)]
-#[command(author, version, about = "TrustEdge .seal archival tool", long_about = None)]
+#[command(author, version, about = "Sealedge .seal archival tool", long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,

@@ -6,13 +6,13 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! Unified error hierarchy for the TrustEdge workspace.
+//! Unified error hierarchy for the Sealedge workspace.
 
 use thiserror::Error;
 
 use crate::point_attestation::PointAttestationError;
 
-/// Top-level unified error type for TrustEdge operations
+/// Top-level unified error type for Sealedge operations
 #[derive(Error, Debug)]
 pub enum TrustEdgeError {
     #[error("Cryptographic operation failed")]

@@ -1549,7 +1549,7 @@ fn test_key_manager_creation_and_jwks() -> Result<()> {
 fn test_jwks_key_path_custom() -> Result<()> {
     // Create a unique temp directory for this test
     let dir =
-        std::env::temp_dir().join(format!("trustedge_test_{}", uuid::Uuid::new_v4().simple()));
+        std::env::temp_dir().join(format!("sealedge_test_{}", uuid::Uuid::new_v4().simple()));
     std::fs::create_dir_all(&dir)?;
     let key_path = dir.join("signing_key.json");
 
@@ -1613,7 +1613,7 @@ fn test_signing_key_permissions() -> Result<()> {
     use std::os::unix::fs::PermissionsExt;
 
     let dir = std::env::temp_dir().join(format!(
-        "trustedge_perm_test_{}",
+        "sealedge_perm_test_{}",
         uuid::Uuid::new_v4().simple()
     ));
     std::fs::create_dir_all(&dir)?;
@@ -1638,7 +1638,7 @@ fn test_signing_key_permissions() -> Result<()> {
 #[test]
 fn test_jwks_colocated_with_signing_key() -> Result<()> {
     let dir = std::env::temp_dir().join(format!(
-        "trustedge_colocate_test_{}",
+        "sealedge_colocate_test_{}",
         uuid::Uuid::new_v4().simple()
     ));
     std::fs::create_dir_all(&dir)?;

@@ -2,7 +2,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! High-level Envelope API - The "steering wheel" for TrustEdge cryptography
+//! High-level Envelope API - The "steering wheel" for Sealedge cryptography
 //!
 //! This module provides a clean, simple interface over the complex NetworkChunk/Record system.
 //! Think of it as the driver interface that hides the engine complexity.

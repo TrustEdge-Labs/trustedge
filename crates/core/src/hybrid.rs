@@ -2,7 +2,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! Hybrid Encryption API for TrustEdge
+//! Hybrid Encryption API for Sealedge
 //!
 //! This module provides the high-level API for hybrid encryption that combines
 //! the efficiency of symmetric encryption with the convenience of public key cryptography.
@@ -68,7 +68,7 @@ impl SymmetricKey {
 /// The structure of a hybrid-encrypted envelope
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HybridEnvelope {
-    /// Magic number identifying this as a TrustEdge hybrid envelope
+    /// Magic number identifying this as a Sealedge hybrid envelope
     pub magic: [u8; 4],
     /// Version of the envelope format
     pub version: u8,
