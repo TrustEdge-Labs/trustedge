@@ -108,7 +108,7 @@ Plans:
 - [x] 88-01-PLAN.md — Action source + monorepo folder rename + REQUIREMENTS amendment (wave 1, autonomous, EXT-02/EXT-03)
 - [ ] 88-02-PLAN.md — ci.yml release-job extension (seal + seal.sha256 upload) + dogfood conversion to @v2 (wave 2, autonomous, EXT-02)
 - [ ] 88-03-PLAN.md — External gh repo rename + @v2 tag cut + Marketplace check + 88-VERIFICATION.md (wave 3, checkpoints, EXT-02/EXT-03)
-- [ ] 88-04-PLAN.md — Cross-repo trustedgelabs-website product-name sweep + SealVerifier rename + live-preview check (wave 1, checkpoints, EXT-04)
+- [x] 88-04-PLAN.md — Cross-repo trustedgelabs-website product-name sweep + SealVerifier rename + live-preview check (wave 1, checkpoints, EXT-04)
 **UI hint**: yes
 
 ### Phase 82: Product Landing Page (Punted — post-rename)
@@ -126,7 +126,7 @@ Plans:
 - [x] 88-01-PLAN.md — Action source + monorepo folder rename + REQUIREMENTS amendment (wave 1, autonomous, EXT-02/EXT-03)
 - [ ] 88-02-PLAN.md — ci.yml release-job extension (seal + seal.sha256 upload) + dogfood conversion to @v2 (wave 2, autonomous, EXT-02)
 - [ ] 88-03-PLAN.md — External gh repo rename + @v2 tag cut + Marketplace check + 88-VERIFICATION.md (wave 3, checkpoints, EXT-02/EXT-03)
-- [ ] 88-04-PLAN.md — Cross-repo trustedgelabs-website product-name sweep + SealVerifier rename + live-preview check (wave 1, checkpoints, EXT-04)
+- [x] 88-04-PLAN.md — Cross-repo trustedgelabs-website product-name sweep + SealVerifier rename + live-preview check (wave 1, checkpoints, EXT-04)
 **UI hint**: yes
 
 ### Phase 83: Crate & Binary Rename
@@ -233,7 +233,7 @@ Plans:
 - [x] 88-01-PLAN.md — Action source + monorepo folder rename + REQUIREMENTS amendment (wave 1, autonomous, EXT-02/EXT-03)
 - [ ] 88-02-PLAN.md — ci.yml release-job extension (seal + seal.sha256 upload) + dogfood conversion to @v2 (wave 2, autonomous, EXT-02)
 - [ ] 88-03-PLAN.md — External gh repo rename + @v2 tag cut + Marketplace check + 88-VERIFICATION.md (wave 3, checkpoints, EXT-02/EXT-03)
-- [ ] 88-04-PLAN.md — Cross-repo trustedgelabs-website product-name sweep + SealVerifier rename + live-preview check (wave 1, checkpoints, EXT-04)
+- [x] 88-04-PLAN.md — Cross-repo trustedgelabs-website product-name sweep + SealVerifier rename + live-preview check (wave 1, checkpoints, EXT-04)
 
 ### Phase 89: Final Validation
 **Goal**: End-to-end proof that nothing functional regressed during the rebrand — every test, every CI workflow, and every runtime deployment target works under the new names.
