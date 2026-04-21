@@ -36,8 +36,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Ext (external surfaces)
 
 - [ ] **EXT-01**: GitHub monorepo renamed `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` with GitHub's automatic redirect enabled; local git remotes updated
-- [ ] **EXT-02**: New GitHub Action repo created under sealedge naming and published to GitHub Marketplace (equivalent functionality to current `attest-sbom-action`); SHA256 checksum verification preserved
-- [ ] **EXT-03**: Old `TrustEdge-Labs/attest-sbom-action` marketplace listing marked deprecated with README redirect to the new listing
+- [ ] **EXT-02**: The `TrustEdge-Labs/attest-sbom-action` repo is renamed to `TrustEdge-Labs/sealedge-attest-sbom-action` via `gh repo rename`; action source references sealedge/seal; a new `@v2` tag ships the rebranded action; SHA256 checksum verification of the downloaded binary is preserved
+- [ ] **EXT-03**: GitHub's built-in 301 redirect covers existing `uses: TrustEdge-Labs/attest-sbom-action@v1` references; the pre-rebrand `@v1` tag stays frozen; the post-rename README carries a short notice pointing readers to `@v2` and the renamed repo
 - [ ] **EXT-04**: Product references on `trustedgelabs.com` updated — the labs brand stays, but the advertised product is now "Sealedge"; any in-repo website content (trustedgelabs-website references) updated
 
 ### Valid (verify nothing broke)
