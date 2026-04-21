@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Portfolio Polish
 status: executing
-stopped_at: v6.0 roadmap created — phases 83-89 defined, awaiting Phase 83 planning
-last_updated: "2026-04-20T04:43:47.476Z"
-last_activity: 2026-04-20 -- Phase 86 planning complete
+stopped_at: Phase 86 Documentation Sweep complete — ready for Phase 87 GitHub Repository Rename
+last_updated: "2026-04-20T12:00:00.000Z"
+last_activity: 2026-04-20 -- Phase 86 complete (5 plans shipped)
 progress:
-  total_phases: 4
-  completed_phases: 2
-  total_plans: 21
-  completed_plans: 10
-  percent: 48
+  total_phases: 7
+  completed_phases: 4
+  total_plans: 26
+  completed_plans: 26
+  percent: 57
 ---
 
 <!--
@@ -28,14 +28,14 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 See: .planning/PROJECT.md (updated 2026-04-18)
 
 **Core value:** Prove that data from an edge device has not been tampered with — from capture to verification — using cryptographic signatures, continuity chains, and verifiable receipts.
-**Current focus:** Phase 85 — Code Sweep (Headers, Text, Metadata)
+**Current focus:** Phase 87 — GitHub Repository Rename
 
 ## Current Position
 
-Phase: 85 (code-sweep-headers-text-metadata) — COMPLETE
-Plan: All 6 plans complete (85-01/02/03/04/05/06) + verifier gap fixes (wiring.rs JWT audience test + WASM crates swept)
-Status: Ready to execute
-Last activity: 2026-04-20 -- Phase 86 planning complete
+Phase: 87 (GitHub Repository Rename) — READY
+Plan: awaiting discuss-phase
+Status: Phase 86 complete; Phase 87 is next
+Last activity: 2026-04-20 -- Phase 86 complete (5 plans shipped)
 
 ## Performance Metrics
 
@@ -45,7 +45,7 @@ Last activity: 2026-04-20 -- Phase 86 planning complete
 - v5.0: 2 phases shipped (79-80), 2 punted (81-82 → post-rename, will execute after Phase 89)
 - v6.0: 2 phases shipped (83, 84)
 
-**v6.0 (current):** 2/7 phases — Phases 83-84 done, Phase 85 next
+**v6.0 (current):** 4/7 phases — Phases 83-86 done, Phase 87 next
 
 ## Accumulated Context
 

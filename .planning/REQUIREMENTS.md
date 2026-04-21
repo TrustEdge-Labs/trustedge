@@ -28,10 +28,10 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Docs (documentation sweep)
 
-- [ ] **DOCS-01**: Root project docs updated — `README.md`, `CLAUDE.md`, `DEPENDENCIES.md`, `SECURITY.md` (if present) reflect sealedge throughout
-- [ ] **DOCS-02**: Developer docs directory swept — `docs/architecture.md`, `docs/cli.md`, `docs/development.md`, `docs/testing.md`, `docs/user/*` updated for new names
-- [ ] **DOCS-03**: Code doc comments (`///`, `//!`) and module docstrings updated — `cargo doc` renders sealedge everywhere
-- [ ] **DOCS-04**: Scripts and examples updated — `scripts/*.sh`, `examples/cam.video/*`, demo scripts invoke new binary names and reference new file extension
+- [x] **DOCS-01**: Root project docs updated — `README.md`, `CLAUDE.md`, `DEPENDENCIES.md`, `SECURITY.md` (if present) reflect sealedge throughout
+- [x] **DOCS-02**: Developer docs directory swept — `docs/architecture.md`, `docs/cli.md`, `docs/development.md`, `docs/testing.md`, `docs/user/*` updated for new names
+- [x] **DOCS-03**: Code doc comments (`///`, `//!`) and module docstrings updated — `cargo doc` renders sealedge everywhere
+- [x] **DOCS-04**: Scripts and examples updated — `scripts/*.sh`, `examples/cam.video/*`, demo scripts invoke new binary names and reference new file extension
 
 ### Ext (external surfaces)
 
@@ -80,10 +80,10 @@ Explicit exclusions for this milestone:
 | REBRAND-05  | Phase 85 — Code Sweep (Headers, Text, Metadata) | Pending |
 | REBRAND-06  | Phase 85 — Code Sweep (Headers, Text, Metadata) | Pending |
 | REBRAND-07  | Phase 85 — Code Sweep (Headers, Text, Metadata) | Pending |
-| DOCS-01     | Phase 86 — Documentation Sweep | Pending |
-| DOCS-02     | Phase 86 — Documentation Sweep | Pending |
-| DOCS-03     | Phase 86 — Documentation Sweep | Pending |
-| DOCS-04     | Phase 86 — Documentation Sweep | Pending |
+| DOCS-01     | Phase 86 — Documentation Sweep | Complete |
+| DOCS-02     | Phase 86 — Documentation Sweep | Complete |
+| DOCS-03     | Phase 86 — Documentation Sweep | Complete |
+| DOCS-04     | Phase 86 — Documentation Sweep | Complete |
 | EXT-01      | Phase 87 — GitHub Repository Rename | Pending |
 | EXT-02      | Phase 88 — External Action & Product Website | Pending |
 | EXT-03      | Phase 88 — External Action & Product Website | Pending |
