@@ -19,9 +19,9 @@ use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "sealedge-pubky")]
-#[command(about = "TrustEdge Pubky CLI - Decentralized key management and hybrid encryption")]
+#[command(about = "Sealedge Pubky CLI - Decentralized key management and hybrid encryption")]
 #[command(long_about = "
-TrustEdge Pubky CLI provides decentralized key management and hybrid encryption
+Sealedge Pubky CLI provides decentralized key management and hybrid encryption
 using the Pubky network for key resolution. This enables secure communication
 without centralized key infrastructure.
 
@@ -38,13 +38,13 @@ Security Model:
 
 Examples:
   # Generate a new identity
-  trustedge-pubky generate --output my-key.txt
+  sealedge-pubky generate --output my-key.txt
   
   # Encrypt a file for someone
-  trustedge-pubky encrypt --input document.pdf --output document.seal --recipient <pubky-id>
+  sealedge-pubky encrypt --input document.pdf --output document.seal --recipient <pubky-id>
   
   # Decrypt a received file
-  trustedge-pubky decrypt --input document.seal --output document.pdf --key my-key.txt
+  sealedge-pubky decrypt --input document.seal --output document.pdf --key my-key.txt
 ")]
 #[command(version)]
 struct Args {
@@ -87,7 +87,7 @@ enum Commands {
         id_only: bool,
     },
 
-    /// Resolve a Pubky ID to get the TrustEdge public key
+    /// Resolve a Pubky ID to get the Sealedge public key
     Resolve {
         /// Pubky ID to resolve (hex-encoded)
         pubky_id: String,
@@ -279,7 +279,7 @@ fn generate_keypair(output: Option<PathBuf>, seed: Option<String>, id_only: bool
     } else {
         println!("● Use --output to save the private key to a file");
         println!("⚠ Without saving, this identity cannot be recovered!");
-        println!("   Example: trustedge-pubky generate --output my-key.txt");
+        println!("   Example: sealedge-pubky generate --output my-key.txt");
     }
 
     Ok(())
@@ -294,7 +294,7 @@ fn resolve_key(pubky_id: String, output: Option<PathBuf>, info: bool) -> Result<
         .context("Failed to resolve Pubky ID")?;
 
     if info {
-        println!("Resolved TrustEdge Public Key:");
+        println!("Resolved Sealedge Public Key:");
         println!("  Pubky ID: {}", pubky_id);
         println!("  Algorithm: {:?}", public_key.algorithm);
         println!("  Key Size: {} bytes", public_key.key_bytes.len());
@@ -416,7 +416,7 @@ fn encrypt_data(
 
     println!("\n● Next steps:");
     println!("   • Send {} to the recipient", output.display());
-    println!("   • Recipient can decrypt with: trustedge-pubky decrypt --input {} --output <file> --key <their-key>", output.display());
+    println!("   • Recipient can decrypt with: sealedge-pubky decrypt --input {} --output <file> --key <their-key>", output.display());
 
     Ok(())
 }

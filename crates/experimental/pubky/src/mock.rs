@@ -7,7 +7,7 @@
 //! This module provides a mock implementation that doesn't require actual
 //! network connectivity, useful for testing and development.
 
-use crate::{PubkyAdapterError, PublicKeyData, TrustEdgeKeyRecord};
+use crate::{PubkyAdapterError, PublicKeyData, SealedgeKeyRecord};
 use anyhow::Result;
 use sealedge_core::backends::{
     BackendCapabilities, BackendInfo, CryptoOperation, CryptoResult, KeyMetadata, UniversalBackend,
@@ -53,7 +53,7 @@ impl MockPubkyBackend {
 
     /// Publish a public key (stores in mock storage)
     pub fn publish_public_key(&self, public_key: &PublicKey) -> Result<String, PubkyAdapterError> {
-        let record = TrustEdgeKeyRecord {
+        let record = SealedgeKeyRecord {
             public_key: PublicKeyData {
                 algorithm: format!("{:?}", public_key.algorithm),
                 key_bytes: hex::encode(&public_key.key_bytes),
@@ -82,9 +82,9 @@ impl MockPubkyBackend {
             .get(pubky_id)
             .ok_or_else(|| PubkyAdapterError::KeyResolutionFailed(pubky_id.to_string()))?;
 
-        let record: TrustEdgeKeyRecord = serde_json::from_str(record_json)?;
+        let record: SealedgeKeyRecord = serde_json::from_str(record_json)?;
 
-        // Convert back to TrustEdge PublicKey
+        // Convert back to Sealedge PublicKey
         let algorithm = match record.public_key.algorithm.as_str() {
             "Ed25519" => sealedge_core::backends::AsymmetricAlgorithm::Ed25519,
             "EcdsaP256" => sealedge_core::backends::AsymmetricAlgorithm::EcdsaP256,

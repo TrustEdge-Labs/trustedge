@@ -2,9 +2,9 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! TrustEdge Pubky Integration
+//! Sealedge Pubky Integration
 //!
-//! This crate provides hybrid encryption capabilities for TrustEdge using the Pubky protocol
+//! This crate provides hybrid encryption capabilities for Sealedge using the Pubky protocol
 //! for decentralized key discovery. It implements:
 //!
 //! - Dual key architecture (Ed25519 identity + X25519 encryption)

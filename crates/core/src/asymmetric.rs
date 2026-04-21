@@ -2,10 +2,10 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! Asymmetric Cryptography Primitives for TrustEdge
+//! Asymmetric Cryptography Primitives for Sealedge
 //!
 //! This module provides the fundamental building blocks for public key cryptography
-//! in TrustEdge, including key generation, key exchange, and hybrid encryption.
+//! in Sealedge, including key generation, key exchange, and hybrid encryption.
 
 use crate::backends::AsymmetricAlgorithm;
 use anyhow::{Context, Result};

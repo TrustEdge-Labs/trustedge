@@ -13,7 +13,7 @@ use std::fs;
 use sealedge_core::{read_archive, validate_archive, verify_manifest, ProfileMetadata};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    println!("TrustEdge P0 cam.video Example: Verify CLI");
+    println!("Sealedge P0 cam.video Example: Verify CLI");
 
     // Parse command line arguments
     let args: Vec<String> = env::args().collect();

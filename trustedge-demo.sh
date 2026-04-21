@@ -3,7 +3,7 @@
 clear
 
 echo "╔════════════════════════════════════════════════════════════════╗"
-echo "║  TrustEdge: Hardware-Backed Security for IoT Devices          ║"
+echo "║  Sealedge: Hardware-Backed Security for IoT Devices          ║"
 echo "║  Demo: YubiKey PIV Integration via PKCS#11                     ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
 echo ""

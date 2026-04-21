@@ -2,7 +2,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! Dual Key Architecture for TrustEdge Pubky Integration
+//! Dual Key Architecture for Sealedge Pubky Integration
 //!
 //! This module implements the dual key system where each identity has:
 //! - Ed25519 key for identity/signing (Pubky identity)
@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
 use zeroize::Zeroize;
 
-/// A dual key pair for TrustEdge Pubky integration
+/// A dual key pair for Sealedge Pubky integration
 ///
 /// This combines an Ed25519 identity key (for Pubky identity and signatures)
 /// with an X25519 encryption key (for ECDH key exchange).

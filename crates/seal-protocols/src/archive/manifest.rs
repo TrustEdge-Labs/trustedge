@@ -1159,7 +1159,7 @@ mod tests {
         if let ProfileMetadata::Log(ref mut meta) = m.metadata {
             meta.started_at = "2025-06-01T00:00:00Z".to_string();
             meta.ended_at = "2025-06-01T00:01:00Z".to_string();
-            meta.application = "trustedge-agent".to_string();
+            meta.application = "sealedge-agent".to_string();
             meta.host = "edge-node-01".to_string();
             meta.log_level = "warn".to_string();
             meta.log_format = "json".to_string();
@@ -1170,7 +1170,7 @@ mod tests {
         let decoded: TrstManifest = serde_json::from_str(&json).unwrap();
 
         if let ProfileMetadata::Log(meta) = decoded.metadata {
-            assert_eq!(meta.application, "trustedge-agent");
+            assert_eq!(meta.application, "sealedge-agent");
             assert_eq!(meta.host, "edge-node-01");
             assert_eq!(meta.log_level, "warn");
             assert_eq!(meta.log_format, "json");
@@ -1379,7 +1379,7 @@ mod tests {
         let json = r#"{
             "started_at": "2025-06-01T00:00:00Z",
             "ended_at": "2025-06-01T00:01:00Z",
-            "application": "trustedge-agent",
+            "application": "sealedge-agent",
             "host": "edge-node-01",
             "log_level": "info",
             "log_format": "json"

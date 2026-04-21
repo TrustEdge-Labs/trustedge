@@ -6,7 +6,7 @@
 # Project: sealedge — Privacy and trust at the edge.
 #
 
-# cargo-audit configuration for TrustEdge
+# cargo-audit configuration for Sealedge
 #
 # This file documents security advisories that cannot be immediately fixed
 # due to upstream dependency constraints or lack of patched versions.
@@ -25,7 +25,7 @@
 ignore = [
     # RUSTSEC-2023-0071: RSA Marvin Attack (timing side-channel in rsa crate)
     # Severity: Medium
-    # Status: MITIGATED — TrustEdge uses OAEP-SHA256 exclusively (v2.2 Phase 45).
+    # Status: MITIGATED — Sealedge uses OAEP-SHA256 exclusively (v2.2 Phase 45).
     # PKCS#1 v1.5 padding was eliminated. The advisory flags the crate-level timing
     # behavior which affects all padding modes, but OAEP is resistant to the practical
     # attack vector (chosen-ciphertext padding oracle). The rsa crate has no patched

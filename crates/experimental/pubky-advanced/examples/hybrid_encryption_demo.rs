@@ -4,7 +4,7 @@
 
 //! Hybrid Encryption Demo
 //!
-//! This example demonstrates the new TrustEdge v2 envelope format with:
+//! This example demonstrates the new Sealedge v2 envelope format with:
 //! - Dual key architecture (Ed25519 + X25519)
 //! - Hybrid encryption (X25519 ECDH + AES-256-GCM)
 //! - Pubky integration for decentralized key discovery
@@ -12,7 +12,7 @@
 use sealedge_pubky_advanced::{DualKeyPair, EnvelopeV2};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🔐 TrustEdge Pubky Hybrid Encryption Demo");
+    println!("🔐 Sealedge Pubky Hybrid Encryption Demo");
     println!("==========================================\n");
 
     // Step 1: Generate dual key pairs for Alice and Bob
@@ -135,7 +135,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
 
     println!("🎉 Demo completed successfully!");
-    println!("   All tests passed - TrustEdge v2 hybrid encryption is working correctly!");
+    println!("   All tests passed - Sealedge v2 hybrid encryption is working correctly!");
 
     Ok(())
 }

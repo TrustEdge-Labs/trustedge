@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("● TrustEdge Pubky Simple Demo (Mock Network)");
+    println!("● Sealedge Pubky Simple Demo (Mock Network)");
     println!("==============================================\n");
 
     // Step 1: Create shared mock storage
@@ -30,13 +30,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("✔ Bob's mock Pubky ID: {}", bob_backend.our_pubky_id());
     println!();
 
-    // Step 2: Generate TrustEdge key pairs
-    println!("● Step 2: Generating TrustEdge key pairs...");
+    // Step 2: Generate Sealedge key pairs
+    println!("● Step 2: Generating Sealedge key pairs...");
     let alice_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)?;
     let bob_keypair = KeyPair::generate(AsymmetricAlgorithm::Rsa2048)?;
 
-    println!("✔ Alice's TrustEdge key: {}", alice_keypair.public.id());
-    println!("✔ Bob's TrustEdge key: {}", bob_keypair.public.id());
+    println!("✔ Alice's Sealedge key: {}", alice_keypair.public.id());
+    println!("✔ Bob's Sealedge key: {}", bob_keypair.public.id());
     println!();
 
     // Step 3: Publish keys to mock network
@@ -98,8 +98,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("🎉 Simple Demo completed successfully!");
     println!("   This demonstrates the clean architecture:");
-    println!("   ✔ trustedge-core: Handles all cryptography");
-    println!("   ✔ trustedge-pubky: Bridges to Pubky network");
+    println!("   ✔ sealedge-core: Handles all cryptography");
+    println!("   ✔ sealedge-pubky: Bridges to Pubky network");
     println!("   ✔ Clean separation of concerns");
     println!("   ✔ Simple, easy-to-use API");
 

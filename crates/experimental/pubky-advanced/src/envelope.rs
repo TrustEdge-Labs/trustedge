@@ -4,7 +4,7 @@
 
 //! Envelope V2 - Hybrid Encryption with Pubky Integration
 //!
-//! This module implements the next generation of TrustEdge envelopes with:
+//! This module implements the next generation of Sealedge envelopes with:
 //! - Hybrid encryption (X25519 ECDH + AES-256-GCM)
 //! - Pubky integration for decentralized key discovery
 //! - Dual key architecture (Ed25519 identity + X25519 encryption)
@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use x25519_dalek::{EphemeralSecret, PublicKey as X25519PublicKey};
 use zeroize::Zeroize;
 
-/// Magic number identifying v2 TrustEdge files
+/// Magic number identifying v2 Sealedge files
 const ENVELOPE_V2_MAGIC: [u8; 4] = *b"TRS2";
 
 /// Version number for v2 envelopes
@@ -55,7 +55,7 @@ pub struct EnvelopeV2 {
 /// Header for V2 envelopes
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct EnvelopeHeaderV2 {
-    /// Magic number identifying this as a TrustEdge v2 file
+    /// Magic number identifying this as a Sealedge v2 file
     pub magic: [u8; 4],
     /// Version number (2)
     pub version: u8,

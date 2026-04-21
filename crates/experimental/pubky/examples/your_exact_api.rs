@@ -58,7 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bob_pubky_id = bob_adapter.publish_public_key(&bob_keypair.public)?;
 
     println!("✅ Bob's Pubky ID: {}", bob_pubky_id);
-    println!("✅ Bob's TrustEdge key: {}", bob_keypair.public.id());
+    println!("✅ Bob's Sealedge key: {}", bob_keypair.public.id());
     println!();
 
     // Demonstrate your exact API
@@ -137,7 +137,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("🎉 Your Exact API Specification Demo Complete!");
     println!("   ✅ Implemented exactly as you specified in Step 3");
-    println!("   ✅ Clean architecture: trustedge-pubky bridges core ↔ network");
+    println!("   ✅ Clean architecture: sealedge-pubky bridges core ↔ network");
     println!("   ✅ Simple API: send_trusted_data(data, recipient_id)");
     println!("   ✅ Automatic key resolution via Pubky network");
     println!("   ✅ Hybrid encryption for best performance + convenience");

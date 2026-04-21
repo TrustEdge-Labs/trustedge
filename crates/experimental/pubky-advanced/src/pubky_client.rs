@@ -2,7 +2,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! Pubky Client for TrustEdge Integration
+//! Pubky Client for Sealedge Integration
 //!
 //! This module provides a client for interacting with the Pubky network
 //! to store and retrieve public keys for decentralized key discovery.
@@ -40,10 +40,10 @@ pub struct PubkyClient {
     keypair: Keypair,
 }
 
-/// Record stored in Pubky for TrustEdge identities
+/// Record stored in Pubky for Sealedge identities
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct TrustEdgeIdentityRecord {
-    /// The TrustEdge identity (dual keys)
+pub struct SealedgeIdentityRecord {
+    /// The Sealedge identity (dual keys)
     pub identity: PubkyIdentity,
     /// Timestamp when this record was created
     pub created_at: u64,
@@ -79,9 +79,9 @@ impl PubkyClient {
         Ok(Self { client, keypair })
     }
 
-    /// Publish a TrustEdge identity to the Pubky network
+    /// Publish a Sealedge identity to the Pubky network
     pub async fn publish_identity(&self, identity: &PubkyIdentity) -> Result<String> {
-        let record = TrustEdgeIdentityRecord {
+        let record = SealedgeIdentityRecord {
             identity: identity.clone(),
             created_at: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -95,7 +95,7 @@ impl PubkyClient {
             serde_json::to_string(&record).context("Failed to serialize identity record")?;
 
         // Store the identity record at a well-known path
-        let path = "/trustedge/identity".to_string();
+        let path = "/sealedge/identity".to_string();
 
         // Use Pubky client to store the record
         // Note: This is a simplified version - actual Pubky API may differ
@@ -110,14 +110,14 @@ impl PubkyClient {
         Ok(identity.pubky_id())
     }
 
-    /// Retrieve a TrustEdge identity from the Pubky network
+    /// Retrieve a Sealedge identity from the Pubky network
     pub async fn get_identity(&self, pubky_id: &str) -> Result<PubkyIdentity> {
         // Parse the pubky ID to get the public key
         let _public_key = PublicKey::try_from(pubky_id)
             .map_err(|e| PubkyError::InvalidIdentity(format!("Invalid pubky ID: {:?}", e)))?;
 
         // Construct the path for the identity record
-        let path = "/trustedge/identity".to_string();
+        let path = "/sealedge/identity".to_string();
 
         // Retrieve the record from the network
         let url = format!("pubky://{}{}", pubky_id, path);
@@ -137,7 +137,7 @@ impl PubkyClient {
         let record_str = String::from_utf8(record_bytes.to_vec())
             .map_err(|e| PubkyError::InvalidIdentity(format!("Invalid UTF-8: {:?}", e)))?;
 
-        let record: TrustEdgeIdentityRecord =
+        let record: SealedgeIdentityRecord =
             serde_json::from_str(&record_str).context("Failed to deserialize identity record")?;
 
         // Verify the identity is valid
@@ -156,7 +156,7 @@ impl PubkyClient {
         identity: &PubkyIdentity,
         metadata: Option<HashMap<String, String>>,
     ) -> Result<()> {
-        let record = TrustEdgeIdentityRecord {
+        let record = SealedgeIdentityRecord {
             identity: identity.clone(),
             created_at: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -169,7 +169,7 @@ impl PubkyClient {
         let record_json =
             serde_json::to_string(&record).context("Failed to serialize identity record")?;
 
-        let path = "/trustedge/identity".to_string();
+        let path = "/sealedge/identity".to_string();
         let record_bytes = record_json.into_bytes();
 
         self.client
@@ -184,7 +184,7 @@ impl PubkyClient {
 
     /// Delete an identity record
     pub async fn delete_identity(&self) -> Result<()> {
-        let path = "/trustedge/identity".to_string();
+        let path = "/sealedge/identity".to_string();
 
         self.client
             .delete(&path)
@@ -237,7 +237,7 @@ impl PubkyClient {
 }
 
 /// Helper functions for working with Pubky identities
-impl TrustEdgeIdentityRecord {
+impl SealedgeIdentityRecord {
     /// Create a new identity record
     pub fn new(identity: PubkyIdentity) -> Self {
         Self {
@@ -282,7 +282,7 @@ mod tests {
         let keys = DualKeyPair::generate();
         let identity = keys.to_pubky_identity(Some("test_user".to_string()));
 
-        let record = TrustEdgeIdentityRecord::new(identity.clone());
+        let record = SealedgeIdentityRecord::new(identity.clone());
 
         assert_eq!(record.identity.pubky_id(), identity.pubky_id());
         assert_eq!(record.version, 1);
@@ -293,7 +293,7 @@ mod tests {
         metadata.insert("role".to_string(), "admin".to_string());
 
         let record_with_metadata =
-            TrustEdgeIdentityRecord::new(identity).with_metadata(metadata.clone());
+            SealedgeIdentityRecord::new(identity).with_metadata(metadata.clone());
 
         assert_eq!(record_with_metadata.metadata, Some(metadata));
     }
@@ -302,11 +302,11 @@ mod tests {
     fn test_record_serialization() {
         let keys = DualKeyPair::generate();
         let identity = keys.to_pubky_identity(Some("test_user".to_string()));
-        let record = TrustEdgeIdentityRecord::new(identity);
+        let record = SealedgeIdentityRecord::new(identity);
 
         // Test JSON serialization
         let json = serde_json::to_string(&record).expect("Failed to serialize");
-        let deserialized: TrustEdgeIdentityRecord =
+        let deserialized: SealedgeIdentityRecord =
             serde_json::from_str(&json).expect("Failed to deserialize");
 
         assert_eq!(record.identity.pubky_id(), deserialized.identity.pubky_id());
@@ -317,7 +317,7 @@ mod tests {
     fn test_record_expiration() {
         let keys = DualKeyPair::generate();
         let identity = keys.to_pubky_identity(Some("test_user".to_string()));
-        let record = TrustEdgeIdentityRecord::new(identity);
+        let record = SealedgeIdentityRecord::new(identity);
 
         // Fresh record should not be expired
         assert!(!record.is_expired(3600)); // 1 hour

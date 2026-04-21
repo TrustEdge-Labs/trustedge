@@ -2,9 +2,9 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! TrustEdge Pubky Adapter
+//! Sealedge Pubky Adapter
 //!
-//! This crate provides a clean bridge between TrustEdge core cryptographic functions
+//! This crate provides a clean bridge between Sealedge core cryptographic functions
 //! and the Pubky decentralized network. It maintains clean architecture by keeping
 //! Pubky network logic separate from the core crypto primitives.
 
@@ -34,17 +34,17 @@ pub enum PubkyAdapterError {
     #[error("Invalid Pubky ID format: {0}")]
     InvalidPubkyId(String),
 
-    #[error("TrustEdge core error: {0}")]
+    #[error("Sealedge core error: {0}")]
     CoreError(#[from] sealedge_core::HybridEncryptionError),
 
     #[error("Serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),
 }
 
-/// A TrustEdge public key record stored in the Pubky network
+/// A Sealedge public key record stored in the Pubky network
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct TrustEdgeKeyRecord {
-    /// The TrustEdge public key
+pub struct SealedgeKeyRecord {
+    /// The Sealedge public key
     pub public_key: PublicKeyData,
     /// When this record was created
     pub created_at: u64,
@@ -110,12 +110,12 @@ impl PubkyBackend {
         })
     }
 
-    /// Publish a TrustEdge public key to the Pubky network
+    /// Publish a Sealedge public key to the Pubky network
     pub async fn publish_public_key(
         &self,
         public_key: &PublicKey,
     ) -> Result<String, PubkyAdapterError> {
-        let record = TrustEdgeKeyRecord {
+        let record = SealedgeKeyRecord {
             public_key: PublicKeyData {
                 algorithm: format!("{:?}", public_key.algorithm),
                 key_bytes: hex::encode(&public_key.key_bytes),
@@ -129,7 +129,7 @@ impl PubkyBackend {
         };
 
         let record_json = serde_json::to_string(&record)?;
-        let path = "/trustedge/public_key";
+        let path = "/sealedge/public_key";
 
         // Store the record in Pubky network
         self.client
@@ -145,9 +145,9 @@ impl PubkyBackend {
         Ok(hex::encode(self.keypair.public_key().to_bytes()))
     }
 
-    /// Resolve a Pubky ID to get the TrustEdge public key (async)
+    /// Resolve a Pubky ID to get the Sealedge public key (async)
     pub async fn resolve_public_key(&self, pubky_id: &str) -> Result<PublicKey, PubkyAdapterError> {
-        let path = "/trustedge/public_key";
+        let path = "/sealedge/public_key";
         let url = format!("pubky://{}{}", pubky_id, path);
 
         // Retrieve the record from Pubky network
@@ -162,9 +162,9 @@ impl PubkyBackend {
         let record_str = String::from_utf8(record_bytes.to_vec())
             .map_err(|e| PubkyAdapterError::InvalidPubkyId(format!("Invalid UTF-8: {:?}", e)))?;
 
-        let record: TrustEdgeKeyRecord = serde_json::from_str(&record_str)?;
+        let record: SealedgeKeyRecord = serde_json::from_str(&record_str)?;
 
-        // Convert back to TrustEdge PublicKey
+        // Convert back to Sealedge PublicKey
         let algorithm = match record.public_key.algorithm.as_str() {
             "Ed25519" => AsymmetricAlgorithm::Ed25519,
             "EcdsaP256" => AsymmetricAlgorithm::EcdsaP256,
@@ -190,7 +190,7 @@ impl PubkyBackend {
         Ok(public_key)
     }
 
-    /// Resolve a Pubky ID to get the TrustEdge public key (sync)
+    /// Resolve a Pubky ID to get the Sealedge public key (sync)
     pub fn resolve_public_key_sync(&self, pubky_id: &str) -> Result<PublicKey, PubkyAdapterError> {
         self.runtime.block_on(self.resolve_public_key(pubky_id))
     }
@@ -334,7 +334,7 @@ mod tests {
             .expect("Time went backwards")
             .as_secs();
 
-        let record = TrustEdgeKeyRecord {
+        let record = SealedgeKeyRecord {
             public_key: PublicKeyData {
                 algorithm: format!("{:?}", keypair.public.algorithm),
                 key_bytes: hex::encode(&keypair.public.key_bytes),
@@ -346,7 +346,7 @@ mod tests {
 
         let json = serde_json::to_string(&record).expect("Failed to serialize record");
 
-        let deserialized: TrustEdgeKeyRecord =
+        let deserialized: SealedgeKeyRecord =
             serde_json::from_str(&json).expect("Failed to deserialize record");
 
         // Verify all fields are preserved correctly
