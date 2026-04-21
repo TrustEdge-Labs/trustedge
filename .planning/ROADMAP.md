@@ -60,7 +60,7 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 - [x] **Phase 85: Code Sweep — Headers, Text, Metadata** - Update all copyright/license headers, user-facing text (errors, logs, help, env vars, UI labels), and Cargo.toml metadata (description, repository, homepage, documentation) across the workspace (completed 2026-04-19 — 6 plans, ~25 commits)
 - [x] **Phase 86: Documentation Sweep** - Update root project docs (README, CLAUDE.md, DEPENDENCIES.md, SECURITY.md), developer docs (docs/**), code doc comments (`///`, `//!`), and scripts/examples to reflect sealedge naming (completed 2026-04-20 — 5 plans)
 - [x] **Phase 87: GitHub Repository Rename** - Rename monorepo `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` with GitHub's automatic redirect enabled; update local git remotes (completed 2026-04-21)
-- [ ] **Phase 88: External Action & Product Website** - Publish new GitHub Action repo under sealedge naming with SHA256 checksum verification; deprecate old `attest-sbom-action` marketplace listing with redirect; update product references on trustedgelabs.com
+- [x] **Phase 88: External Action & Product Website** - Publish new GitHub Action repo under sealedge naming with SHA256 checksum verification; deprecate old `attest-sbom-action` marketplace listing with redirect; update product references on trustedgelabs.com (completed 2026-04-21)
 - [ ] **Phase 89: Final Validation** - Full workspace test suite, all GitHub Actions workflows, WASM + dashboard + Docker stack all green end-to-end under the new names
 
 ## Phase Details
@@ -227,7 +227,7 @@ Plans:
   1. A new GitHub Action repo exists under sealedge naming and is published to the GitHub Marketplace with equivalent functionality to the old `attest-sbom-action`, including SHA256 checksum verification of the downloaded binary (separate repo work — cross-repo deliverable)
   2. The old `TrustEdge-Labs/attest-sbom-action` marketplace listing is marked deprecated and its README redirects readers to the new listing; existing consumers of `@v1` are not silently broken but are clearly told to migrate
   3. Product-page content on `trustedgelabs.com` (served from the `trustedgelabs-website` repo, which itself is not renamed) advertises the product as "Sealedge" — any in-repo website-content files referencing the product name are updated
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 88-01-PLAN.md — Action source + monorepo folder rename + REQUIREMENTS amendment (wave 1, autonomous, EXT-02/EXT-03)
@@ -263,5 +263,5 @@ Plans:
 | 85. Code Sweep — Headers, Text, Metadata | v6.0 | 0/? | Not started | - |
 | 86. Documentation Sweep | v6.0 | 0/? | Not started | - |
 | 87. GitHub Repository Rename | v6.0 | 2/2 | Complete    | 2026-04-21 |
-| 88. External Action & Product Website | v6.0 | 0/? | Not started | - |
+| 88. External Action & Product Website | v6.0 | 4/4 | Complete    | 2026-04-21 |
 | 89. Final Validation | v6.0 | 0/? | Not started | - |
