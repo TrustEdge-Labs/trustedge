@@ -187,6 +187,19 @@ jobs:
       - name: Build seal binary
         run: cargo build -p sealedge-seal-cli --release --locked
 
+      - name: Compute seal binary SHA256 checksum
+        run: |
+          sha256sum ./target/release/seal | awk '{print $1 "  seal"}' > seal.sha256
+
+      - name: Upload seal binary + checksum to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.ref_name }}" \
+            ./target/release/seal \
+            seal.sha256 \
+            --clobber
+
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
