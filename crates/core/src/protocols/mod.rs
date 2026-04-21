@@ -9,7 +9,7 @@
 //! # Layer 3: Wire Formats and Protocols
 //!
 //! Wire formats, envelope construction, chain validation, and manifest serialization.
-//! This layer defines the on-disk and over-the-wire data structures that TrustEdge uses
+//! This layer defines the on-disk and over-the-wire data structures that Sealedge uses
 //! to exchange encrypted data, maintain continuity chains, and serialize metadata.
 //!
 //! ## Layer Contract

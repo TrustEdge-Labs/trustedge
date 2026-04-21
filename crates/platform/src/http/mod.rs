@@ -6,7 +6,7 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! HTTP layer — Axum-based REST API for TrustEdge Platform.
+//! HTTP layer — Axum-based REST API for Sealedge Platform.
 //!
 //! Provides:
 //! - Unified router combining all endpoints

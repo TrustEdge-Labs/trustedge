@@ -6,7 +6,7 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! # TrustEdge Receipt Demo
+//! # Sealedge Receipt Demo
 //!
 //! This demo shows how the "Contract Writer" (receipts) and "Security Guard" (envelope)
 //! work together to create a secure, verifiable chain of ownership.

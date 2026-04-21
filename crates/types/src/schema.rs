@@ -6,7 +6,7 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! JSON schema generation for TrustEdge wire types.
+//! JSON schema generation for Sealedge wire types.
 //!
 //! Uses `schemars` to generate JSON Schema (draft-07) representations of
 //! all wire types. Schema output is pinned against fixture files to prevent

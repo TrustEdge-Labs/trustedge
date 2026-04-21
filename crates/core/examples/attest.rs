@@ -3,7 +3,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! TrustEdge Attest - Create software attestations
+//! Sealedge Attest - Create software attestations
 //!
 //! Creates cryptographically signed "birth certificates" for software artifacts,
 //! capturing provenance information from Git repositories and build environments.

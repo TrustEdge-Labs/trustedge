@@ -6,7 +6,7 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! HTTP endpoint handlers for the TrustEdge Platform service.
+//! HTTP endpoint handlers for the Sealedge Platform service.
 //!
 //! The key consolidation change: `verify_handler` now calls
 //! `crate::verify::engine::verify_to_report()` directly instead of forwarding

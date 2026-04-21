@@ -14,7 +14,7 @@
 use anyhow::Result;
 use std::env;
 
-/// Runtime configuration for the TrustEdge Platform service.
+/// Runtime configuration for the Sealedge Platform service.
 #[derive(Debug, Clone)]
 pub struct Config {
     #[cfg(feature = "postgres")]

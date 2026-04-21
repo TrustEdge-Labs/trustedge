@@ -8,7 +8,7 @@
 
 //! Certificate Authority module — library-only, not wired into the HTTP router.
 //!
-//! This module provides enterprise-grade PKI services using TrustEdge's Universal Backend system.
+//! This module provides enterprise-grade PKI services using Sealedge's Universal Backend system.
 //! It is feature-gated behind the `ca` feature flag and currently used only as a library
 //! (imported directly by consumers, not exposed via HTTP endpoints in `create_router()`).
 //!

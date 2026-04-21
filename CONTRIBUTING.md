@@ -181,7 +181,7 @@ Closes #issue-number
 
 #### Option 3: Collective Copyright
 ```rust
-// Copyright (c) 2025 TrustEdge Contributors
+// Copyright (c) 2025 Sealedge Contributors
 // This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 //

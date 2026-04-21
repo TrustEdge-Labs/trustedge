@@ -6,7 +6,7 @@
 // Project: sealedge — Privacy and trust at the edge.
 //
 
-//! TrustEdge Platform — consolidated verification and CA service crate.
+//! Sealedge Platform — consolidated verification and CA service crate.
 //!
 //! This crate provides:
 //! - `verify` module: core verification logic (signature verify, continuity check, receipt construction)

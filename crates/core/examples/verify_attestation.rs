@@ -3,7 +3,7 @@
 // MPL-2.0: https://mozilla.org/MPL/2.0/
 // Project: sealedge — Privacy and trust at the edge.
 
-//! TrustEdge Verify - Verify software attestations
+//! Sealedge Verify - Verify software attestations
 //!
 //! Verifies cryptographically signed "birth certificates" for software artifacts,
 //! checking integrity and authenticity against the original artifact.

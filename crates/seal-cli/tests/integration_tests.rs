@@ -23,7 +23,7 @@ fn test_wrap_and_verify_basic_workflow() {
 
     // Create test input file
     let input_file = temp_path.join("test-input.bin");
-    fs::write(&input_file, b"Hello, TrustEdge P0 Implementation!").unwrap();
+    fs::write(&input_file, b"Hello, Sealedge P0 Implementation!").unwrap();
 
     // Create output archive path
     let output_archive = temp_path.join("test-archive.seal");

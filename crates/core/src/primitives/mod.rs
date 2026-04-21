@@ -9,7 +9,7 @@
 //! # Layer 1: Cryptographic Primitives
 //!
 //! Pure cryptographic primitives with no external dependencies beyond standard crypto libraries.
-//! This layer provides the foundational building blocks for all cryptographic operations in TrustEdge.
+//! This layer provides the foundational building blocks for all cryptographic operations in Sealedge.
 //!
 //! ## Layer Contract
 //!
