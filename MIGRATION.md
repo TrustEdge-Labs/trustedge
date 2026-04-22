@@ -38,6 +38,7 @@ v6.0 is a trademark-driven rename from "trustedge" to "sealedge". **There is no 
 | V2 session key (experimental) | `TRUSTEDGE_V2_SESSION_KEY` | `SEALEDGE_V2_SESSION_KEY` |
 | V2 audio domain (experimental) | `TRUSTEDGE_AUDIO_V2` | `SEALEDGE_AUDIO_V2` |
 | GitHub repo URL | `TrustEdge-Labs/trustedge` | `TrustEdge-Labs/sealedge` |
+| GitHub Action | `TrustEdge-Labs/attest-sbom-action@v1` | `TrustEdge-Labs/sealedge-attest-sbom-action@v2` |
 
 Preserved unchanged:
 - `TrustEdge-Labs` (GitHub organization name)
