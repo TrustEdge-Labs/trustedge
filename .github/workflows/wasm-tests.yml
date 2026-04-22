@@ -20,6 +20,7 @@ on:
       - 'crates/seal-wasm/**'
       - 'crates/core/**'
       - '.github/workflows/wasm-tests.yml'
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
