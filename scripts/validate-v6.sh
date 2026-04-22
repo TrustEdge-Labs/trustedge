@@ -155,10 +155,10 @@ fi
 step "Step 5: Docker stack + demo end-to-end (D-13)"
 DOCKER_BROUGHT_UP=false
 
-# Always tear down docker stack on exit (idempotent; no-op if never brought up).
+# Always tear down docker stack on exit (with volumes for a clean slate on next run).
 cleanup_docker() {
     if $DOCKER_BROUGHT_UP; then
-        docker compose -f deploy/docker-compose.yml down 2>/dev/null || true
+        docker compose -f deploy/docker-compose.yml down -v 2>/dev/null || true
     fi
 }
 trap cleanup_docker EXIT
@@ -194,8 +194,8 @@ elif command -v docker &> /dev/null && docker compose version &> /dev/null; then
             fail "platform /healthz not responding after 60s"
         fi
 
-        # Explicit teardown (trap will also run, but fine to teardown eagerly)
-        docker compose -f deploy/docker-compose.yml down
+        # Explicit teardown with volumes (trap will also run, but fine to teardown eagerly)
+        docker compose -f deploy/docker-compose.yml down -v
         DOCKER_BROUGHT_UP=false
     else
         fail "docker compose up --build"
