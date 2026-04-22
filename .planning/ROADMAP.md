@@ -244,7 +244,13 @@ Plans:
   2. Feature-matrix tests pass for `yubikey`, `http`, `postgres`, `ca`, and `openapi` combinations (per the existing CI matrix)
   3. All GitHub Actions workflows (ci.yml, semver.yml, wasm-tests.yml, release workflow, self-attestation job) run green on a push to the renamed repo
   4. The WASM build succeeds, `web/dashboard/` builds and type-generates cleanly, and the Docker Compose stack (platform + postgres + dashboard) starts and runs the demo script end-to-end under the new names
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 89-01-PLAN.md — scripts/validate-v6.sh + D-10 straggler grep audit + MIGRATION.md hybrid-gate action-rename row (wave 1, autonomous, VALID-01/VALID-03)
+- [ ] 89-02-PLAN.md — Run validate-v6.sh + WASM/dashboard/docker evidence capture + wasm-tests.yml/semver.yml workflow_dispatch + 89-VERIFICATION.md draft (wave 2, checkpoint for dashboard smoke, VALID-01/VALID-03)
+- [ ] 89-03-PLAN.md — RELEASE-NOTES-v6.0.0.md + user-gated v6.0.0 tag cut + tag-push CI verification + 89-VERIFICATION.md §2.3 close (wave 3, checkpoint for tag cut, VALID-02)
+- [ ] 89-04-PLAN.md — ROADMAP/PROJECT milestone-close flip + archive Phases 83-89 to .planning/milestones/v6.0-phases/ (wave 4, autonomous, VALID-01/VALID-02/VALID-03)
 
 ## Progress
 
