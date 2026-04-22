@@ -1,18 +1,18 @@
-# TrustEdge Platform Server — DigitalOcean App Platform (verify-only mode)
+# Sealedge Platform Server — DigitalOcean App Platform (verify-only mode)
 #
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
 # This source code is subject to the terms of the Mozilla Public License, v. 2.0.
 # If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 #
 # Verify-only mode: no postgres feature, no DATABASE_URL required.
 # Serves: POST /v1/verify, POST /v1/verify-attestation, GET /.well-known/jwks.json, GET /healthz
 #
 # Build:
-#   docker build -f deploy/digitalocean/Dockerfile -t trustedge-verifier .
+#   docker build -f deploy/digitalocean/Dockerfile -t sealedge-verifier .
 # Run:
-#   docker run -p 3001:3001 trustedge-verifier
+#   docker run -p 3001:3001 sealedge-verifier
 
 # ── Stage 1: Builder ──────────────────────────────────────────────────────────
 
@@ -30,8 +30,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY . .
 
 # Build the platform-server binary in release mode — http is enabled by default in
-# platform-server's Cargo.toml dependency on trustedge-platform. NO postgres feature.
-RUN cargo build -p trustedge-platform-server --release
+# platform-server's Cargo.toml dependency on sealedge-platform. NO postgres feature.
+RUN cargo build -p sealedge-platform-server --release
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 
@@ -45,16 +45,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for running the server
-RUN useradd -r -m -s /bin/false trustedge
+RUN useradd -r -m -s /bin/false sealedge
 
 # Copy compiled binary from builder stage
-COPY --from=builder /usr/src/app/target/release/trustedge-platform-server /usr/local/bin/trustedge-platform-server
+COPY --from=builder /usr/src/app/target/release/sealedge-platform-server /usr/local/bin/sealedge-platform-server
 
 # Set working directory
-WORKDIR /home/trustedge
+WORKDIR /home/sealedge
 
 # Drop to non-root user
-USER trustedge
+USER sealedge
 
 # Platform server HTTP port (must match PORT env var)
 EXPOSE 3001
@@ -63,4 +63,4 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s CMD wget -qO- http://localhost:3001/healthz || exit 1
 
 # Default command: start the HTTP server
-CMD ["trustedge-platform-server", "serve"]
+CMD ["sealedge-platform-server", "serve"]
