@@ -73,7 +73,8 @@ while IFS= read -r file; do
         missing=$((missing + 1))
     fi
 done < <(find . -type f \( -name "*.rs" -o -name "*.yml" -o -name "*.yaml" -o -name "*.toml" \) \
-    -not -path "./target/*" -not -path "./.git/*" -not -path "./.planning/*")
+    -not -path "./target/*" -not -path "./.git/*" -not -path "./.planning/*" \
+    -not -path "./.claude/*" -not -path "*/node_modules/*")
 if [ $missing -gt 0 ]; then
     fail "$missing files missing copyright headers — run: ./scripts/fix-copyright.sh"
 else

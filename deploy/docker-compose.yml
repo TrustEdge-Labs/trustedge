@@ -1,8 +1,8 @@
 # Copyright (c) 2025 TRUSTEDGE LABS LLC
 # MPL-2.0: https://mozilla.org/MPL/2.0/
-# Project: trustedge — Privacy and trust at the edge.
+# Project: sealedge — Privacy and trust at the edge.
 
-# TrustEdge Platform — Full Stack
+# Sealedge Platform — Full Stack
 #
 # Starts postgres, platform-server, and dashboard with a single command.
 # Copy deploy/.env.example to deploy/.env before first run.
@@ -17,8 +17,8 @@ services:
     image: postgres:16-alpine
     env_file: deploy/.env
     environment:
-      POSTGRES_USER: trustedge
-      POSTGRES_DB: trustedge
+      POSTGRES_USER: sealedge
+      POSTGRES_DB: sealedge
     volumes:
       - postgres_data:/var/lib/postgresql/data
     # No host port exposed — database is internal to the Docker network.
@@ -47,7 +47,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
-    command: ["sh", "-c", "trustedge-platform-server migrate && trustedge-platform-server serve"]
+    command: ["sh", "-c", "sealedge-platform-server migrate && sealedge-platform-server serve"]
     restart: unless-stopped
 
   dashboard:
@@ -59,13 +59,13 @@ services:
     ports:
       - "8080:8080"
       - "8443:8443"
-    environment:
-      # TLS termination: set these to enable HTTPS on port 8443
-      # SSL_CERT_PATH: /certs/server.crt
-      # SSL_KEY_PATH: /certs/server.key
-    volumes:
-      # Mount your TLS certificates directory when using HTTPS:
-      # - /path/to/your/certs:/certs:ro
+    # environment:
+    #   TLS termination: set these to enable HTTPS on port 8443
+    #   SSL_CERT_PATH: /certs/server.crt
+    #   SSL_KEY_PATH: /certs/server.key
+    # volumes:
+    #   Mount your TLS certificates directory when using HTTPS:
+    #   - /path/to/your/certs:/certs:ro
     depends_on:
       platform-server:
         condition: service_healthy

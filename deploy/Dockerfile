@@ -1,15 +1,15 @@
-# TrustEdge Platform Server — Multi-stage Docker build
+# Sealedge Platform Server — Multi-stage Docker build
 #
-# Stage 1 (builder): Compiles the trustedge-platform-server binary from source
+# Stage 1 (builder): Compiles the sealedge-platform-server binary from source
 # Stage 2 (runtime): Minimal debian-slim image with just the binary
 #
 # Note: If you maintain a .dockerignore at repo root, exclude target/ and .git/
 # to avoid sending those to the Docker build context (can be several GB).
 #
 # Build:
-#   docker build -f deploy/Dockerfile -t trustedge-platform-server .
+#   docker build -f deploy/Dockerfile -t sealedge-platform-server .
 # Run:
-#   docker run -e DATABASE_URL=postgres://... -e PORT=3001 trustedge-platform-server
+#   docker run -e DATABASE_URL=postgres://... -e PORT=3001 sealedge-platform-server
 
 # ── Stage 1: Builder ──────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY . .
 
 # Build the platform-server binary in release mode with postgres for production
-RUN cargo build -p trustedge-platform-server --features postgres --release
+RUN cargo build -p sealedge-platform-server --features postgres --release
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 
@@ -41,20 +41,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user with home directory for running the server
-RUN useradd -r -m -s /bin/false trustedge
+RUN useradd -r -m -s /bin/false sealedge
 
 # Copy compiled binary from builder stage
-COPY --from=builder /usr/src/app/target/release/trustedge-platform-server /usr/local/bin/trustedge-platform-server
+COPY --from=builder /usr/src/app/target/release/sealedge-platform-server /usr/local/bin/sealedge-platform-server
 
 # Set working directory (avoids permission issues with / as CWD)
-WORKDIR /home/trustedge
+WORKDIR /home/sealedge
 
 # Drop to non-root user
-USER trustedge
+USER sealedge
 
 # Platform server HTTP port (must match PORT env var)
 EXPOSE 3001
 
 # Default command: start the HTTP server
 # Use 'migrate' subcommand to run migrations before first serve
-CMD ["trustedge-platform-server", "serve"]
+CMD ["sealedge-platform-server", "serve"]

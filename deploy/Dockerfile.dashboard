@@ -1,13 +1,13 @@
-# TrustEdge Dashboard -- Multi-stage Docker build
+# Sealedge Dashboard -- Multi-stage Docker build
 #
 # Stage 1 (builder): Installs deps and builds SvelteKit static output
 # Stage 2 (runtime): Serves static files via nginxinc/nginx-unprivileged:alpine
 #                    Runs as non-root (uid 101) on ports 8080 (HTTP) / 8443 (HTTPS)
 #
 # Build (from repo root):
-#   docker build -f deploy/Dockerfile.dashboard -t trustedge-dashboard .
+#   docker build -f deploy/Dockerfile.dashboard -t sealedge-dashboard .
 # Run:
-#   docker run -p 8080:8080 trustedge-dashboard
+#   docker run -p 8080:8080 sealedge-dashboard
 
 # -- Stage 1: Builder ----------------------------------------------------------
 
