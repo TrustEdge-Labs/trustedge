@@ -9,7 +9,7 @@ GitHub: https://github.com/TrustEdge-Labs/sealedge
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Commercial License](https://img.shields.io/badge/Commercial-License%20Available-blue.svg)](mailto:enterprise@trustedgelabs.com)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-6.0-blue.svg)](https://github.com/TrustEdge-Labs/sealedge/releases/tag/v6.0)
+[![Version](https://img.shields.io/badge/version-6.0.0-blue.svg)](https://github.com/TrustEdge-Labs/sealedge/releases/tag/v6.0.0)
 [![YubiKey](https://img.shields.io/badge/YubiKey-Hardware%20Supported-green.svg)](https://www.yubico.com/)
 
 # Sealedge
@@ -40,10 +40,10 @@ seal attest-sbom --binary target/release/myapp --sbom bom.cdx.json \
 seal verify-attestation attestation.se-attestation.json --device-pub "$(cat build.pub)"
 ```
 
-Or use the [GitHub Action](https://github.com/TrustEdge-Labs/attest-sbom-action) for one-line CI integration (verifies `seal` binary SHA256 before executing):
+Or use the [GitHub Action](https://github.com/TrustEdge-Labs/sealedge-attest-sbom-action) for one-line CI integration (verifies `seal` binary SHA256 before executing):
 
 ```yaml
-- uses: TrustEdge-Labs/attest-sbom-action@v1
+- uses: TrustEdge-Labs/sealedge-attest-sbom-action@v2
   with:
     binary: target/release/myapp
     sbom: bom.cdx.json

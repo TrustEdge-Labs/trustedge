@@ -14,6 +14,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > **Note — Pre-v6.0 entries:** Entries below v6.0 describe the project under its former name, **trustedge**. Artifact names, binary names, extensions, and env-var prefixes in those entries refer to what shipped at the time. See `MIGRATION.md` §"v6.0" for the rename map. Entries from v6.0 onward use the current brand, **sealedge**.
 
+## [6.0.0] - 2026-04-22
+
+### Sealedge Rebrand
+
+Trademark-driven clean-break rename from **trustedge** to **sealedge**. The project, workspace crates, binary names, file extensions, wire-format constants, and the published GitHub Action are all renamed. No backward-compatibility shims — data encrypted under old constants cannot be decrypted by v6.0 binaries. See [`MIGRATION.md`](MIGRATION.md) for the full rename map.
+
+### Changed (breaking)
+- **Crate rename**: every workspace crate renamed from `trustedge-*` to `sealedge-*`. Archive crates `trustedge-trst-*` renamed to `sealedge-seal-*`.
+- **Binary rename**: `trustedge` → `sealedge`, `trst` → `seal`, `trustedge-server` → `sealedge-server`, `trustedge-client` → `sealedge-client`, `trustedge-platform-server` → `sealedge-platform-server`, `inspect-trst` → `inspect-seal`.
+- **Archive file extension**: `.trst` → `.seal`.
+- **Point attestation extension**: `.te-attestation.json` → `.se-attestation.json`.
+- **Encrypted key file format**: `TRUSTEDGE-KEY-V1` → `SEALEDGE-KEY-V1` (clean break — v6.0 binaries cannot decrypt keys under the old header).
+- **Wire-format constants**: all magic bytes and format strings rewritten to announce the product as sealedge; v2-only envelope format, no v1 decrypt path.
+- **GitHub Action rename**: [`TrustEdge-Labs/attest-sbom-action@v1`](https://github.com/TrustEdge-Labs/attest-sbom-action) deprecated in favor of [`TrustEdge-Labs/sealedge-attest-sbom-action@v2`](https://github.com/TrustEdge-Labs/sealedge-attest-sbom-action). The old marketplace listing redirects.
+- **Repository URL**: `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge`. Old URL redirects via GitHub repo rename; local remotes and in-repo links updated.
+- **Product references on trustedgelabs.com**: rebranded to Sealedge; live verifier links updated.
+
+### Added
+- **`MIGRATION.md`**: complete rename map across crates, binaries, extensions, constants, env vars, GitHub Action, and repository URL; includes a per-user migration checklist for upgrading callers.
+- **`scripts/validate-v6.sh`**: reusable v6.0 validation-gate runner — wraps `ci-check.sh`, WASM cargo check + size floor, dashboard build/typecheck, docker compose health + `demo.sh` roundtrip, with a test-count floor (≥ 471) and `--allow-regression "<justification>"` escape hatch.
+- **Platform migration `002_seed_anonymous_org.sql`**: seeds the nil-UUID organization so unauthenticated `/v1/verify` requests resolve against a real org row.
+- **`RELEASE-NOTES-v6.0.0.md`** and v6.0.0 GitHub release with 5 self-attested assets (`seal`, `seal.sha256`, `seal-sbom.cdx.json`, `seal.se-attestation.json`, `ephemeral.pub`). Dogfoods `sealedge-attest-sbom-action@v2` end-to-end.
+
+### Security
+- **rustls-webpki**: bumped to 0.103.13 (RUSTSEC-2026-0104).
+
+### Housekeeping
+- `ci-check.sh` now excludes `.claude/` and `node_modules/` from the copyright-header scan.
+- `validate-v6.sh` teardown uses `docker compose down -v` to clear the postgres volume between runs.
+- Dashboard Sealedge-branded on home (`Sealedge Dashboard` heading + nav) and devices pages (`Registered Sealedge edge devices`).
+- Full v6.0 validation gauntlet green: all 8 gates, 1052 tests across the feature matrix, both `workflow_dispatch` runs (`semver.yml`, `wasm-tests.yml`) and the tag-push CI run green on the rename-target repository.
+
+---
+
 ## [5.0.0] - 2026-04-05
 
 ### Portfolio Polish
