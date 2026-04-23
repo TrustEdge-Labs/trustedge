@@ -43,7 +43,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Valid (verify nothing broke)
 
 - [ ] **VALID-01**: Full workspace test suite passes under new names — all 471 tests green across default, yubikey, http, postgres, ca, and openapi feature combinations
-- [ ] **VALID-02**: All GitHub Actions workflows green (ci.yml, semver.yml, wasm-tests.yml, release workflow, self-attestation job)
+- [x] **VALID-02
+**: All GitHub Actions workflows green (ci.yml, semver.yml, wasm-tests.yml, release workflow, self-attestation job)
 - [ ] **VALID-03**: WASM builds, dashboard build + type generation, and Docker compose stack (platform + postgres + dashboard) all start clean and the demo script runs end-to-end under the new names
 
 ## Future Requirements

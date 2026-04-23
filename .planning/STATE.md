@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Portfolio Polish
 status: executing
-stopped_at: Phase 89 context gathered
-last_updated: "2026-04-22T13:00:12.061Z"
-last_activity: 2026-04-22 -- Phase 89 execution started
+stopped_at: Completed 89-03-PLAN.md — v6.0.0 tagged + released + VALID-02 closed
+last_updated: "2026-04-23T11:14:40.258Z"
+last_activity: 2026-04-23
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 31
-  completed_plans: 22
-  percent: 71
+  completed_plans: 24
+  percent: 77
 ---
 
 <!--
@@ -33,9 +33,9 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 ## Current Position
 
 Phase: 89 (final-validation) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 89
-Last activity: 2026-04-22 -- Phase 89 execution started
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-04-23
 
 ## Performance Metrics
 
@@ -68,6 +68,8 @@ Last activity: 2026-04-22 -- Phase 89 execution started
   - Self-attestation uses ephemeral Ed25519 key per build, OIDC/Sigstore deferred
   - GitHub Action required separate repo for marketplace listing (platform constraint)
   - Design doc: ~/.gstack/projects/TrustEdge-Labs-trustedge/john-main-design-20260405-085506.md
+- Option A force-update for v6.0.0 tag: two self-attestation bugs fixed inline (syft file: syntax + upload sbom+pub), tag force-updated twice, solo-dev context acceptable
+- sealedge-attest-sbom-action@v2 dogfood verified end-to-end: SBOM generation, attestation, upload all green in CI run 24817620668
 
 ### Pending Todos
 
@@ -87,12 +89,13 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260414-aib | Resolve GitHub Dependabot issues | 2026-04-14 | 8d01d53 | [260414-aib-resolve-github-dependabot-issues](./quick/260414-aib-resolve-github-dependabot-issues/) |
+| Phase 89-final-validation P03 | ~3h | 3 tasks | 4 files |
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 89 context gathered
-Resume file: --resume-file
+Last session: 2026-04-23T11:14:40.252Z
+Stopped at: Completed 89-03-PLAN.md — v6.0.0 tagged + released + VALID-02 closed
+Resume file: None
 
 ---
 *Last updated: 2026-04-18 — v6.0 roadmap written (7 phases)*
