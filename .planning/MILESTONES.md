@@ -1,3 +1,34 @@
+## v6.0 Sealedge Rebrand (Shipped: 2026-04-22)
+
+**Phases completed:** 7 phases (83-89), 27 plans
+**Timeline:** 5 days (2026-04-18 → 2026-04-22)
+
+**Delivered:** Complete trademark-driven rename of the product from "trustedge" to "sealedge" end-to-end — no backward-compatibility path. Monorepo renamed on GitHub with automatic redirect. 1052 tests green under new names.
+
+**Key accomplishments:**
+
+- Phase 83: All 9 workspace crates renamed `trustedge-*` → `sealedge-*`; CLI binary renamed `trst` → `seal`; `.trst` archive extension renamed to `.seal`; 7 plans
+- Phase 84: Crypto constants renamed (`TRUSTEDGE-KEY-V1` → `SEALEDGE-KEY-V1`, `TRUSTEDGE_ENVELOPE_V1` → `SEALEDGE_ENVELOPE_V1`); clean-break rejection tests added; `.te-attestation.json` → `.se-attestation.json` extension sweep; 3 plans
+- Phase 85: Copyright/license headers, Cargo.toml metadata URLs, CLI help/error/log strings, env var prefixes, SvelteKit dashboard UI copy all updated to sealedge; 6 plans
+- Phase 86: README, CLAUDE.md, docs/, crate READMEs, rustdoc `///`/`//!` comments, scripts prose all updated; D-13 repo-wide grep audit clean; 5 plans
+- Phase 87: Monorepo renamed `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` on GitHub with automatic redirect; local remote updated; 2 plans
+- Phase 88: `sealedge-attest-sbom-action@v2` repo created and published to Marketplace; old `attest-sbom-action@v1` deprecated with redirect; trustedgelabs.com product copy updated to Sealedge; 4 plans
+- Phase 89: `scripts/validate-v6.sh` gauntlet (1052 tests), WASM/dashboard/Docker stack verified, GitHub Actions CI green, v6.0.0 tag cut and released with self-attestation dogfood; 4 plans
+
+**Tech debt carried forward:**
+
+- Hardware tests require physical YubiKey 5 series (carried from v1.1)
+- Phases 81-82 (demo GIF, product landing page) remain on post-v6.0 roadmap
+
+**GitHub Release:** https://github.com/TrustEdge-Labs/sealedge/releases/tag/v6.0.0
+
+**Archives:**
+
+- `.planning/milestones/v6.0-phases/` (phases 83-89)
+- `.planning/milestones/v6.0-REQUIREMENTS.md`
+
+---
+
 ## v5.0 Portfolio Polish (Partial — 2 of 4 phases shipped: 2026-04-05)
 
 **Phases completed:** 2 phases (79-80), 2 plans
