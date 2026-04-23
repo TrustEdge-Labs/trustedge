@@ -212,10 +212,12 @@ jobs:
           binary: ./target/release/seal
           sbom: seal-sbom.cdx.json
 
-      - name: Upload attestation to release
+      - name: Upload attestation + SBOM + build.pub to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "${{ github.ref_name }}" \
             "${{ steps.attest.outputs.attestation-path }}" \
+            seal-sbom.cdx.json \
+            "${SEAL_PUB}" \
             --clobber
