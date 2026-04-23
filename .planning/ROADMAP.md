@@ -30,8 +30,8 @@ GitHub: https://github.com/TrustEdge-Labs/trustedge
 - ✅ **v2.9 Security Review P2 Remediation** - Phases 68-70 (shipped 2026-03-26)
 - ✅ **v3.0 Release Polish** - Phases 71-74 (shipped 2026-03-27)
 - ✅ **v4.0 SBOM Attestation Wedge** - Phases 75-78 (shipped 2026-04-03)
-- 🚚 **v5.0 Portfolio Polish** - Phases 79-82 (partial — 79-80 shipped 2026-04-05; 81-82 punted to post-rename)
-- 📋 **v6.0 Sealedge Rebrand** - Phases 83-89 (planned)
+- ✅ **v5.0 Portfolio Polish** - Phases 79-82 (partial — 79-80 shipped 2026-04-05; 81-82 punted to post-rename)
+- ✅ **v6.0 Sealedge Rebrand** - Phases 83-89 (shipped 2026-04-22)
 
 ## Phases
 
@@ -44,14 +44,14 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 
 </details>
 
-### 🚚 v5.0 Portfolio Polish (Partial — 2 of 4 phases shipped)
+### ✅ v5.0 Portfolio Polish (Partial — 2 of 4 phases shipped)
 
 - [x] **Phase 79: Self-Attestation CI** - Wire up end-to-end self-attestation in the CI release workflow (completed 2026-04-05)
 - [x] **Phase 80: GitHub Action Marketplace** - Publish `TrustEdge-Labs/attest-sbom-action@v1` to GitHub Marketplace (completed 2026-04-05)
 - [ ] **Phase 81: Demo GIF** - Record and embed demo GIF in README (punted — execute after v6.0 rebrand lands)
 - [ ] **Phase 82: Product Landing Page** - Ship product landing page on trustedgelabs.com (punted — execute after v6.0 rebrand lands)
 
-### 📋 v6.0 Sealedge Rebrand (Planned)
+### ✅ v6.0 Sealedge Rebrand — SHIPPED (v6.0.0 released 2026-04-22)
 
 **Milestone Goal:** Rename the product from "trustedge" to "sealedge" end-to-end — repo, crates, binaries, internal constants, docs, functions — clean break with no legacy compatibility path, while the TrustEdge-Labs org/brand retains its identity.
 
@@ -61,7 +61,9 @@ See `.planning/milestones/` for archived roadmaps and requirements.
 - [x] **Phase 86: Documentation Sweep** - Update root project docs (README, CLAUDE.md, DEPENDENCIES.md, SECURITY.md), developer docs (docs/**), code doc comments (`///`, `//!`), and scripts/examples to reflect sealedge naming (completed 2026-04-20 — 5 plans)
 - [x] **Phase 87: GitHub Repository Rename** - Rename monorepo `TrustEdge-Labs/trustedge` → `TrustEdge-Labs/sealedge` with GitHub's automatic redirect enabled; update local git remotes (completed 2026-04-21)
 - [x] **Phase 88: External Action & Product Website** - Publish new GitHub Action repo under sealedge naming with SHA256 checksum verification; deprecate old `attest-sbom-action` marketplace listing with redirect; update product references on trustedgelabs.com (completed 2026-04-21)
-- [ ] **Phase 89: Final Validation** - Full workspace test suite, all GitHub Actions workflows, WASM + dashboard + Docker stack all green end-to-end under the new names
+- [x] **Phase 89: Final Validation** - Full workspace test suite, all GitHub Actions workflows, WASM + dashboard + Docker stack all green end-to-end under the new names (completed 2026-04-22)
+
+See `.planning/milestones/v6.0-phases/` for archived phase artifacts.
 
 ## Phase Details
 
@@ -248,9 +250,9 @@ Plans:
 
 Plans:
 - [x] 89-01-PLAN.md — scripts/validate-v6.sh + D-10 straggler grep audit + MIGRATION.md hybrid-gate action-rename row (wave 1, autonomous, VALID-01/VALID-03)
-- [ ] 89-02-PLAN.md — Run validate-v6.sh + WASM/dashboard/docker evidence capture + wasm-tests.yml/semver.yml workflow_dispatch + 89-VERIFICATION.md draft (wave 2, checkpoint for dashboard smoke, VALID-01/VALID-03)
-- [ ] 89-03-PLAN.md — RELEASE-NOTES-v6.0.0.md + user-gated v6.0.0 tag cut + tag-push CI verification + 89-VERIFICATION.md §2.3 close (wave 3, checkpoint for tag cut, VALID-02)
-- [ ] 89-04-PLAN.md — ROADMAP/PROJECT milestone-close flip + archive Phases 83-89 to .planning/milestones/v6.0-phases/ (wave 4, autonomous, VALID-01/VALID-02/VALID-03)
+- [x] 89-02-PLAN.md — Run validate-v6.sh + WASM/dashboard/docker evidence capture + wasm-tests.yml/semver.yml workflow_dispatch + 89-VERIFICATION.md draft (wave 2, checkpoint for dashboard smoke, VALID-01/VALID-03)
+- [x] 89-03-PLAN.md — RELEASE-NOTES-v6.0.0.md + user-gated v6.0.0 tag cut + tag-push CI verification + 89-VERIFICATION.md §2.3 close (wave 3, checkpoint for tag cut, VALID-02)
+- [x] 89-04-PLAN.md — ROADMAP/PROJECT milestone-close flip + archive Phases 83-89 to .planning/milestones/v6.0-phases/ (wave 4, autonomous, VALID-01/VALID-02/VALID-03)
 
 ## Progress
 
@@ -264,10 +266,10 @@ Plans:
 | 80. GitHub Action Marketplace | v5.0 | 1/1 | Complete | 2026-04-05 |
 | 81. Demo GIF | v5.0 | 0/? | Punted (post-rename) | - |
 | 82. Product Landing Page | v5.0 | 0/? | Punted (post-rename) | - |
-| 83. Crate & Binary Rename | v6.0 | 0/7 | Not started | - |
-| 84. Crypto Constants & File Extension | v6.0 | 0/? | Not started | - |
-| 85. Code Sweep — Headers, Text, Metadata | v6.0 | 0/? | Not started | - |
-| 86. Documentation Sweep | v6.0 | 0/? | Not started | - |
-| 87. GitHub Repository Rename | v6.0 | 2/2 | Complete    | 2026-04-21 |
-| 88. External Action & Product Website | v6.0 | 4/4 | Complete    | 2026-04-21 |
-| 89. Final Validation | v6.0 | 0/? | Not started | - |
+| 83. Crate & Binary Rename | v6.0 | 7/7 | Complete | 2026-04-18 |
+| 84. Crypto Constants & File Extension | v6.0 | 3/3 | Complete | 2026-04-18 |
+| 85. Code Sweep — Headers, Text, Metadata | v6.0 | 6/6 | Complete | 2026-04-19 |
+| 86. Documentation Sweep | v6.0 | 5/5 | Complete | 2026-04-20 |
+| 87. GitHub Repository Rename | v6.0 | 2/2 | Complete | 2026-04-21 |
+| 88. External Action & Product Website | v6.0 | 4/4 | Complete | 2026-04-21 |
+| 89. Final Validation | v6.0 | 4/4 | Complete | 2026-04-22 |
