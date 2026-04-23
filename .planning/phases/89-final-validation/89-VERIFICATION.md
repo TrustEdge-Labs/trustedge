@@ -9,7 +9,7 @@ Project: sealedge — Privacy and trust at the edge.
 **Phase:** 89-final-validation
 **Requirements:** VALID-01, VALID-02, VALID-03
 **Date:** 2026-04-22
-**Status:** IN PROGRESS — VALID-01 + VALID-03 evidence captured (Plan 02); VALID-02 §2.3 tag-push pending Plan 03
+**Status:** PASS — VALID-01 / VALID-02 / VALID-03 all green; tag cut; self-attestation dogfood verified. Milestone close (ROADMAP/PROJECT/archive) handled by Plan 04.
 
 ---
 
@@ -88,13 +88,73 @@ Both runs completed green after the `workflow_dispatch:` trigger fix was pushed 
 
 ### 2.3 Tag-push `v6.0.0` CI run (D-04 authoritative gate)
 
-**Status:** PENDING — filled in by Plan 03 after v6.0.0 tag cut + tag-push CI run completes.
+**Tag cut:** 2026-04-22T23:36:21Z on commit `9ae2da9` (HEAD of main after two inline D-14 fixes)
+**Tag pushed:** 2026-04-22T23:39:02Z (first push) → force-updated twice during Option A recovery
+**GitHub Release URL:** https://github.com/TrustEdge-Labs/sealedge/releases/tag/v6.0.0
+**Release created:** 2026-04-22T23:36:21Z (via `gh release create v6.0.0 --notes-file`)
 
-**Expected capture:**
-- Run URL: <to be captured by Plan 03>
-- Conclusion: <success expected>
-- Self-attestation job conclusion (includes dogfood of sealedge-attest-sbom-action@v2): <expected success>
-- Release assets uploaded: `seal`, `seal.sha256`, `seal-sbom.cdx.json`, `build.pub`, `seal.se-attestation.json`
+**Authoritative (final) tag-push CI run:**
+
+```
+gh run watch 24817620668 --repo TrustEdge-Labs/sealedge --exit-status
+```
+
+**Run URL:** https://github.com/TrustEdge-Labs/sealedge/actions/runs/24817620668
+**Workflow:** CI
+**Conclusion:** success
+**Head SHA:** `9ae2da9c28884fb6952fa28bb2970dd47516f1e4`
+**Created:** 2026-04-23T04:58:06Z
+**Completed:** 2026-04-23T05:17:56Z
+
+**Jobs:**
+
+| Job | Conclusion |
+|-----|------------|
+| security | success |
+| lint | success |
+| build-and-test | success |
+| self-attestation | success |
+
+**Self-attestation job steps (Phase 88 dogfood loop closed):**
+
+| Step | Conclusion |
+|------|------------|
+| Build seal binary | success |
+| Compute seal binary SHA256 checksum | success |
+| Upload seal binary + checksum to release | success |
+| Generate CycloneDX SBOM | success |
+| Attest SBOM (dogfood sealedge-attest-sbom-action) | success |
+| Upload attestation + SBOM + build.pub to release | success |
+
+`sealedge-attest-sbom-action@v2` ran successfully end-to-end: downloaded the newly uploaded
+`seal` binary, verified its SHA256 checksum, generated an ephemeral Ed25519 keypair, created
+`seal.se-attestation.json`, and uploaded it to the release. Phase 88 deferred dogfood loop closed.
+
+**Release assets (from `gh release view v6.0.0 --json assets`):**
+
+| Asset | Size |
+|-------|------|
+| `seal` | 3,525,760 bytes |
+| `seal.sha256` | 71 bytes |
+| `seal-sbom.cdx.json` | 484 bytes |
+| `seal.se-attestation.json` | 660 bytes |
+| `ephemeral.pub` | 53 bytes (attestation verification public key; ephemeral key name from action) |
+
+All 5 D-15 expected asset categories present. Note: `build.pub` is named `ephemeral.pub` because
+the sealedge-attest-sbom-action generates an ephemeral keypair with `seal keygen --out-pub ephemeral.pub`
+when no `key:` input is provided. The file serves the same role as the planned `build.pub`.
+
+**Option A force-update audit trail (per CONTEXT.md D-06 / §4 recovery):**
+
+| Run | Commit | Failure | Fix |
+|-----|--------|---------|-----|
+| 24808314283 | `ab0c98a` | self-attestation: SBOM step failed (syft `path:` ≠ directory) | Rule 1 bug fix in ci.yml |
+| 24811716778 | `f7e747b` | self-attestation: success; `seal-sbom.cdx.json` + `build.pub` not uploaded | Rule 2 missing upload step |
+| 24817620668 | `9ae2da9` | All jobs success | Final authoritative run |
+
+Fix commits: `f7e747b` (`fix(89): use syft file: syntax`) + `9ae2da9` (`fix(89): upload seal-sbom.cdx.json + build.pub`). Tag force-updated twice. No v6.0.1 needed.
+
+VALID-02 closed. Release cut, self-attestation dogfood verified green, asset list matches D-15 expected set.
 
 ---
 
@@ -170,7 +230,12 @@ docker compose -f deploy/docker-compose.yml down -v
 
 ## 4. Tag-Failure Recovery Status
 
-**Not executed.** Plan 03 has not yet cut the v6.0.0 tag. After tag-push CI runs green (Plan 03 §2.3), this section confirms no recovery needed.
+**Executed — Option A (force-update).** Tag was cut on commit `ab0c98a` and pushed successfully, but the tag-push CI run (24808314283) revealed two bugs in the self-attestation job:
+
+1. `anchore/sbom-action` with `path:` parameter treated a binary file as a directory — fix: replaced with syft CLI using `file:` syntax (commit `f7e747b`)
+2. Upload step only uploaded the `.se-attestation.json` — fix: extended to include `seal-sbom.cdx.json` and `ephemeral.pub` (commit `9ae2da9`)
+
+Tag force-updated twice. Final run 24817620668 on commit `9ae2da9` completed with conclusion: success across all 4 jobs. No v6.0.1 cut needed.
 
 **Recovery commands (documented verbatim per D-06 / Phase 87 D-15 pattern):**
 
@@ -195,7 +260,7 @@ Solo-dev context, no production consumers in the bootstrap window — force-upda
 |---|-----------|--------|
 | 1 | `cargo test --workspace` passes with 471+ tests under new crate/binary/constant names | ✔ PASS — §1 (1052 tests, D-02 floor satisfied) |
 | 2 | Feature-matrix tests pass for yubikey, http, postgres, ca, openapi combinations | ✔ PASS — §1 (yubikey 229 lib tests, http 32 verify_integration tests; postgres via docker compose D-13 carve-out; openapi exercised via cargo-hack build in ci-check.sh) |
-| 3 | All GitHub Actions workflows run green on push to renamed repo | ✔ PASS (partial) — §2.1 (main CI reused from 87-VERIFICATION) + §2.2 (workflow_dispatch semver + wasm-tests both green); §2.3 pending Plan 03 tag-push |
+| 3 | All GitHub Actions workflows run green on push to renamed repo | ✔ PASS — §2.1 (main CI reused from 87-VERIFICATION) + §2.2 (wasm-tests + semver workflow_dispatch) + §2.3 (tag-push v6.0.0 run 24817620668 + self-attestation dogfood sealedge-attest-sbom-action@v2) |
 | 4 | WASM builds, web/dashboard builds + typegen, docker compose stack + demo script all green under new names | ✔ PASS — §3.1 (WASM 141KB, under 2MB floor), §3.2 (dashboard build+check green, browser smoke confirmed Sealedge branding), §3.3 (docker stack healthy, demo roundtrip complete) |
 
 ---
@@ -236,5 +301,5 @@ pre-tag gate checklist can trace these via `git log --oneline`.
 
 ---
 
-_Verified (partial): 2026-04-22_
-_Status: IN PROGRESS — VALID-02 §2.3 pending Plan 03_
+_Verified: 2026-04-23_
+_Status: PASS — VALID-01 / VALID-02 / VALID-03 all green_
